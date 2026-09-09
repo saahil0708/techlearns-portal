@@ -1,0 +1,464 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  PLATFORM_ADMIN
+  COLLEGE_ADMIN
+  FACULTY
+  STUDENT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum CollegeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+enum ProblemDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ProblemStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ProgrammingLanguage {
+  CPP
+  JAVA
+  PYTHON
+  JAVASCRIPT
+  C
+}
+
+enum SubmissionStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum SubmissionVerdict {
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+  RUNTIME_ERROR
+  COMPILATION_ERROR
+  SYSTEM_ERROR
+}
+
+enum ContestStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+// ------------------------------------------------------
+// MODELS
+// ------------------------------------------------------
+
+model User {
+  id                     String     @id @default(uuid())
+  email                  String     @unique
+  passwordHash           String
+  name                   String
+  globalRole             Role       @default(STUDENT)
+  status                 UserStatus @default(ACTIVE)
+  twoFactorEnabled       Boolean    @default(false)
+  twoFactorSecret        String?
+  twoFactorRecoveryCodes String[]   @default([])
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  memberships          CollegeMembership[]
+  batchEnrollments     BatchStudent[]
+  createdCourses       Course[]              @relation("CourseCreator")
+  enrollments          Enrollment[]
+  lessonProgress       LessonProgress[]
+  createdProblems      Problem[]             @relation("ProblemCreator")
+  submissions          Submission[]
+  createdContests      Contest[]             @relation("ContestCreator")
+  contestRegistrations ContestRegistration[]
+  leaderboardEntries   LeaderboardEntry[]
+  passkeys             PasskeyCredential[]
+  refreshTokens        RefreshToken[]
+
+  @@index([globalRole, status])
+  @@index([status, createdAt])
+  @@index([name])
+  @@map("users")
+}
+
+model PasskeyCredential {
+  id           String    @id @default(uuid())
+  userId       String
+  credentialId String    @unique
+  publicKey    Bytes
+  counter      BigInt    @default(0)
+  transports   String[]  @default([])
+  deviceType   String?
+  backedUp     Boolean   @default(false)
+  name         String? // e.g. "MacBook Touch ID", "YubiKey 5C NFC", "Windows Hello"
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("passkey_credentials")
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid())
+  userId     String
+  tokenHash  String   @unique
+  family     String // UUID for token family tracking (reuse detection)
+  isRevoked  Boolean  @default(false)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  deviceInfo String?
+  ipAddress  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, family])
+  @@index([userId, isRevoked])
+  @@map("refresh_tokens")
+}
+
+model College {
+  id        String        @id @default(uuid())
+  name      String
+  code      String        @unique
+  email     String?
+  phone     String?
+  address   String?
+  status    CollegeStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  memberships CollegeMembership[]
+  batches     Batch[]
+  courses     Course[]
+  problems    Problem[]
+  contests    Contest[]
+
+  @@index([status, createdAt])
+  @@map("colleges")
+}
+
+model CollegeMembership {
+  id        String   @id @default(uuid())
+  userId    String
+  collegeId String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  college College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, collegeId])
+  @@index([collegeId, role])
+  @@index([userId, role])
+  @@map("college_memberships")
+}
+
+model Batch {
+  id        String    @id @default(uuid())
+  name      String
+  collegeId String
+  startDate DateTime?
+  endDate   DateTime?
+  status    String    @default("ACTIVE")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  college  College        @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  students BatchStudent[]
+
+  @@index([collegeId, status])
+  @@map("batches")
+}
+
+model BatchStudent {
+  id         String   @id @default(uuid())
+  batchId    String
+  userId     String
+  enrolledAt DateTime @default(now())
+
+  batch Batch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, userId])
+  @@index([userId])
+  @@index([batchId])
+  @@map("batch_students")
+}
+
+model Course {
+  id          String       @id @default(uuid())
+  title       String
+  description String?      @db.Text
+  collegeId   String?
+  createdById String
+  status      CourseStatus @default(DRAFT)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  college     College?     @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  createdBy   User         @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  modules     Module[]
+  enrollments Enrollment[]
+
+  @@index([collegeId, status])
+  @@index([createdById, status])
+  @@index([status, createdAt])
+  @@map("courses")
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  courseId    String
+  title       String
+  description String?  @db.Text
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@index([courseId, order])
+  @@map("modules")
+}
+
+model Lesson {
+  id        String   @id @default(uuid())
+  moduleId  String
+  title     String
+  content   String   @db.Text
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  module   Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  progress LessonProgress[]
+
+  @@index([moduleId, order])
+  @@map("lessons")
+}
+
+model Enrollment {
+  id          String           @id @default(uuid())
+  userId      String
+  courseId    String
+  status      EnrollmentStatus @default(ACTIVE)
+  enrolledAt  DateTime         @default(now())
+  completedAt DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId, status])
+  @@index([courseId, status])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id          String    @id @default(uuid())
+  userId      String
+  lessonId    String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId, completed])
+  @@index([lessonId, completed])
+  @@map("lesson_progress")
+}
+
+model Problem {
+  id           String            @id @default(uuid())
+  title        String
+  slug         String            @unique
+  statement    String            @db.Text
+  inputFormat  String            @db.Text
+  outputFormat String            @db.Text
+  constraints  String            @db.Text
+  difficulty   ProblemDifficulty @default(MEDIUM)
+  timeLimit    Int               @default(1000) // ms
+  memoryLimit  Int               @default(256) // MB
+  collegeId    String?
+  createdById  String
+  status       ProblemStatus     @default(DRAFT)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  college         College?         @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  createdBy       User             @relation("ProblemCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  testCases       TestCase[]
+  submissions     Submission[]
+  contestProblems ContestProblem[]
+
+  @@index([difficulty, status])
+  @@index([collegeId, status])
+  @@index([createdById, status])
+  @@index([status, createdAt])
+  @@map("problems")
+}
+
+model TestCase {
+  id             String   @id @default(uuid())
+  problemId      String
+  input          String   @db.Text
+  expectedOutput String   @db.Text
+  isHidden       Boolean  @default(true)
+  explanation    String?  @db.Text
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([problemId, isHidden, order])
+  @@map("test_cases")
+}
+
+model Submission {
+  id              String               @id @default(uuid())
+  userId          String
+  problemId       String
+  contestId       String?
+  language        ProgrammingLanguage
+  sourceCode      String               @db.Text
+  status          SubmissionStatus     @default(QUEUED)
+  verdict         SubmissionVerdict?
+  runtime         Int? // in milliseconds
+  memory          Int? // in kilobytes
+  errorMessage    String?              @db.Text
+  passedTestCases Int                  @default(0)
+  totalTestCases  Int                  @default(0)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  contest Contest? @relation(fields: [contestId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([problemId, verdict])
+  @@index([contestId, status])
+  @@index([status, createdAt])
+  @@map("submissions")
+}
+
+model Contest {
+  id          String        @id @default(uuid())
+  title       String
+  description String?       @db.Text
+  startTime   DateTime
+  endTime     DateTime
+  collegeId   String?
+  createdById String
+  status      ContestStatus @default(UPCOMING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  college            College?              @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  createdBy          User                  @relation("ContestCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  problems           ContestProblem[]
+  registrations      ContestRegistration[]
+  submissions        Submission[]
+  leaderboardEntries LeaderboardEntry[]
+
+  @@index([status, startTime, endTime])
+  @@index([collegeId, status])
+  @@index([createdById, status])
+  @@map("contests")
+}
+
+model ContestProblem {
+  id        String @id @default(uuid())
+  contestId String
+  problemId String
+  points    Int    @default(100)
+  order     Int    @default(0)
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, problemId])
+  @@index([contestId, order])
+  @@map("contest_problems")
+}
+
+model ContestRegistration {
+  id           String   @id @default(uuid())
+  contestId    String
+  userId       String
+  registeredAt DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId])
+  @@index([contestId, registeredAt])
+  @@index([userId])
+  @@map("contest_registrations")
+}
+
+model LeaderboardEntry {
+  id        String   @id @default(uuid())
+  contestId String
+  userId    String
+  score     Int      @default(0)
+  penalty   Int      @default(0)
+  rank      Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId])
+  @@index([contestId, score, penalty])
+  @@index([userId])
+  @@map("leaderboard_entries")
+}

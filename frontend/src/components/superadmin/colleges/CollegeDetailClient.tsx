@@ -1,0 +1,1610 @@
+'use client';
+
+import React, { useState } from 'react';
+import {
+  Box,
+  Typography,
+  Card,
+  Chip,
+  Button,
+  TextField,
+  InputAdornment,
+  Avatar,
+  Tooltip,
+  LinearProgress,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Select,
+  Tabs,
+  Tab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+} from '@mui/material';
+import Link from 'next/link';
+
+// Icons
+import SearchIcon from '@mui/icons-material/Search';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
+import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
+import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
+import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
+import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
+import SecurityRoundedIcon from '@mui/icons-material/SecurityRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
+import FirstPageRoundedIcon from '@mui/icons-material/FirstPageRounded';
+import LastPageRoundedIcon from '@mui/icons-material/LastPageRounded';
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
+
+// Components
+import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
+import Navbar from '@/components/superadmin/layout/Navbar';
+import { CollegeEntity } from '@/components/superadmin/colleges/CollegesDirectoryClient';
+
+// Batch interface
+export interface BatchItem {
+  id: string;
+  name: string;
+  code: string;
+  studentsCount: number;
+  maxCapacity: number;
+  facultyLead: string;
+  coursesAssigned: number;
+  year: string;
+  status: 'Active' | 'Upcoming' | 'Completed';
+  avgAccuracy: string;
+}
+
+// Student Roster item
+export interface StudentRosterItem {
+  id: string;
+  name: string;
+  rollNo: string;
+  email: string;
+  batch: string;
+  problemsSolved: number;
+  accuracy: string;
+  streakDays: number;
+  rank: number;
+  status: 'Active' | 'Inactive';
+}
+
+// Course Assignment item
+export interface CourseAssignmentItem {
+  id: string;
+  title: string;
+  code: string;
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  modulesCount: number;
+  enrolledStudents: number;
+  completionRate: string;
+  facultyInstructor: string;
+}
+
+// Faculty Coordinator item
+export interface FacultyCoordinatorItem {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+  role: 'Department Head' | 'Senior Mentor' | 'Lab Instructor';
+  batchesAssigned: string[];
+  activeCourses: number;
+}
+
+interface CollegeDetailClientProps {
+  college: CollegeEntity;
+  initialBatches: BatchItem[];
+  initialStudents: StudentRosterItem[];
+  initialCourses: CourseAssignmentItem[];
+  initialFaculty: FacultyCoordinatorItem[];
+}
+
+interface PaginationToolbarProps {
+  totalEntries: number;
+  currentPage: number;
+  rowsPerPage: number;
+  onPageChange: (newPage: number) => void;
+  onRowsPerPageChange: (newRows: number) => void;
+  itemLabel?: string;
+  rowsOptions?: number[];
+}
+
+function PaginationToolbar({
+  totalEntries,
+  currentPage,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
+  itemLabel = 'items',
+  rowsOptions = [5, 10, 25, 50],
+}: PaginationToolbarProps) {
+  const totalPages = Math.max(1, Math.ceil(totalEntries / rowsPerPage));
+  const safePage = Math.min(currentPage, totalPages - 1);
+  const startEntry = totalEntries === 0 ? 0 : safePage * rowsPerPage + 1;
+  const endEntry = Math.min((safePage + 1) * rowsPerPage, totalEntries);
+
+  const getPaginationRange = (current: number, total: number) => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+    if (current <= 3) return [0, 1, 2, 3, 4, 'ellipsis', total - 1];
+    if (current >= total - 4) return [0, 'ellipsis', total - 5, total - 4, total - 3, total - 2, total - 1];
+    return [0, 'ellipsis-start', current - 1, current, current + 1, 'ellipsis-end', total - 1];
+  };
+
+  return (
+    <Card
+      elevation={0}
+      sx={{
+        p: 2,
+        px: 3,
+        borderRadius: '14px',
+        bgcolor: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 2,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+        <Typography sx={{ fontSize: '0.78rem', color: '#64748B' }}>
+          Showing <strong style={{ color: '#0F172A', fontWeight: 600 }}>{startEntry}–{endEntry}</strong> of <strong style={{ color: '#0F172A', fontWeight: 600 }}>{totalEntries}</strong> {itemLabel}
+        </Typography>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography sx={{ fontSize: '0.76rem', color: '#64748B' }}>Rows per page:</Typography>
+          <Select
+            value={rowsPerPage}
+            onChange={(e) => {
+              onRowsPerPageChange(Number(e.target.value));
+              onPageChange(0);
+            }}
+            size="small"
+            sx={{
+              height: 28,
+              fontSize: '0.76rem',
+              fontWeight: 600,
+              color: '#0F172A',
+              bgcolor: '#FFFFFF',
+              borderRadius: '9999px',
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0', borderRadius: '9999px' },
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
+              '& .MuiSvgIcon-root': { color: '#64748B', fontSize: 18 },
+            }}
+          >
+            {rowsOptions.map((opt) => (
+              <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+            ))}
+          </Select>
+        </Box>
+      </Box>
+
+      {/* Pagination Controls */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+        <IconButton
+          size="small"
+          disabled={safePage === 0}
+          onClick={() => onPageChange(0)}
+          sx={{
+            width: 32,
+            height: 32,
+            color: '#64748B',
+            bgcolor: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRadius: '9999px',
+            p: 0.5,
+            '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
+            '&.Mui-disabled': { opacity: 0.4, color: '#94A3B8' },
+          }}
+        >
+          <FirstPageRoundedIcon sx={{ fontSize: 18 }} />
+        </IconButton>
+
+        <IconButton
+          size="small"
+          disabled={safePage === 0}
+          onClick={() => onPageChange(Math.max(0, safePage - 1))}
+          sx={{
+            width: 32,
+            height: 32,
+            color: '#64748B',
+            bgcolor: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRadius: '9999px',
+            p: 0.5,
+            '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
+            '&.Mui-disabled': { opacity: 0.4, color: '#94A3B8' },
+          }}
+        >
+          <ChevronLeftRoundedIcon sx={{ fontSize: 18 }} />
+        </IconButton>
+
+        {/* Smart Long-List Pagination Pills */}
+        {getPaginationRange(safePage, totalPages).map((item, idx) => {
+          if (typeof item === 'string') {
+            return (
+              <Box
+                key={`ellipsis-${idx}`}
+                sx={{
+                  width: 32,
+                  height: 32,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#94A3B8',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  userSelect: 'none',
+                }}
+              >
+                •••
+              </Box>
+            );
+          }
+
+          const pageIndex = item as number;
+          const isActive = safePage === pageIndex;
+
+          return (
+            <Box
+              key={pageIndex}
+              onClick={() => onPageChange(pageIndex)}
+              sx={{
+                minWidth: 32,
+                height: 32,
+                px: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '9999px',
+                cursor: 'pointer',
+                fontSize: '0.78rem',
+                fontWeight: isActive ? 800 : 600,
+                color: isActive ? '#FFFFFF' : '#64748B',
+                bgcolor: isActive ? '#2563EB' : '#FFFFFF',
+                border: isActive ? '1px solid #2563EB' : '1px solid #E2E8F0',
+                boxShadow: isActive ? '0 2px 8px rgba(37, 99, 235, 0.3)' : 'none',
+                transition: 'all 0.15s ease',
+                '&:hover': {
+                  bgcolor: isActive ? '#1D4ED8' : '#F1F5F9',
+                  color: isActive ? '#FFFFFF' : '#0F172A',
+                  borderColor: isActive ? '#1D4ED8' : '#CBD5E1',
+                },
+              }}
+            >
+              {pageIndex + 1}
+            </Box>
+          );
+        })}
+
+        <IconButton
+          size="small"
+          disabled={safePage >= totalPages - 1}
+          onClick={() => onPageChange(Math.min(totalPages - 1, safePage + 1))}
+          sx={{
+            width: 32,
+            height: 32,
+            color: '#64748B',
+            bgcolor: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRadius: '9999px',
+            p: 0.5,
+            '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
+            '&.Mui-disabled': { opacity: 0.4, color: '#94A3B8' },
+          }}
+        >
+          <ChevronRightRoundedIcon sx={{ fontSize: 18 }} />
+        </IconButton>
+
+        <IconButton
+          size="small"
+          disabled={safePage >= totalPages - 1}
+          onClick={() => onPageChange(totalPages - 1)}
+          sx={{
+            width: 32,
+            height: 32,
+            color: '#64748B',
+            bgcolor: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            borderRadius: '9999px',
+            p: 0.5,
+            '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
+            '&.Mui-disabled': { opacity: 0.4, color: '#94A3B8' },
+          }}
+        >
+          <LastPageRoundedIcon sx={{ fontSize: 18 }} />
+        </IconButton>
+      </Box>
+    </Card>
+  );
+}
+
+export default function CollegeDetailClient({
+  college,
+  initialBatches,
+  initialStudents,
+  initialCourses,
+  initialFaculty,
+}: CollegeDetailClientProps) {
+  const [activeTab, setActiveTab] = useState<number>(0);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [batches, setBatches] = useState<BatchItem[]>(initialBatches);
+  const [students] = useState<StudentRosterItem[]>(initialStudents);
+  const [faculty] = useState<FacultyCoordinatorItem[]>(initialFaculty);
+  const [courses] = useState<CourseAssignmentItem[]>(initialCourses);
+
+  // Filter & Pagination states for Tab 0: Batches & Cohorts
+  const [batchSearch, setBatchSearch] = useState('');
+  const [batchStatusFilter, setBatchStatusFilter] = useState('ALL');
+  const [batchPage, setBatchPage] = useState<number>(0);
+  const [batchRowsPerPage, setBatchRowsPerPage] = useState<number>(10);
+
+  // Filter & Pagination states for Tab 1: Student Roster
+  const [rosterSearch, setRosterSearch] = useState('');
+  const [rosterBatchFilter, setRosterBatchFilter] = useState('ALL');
+  const [rosterPage, setRosterPage] = useState<number>(0);
+  const [rosterRowsPerPage, setRosterRowsPerPage] = useState<number>(10);
+
+  // Filter & Pagination states for Tab 2: Assigned Courses
+  const [coursesSearch, setCoursesSearch] = useState('');
+  const [coursesLevelFilter, setCoursesLevelFilter] = useState('ALL');
+  const [coursesPage, setCoursesPage] = useState<number>(0);
+  const [coursesRowsPerPage, setCoursesRowsPerPage] = useState<number>(10);
+
+  // Filter & Pagination states for Tab 3: Faculty & Roles
+  const [facultySearch, setFacultySearch] = useState('');
+  const [facultyRoleFilter, setFacultyRoleFilter] = useState('ALL');
+  const [facultyPage, setFacultyPage] = useState<number>(0);
+  const [facultyRowsPerPage, setFacultyRowsPerPage] = useState<number>(10);
+
+  // Excel / CSV Export Menu state
+  const [downloadAnchorEl, setDownloadAnchorEl] = useState<null | HTMLElement>(null);
+
+  // Create Batch Modal State
+  const [isCreateBatchOpen, setIsCreateBatchOpen] = useState(false);
+  const [newBatchName, setNewBatchName] = useState('');
+  const [newBatchCode, setNewBatchCode] = useState('');
+  const [newBatchCapacity, setNewBatchCapacity] = useState(120);
+  const [newBatchFaculty, setNewBatchFaculty] = useState(faculty[0]?.name || 'Dr. Alex Mercer');
+
+  const handleOpenDownloadMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setDownloadAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseDownloadMenu = () => {
+    setDownloadAnchorEl(null);
+  };
+
+  const downloadCollegeReportExcel = () => {
+    const tableContent = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+      <head><meta charset="utf-8"/></head>
+      <body>
+        <h2>${college.name} (${college.code}) - Academic Report</h2>
+        <p>Domain: ${college.domain} | Region: ${college.region} | Tier: ${college.tier}</p>
+        <p>Students Enrolled: ${college.studentsCount} / ${college.maxQuota} quota</p>
+        <br/>
+        <h3>Student Roster & Performance</h3>
+        <table border="1">
+          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+            <th>Rank</th>
+            <th>Roll No</th>
+            <th>Student Name</th>
+            <th>Email</th>
+            <th>Batch / Cohort</th>
+            <th>Problems Solved</th>
+            <th>Accuracy</th>
+            <th>Streak (Days)</th>
+          </tr>
+          ${students.map(
+      (s) => `
+            <tr>
+              <td align="center">${s.rank}</td>
+              <td>${s.rollNo}</td>
+              <td>${s.name}</td>
+              <td>${s.email}</td>
+              <td>${s.batch}</td>
+              <td align="right">${s.problemsSolved}</td>
+              <td align="right">${s.accuracy}</td>
+              <td align="right">${s.streakDays}</td>
+            </tr>`
+    ).join('')}
+        </table>
+        <br/>
+        <h3>Active Batches & Cohorts</h3>
+        <table border="1">
+          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+            <th>Batch Code</th>
+            <th>Batch Name</th>
+            <th>Students Count</th>
+            <th>Capacity</th>
+            <th>Faculty Lead</th>
+            <th>Average Accuracy</th>
+          </tr>
+          ${batches.map(
+      (b) => `
+            <tr>
+              <td>${b.code}</td>
+              <td>${b.name}</td>
+              <td align="right">${b.studentsCount}</td>
+              <td align="right">${b.maxCapacity}</td>
+              <td>${b.facultyLead}</td>
+              <td align="right">${b.avgAccuracy}</td>
+            </tr>`
+    ).join('')}
+        </table>
+      </body>
+      </html>
+    `;
+    const blob = new Blob([tableContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${college.code.toLowerCase()}_academic_report_${new Date().toISOString().slice(0, 10)}.xls`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    handleCloseDownloadMenu();
+  };
+
+  const downloadCollegeReportCSV = () => {
+    const headers = ['Type', 'Identifier / Code', 'Name / Title', 'Detail / Email', 'Metric 1', 'Metric 2', 'Status'];
+    const studentRows = students.map((s) => [
+      '"Student"',
+      `"${s.rollNo}"`,
+      `"${s.name}"`,
+      `"${s.email}"`,
+      `"Solved: ${s.problemsSolved}"`,
+      `"Acc: ${s.accuracy}"`,
+      `"${s.status}"`,
+    ]);
+    const batchRows = batches.map((b) => [
+      '"Batch"',
+      `"${b.code}"`,
+      `"${b.name}"`,
+      `"Lead: ${b.facultyLead}"`,
+      `"Students: ${b.studentsCount}/${b.maxCapacity}"`,
+      `"Acc: ${b.avgAccuracy}"`,
+      `"${b.status}"`,
+    ]);
+
+    const csvContent = [headers.join(','), ...studentRows.map((r) => r.join(',')), ...batchRows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${college.code.toLowerCase()}_academic_report_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    handleCloseDownloadMenu();
+  };
+
+  const handleCreateBatchSubmit = () => {
+    if (!newBatchName || !newBatchCode) return;
+    const created: BatchItem = {
+      id: `batch-${Date.now()}`,
+      name: newBatchName,
+      code: newBatchCode,
+      studentsCount: 0,
+      maxCapacity: Number(newBatchCapacity) || 100,
+      facultyLead: newBatchFaculty,
+      coursesAssigned: 3,
+      year: '2026-2027',
+      status: 'Active',
+      avgAccuracy: '0.0%',
+    };
+    setBatches([created, ...batches]);
+    setIsCreateBatchOpen(false);
+    setNewBatchName('');
+    setNewBatchCode('');
+  };
+
+  // Filtered & Paginated Batches
+  const filteredBatches = batches.filter((b) => {
+    if (batchStatusFilter !== 'ALL' && b.status !== batchStatusFilter) return false;
+    if (
+      batchSearch &&
+      !b.name.toLowerCase().includes(batchSearch.toLowerCase()) &&
+      !b.code.toLowerCase().includes(batchSearch.toLowerCase()) &&
+      !b.facultyLead.toLowerCase().includes(batchSearch.toLowerCase())
+    ) {
+      return false;
+    }
+    return true;
+  });
+  const paginatedBatches = filteredBatches.slice(
+    batchPage * batchRowsPerPage,
+    batchPage * batchRowsPerPage + batchRowsPerPage
+  );
+
+  // Filtered & Paginated Roster
+  const filteredStudents = students.filter((s) => {
+    if (rosterBatchFilter !== 'ALL' && s.batch !== rosterBatchFilter) return false;
+    if (
+      rosterSearch &&
+      !s.name.toLowerCase().includes(rosterSearch.toLowerCase()) &&
+      !s.rollNo.toLowerCase().includes(rosterSearch.toLowerCase()) &&
+      !s.email.toLowerCase().includes(rosterSearch.toLowerCase())
+    ) {
+      return false;
+    }
+    return true;
+  });
+  const paginatedStudents = filteredStudents.slice(
+    rosterPage * rosterRowsPerPage,
+    rosterPage * rosterRowsPerPage + rosterRowsPerPage
+  );
+
+  // Filtered & Paginated Courses
+  const filteredCourses = courses.filter((c) => {
+    if (coursesLevelFilter !== 'ALL' && c.level !== coursesLevelFilter) return false;
+    if (
+      coursesSearch &&
+      !c.title.toLowerCase().includes(coursesSearch.toLowerCase()) &&
+      !c.code.toLowerCase().includes(coursesSearch.toLowerCase()) &&
+      !c.facultyInstructor.toLowerCase().includes(coursesSearch.toLowerCase())
+    ) {
+      return false;
+    }
+    return true;
+  });
+  const paginatedCourses = filteredCourses.slice(
+    coursesPage * coursesRowsPerPage,
+    coursesPage * coursesRowsPerPage + coursesRowsPerPage
+  );
+
+  // Filtered & Paginated Faculty
+  const filteredFaculty = faculty.filter((f) => {
+    if (facultyRoleFilter !== 'ALL' && f.role !== facultyRoleFilter) return false;
+    if (
+      facultySearch &&
+      !f.name.toLowerCase().includes(facultySearch.toLowerCase()) &&
+      !f.email.toLowerCase().includes(facultySearch.toLowerCase()) &&
+      !f.department.toLowerCase().includes(facultySearch.toLowerCase())
+    ) {
+      return false;
+    }
+    return true;
+  });
+  const paginatedFaculty = filteredFaculty.slice(
+    facultyPage * facultyRowsPerPage,
+    facultyPage * facultyRowsPerPage + facultyRowsPerPage
+  );
+
+  const quotaPercent = Math.round((college.studentsCount / college.maxQuota) * 100);
+  const borderColor = '#E2E8F0';
+
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        bgcolor: '#F4F5F7',
+        backgroundImage: `
+          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+        `,
+        color: '#0F172A',
+        p: { xs: 1.5, sm: 2, md: 2.5 },
+        pl: { xs: '82px', sm: '90px', md: '102px' },
+        gap: { xs: 2, md: 3 },
+      }}
+    >
+      {/* 1. Left Curved Navigation Sidebar */}
+      <FloatingSidebar />
+
+      {/* Main Content Area */}
+      <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Unified Layout Container: Navbar + Page Content */}
+        <Box sx={{ maxWidth: 1400, width: '100%', mx: 'auto', px: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 4, pb: { xs: 4, md: 6 } }}>
+          {/* 2. Top Header Navbar */}
+          <Navbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+
+          {/* Breadcrumb & Top Bar */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Button
+                component={Link}
+                href="/superadmin/colleges"
+                startIcon={<ArrowBackRoundedIcon sx={{ fontSize: 18 }} />}
+                sx={{
+                  color: '#64748B',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.84rem',
+                }}
+              >
+                Back to Colleges
+              </Button>
+              <Typography sx={{ color: '#94A3B8', fontSize: '0.85rem' }}>/</Typography>
+              <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.9rem' }}>
+                {college.name}
+              </Typography>
+            </Box>
+
+            {/* Actions: Export & Create Batch */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+              <Tooltip title="Export College Data">
+                <Button
+                  onClick={handleOpenDownloadMenu}
+                  startIcon={<FileDownloadRoundedIcon sx={{ fontSize: 18 }} />}
+                  sx={{
+                    bgcolor: '#FFFFFF',
+                    color: '#475569',
+                    border: `1px solid ${borderColor}`,
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '0.84rem',
+                    px: 1.75,
+                    py: 0.75,
+                    '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+                  }}
+                >
+                  Export Report
+                </Button>
+              </Tooltip>
+
+              <Menu
+                anchorEl={downloadAnchorEl}
+                open={Boolean(downloadAnchorEl)}
+                onClose={handleCloseDownloadMenu}
+                slotProps={{
+                  paper: {
+                    elevation: 4,
+                    sx: {
+                      borderRadius: '14px',
+                      border: '1px solid #E2E8F0',
+                      mt: 1,
+                      minWidth: 210,
+                      p: 0.5,
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.08)',
+                    },
+                  },
+                }}
+              >
+                <MenuItem onClick={downloadCollegeReportExcel} sx={{ borderRadius: '8px', py: 1 }}>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    <TableChartRoundedIcon sx={{ fontSize: 18, color: '#16A34A' }} />
+                  </ListItemIcon>
+                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
+                    Download Excel (.xls)
+                  </Typography>
+                </MenuItem>
+                <MenuItem onClick={downloadCollegeReportCSV} sx={{ borderRadius: '8px', py: 1 }}>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                  </ListItemIcon>
+                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
+                    Download CSV (.csv)
+                  </Typography>
+                </MenuItem>
+              </Menu>
+
+              <Button
+                variant="contained"
+                startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
+                onClick={() => setIsCreateBatchOpen(true)}
+                sx={{
+                  bgcolor: '#2563EB',
+                  color: '#FFFFFF',
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  px: 2.25,
+                  py: 0.75,
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
+                  '&:hover': { bgcolor: '#1D4ED8' },
+                }}
+              >
+                Create Batch / Cohort
+              </Button>
+            </Box>
+          </Box>
+
+          {/* College Header Card */}
+          {/* <Card
+            elevation={0}
+            sx={{
+              p: { xs: 2.5, md: 3.5 },
+              borderRadius: '20px',
+              bgcolor: '#FFFFFF',
+              border: `1px solid ${borderColor}`,
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 3,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5, minWidth: 0 }}>
+              <Avatar
+                sx={{
+                  width: 64,
+                  height: 64,
+                  bgcolor: college.logoColor,
+                  fontWeight: 900,
+                  fontSize: '1.3rem',
+                  color: '#FFFFFF',
+                  borderRadius: '16px',
+                  boxShadow: '0 4px 14px rgba(0, 0, 0, 0.12)',
+                }}
+              >
+                {college.code.split('-')[0].substring(0, 3)}
+              </Avatar>
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap' }}>
+                  <Typography variant="h4" sx={{ fontWeight: 800, fontSize: { xs: '1.25rem', md: '1.5rem' }, color: '#0F172A', letterSpacing: '-0.02em' }}>
+                    {college.name}
+                  </Typography>
+                  <Chip
+                    label={college.status}
+                    size="small"
+                    sx={{
+                      height: 22,
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      bgcolor: '#ECFDF5',
+                      border: '1px solid #A7F3D0',
+                      color: '#059669',
+                      borderRadius: '6px',
+                    }}
+                  />
+                </Box>
+                <Typography sx={{ color: '#64748B', fontSize: '0.84rem', mt: 0.4, display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{college.code}</span>
+                  <span>•</span>
+                  <span>@{college.domain}</span>
+                  <span>•</span>
+                  <span>{college.region}</span>
+                  <span>•</span>
+                  <strong style={{ color: '#2563EB' }}>{college.tier}</strong>
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ bgcolor: '#F8FAFC', border: `1px solid ${borderColor}`, borderRadius: '14px', p: 2, minWidth: 260 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.75 }}>
+                <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>
+                  Student Seat Quota
+                </Typography>
+                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>
+                  {college.studentsCount.toLocaleString()} / {college.maxQuota.toLocaleString()}{' '}
+                  <span style={{ color: '#2563EB' }}>({quotaPercent}%)</span>
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={Math.min(100, quotaPercent)}
+                sx={{
+                  height: 7,
+                  borderRadius: 4,
+                  bgcolor: '#E2E8F0',
+                  '& .MuiLinearProgress-bar': {
+                    bgcolor: quotaPercent > 90 ? '#EF4444' : '#2563EB',
+                    borderRadius: 4,
+                  },
+                }}
+              />
+            </Box>
+          </Card> */}
+
+          {/* 4 Summary Metric Cards */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
+            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Enrolled Students
+              </Typography>
+              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
+                {college.studentsCount.toLocaleString()}
+              </Typography>
+              <Typography sx={{ fontSize: '0.74rem', color: '#059669', fontWeight: 600, mt: 0.25 }}>
+                Active in 8 Cohorts
+              </Typography>
+            </Card>
+
+            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Active Batches
+              </Typography>
+              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#2563EB', mt: 0.5, letterSpacing: '-0.02em' }}>
+                {batches.length}
+              </Typography>
+              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
+                100% Assigned to Mentors
+              </Typography>
+            </Card>
+
+            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Assigned Courses
+              </Typography>
+              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#7C3AED', mt: 0.5, letterSpacing: '-0.02em' }}>
+                {courses.length}
+              </Typography>
+              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
+                Curriculum tracks & labs
+              </Typography>
+            </Card>
+
+            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Faculty Coordinators
+              </Typography>
+              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#D97706', mt: 0.5, letterSpacing: '-0.02em' }}>
+                {faculty.length}
+              </Typography>
+              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
+                Department leads
+              </Typography>
+            </Card>
+          </Box>
+
+          {/* Navigation Tabs */}
+          <Box sx={{ borderBottom: `1px solid ${borderColor}` }}>
+            <Tabs
+              value={activeTab}
+              onChange={(_, val) => setActiveTab(val)}
+              sx={{
+                '& .MuiTab-root': {
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  color: '#64748B',
+                  minHeight: 48,
+                  px: 2.5,
+                  '&.Mui-selected': { color: '#2563EB' },
+                },
+                '& .MuiTabs-indicator': {
+                  bgcolor: '#2563EB',
+                  height: 3,
+                  borderRadius: '3px 3px 0 0',
+                },
+              }}
+            >
+              <Tab icon={<SchoolRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Batches & Cohorts" />
+              <Tab icon={<PeopleAltRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Student Roster" />
+              <Tab icon={<MenuBookRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Assigned Courses" />
+              <Tab icon={<SecurityRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Faculty & Roles" />
+              <Tab icon={<SettingsRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Tenant Settings" />
+            </Tabs>
+          </Box>
+
+          {/* TAB 0: Batches & Cohorts Table */}
+          {activeTab === 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Batches Filter bar */}
+              <Card elevation={0} sx={{ p: 2, px: 2.5, borderRadius: '14px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, flexWrap: 'wrap' }}>
+                  <TextField
+                    size="small"
+                    placeholder="Search batch by name, code, mentor..."
+                    value={batchSearch}
+                    onChange={(e) => {
+                      setBatchSearch(e.target.value);
+                      setBatchPage(0);
+                    }}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                    sx={{
+                      minWidth: { xs: '100%', sm: 280 },
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        bgcolor: '#F8FAFC',
+                        fontSize: '0.84rem',
+                        height: 36,
+                        '& fieldset': { borderColor: '#E2E8F0' },
+                      },
+                    }}
+                  />
+
+                  <Select
+                    size="small"
+                    value={batchStatusFilter}
+                    onChange={(e) => {
+                      setBatchStatusFilter(e.target.value);
+                      setBatchPage(0);
+                    }}
+                    sx={{
+                      height: 36,
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      bgcolor: '#F8FAFC',
+                      borderRadius: '8px',
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                    }}
+                  >
+                    <MenuItem value="ALL">All Statuses</MenuItem>
+                    <MenuItem value="Active">Active</MenuItem>
+                    <MenuItem value="Upcoming">Upcoming</MenuItem>
+                    <MenuItem value="Completed">Completed</MenuItem>
+                  </Select>
+                </Box>
+
+                <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
+                  Showing <strong style={{ color: '#0F172A' }}>{filteredBatches.length}</strong> batches
+                </Typography>
+              </Card>
+
+              {/* Batches Table */}
+              <Card elevation={0} sx={{ borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead sx={{ bgcolor: '#F8FAFC' }}>
+                      <TableRow>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pl: 3, py: 1.5 }}>BATCH / COHORT</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>YEAR</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, minWidth: 200 }}>CAPACITY & UTILIZATION</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>FACULTY LEAD</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>COURSES</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>STATUS</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5 }}>ACTIONS</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedBatches.map((batch) => {
+                        const capPercent = Math.round((batch.studentsCount / batch.maxCapacity) * 100);
+
+                        return (
+                          <TableRow key={batch.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
+                            <TableCell sx={{ pl: 3, py: 1.75 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                                <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  <SchoolRoundedIcon sx={{ fontSize: 18 }} />
+                                </Box>
+                                <Box>
+                                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A' }}>{batch.name}</Typography>
+                                  <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontFamily: 'monospace' }}>{batch.code}</Typography>
+                                </Box>
+                              </Box>
+                            </TableCell>
+                            <TableCell sx={{ py: 1.75 }}>
+                              <Chip label={batch.year} size="small" sx={{ height: 22, fontSize: '0.72rem', fontWeight: 600, bgcolor: '#F1F5F9', color: '#475569', borderRadius: '5px' }} />
+                            </TableCell>
+                            <TableCell sx={{ py: 1.75 }}>
+                              <Box sx={{ minWidth: 160 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A' }}>
+                                    {batch.studentsCount} / {batch.maxCapacity} students
+                                  </Typography>
+                                  <Typography sx={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700 }}>
+                                    {capPercent}%
+                                  </Typography>
+                                </Box>
+                                <LinearProgress
+                                  variant="determinate"
+                                  value={Math.min(100, capPercent)}
+                                  sx={{ height: 5, borderRadius: 3, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { bgcolor: '#2563EB', borderRadius: 3 } }}
+                                />
+                              </Box>
+                            </TableCell>
+                            <TableCell sx={{ py: 1.75 }}>
+                              <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: '#334155' }}>
+                                {batch.facultyLead}
+                              </Typography>
+                            </TableCell>
+                            <TableCell sx={{ py: 1.75 }}>
+                              <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>
+                                {batch.coursesAssigned} Courses Assigned
+                              </Typography>
+                            </TableCell>
+                            <TableCell sx={{ py: 1.75 }}>
+                              <Chip
+                                label={batch.status}
+                                size="small"
+                                sx={{
+                                  height: 22,
+                                  fontSize: '0.7rem',
+                                  fontWeight: 700,
+                                  bgcolor: batch.status === 'Active' ? '#ECFDF5' : '#EFF6FF',
+                                  border: batch.status === 'Active' ? '1px solid #A7F3D0' : '1px solid #DBEAFE',
+                                  color: batch.status === 'Active' ? '#059669' : '#2563EB',
+                                  borderRadius: '5px',
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                endIcon={<FluidArrowRight size={14} />}
+                                onClick={() => {
+                                  setRosterBatchFilter(batch.name);
+                                  setActiveTab(1);
+                                }}
+                                sx={{
+                                  textTransform: 'none',
+                                  fontWeight: 700,
+                                  fontSize: '0.76rem',
+                                  color: '#2563EB',
+                                  borderColor: '#DBEAFE',
+                                  bgcolor: '#EFF6FF',
+                                  borderRadius: '6px',
+                                  px: 1.5,
+                                  py: 0.4,
+                                  '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                                }}
+                              >
+                                View Roster
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Card>
+
+              {/* Batches Pagination */}
+              <PaginationToolbar
+                totalEntries={filteredBatches.length}
+                currentPage={batchPage}
+                rowsPerPage={batchRowsPerPage}
+                onPageChange={setBatchPage}
+                onRowsPerPageChange={setBatchRowsPerPage}
+                itemLabel="batches"
+                rowsOptions={[5, 10, 20]}
+              />
+            </Box>
+          )}
+
+          {/* TAB 1: Student Roster */}
+          {activeTab === 1 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Filter bar */}
+              <Card elevation={0} sx={{ p: 2, px: 2.5, borderRadius: '14px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, flexWrap: 'wrap' }}>
+                  <TextField
+                    size="small"
+                    placeholder="Search student by name, roll no, email..."
+                    value={rosterSearch}
+                    onChange={(e) => {
+                      setRosterSearch(e.target.value);
+                      setRosterPage(0);
+                    }}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                    sx={{
+                      minWidth: { xs: '100%', sm: 280 },
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        bgcolor: '#F8FAFC',
+                        fontSize: '0.84rem',
+                        height: 36,
+                        '& fieldset': { borderColor: '#E2E8F0' },
+                      },
+                    }}
+                  />
+
+                  <Select
+                    size="small"
+                    value={rosterBatchFilter}
+                    onChange={(e) => {
+                      setRosterBatchFilter(e.target.value);
+                      setRosterPage(0);
+                    }}
+                    sx={{
+                      height: 36,
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      bgcolor: '#F8FAFC',
+                      borderRadius: '8px',
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                    }}
+                  >
+                    <MenuItem value="ALL">All Batches</MenuItem>
+                    {batches.map((b) => (
+                      <MenuItem key={b.id} value={b.name}>{b.name}</MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+
+                <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
+                  Showing <strong style={{ color: '#0F172A' }}>{filteredStudents.length}</strong> students
+                </Typography>
+              </Card>
+
+              {/* Roster Table */}
+              <Card elevation={0} sx={{ borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, overflow: 'hidden' }}>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead sx={{ bgcolor: '#F8FAFC' }}>
+                      <TableRow>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pl: 3, py: 1.5 }}>STUDENT</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>ROLL NO</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>BATCH</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>PROBLEMS SOLVED</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>ACCURACY</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>STREAK</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5 }}>RANK</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedStudents.map((s) => (
+                        <TableRow key={s.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
+                          <TableCell sx={{ pl: 3, py: 1.6 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                              <Avatar sx={{ width: 32, height: 32, bgcolor: '#2563EB', fontSize: '0.76rem', fontWeight: 700 }}>
+                                {s.name.substring(0, 2).toUpperCase()}
+                              </Avatar>
+                              <Box>
+                                <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#0F172A' }}>{s.name}</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>{s.email}</Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell sx={{ py: 1.6, fontFamily: 'monospace', fontSize: '0.8rem', color: '#475569' }}>
+                            {s.rollNo}
+                          </TableCell>
+                          <TableCell sx={{ py: 1.6 }}>
+                            <Chip label={s.batch} size="small" sx={{ height: 22, fontSize: '0.72rem', bgcolor: '#F1F5F9', color: '#334155', borderRadius: '5px' }} />
+                          </TableCell>
+                          <TableCell sx={{ py: 1.6 }}>
+                            <Typography sx={{ fontSize: '0.86rem', fontWeight: 800, color: '#0F172A' }}>
+                              {s.problemsSolved}{' '}
+                              <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 500 }}>solved</span>
+                            </Typography>
+                          </TableCell>
+                          <TableCell sx={{ py: 1.6 }}>
+                            <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#059669' }}>
+                              {s.accuracy}
+                            </Typography>
+                          </TableCell>
+                          <TableCell sx={{ py: 1.6 }}>
+                            <Chip label={`🔥 ${s.streakDays} days`} size="small" sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, bgcolor: '#FFFBEB', color: '#D97706', border: '1px solid #FEF3C7', borderRadius: '5px' }} />
+                          </TableCell>
+                          <TableCell align="right" sx={{ pr: 3, py: 1.6 }}>
+                            <Typography sx={{ fontSize: '0.9rem', fontWeight: 900, color: s.rank <= 3 ? '#2563EB' : '#64748B' }}>
+                              #{s.rank}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Card>
+
+              {/* Roster Pagination Toolbar */}
+              <PaginationToolbar
+                totalEntries={filteredStudents.length}
+                currentPage={rosterPage}
+                rowsPerPage={rosterRowsPerPage}
+                onPageChange={setRosterPage}
+                onRowsPerPageChange={setRosterRowsPerPage}
+                itemLabel="students"
+                rowsOptions={[5, 10, 25, 50]}
+              />
+            </Box>
+          )}
+
+          {/* TAB 2: Assigned Courses Table */}
+          {activeTab === 2 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Courses Filter bar */}
+              <Card elevation={0} sx={{ p: 2, px: 2.5, borderRadius: '14px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, flexWrap: 'wrap' }}>
+                  <TextField
+                    size="small"
+                    placeholder="Search course by name, code, instructor..."
+                    value={coursesSearch}
+                    onChange={(e) => {
+                      setCoursesSearch(e.target.value);
+                      setCoursesPage(0);
+                    }}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                    sx={{
+                      minWidth: { xs: '100%', sm: 280 },
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        bgcolor: '#F8FAFC',
+                        fontSize: '0.84rem',
+                        height: 36,
+                        '& fieldset': { borderColor: '#E2E8F0' },
+                      },
+                    }}
+                  />
+
+                  <Select
+                    size="small"
+                    value={coursesLevelFilter}
+                    onChange={(e) => {
+                      setCoursesLevelFilter(e.target.value);
+                      setCoursesPage(0);
+                    }}
+                    sx={{
+                      height: 36,
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      bgcolor: '#F8FAFC',
+                      borderRadius: '8px',
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                    }}
+                  >
+                    <MenuItem value="ALL">All Levels</MenuItem>
+                    <MenuItem value="Beginner">Beginner</MenuItem>
+                    <MenuItem value="Intermediate">Intermediate</MenuItem>
+                    <MenuItem value="Advanced">Advanced</MenuItem>
+                  </Select>
+                </Box>
+
+                <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
+                  Showing <strong style={{ color: '#0F172A' }}>{filteredCourses.length}</strong> courses
+                </Typography>
+              </Card>
+
+              {/* Courses Table */}
+              <Card elevation={0} sx={{ borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead sx={{ bgcolor: '#F8FAFC' }}>
+                      <TableRow>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pl: 3, py: 1.5 }}>COURSE NAME & CODE</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>LEVEL</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>ENROLLED STUDENTS</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, minWidth: 180 }}>COMPLETION RATE</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>INSTRUCTOR</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5 }}>MODULES</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedCourses.map((course) => (
+                        <TableRow key={course.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
+                          <TableCell sx={{ pl: 3, py: 1.75 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                              <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <CodeRoundedIcon sx={{ fontSize: 18 }} />
+                              </Box>
+                              <Box>
+                                <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A' }}>{course.title}</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontFamily: 'monospace' }}>{course.code}</Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell sx={{ py: 1.75 }}>
+                            <Chip
+                              label={course.level}
+                              size="small"
+                              sx={{
+                                height: 22,
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                bgcolor: course.level === 'Advanced' ? '#FEF2F2' : course.level === 'Intermediate' ? '#FFFBEB' : '#ECFDF5',
+                                color: course.level === 'Advanced' ? '#DC2626' : course.level === 'Intermediate' ? '#D97706' : '#059669',
+                                borderRadius: '5px',
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ py: 1.75 }}>
+                            <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>
+                              {course.enrolledStudents.toLocaleString()}
+                            </Typography>
+                            <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>Students Active</Typography>
+                          </TableCell>
+                          <TableCell sx={{ py: 1.75 }}>
+                            <Box sx={{ minWidth: 140 }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                                <Typography sx={{ fontSize: '0.76rem', fontWeight: 700, color: '#0F172A' }}>
+                                  {course.completionRate}
+                                </Typography>
+                              </Box>
+                              <LinearProgress
+                                variant="determinate"
+                                value={parseFloat(course.completionRate) || 70}
+                                sx={{ height: 5, borderRadius: 3, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { bgcolor: '#10B981', borderRadius: 3 } }}
+                              />
+                            </Box>
+                          </TableCell>
+                          <TableCell sx={{ py: 1.75 }}>
+                            <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: '#334155' }}>
+                              {course.facultyInstructor}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
+                            <Chip
+                              label={`${course.modulesCount} Modules`}
+                              size="small"
+                              sx={{ height: 22, fontSize: '0.72rem', fontWeight: 600, bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', borderRadius: '5px' }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Card>
+
+              {/* Courses Pagination */}
+              <PaginationToolbar
+                totalEntries={filteredCourses.length}
+                currentPage={coursesPage}
+                rowsPerPage={coursesRowsPerPage}
+                onPageChange={setCoursesPage}
+                onRowsPerPageChange={setCoursesRowsPerPage}
+                itemLabel="courses"
+                rowsOptions={[5, 10, 20]}
+              />
+            </Box>
+          )}
+
+          {/* TAB 3: Faculty & Roles Table */}
+          {activeTab === 3 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Faculty Filter bar */}
+              <Card elevation={0} sx={{ p: 2, px: 2.5, borderRadius: '14px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, flexWrap: 'wrap' }}>
+                  <TextField
+                    size="small"
+                    placeholder="Search faculty by name, email, department..."
+                    value={facultySearch}
+                    onChange={(e) => {
+                      setFacultySearch(e.target.value);
+                      setFacultyPage(0);
+                    }}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                    sx={{
+                      minWidth: { xs: '100%', sm: 280 },
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '8px',
+                        bgcolor: '#F8FAFC',
+                        fontSize: '0.84rem',
+                        height: 36,
+                        '& fieldset': { borderColor: '#E2E8F0' },
+                      },
+                    }}
+                  />
+
+                  <Select
+                    size="small"
+                    value={facultyRoleFilter}
+                    onChange={(e) => {
+                      setFacultyRoleFilter(e.target.value);
+                      setFacultyPage(0);
+                    }}
+                    sx={{
+                      height: 36,
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      bgcolor: '#F8FAFC',
+                      borderRadius: '8px',
+                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                    }}
+                  >
+                    <MenuItem value="ALL">All Roles</MenuItem>
+                    <MenuItem value="Department Head">Department Head</MenuItem>
+                    <MenuItem value="Senior Mentor">Senior Mentor</MenuItem>
+                    <MenuItem value="Lab Instructor">Lab Instructor</MenuItem>
+                  </Select>
+                </Box>
+
+                <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
+                  Showing <strong style={{ color: '#0F172A' }}>{filteredFaculty.length}</strong> faculty members
+                </Typography>
+              </Card>
+
+              {/* Faculty Table */}
+              <Card elevation={0} sx={{ borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead sx={{ bgcolor: '#F8FAFC' }}>
+                      <TableRow>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pl: 3, py: 1.5 }}>FACULTY COORDINATOR</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>ROLE</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>DEPARTMENT</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>ASSIGNED BATCHES</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5 }}>ACTIVE COURSES</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {paginatedFaculty.map((f, idx) => (
+                        <TableRow key={idx} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
+                          <TableCell sx={{ pl: 3, py: 1.75 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                              <Avatar sx={{ width: 34, height: 34, bgcolor: '#3B82F6', fontWeight: 800, fontSize: '0.8rem' }}>
+                                {f.name.split(' ').map((n) => n[0]).join('').substring(0, 2)}
+                              </Avatar>
+                              <Box>
+                                <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A' }}>{f.name}</Typography>
+                                <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>{f.email}</Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell sx={{ py: 1.75 }}>
+                            <Chip label={f.role} size="small" sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#EFF6FF', color: '#2563EB', borderRadius: '5px' }} />
+                          </TableCell>
+                          <TableCell sx={{ py: 1.75 }}>
+                            <Chip label={f.department} size="small" sx={{ height: 22, fontSize: '0.7rem', bgcolor: '#F1F5F9', color: '#475569', borderRadius: '5px' }} />
+                          </TableCell>
+                          <TableCell sx={{ py: 1.75 }}>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                              {f.batchesAssigned.map((bName, bIdx) => (
+                                <Chip key={bIdx} label={bName} size="small" sx={{ height: 20, fontSize: '0.68rem', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', color: '#334155', borderRadius: '4px' }} />
+                              ))}
+                            </Box>
+                          </TableCell>
+                          <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
+                            <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>
+                              {f.activeCourses} Courses
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Card>
+
+              {/* Faculty Pagination */}
+              <PaginationToolbar
+                totalEntries={filteredFaculty.length}
+                currentPage={facultyPage}
+                rowsPerPage={facultyRowsPerPage}
+                onPageChange={setFacultyPage}
+                onRowsPerPageChange={setFacultyRowsPerPage}
+                itemLabel="faculty members"
+                rowsOptions={[5, 10, 20]}
+              />
+            </Box>
+          )}
+
+          {/* TAB 4: Tenant Settings & Quota */}
+          {activeTab === 4 && (
+            <Card elevation={0} sx={{ p: 3.5, borderRadius: '20px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.15rem' }}>
+                Multi-Tenant Organization Configuration
+              </Typography>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                <Box sx={{ p: 2.5, borderRadius: '12px', bgcolor: '#F8FAFC', border: `1px solid ${borderColor}` }}>
+                  <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#0F172A', mb: 1 }}>
+                    Domain Verification & Auto-Roster
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.78rem', color: '#64748B', mb: 2 }}>
+                    Students with verified email addresses under <strong>@{college.domain}</strong> automatically gain seat access.
+                  </Typography>
+                  <Chip icon={<CheckCircleRoundedIcon sx={{ fontSize: 16 }} />} label="Domain Active & Verified" color="success" size="small" />
+                </Box>
+
+                <Box sx={{ p: 2.5, borderRadius: '12px', bgcolor: '#F8FAFC', border: `1px solid ${borderColor}` }}>
+                  <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#0F172A', mb: 1 }}>
+                    Single Sign-On (SAML / Google Workspace)
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.78rem', color: '#64748B', mb: 2 }}>
+                    Allow faculty and students to authenticate via college identity provider (IdP).
+                  </Typography>
+                  <Chip label="SAML 2.0 Enabled" sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700 }} size="small" />
+                </Box>
+              </Box>
+            </Card>
+          )}
+        </Box>
+      </Box>
+
+      {/* Create Batch Modal Dialog */}
+      <Dialog
+        open={isCreateBatchOpen}
+        onClose={() => setIsCreateBatchOpen(false)}
+        slotProps={{
+          paper: {
+            sx: { borderRadius: '18px', width: '100%', maxWidth: 480, p: 1 },
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.2rem', color: '#0F172A' }}>
+          Create New Student Batch / Cohort
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, px: 3, pt: '24px !important', pb: 2.5 }}>
+          <TextField
+            label="Batch Name"
+            placeholder="e.g. Batch 2026 - CS Alpha"
+            fullWidth
+            size="small"
+            value={newBatchName}
+            onChange={(e) => setNewBatchName(e.target.value)}
+          />
+          <TextField
+            label="Batch Code"
+            placeholder="e.g. STAN-2026-A"
+            fullWidth
+            size="small"
+            value={newBatchCode}
+            onChange={(e) => setNewBatchCode(e.target.value)}
+          />
+          <TextField
+            label="Student Capacity"
+            type="number"
+            fullWidth
+            size="small"
+            value={newBatchCapacity}
+            onChange={(e) => setNewBatchCapacity(Number(e.target.value))}
+          />
+          <Box>
+            <Typography sx={{ fontSize: '0.76rem', fontWeight: 600, color: '#64748B', mb: 0.5 }}>
+              Faculty Mentor Lead
+            </Typography>
+            <Select
+              fullWidth
+              size="small"
+              value={newBatchFaculty}
+              onChange={(e) => setNewBatchFaculty(e.target.value)}
+              sx={{ borderRadius: '8px', fontSize: '0.85rem' }}
+            >
+              {faculty.map((f) => (
+                <MenuItem key={f.id} value={f.name}>
+                  {f.name} ({f.department})
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setIsCreateBatchOpen(false)} sx={{ textTransform: 'none', color: '#64748B', fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleCreateBatchSubmit}
+            sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5 }}
+          >
+            Create Batch
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+}

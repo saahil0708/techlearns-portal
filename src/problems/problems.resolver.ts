@@ -1,0 +1,97 @@
+import { UseGuards } from '@nestjs/common';
+import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { ProblemDifficulty, ProblemStatus, Role } from '@prisma/client';
+import { GqlCurrentUser } from '../common/decorators/gql-user.decorator.js';
+import { Roles } from '../common/decorators/roles.decorator.js';
+import { PaginationArgs } from '../common/graphql/pagination.args.js';
+import { GqlAuthGuard } from '../common/guards/gql-auth.guard.js';
+import { GqlRolesGuard } from '../common/guards/gql-roles.guard.js';
+import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
+import { CreateProblemInput } from './dto/create-problem.input.js';
+import { CreateTestCaseInput } from './dto/create-test-case.input.js';
+import { UpdateProblemInput } from './dto/update-problem.input.js';
+import { ProblemsService } from './problems.service.js';
+import { ProblemType } from './types/problem.type.js';
+import { ProblemsConnection } from './types/problems-connection.type.js';
+import { TestCaseType } from './types/test-case.type.js';
+
+@Resolver(() => ProblemType)
+export class ProblemsResolver {
+  constructor(private problemsService: ProblemsService) {}
+
+  @Query(() => ProblemsConnection, { name: 'problems' })
+  async getProblems(
+    @Args() paginationArgs: PaginationArgs,
+    @Args('difficulty', { type: () => ProblemDifficulty, nullable: true })
+    difficulty?: ProblemDifficulty,
+    @Args('status', { type: () => ProblemStatus, nullable: true })
+    status?: ProblemStatus,
+    @Args('collegeId', { type: () => String, nullable: true })
+    collegeId?: string,
+  ) {
+    return this.problemsService.findPaginated(
+      paginationArgs,
+      difficulty,
+      status,
+      collegeId,
+    );
+  }
+
+  @Query(() => ProblemType, { name: 'problem', nullable: true })
+  async getProblem(
+    @Args('idOrSlug', { type: () => String }) idOrSlug: string,
+    @GqlCurrentUser() currentUser?: CurrentUserPayload,
+  ) {
+    return this.problemsService.findByIdOrSlug(idOrSlug, currentUser);
+  }
+
+  @Query(() => [TestCaseType], { name: 'problemTestCases' })
+  @UseGuards(GqlAuthGuard)
+  async getProblemTestCases(
+    @Args('problemId', { type: () => ID }) problemId: string,
+    @GqlCurrentUser() currentUser?: CurrentUserPayload,
+  ) {
+    const isSuperAdmin =
+      currentUser?.globalRole === Role.SUPER_ADMIN ||
+      currentUser?.globalRole === Role.PLATFORM_ADMIN ||
+      currentUser?.globalRole === Role.FACULTY;
+    return this.problemsService.getTestCases(problemId, isSuperAdmin);
+  }
+
+  @Mutation(() => ProblemType, { name: 'createProblem' })
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY)
+  async createProblem(
+    @Args('input') input: CreateProblemInput,
+    @GqlCurrentUser() currentUser: CurrentUserPayload,
+  ) {
+    return this.problemsService.create(input, currentUser.id);
+  }
+
+  @Mutation(() => ProblemType, { name: 'updateProblem' })
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY)
+  async updateProblem(
+    @Args('id', { type: () => ID }) id: string,
+    @Args('input') input: UpdateProblemInput,
+  ) {
+    return this.problemsService.update(id, input);
+  }
+
+  @Mutation(() => Boolean, { name: 'deleteProblem' })
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN)
+  async deleteProblem(@Args('id', { type: () => ID }) id: string) {
+    return this.problemsService.delete(id);
+  }
+
+  @Mutation(() => TestCaseType, { name: 'addProblemTestCase' })
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY)
+  async addProblemTestCase(
+    @Args('problemId', { type: () => ID }) problemId: string,
+    @Args('input') input: CreateTestCaseInput,
+  ) {
+    return this.problemsService.addTestCase(problemId, input);
+  }
+}

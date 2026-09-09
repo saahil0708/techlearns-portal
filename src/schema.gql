@@ -1,0 +1,462 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input AddCollegeMemberInput {
+  role: Role! = STUDENT
+  userId: String!
+}
+
+input AddContestProblemInput {
+  order: Int = 0
+  points: Int = 100
+  problemId: ID!
+}
+
+input BulkInviteItemInput {
+  collegeId: String
+  email: String!
+  name: String!
+  role: Role! = STUDENT
+}
+
+input BulkInviteUsersInput {
+  users: [BulkInviteItemInput!]!
+}
+
+type College {
+  _count: CollegeCounts
+  address: String
+  code: String!
+  createdAt: DateTime!
+  email: String
+  id: ID!
+  name: String!
+  phone: String
+  status: CollegeStatus!
+  updatedAt: DateTime!
+}
+
+type CollegeCounts {
+  batches: Int!
+  contests: Int
+  courses: Int!
+  memberships: Int!
+  problems: Int!
+}
+
+"""Higher-ed and school organization status"""
+enum CollegeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+type CollegesConnection {
+  items: [College!]!
+  meta: PaginationMeta!
+}
+
+type Contest {
+  _count: ContestCounts
+  collegeId: String
+  createdAt: DateTime!
+  createdById: String!
+  description: String
+  endTime: DateTime!
+  id: ID!
+  problems: [ContestProblem!]
+  registrations: [ContestRegistration!]
+  startTime: DateTime!
+  status: ContestStatus!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type ContestCounts {
+  problems: Int!
+  registrations: Int!
+  submissions: Int!
+}
+
+type ContestProblem {
+  contestId: String!
+  id: ID!
+  order: Int!
+  points: Int!
+  problem: Problem
+  problemId: String!
+}
+
+type ContestRegistration {
+  contestId: String!
+  id: ID!
+  registeredAt: DateTime!
+  user: User
+  userId: String!
+}
+
+"""Competitive contest lifecycle status"""
+enum ContestStatus {
+  CANCELLED
+  COMPLETED
+  ONGOING
+  UPCOMING
+}
+
+type ContestsConnection {
+  items: [Contest!]!
+  meta: PaginationMeta!
+}
+
+type Course {
+  _count: CourseCounts
+  collegeId: String
+  createdAt: DateTime!
+  createdById: String!
+  description: String
+  id: ID!
+  modules: [Module!]
+  status: CourseStatus!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type CourseCounts {
+  enrollments: Int!
+  modules: Int!
+}
+
+"""Curriculum course lifecycle status"""
+enum CourseStatus {
+  ARCHIVED
+  DRAFT
+  PUBLISHED
+}
+
+type CoursesConnection {
+  items: [Course!]!
+  meta: PaginationMeta!
+}
+
+input CreateCollegeInput {
+  address: String
+  code: String!
+  email: String
+  name: String!
+  phone: String
+  status: CollegeStatus = ACTIVE
+}
+
+input CreateContestInput {
+  collegeId: String
+  description: String
+  endTime: DateTime!
+  startTime: DateTime!
+  status: ContestStatus = UPCOMING
+  title: String!
+}
+
+input CreateCourseInput {
+  collegeId: String
+  description: String
+  status: CourseStatus = DRAFT
+  title: String!
+}
+
+input CreateProblemInput {
+  collegeId: String
+  constraints: String! = ""
+  difficulty: ProblemDifficulty! = MEDIUM
+  inputFormat: String! = ""
+  memoryLimit: Int! = 256
+  outputFormat: String! = ""
+  slug: String
+  statement: String!
+  status: ProblemStatus = PUBLISHED
+  testCases: [CreateTestCaseInput!]
+  timeLimit: Int! = 1000
+  title: String!
+}
+
+input CreateSubmissionInput {
+  contestId: ID
+  language: ProgrammingLanguage!
+  problemId: ID!
+  sourceCode: String!
+}
+
+input CreateTestCaseInput {
+  expectedOutput: String!
+  explanation: String
+  input: String!
+  isHidden: Boolean = true
+  order: Int = 0
+}
+
+input CreateUserInput {
+  collegeId: String
+  email: String!
+  globalRole: Role = STUDENT
+  name: String!
+  password: String!
+  status: UserStatus = ACTIVE
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Lesson {
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  moduleId: String!
+  order: Int!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type Module {
+  courseId: String!
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  lessons: [Lesson!]
+  order: Int!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type Mutation {
+  addCollegeMember(collegeId: ID!, input: AddCollegeMemberInput!): Boolean!
+  addContestProblem(contestId: ID!, input: AddContestProblemInput!): ContestProblem!
+  addProblemTestCase(input: CreateTestCaseInput!, problemId: ID!): TestCase!
+  bulkInviteUsers(input: BulkInviteUsersInput!): [User!]!
+  createCollege(input: CreateCollegeInput!): College!
+  createContest(input: CreateContestInput!): Contest!
+  createCourse(input: CreateCourseInput!): Course!
+  createProblem(input: CreateProblemInput!): Problem!
+  createUser(input: CreateUserInput!): User!
+  deleteCollege(id: ID!): Boolean!
+  deleteContest(id: ID!): Boolean!
+  deleteCourse(id: ID!): Boolean!
+  deleteProblem(id: ID!): Boolean!
+  deleteUser(id: ID!): Boolean!
+  registerForContest(contestId: ID!): ContestRegistration!
+  removeCollegeMember(collegeId: ID!, userId: ID!): Boolean!
+  submitCode(input: CreateSubmissionInput!): Submission!
+  updateCollege(id: ID!, input: UpdateCollegeInput!): College!
+  updateContest(id: ID!, input: UpdateContestInput!): Contest!
+  updateCourse(id: ID!, input: UpdateCourseInput!): Course!
+  updateProblem(id: ID!, input: UpdateProblemInput!): Problem!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+}
+
+type PaginationMeta {
+  limit: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+type Problem {
+  _count: ProblemCounts
+  collegeId: String
+  constraints: String!
+  createdAt: DateTime!
+  createdById: String!
+  difficulty: ProblemDifficulty!
+  id: ID!
+  inputFormat: String!
+  memoryLimit: Int!
+  outputFormat: String!
+  slug: String!
+  statement: String!
+  status: ProblemStatus!
+  testCases: [TestCase!]
+  timeLimit: Int!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type ProblemCounts {
+  submissions: Int!
+  testCases: Int!
+}
+
+"""Problem difficulty rating"""
+enum ProblemDifficulty {
+  EASY
+  HARD
+  MEDIUM
+}
+
+"""Coding problem publication status"""
+enum ProblemStatus {
+  ARCHIVED
+  DRAFT
+  PUBLISHED
+}
+
+type ProblemsConnection {
+  items: [Problem!]!
+  meta: PaginationMeta!
+}
+
+"""Supported code execution programming languages"""
+enum ProgrammingLanguage {
+  C
+  CPP
+  JAVA
+  JAVASCRIPT
+  PYTHON
+}
+
+type Query {
+  college(id: ID!): College
+  colleges(limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: CollegeStatus): CollegesConnection!
+  contest(id: ID!): Contest
+  contests(collegeId: String, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: ContestStatus): ContestsConnection!
+  course(id: ID!): Course
+  courses(collegeId: String, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: CourseStatus): CoursesConnection!
+  liveSubmissions(limit: Int = 20): [Submission!]!
+  me: User!
+  problem(idOrSlug: String!): Problem
+  problemTestCases(problemId: ID!): [TestCase!]!
+  problems(collegeId: String, difficulty: ProblemDifficulty, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: ProblemStatus): ProblemsConnection!
+  submission(id: ID!): Submission
+  submissions(contestId: String, language: ProgrammingLanguage, limit: Int = 10, page: Int = 1, problemId: String, search: String, sortBy: String, sortOrder: String = "desc", userId: String, verdict: SubmissionVerdict): SubmissionsConnection!
+  user(id: ID!): User
+  users(collegeId: String, limit: Int = 10, page: Int = 1, role: Role, search: String, sortBy: String, sortOrder: String = "desc", status: UserStatus): UsersConnection!
+}
+
+"""System-wide and institution user roles"""
+enum Role {
+  COLLEGE_ADMIN
+  FACULTY
+  PLATFORM_ADMIN
+  STUDENT
+  SUPER_ADMIN
+}
+
+type Submission {
+  contestId: String
+  createdAt: DateTime!
+  errorMessage: String
+  id: ID!
+  language: ProgrammingLanguage!
+  memory: Int
+  passedTestCases: Int!
+  problem: Problem
+  problemId: String!
+  runtime: Int
+  sourceCode: String!
+  status: SubmissionStatus!
+  totalTestCases: Int!
+  updatedAt: DateTime!
+  user: User
+  userId: String!
+  verdict: SubmissionVerdict
+}
+
+"""Judge evaluation pipeline status"""
+enum SubmissionStatus {
+  COMPLETED
+  FAILED
+  PROCESSING
+  QUEUED
+}
+
+"""Evaluation test outcome verdict"""
+enum SubmissionVerdict {
+  ACCEPTED
+  COMPILATION_ERROR
+  MEMORY_LIMIT_EXCEEDED
+  RUNTIME_ERROR
+  SYSTEM_ERROR
+  TIME_LIMIT_EXCEEDED
+  WRONG_ANSWER
+}
+
+type SubmissionsConnection {
+  items: [Submission!]!
+  meta: PaginationMeta!
+}
+
+type TestCase {
+  createdAt: DateTime!
+  expectedOutput: String!
+  explanation: String
+  id: ID!
+  input: String!
+  isHidden: Boolean!
+  order: Int!
+  problemId: String!
+  updatedAt: DateTime!
+}
+
+input UpdateCollegeInput {
+  address: String
+  code: String
+  email: String
+  name: String
+  phone: String
+  status: CollegeStatus
+}
+
+input UpdateContestInput {
+  description: String
+  endTime: DateTime
+  startTime: DateTime
+  status: ContestStatus
+  title: String
+}
+
+input UpdateCourseInput {
+  description: String
+  status: CourseStatus
+  title: String
+}
+
+input UpdateProblemInput {
+  constraints: String
+  difficulty: ProblemDifficulty
+  inputFormat: String
+  memoryLimit: Int
+  outputFormat: String
+  statement: String
+  status: ProblemStatus
+  timeLimit: Int
+  title: String
+}
+
+input UpdateUserInput {
+  email: String
+  globalRole: Role
+  name: String
+  password: String
+  status: UserStatus
+}
+
+type User {
+  createdAt: DateTime!
+  email: String!
+  globalRole: Role!
+  id: ID!
+  name: String!
+  status: UserStatus!
+  updatedAt: DateTime!
+}
+
+"""Account activation status"""
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+type UsersConnection {
+  items: [User!]!
+  meta: PaginationMeta!
+}

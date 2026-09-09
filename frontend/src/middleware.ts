@@ -1,0 +1,76 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { extractRole, getLoginRedirectUrl, getRoleDefaultPath } from '@/utils/role-routing';
+
+export function middleware(request: NextRequest) {
+  const { pathname, search } = request.nextUrl;
+
+  const accessToken = request.cookies.get('access_token')?.value;
+  const refreshToken = request.cookies.get('refresh_token')?.value;
+  const hasAuth = Boolean(accessToken || refreshToken);
+
+  // Extract role from access token JWT if present
+  const userRole = extractRole(accessToken);
+
+  const isAuthRoute =
+    pathname === '/login' || pathname === '/register' || pathname === '/auth';
+  const isSuperAdminRoute = pathname.startsWith('/superadmin');
+  const isStudentsRoute = pathname.startsWith('/students');
+  const isRootRoute = pathname === '/';
+
+  // 1. Root route redirection based on auth status and role
+  if (isRootRoute) {
+    if (hasAuth) {
+      const destination = getRoleDefaultPath(userRole);
+      return NextResponse.redirect(new URL(destination, request.url));
+    }
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // 2. Protected superadmin routes -> Require authentication and admin role
+  if (isSuperAdminRoute) {
+    if (!hasAuth) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname + search);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // If explicitly authenticated as student, route them to students area
+    if (userRole === 'STUDENT') {
+      return NextResponse.redirect(new URL('/students', request.url));
+    }
+  }
+
+  // 3. Protected student & practice routes -> Require authentication
+  const isPracticeRoute = pathname.startsWith('/practice');
+  if (isStudentsRoute || isPracticeRoute) {
+    if (!hasAuth) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirect', pathname + search);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // 4. Auth pages -> Redirect to designated role dashboard if already logged in
+  if (isAuthRoute) {
+    if (hasAuth) {
+      const requestedRedirect = request.nextUrl.searchParams.get('redirect');
+      const destination = getLoginRedirectUrl(userRole, requestedRedirect);
+      return NextResponse.redirect(new URL(destination, request.url));
+    }
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    '/',
+    '/superadmin/:path*',
+    '/students/:path*',
+    '/practice/:path*',
+    '/login',
+    '/register',
+    '/auth',
+  ],
+};
