@@ -96,9 +96,13 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
     }
   };
 
-  const handleCopyInput = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Sample testcase copied to clipboard.', 'Copied');
+  const handleCopyInput = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Sample testcase copied to clipboard.', 'Copied');
+    } catch {
+      toast.error('Failed to copy sample testcase to clipboard.', 'Copy Failed');
+    }
   };
 
   const handleSubmitProblem = async (code: string, lang: string) => {
@@ -106,14 +110,14 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
     await new Promise((resolve) => setTimeout(resolve, 1200));
 
     const newSub = {
-      id: `sub-${Date.now().toString().slice(-4)}`,
+      id: `sub-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       verdict: 'Accepted' as const,
       runtime: '32 ms',
       memory: '16.8 MB',
       language: lang.toUpperCase(),
       timestamp: 'Just now',
     };
-    setSubmissions([newSub, ...submissions]);
+    setSubmissions((prev) => [newSub, ...prev]);
     toast.success('All hidden testcases passed! +100 Points', 'Accepted 🎉');
   };
 
@@ -168,9 +172,13 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
             <Tooltip title="Share Problem" arrow>
               <IconButton
                 size="small"
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
-                  toast.info('Problem URL copied to clipboard.', 'Link Copied');
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    toast.info('Problem URL copied to clipboard.', 'Link Copied');
+                  } catch {
+                    toast.error('Failed to copy problem URL to clipboard.', 'Copy Failed');
+                  }
                 }}
                 sx={{ color: '#64748B' }}
               >

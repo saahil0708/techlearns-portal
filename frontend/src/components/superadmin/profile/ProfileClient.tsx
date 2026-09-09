@@ -24,6 +24,8 @@ import CurvedSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/lib/api-service';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 import {
   FaInstagram,
   FaFacebookF,
@@ -71,8 +73,29 @@ interface ProfileProps {
   uptimePercentage?: string;
 }
 
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+const FALLBACK_AUDIT_LOGS = [
+  {
+    id: 'fallback-audit-1',
+    action: 'Password & Credential Verification',
+    detail: 'Password verified and session refreshed via primary authenticator',
+    createdAt: '2026-03-01T10:00:00Z',
+    status: 'Success',
+  },
+  {
+    id: 'fallback-audit-2',
+    action: 'Tenant Onboarding Approved',
+    detail: 'Approved college access & roster provisioning for Stanford School of Computing',
+    createdAt: '2026-03-01T06:00:00Z',
+    status: 'Completed',
+  },
+  {
+    id: 'fallback-audit-3',
+    action: 'Sandbox Compiler Worker Scale-Up',
+    detail: 'Updated Docker isolation cluster limits to 8 parallel execution pods',
+    createdAt: '2026-02-28T10:00:00Z',
+    status: 'Deployed',
+  },
+];
 
 export default function ProfileClient({
   name: propName,
@@ -748,26 +771,7 @@ export default function ProfileClient({
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {(liveAuditLogs.length > 0 ? liveAuditLogs : [
-                  {
-                    action: 'Password & Credential Verification',
-                    detail: 'Password verified and session refreshed via primary authenticator',
-                    createdAt: new Date(),
-                    status: 'Success',
-                  },
-                  {
-                    action: 'Tenant Onboarding Approved',
-                    detail: 'Approved college access & roster provisioning for Stanford School of Computing',
-                    createdAt: new Date(Date.now() - 3600 * 1000 * 4),
-                    status: 'Completed',
-                  },
-                  {
-                    action: 'Sandbox Compiler Worker Scale-Up',
-                    detail: 'Updated Docker isolation cluster limits to 8 parallel execution pods',
-                    createdAt: new Date(Date.now() - 3600 * 1000 * 24),
-                    status: 'Deployed',
-                  },
-                ]).map((item, idx) => {
+                {(liveAuditLogs.length > 0 ? liveAuditLogs : FALLBACK_AUDIT_LOGS).map((item: any, idx) => {
                   const timeStr = item.createdAt
                     ? new Date(item.createdAt).toLocaleDateString('en-US', {
                         month: 'short',

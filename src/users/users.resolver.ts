@@ -1,4 +1,4 @@
-import { UseGuards } from '@nestjs/common';
+import { ForbiddenException, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Role, UserStatus } from '@prisma/client';
 import { GqlCurrentUser } from '../common/decorators/gql-user.decorator.js';
@@ -27,7 +27,7 @@ export class UsersResolver {
   async getUsers(
     @Args() paginationArgs: PaginationArgs,
     @Args('role', { type: () => Role, nullable: true }) role?: Role,
-    @Args('status', { type: () => UserStatus, nullable: true }) status?: UserStatus,
+    @Args('status', { type: () => UserStatus, nullable: true }) status?: UserStatus,  
     @Args('collegeId', { type: () => String, nullable: true }) collegeId?: string,
   ) {
     return this.usersService.findPaginated(paginationArgs, role, status, collegeId);
@@ -46,10 +46,31 @@ export class UsersResolver {
   }
 
   @Query(() => StudentProfileType, { name: 'studentProfile' })
+  @UseGuards(GqlAuthGuard)
   async getStudentProfile(
     @Args('handleOrId', { type: () => String }) handleOrId: string,
+    @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
-    return this.usersService.getStudentProfile(handleOrId);
+    const profile = await this.usersService.getStudentProfile(handleOrId);
+    const isOwnerOrAdmin =
+      profile.id === currentUser.id ||
+      currentUser.globalRole === Role.SUPER_ADMIN ||
+      currentUser.globalRole === Role.PLATFORM_ADMIN;
+
+    if (!isOwnerOrAdmin) {
+      profile.email = undefined;
+      profile.phone = null as any;
+      profile.location = null as any;
+      profile.resumeFileName = null as any;
+      profile.resumeUrl = null as any;
+      if (profile.submissions) {
+        profile.submissions = profile.submissions.map((s) => ({
+          ...s,
+          codeSnippet: undefined,
+        }));
+      }
+    }
+    return profile;
   }
 
   @Query(() => AdminMetricsType, { name: 'adminMetrics' })
@@ -79,14 +100,27 @@ export class UsersResolver {
     @Args('input') input: UpdateUserInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
-    // Only allow updating own profile unless SUPER_ADMIN or PLATFORM_ADMIN
-    if (
-      currentUser.id !== id &&
-      currentUser.globalRole !== Role.SUPER_ADMIN &&
-      currentUser.globalRole !== Role.PLATFORM_ADMIN
-    ) {
-      id = currentUser.id;
+    const isAdmin =
+      currentUser.globalRole === Role.SUPER_ADMIN ||
+      currentUser.globalRole === Role.PLATFORM_ADMIN;
+
+    if (currentUser.id !== id && !isAdmin) {
+      throw new ForbiddenException('You are not authorized to update another user profile');
     }
+
+    if (!isAdmin) {
+      if (
+        input.globalRole !== undefined ||
+        input.status !== undefined ||
+        input.contestRating !== undefined ||
+        input.ratingTier !== undefined ||
+        input.password !== undefined ||
+        input.email !== undefined
+      ) {
+        throw new ForbiddenException('You do not have permission to modify privileged user attributes');
+      }
+    }
+
     return this.usersService.updateUser(id, input);
   }
 

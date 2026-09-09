@@ -1,5 +1,8 @@
+'use client';
+
 import React, { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   Box,
   Typography,
@@ -15,20 +18,33 @@ import {
   ListItemText,
   Popover,
   Divider,
-  Skeleton,
+  Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
+
+// Material Icons
+import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded';
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import TerminalRoundedIcon from '@mui/icons-material/TerminalRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import SearchIcon from '@mui/icons-material/Search';
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
-import TerminalRoundedIcon from '@mui/icons-material/TerminalRounded';
-import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
-import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
 import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
-import FlashOnRoundedIcon from '@mui/icons-material/FlashOnRounded';
 
-import { useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { logoutUser } from '@/store/slices/authSlice';
 import { apiService } from '@/lib/api-service';
 
 interface StudentNavbarProps {
@@ -45,39 +61,62 @@ interface NotificationItem {
   desc: string;
   time: string;
   unread: boolean;
-  type: 'info' | 'success' | 'warning';
 }
 
 export default function StudentNavbar({
   searchQuery = '',
   onSearchChange = () => {},
   streakDays,
-  contestRating,
-  ratingTier,
 }: StudentNavbarProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams ? searchParams.get('tab') : null;
+  const dispatch = useAppDispatch();
+
   const searchInputRef = useRef<HTMLInputElement>(null);
   const user = useAppSelector((state) => state.auth.user);
   const [activeUser, setActiveUser] = useState(user);
-  const [loading, setLoading] = useState<boolean>(!user?.name);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+
+  // Dropdown states
+  const [exploreAnchor, setExploreAnchor] = useState<null | HTMLElement>(null);
+  const isExploreOpen = Boolean(exploreAnchor);
+
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const isUserMenuOpen = Boolean(userMenuAnchor);
+
+  const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
+  const isNotifOpen = Boolean(notifAnchorEl);
+
+  const [notifications, setNotifications] = useState<NotificationItem[]>([
+    {
+      id: 'n-1',
+      title: 'Submission Accepted',
+      desc: 'Problem #407 Trapping Rain Water II passed all 42 test cases!',
+      time: '12m ago',
+      unread: true,
+    },
+    {
+      id: 'n-2',
+      title: 'Upcoming Contest',
+      desc: 'Weekly Grand Arena #108 starts in 2 hours.',
+      time: '1h ago',
+      unread: true,
+    },
+  ]);
 
   useEffect(() => {
     if (user?.name) {
       setActiveUser(user);
-      setLoading(false);
-    } else {
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('codeplatform_user');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed?.name) {
-              setActiveUser(parsed);
-              setLoading(false);
-            }
-          }
-        } catch {}
-      }
+    } else if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('codeplatform_user');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.name) setActiveUser(parsed);
+        }
+      } catch {}
     }
   }, [user]);
 
@@ -86,50 +125,11 @@ export default function StudentNavbar({
       try {
         const res = await apiService.getProfile();
         const liveUser = res?.data || res;
-        if (liveUser && liveUser.name) {
-          setActiveUser(liveUser);
-        }
-      } catch {
-      } finally {
-        setLoading(false);
-      }
+        if (liveUser && liveUser.name) setActiveUser(liveUser);
+      } catch {}
     }
     loadLiveUser();
   }, []);
-
-  const displayName = activeUser?.name || user?.name || '';
-  const firstName = displayName ? displayName.split(' ')[0] : '';
-  const roleLabel = activeUser?.globalRole ? activeUser.globalRole.replace('_', ' ') : user?.globalRole ? user.globalRole.replace('_', ' ') : 'STUDENT';
-
-  // Notifications Popover state
-  const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
-  const isNotifOpen = Boolean(notifAnchorEl);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: 'n-1',
-      title: 'Submission Accepted',
-      desc: 'Problem #407 Trapping Rain Water II passed all 42 test cases!',
-      time: '12m ago',
-      unread: true,
-      type: 'success',
-    },
-    {
-      id: 'n-2',
-      title: 'Upcoming Weekly Contest',
-      desc: 'Weekly Grand Arena #108 starts in 2 hours. Register now.',
-      time: '1h ago',
-      unread: true,
-      type: 'info',
-    },
-    {
-      id: 'n-3',
-      title: 'Course Milestone Unlocked',
-      desc: 'Advanced Graph Algorithms: Lesson 4 Segment Trees is now available.',
-      time: 'Yesterday',
-      unread: false,
-      type: 'info',
-    },
-  ]);
 
   // Keyboard shortcut listener for Ctrl+K / Cmd+K
   useEffect(() => {
@@ -143,12 +143,23 @@ export default function StudentNavbar({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Quick Action Menu state (in place of redundant profile popup)
-  const [quickActionAnchor, setQuickActionAnchor] = useState<null | HTMLElement>(null);
-  const isQuickActionOpen = Boolean(quickActionAnchor);
+  const displayName = activeUser?.name || user?.name || '';
+  const displayEmail = activeUser?.email || user?.email || '';
+  const roleLabel = activeUser?.globalRole ? activeUser.globalRole.replace('_', ' ') : user?.globalRole ? user.globalRole.replace('_', ' ') : 'STUDENT';
+
+  const initials = displayName
+    ? displayName
+        .split(' ')
+        .map((n: string) => n[0])
+        .filter(Boolean)
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : null;
 
   const handleActionSelect = (route: string) => {
-    setQuickActionAnchor(null);
+    setExploreAnchor(null);
+    setUserMenuAnchor(null);
     router.push(route);
   };
 
@@ -158,218 +169,513 @@ export default function StudentNavbar({
     }
   };
 
+  const handleConfirmLogout = async () => {
+    setLogoutDialogOpen(false);
+    await dispatch(logoutUser());
+    router.push('/login');
+  };
+
   const unreadCount = notifications.filter((n) => n.unread).length;
 
+  const isLinkActive = (itemPath: string) => {
+    if (itemPath === '/problems') return pathname.startsWith('/problems');
+    if (itemPath === '/contests') return pathname.startsWith('/contests');
+    if (itemPath === '/courses') return pathname.startsWith('/courses');
+    if (itemPath === '/leaderboard') return pathname.startsWith('/leaderboard');
+    return pathname === itemPath;
+  };
+
+  const isExploreActive =
+    pathname.startsWith('/practice') ||
+    pathname === '/students/submissions' ||
+    (pathname.startsWith('/students') && currentTab === 'submissions');
+
   return (
-    <Box
-      component="header"
-      sx={{
-        width: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 2,
-        pt: { xs: 2, md: 2 },
-        pb: 2,
-        mb: 1,
-      }}
-    >
-      {/* Left Greeting & Role Badge */}
-      <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minHeight: 32 }}>
-          {loading || !firstName ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Skeleton variant="rounded" width={160} height={28} sx={{ borderRadius: '8px' }} animation="wave" />
-              <Skeleton variant="rounded" width={68} height={22} sx={{ borderRadius: '6px' }} animation="wave" />
+    <>
+      <Box
+        component="header"
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1100,
+          width: '100%',
+          minHeight: { xs: 60, md: 68 },
+          bgcolor: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(16px)',
+          borderBottom: '1px solid #E2E8F0',
+          boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)',
+          px: { xs: 2, sm: 3, md: 4 },
+          py: { xs: 1.25, md: 1.6 },
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <Box
+          sx={{
+            maxWidth: 1200,
+            width: '100%',
+            mx: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+          }}
+        >
+          {/* ========================================================================= */}
+          {/* 1. LEFT: Clean Logo & Core Essential Nav Links */}
+          {/* ========================================================================= */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            {/* Brand Logo */}
+            <Link
+              href="/students"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                textDecoration: 'none',
+              }}
+            >
+              <Box
+                sx={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '8px',
+                  bgcolor: '#2563EB',
+                  background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)',
+                  flexShrink: 0,
+                }}
+              >
+                <CodeRoundedIcon sx={{ color: '#FFFFFF', fontSize: 20 }} />
+              </Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1.02rem', color: '#0F172A', letterSpacing: '-0.02em' }}>
+                CodePlatform
+              </Typography>
+            </Link>
+
+            {/* Core Nav Links */}
+            <Box
+              component="nav"
+              aria-label="Main Navigation"
+              sx={{
+                display: { xs: 'none', md: 'flex' },
+                alignItems: 'center',
+                gap: 0.5,
+              }}
+            >
+              <Link href="/problems" style={{ textDecoration: 'none' }}>
+                <Box
+                  sx={{
+                    px: 1.5,
+                    py: 0.65,
+                    borderRadius: '8px',
+                    fontSize: '0.86rem',
+                    fontWeight: isLinkActive('/problems') ? 700 : 500,
+                    color: isLinkActive('/problems') ? '#2563EB' : '#475569',
+                    bgcolor: isLinkActive('/problems') ? '#EFF6FF' : 'transparent',
+                    transition: 'all 0.15s ease',
+                    '&:hover': { color: '#2563EB', bgcolor: '#F8FAFC' },
+                  }}
+                >
+                  Problems
+                </Box>
+              </Link>
+
+              <Link href="/contests" style={{ textDecoration: 'none' }}>
+                <Box
+                  sx={{
+                    px: 1.5,
+                    py: 0.65,
+                    borderRadius: '8px',
+                    fontSize: '0.86rem',
+                    fontWeight: isLinkActive('/contests') ? 700 : 500,
+                    color: isLinkActive('/contests') ? '#2563EB' : '#475569',
+                    bgcolor: isLinkActive('/contests') ? '#EFF6FF' : 'transparent',
+                    transition: 'all 0.15s ease',
+                    '&:hover': { color: '#2563EB', bgcolor: '#F8FAFC' },
+                  }}
+                >
+                  Contests
+                </Box>
+              </Link>
+
+              <Link href="/courses" style={{ textDecoration: 'none' }}>
+                <Box
+                  sx={{
+                    px: 1.5,
+                    py: 0.65,
+                    borderRadius: '8px',
+                    fontSize: '0.86rem',
+                    fontWeight: isLinkActive('/courses') ? 700 : 500,
+                    color: isLinkActive('/courses') ? '#2563EB' : '#475569',
+                    bgcolor: isLinkActive('/courses') ? '#EFF6FF' : 'transparent',
+                    transition: 'all 0.15s ease',
+                    '&:hover': { color: '#2563EB', bgcolor: '#F8FAFC' },
+                  }}
+                >
+                  Courses
+                </Box>
+              </Link>
+
+              <Link href="/leaderboard" style={{ textDecoration: 'none' }}>
+                <Box
+                  sx={{
+                    px: 1.5,
+                    py: 0.65,
+                    borderRadius: '8px',
+                    fontSize: '0.86rem',
+                    fontWeight: isLinkActive('/leaderboard') ? 700 : 500,
+                    color: isLinkActive('/leaderboard') ? '#2563EB' : '#475569',
+                    bgcolor: isLinkActive('/leaderboard') ? '#EFF6FF' : 'transparent',
+                    transition: 'all 0.15s ease',
+                    '&:hover': { color: '#2563EB', bgcolor: '#F8FAFC' },
+                  }}
+                >
+                  Leaderboard
+                </Box>
+              </Link>
+
+              {/* Revealable Options Dropdown (Explore ▾) */}
+              <Button
+                size="small"
+                onClick={(e) => setExploreAnchor(e.currentTarget)}
+                endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: 16 }} />}
+                sx={{
+                  px: 1.25,
+                  py: 0.55,
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  fontSize: '0.86rem',
+                  fontWeight: isExploreActive ? 700 : 500,
+                  color: isExploreActive ? '#2563EB' : '#475569',
+                  bgcolor: isExploreActive ? '#EFF6FF' : 'transparent',
+                  '&:hover': { color: '#2563EB', bgcolor: '#F8FAFC' },
+                }}
+              >
+                More
+              </Button>
             </Box>
-          ) : (
+          </Box>
+
+          {/* ========================================================================= */}
+          {/* 2. RIGHT: Search, Streak, Notifications, & Profile Avatar */}
+          {/* ========================================================================= */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+            {/* Search Bar */}
+            <TextField
+              inputRef={searchInputRef}
+              size="small"
+              placeholder="Search (⌘K)"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              slotProps={{
+                input: {
+                  'aria-label': 'Search problems',
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: '#94A3B8', fontSize: 17 }} />
+                    </InputAdornment>
+                  ),
+                },
+                htmlInput: {
+                  'aria-label': 'Search problems',
+                },
+              }}
+              sx={{
+                width: { xs: 140, sm: 200, md: 220 },
+                display: { xs: 'none', sm: 'block' },
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '8px',
+                  bgcolor: '#F8FAFC',
+                  fontSize: '0.82rem',
+                  height: 34,
+                  border: '1px solid #E2E8F0',
+                  '& fieldset': { border: 'none' },
+                  '&:hover': { borderColor: '#CBD5E1' },
+                  '&.Mui-focused': {
+                    bgcolor: '#FFFFFF',
+                    borderColor: '#2563EB',
+                  },
+                },
+              }}
+            />
+
+            {/* Streak Pill */}
+            {streakDays !== undefined && (
+              <Tooltip title={`${streakDays}-day streak`} arrow>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                    px: 1.2,
+                    py: 0.4,
+                    height: 32,
+                    borderRadius: '6px',
+                    bgcolor: '#FFF7ED',
+                    border: '1px solid #FFEDD5',
+                    color: '#C2410C',
+                    fontWeight: 700,
+                    fontSize: '0.76rem',
+                    cursor: 'default',
+                  }}
+                >
+                  <LocalFireDepartmentRoundedIcon sx={{ fontSize: 15, color: '#EA580C' }} />
+                  <span>{streakDays}d</span>
+                </Box>
+              </Tooltip>
+            )}
+
+            {/* Notifications Button */}
+            <Tooltip title={unreadCount > 0 ? `Notifications (${unreadCount})` : 'Notifications'}>
+              <IconButton
+                size="small"
+                onClick={(e) => setNotifAnchorEl(e.currentTarget)}
+                aria-haspopup="dialog"
+                aria-expanded={isNotifOpen}
+                aria-label="Notifications"
+                sx={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '8px',
+                  color: '#64748B',
+                  border: '1px solid #E2E8F0',
+                  position: 'relative',
+                  '&:hover': { bgcolor: '#F8FAFC', color: '#0F172A' },
+                }}
+              >
+                <NotificationsNoneRoundedIcon sx={{ fontSize: 18 }} />
+                {unreadCount > 0 && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 6,
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      bgcolor: '#2563EB',
+                    }}
+                  />
+                )}
+              </IconButton>
+            </Tooltip>
+
+            {/* User Profile Avatar Dropdown */}
+            <Tooltip title="Profile & Account" arrow>
+              <IconButton
+                size="small"
+                onClick={(e) => setUserMenuAnchor(e.currentTarget)}
+                aria-haspopup="menu"
+                aria-expanded={isUserMenuOpen}
+                aria-label="User Profile & Account Menu"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  p: '2px',
+                  borderRadius: '8px',
+                  '&:hover': { bgcolor: '#F8FAFC' },
+                }}
+              >
+                <Avatar
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: '#2563EB',
+                    color: '#FFFFFF',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  {initials ? initials : <PersonRoundedIcon sx={{ fontSize: 18 }} />}
+                </Avatar>
+                <KeyboardArrowDownRoundedIcon sx={{ fontSize: 16, color: '#64748B' }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* "More" Revealable Options Dropdown */}
+      <Menu
+        anchorEl={exploreAnchor}
+        open={isExploreOpen}
+        onClose={() => setExploreAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: '12px',
+              minWidth: 220,
+              mt: 1,
+              p: 0.5,
+              boxShadow: '0 10px 30px rgba(15, 23, 42, 0.1)',
+              border: '1px solid #E2E8F0',
+            },
+          },
+        }}
+      >
+        <MenuItem
+          onClick={() => handleActionSelect('/practice')}
+          sx={{ borderRadius: '6px', fontSize: '0.84rem', fontWeight: 600, py: 1 }}
+        >
+          <ListItemIcon>
+            <TerminalRoundedIcon fontSize="small" sx={{ color: '#10B981' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary="Online Compilers"
+            secondary="Sandbox code execution"
+            slotProps={{
+              primary: { sx: { fontWeight: 600, fontSize: '0.82rem', color: '#0F172A' } },
+              secondary: { sx: { fontSize: '0.7rem', color: '#64748B' } },
+            }}
+          />
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => handleActionSelect('/students/submissions')}
+          sx={{ borderRadius: '6px', fontSize: '0.84rem', fontWeight: 600, py: 1 }}
+        >
+          <ListItemIcon>
+            <HistoryRoundedIcon fontSize="small" sx={{ color: '#0EA5E9' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary="Submissions Log"
+            secondary="View code & verdicts"
+            slotProps={{
+              primary: { sx: { fontWeight: 600, fontSize: '0.82rem', color: '#0F172A' } },
+              secondary: { sx: { fontSize: '0.7rem', color: '#64748B' } },
+            }}
+          />
+        </MenuItem>
+
+        <Divider sx={{ my: 0.5 }} />
+
+        <MenuItem
+          onClick={() => handleActionSelect('/students')}
+          sx={{ borderRadius: '6px', fontSize: '0.84rem', fontWeight: 600, py: 1 }}
+        >
+          <ListItemIcon>
+            <PersonRoundedIcon fontSize="small" sx={{ color: '#6366F1' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary="Personal Workspace"
+            secondary="Profile & certifications"
+            slotProps={{
+              primary: { sx: { fontWeight: 600, fontSize: '0.82rem', color: '#0F172A' } },
+              secondary: { sx: { fontSize: '0.7rem', color: '#64748B' } },
+            }}
+          />
+        </MenuItem>
+      </Menu>
+
+      {/* User Profile Dropdown Menu */}
+      <Menu
+        anchorEl={userMenuAnchor}
+        open={isUserMenuOpen}
+        onClose={() => setUserMenuAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: '12px',
+              minWidth: 230,
+              mt: 1,
+              p: 0.75,
+              boxShadow: '0 12px 35px rgba(15, 23, 42, 0.1)',
+              border: '1px solid #E2E8F0',
+            },
+          },
+        }}
+      >
+        <Box sx={{ px: 1.5, py: 1, borderBottom: '1px solid #F1F5F9', mb: 0.5 }}>
+          {displayName ? (
             <>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.35rem', letterSpacing: '-0.02em' }}>
-                Hello, {firstName}! 👋
+              <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#0F172A' }}>
+                {displayName}
+              </Typography>
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', wordBreak: 'break-all' }}>
+                {displayEmail}
               </Typography>
               <Chip
                 label={roleLabel}
                 size="small"
                 sx={{
+                  mt: 0.5,
                   bgcolor: '#EFF6FF',
                   color: '#2563EB',
-                  fontWeight: 800,
-                  fontSize: '0.68rem',
-                  height: 22,
-                  borderRadius: '6px',
-                  border: '1px solid #BFDBFE',
+                  fontWeight: 700,
+                  fontSize: '0.64rem',
+                  height: 18,
                 }}
               />
             </>
+          ) : (
+            <Typography sx={{ fontSize: '0.82rem', color: '#64748B', fontWeight: 600 }}>
+              Student Account
+            </Typography>
           )}
         </Box>
-        <Typography variant="body2" sx={{ color: '#64748B', fontSize: '0.8rem', fontWeight: 500, mt: 0.25 }}>
-          Ready for today&apos;s challenges & compiler cluster throughput
-        </Typography>
-      </Box>
 
-      {/* Right Controls: Search with ⌘K, Notifications & Profile Action Button */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75 }}>
-        {/* Search Field with ⌘K Badge */}
-        <TextField
-          inputRef={searchInputRef}
-          size="small"
-          placeholder="Search for entities, problems..."
-          value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
-          onKeyDown={handleSearchKeyDown}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: '#94A3B8', fontSize: 18 }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <Box
-                    sx={{
-                      px: 0.75,
-                      py: 0.2,
-                      borderRadius: '6px',
-                      bgcolor: '#F1F5F9',
-                      color: '#64748B',
-                      fontSize: '0.68rem',
-                      fontFamily: 'monospace',
-                      fontWeight: 700,
-                      border: '1px solid #E2E8F0',
-                    }}
-                  >
-                    ⌘K
-                  </Box>
-                </InputAdornment>
-              ),
-            },
+        <MenuItem
+          onClick={() => handleActionSelect('/students')}
+          sx={{ borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, py: 0.8 }}
+        >
+          <ListItemIcon>
+            <PersonRoundedIcon fontSize="small" sx={{ color: '#2563EB' }} />
+          </ListItemIcon>
+          <ListItemText primary="My Profile" />
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => handleActionSelect('/students/submissions')}
+          sx={{ borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, py: 0.8 }}
+        >
+          <ListItemIcon>
+            <HistoryRoundedIcon fontSize="small" sx={{ color: '#0EA5E9' }} />
+          </ListItemIcon>
+          <ListItemText primary="My Submissions" />
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => handleActionSelect('/students/settings')}
+          sx={{ borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, py: 0.8 }}
+        >
+          <ListItemIcon>
+            <SettingsRoundedIcon fontSize="small" sx={{ color: '#64748B' }} />
+          </ListItemIcon>
+          <ListItemText primary="Account Settings" />
+        </MenuItem>
+
+        <Divider sx={{ my: 0.5 }} />
+
+        <MenuItem
+          onClick={() => {
+            setUserMenuAnchor(null);
+            setLogoutDialogOpen(true);
           }}
           sx={{
-            width: { xs: 160, sm: 260, md: 300 },
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '20px',
-              bgcolor: '#FFFFFF',
-              color: '#0F172A',
-              fontSize: '0.84rem',
-              fontWeight: 500,
-              height: 40,
-              transition: 'all 0.2s ease',
-              border: '1px solid #E2E8F0',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-              '& fieldset': { border: 'none' },
-              '&:hover': { bgcolor: '#FFFFFF', borderColor: '#CBD5E1' },
-              '&.Mui-focused': {
-                bgcolor: '#FFFFFF',
-                borderColor: '#2563EB',
-                boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.15)',
-              },
-            },
-            '& input::placeholder': {
-              color: '#94A3B8',
-              opacity: 1,
-            },
-          }}
-        />
-
-        {/* Notifications Bell Button */}
-        <Tooltip title={unreadCount > 0 ? `Notifications (${unreadCount} new)` : 'Notifications'}>
-          <IconButton
-            onClick={(e) => setNotifAnchorEl(e.currentTarget)}
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: '20px',
-              bgcolor: '#FFFFFF',
-              border: '1px solid #E2E8F0',
-              color: '#64748B',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
-              position: 'relative',
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                bgcolor: '#F8FAFC',
-                color: '#0F172A',
-                borderColor: '#CBD5E1',
-              },
-            }}
-          >
-            <NotificationsNoneRoundedIcon sx={{ fontSize: 20 }} />
-            {unreadCount > 0 && (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: 9,
-                  right: 9,
-                  width: 7,
-                  height: 7,
-                  borderRadius: '50%',
-                  bgcolor: '#2563EB',
-                  border: '1px solid #FFFFFF',
-                  boxShadow: '0 0 6px rgba(37, 99, 235, 0.8)',
-                }}
-              />
-            )}
-          </IconButton>
-        </Tooltip>
-
-        {/* Daily Coding Streak Pill (if available) */}
-        {streakDays !== undefined && (
-          <Tooltip title={`${streakDays}-day active coding streak! Solve a problem today to keep it active.`} arrow>
-            <Box
-              sx={{
-                display: { xs: 'none', md: 'flex' },
-                alignItems: 'center',
-                gap: 0.65,
-                px: 1.6,
-                py: 0.75,
-                height: 40,
-                borderRadius: '20px',
-                bgcolor: '#FFF7ED',
-                border: '1px solid #FFEDD5',
-                color: '#C2410C',
-                fontWeight: 700,
-                fontSize: '0.8rem',
-                boxShadow: '0 1px 3px rgba(234, 88, 12, 0.08)',
-                cursor: 'default',
-              }}
-            >
-              <LocalFireDepartmentRoundedIcon sx={{ fontSize: 18, color: '#EA580C' }} />
-              <span>{streakDays}d Streak</span>
-            </Box>
-          </Tooltip>
-        )}
-
-        {/* Primary Action Button: "+ Quick Practice" with Action Dropdown */}
-        <Button
-          variant="contained"
-          startIcon={<FlashOnRoundedIcon sx={{ fontSize: 17 }} />}
-          endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: 16 }} />}
-          onClick={(e) => setQuickActionAnchor(e.currentTarget)}
-          sx={{
-            background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
-            color: '#FFFFFF',
-            textTransform: 'none',
+            borderRadius: '6px',
+            fontSize: '0.82rem',
             fontWeight: 700,
-            fontSize: '0.84rem',
-            borderRadius: '9999px',
-            px: 2.2,
-            py: 0.95,
-            height: 40,
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
-            border: 'none',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
-              boxShadow: '0 6px 20px rgba(37, 99, 235, 0.45)',
-              transform: 'translateY(-1px)',
-            },
-            transition: 'all 0.2s ease',
+            color: '#DC2626',
+            py: 0.8,
+            '&:hover': { bgcolor: '#FEE2E2' },
           }}
         >
-          Quick Practice
-        </Button>
-      </Box>
+          <ListItemIcon>
+            <LogoutRoundedIcon fontSize="small" sx={{ color: '#DC2626' }} />
+          </ListItemIcon>
+          <ListItemText primary="Sign Out" />
+        </MenuItem>
+      </Menu>
 
       {/* Notifications Popover */}
       <Popover
@@ -381,66 +687,57 @@ export default function StudentNavbar({
         slotProps={{
           paper: {
             sx: {
-              width: 360,
-              borderRadius: '18px',
-              p: 2,
-              boxShadow: '0 14px 40px -10px rgba(15, 23, 42, 0.15)',
+              width: 320,
+              borderRadius: '14px',
+              p: 1.75,
+              boxShadow: '0 10px 30px rgba(15, 23, 42, 0.1)',
               border: '1px solid #E2E8F0',
               mt: 1,
             },
           },
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1.5, borderBottom: '1px solid #F1F5F9' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A' }}>
-              Notifications
-            </Typography>
-            {unreadCount > 0 && (
-              <Chip
-                label={`${unreadCount} new`}
-                size="small"
-                sx={{ height: 18, fontSize: '0.66rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB' }}
-              />
-            )}
-          </Box>
-
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1, borderBottom: '1px solid #F1F5F9' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.84rem' }}>
+            Notifications
+          </Typography>
           {unreadCount > 0 && (
             <Button
               size="small"
-              startIcon={<DoneAllRoundedIcon sx={{ fontSize: 14 }} />}
+              startIcon={<DoneAllRoundedIcon sx={{ fontSize: 13 }} />}
               onClick={() => setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })))}
-              sx={{ textTransform: 'none', fontSize: '0.72rem', fontWeight: 600, color: '#64748B', p: 0.5 }}
+              sx={{ textTransform: 'none', fontSize: '0.7rem', fontWeight: 600, color: '#64748B', p: 0 }}
             >
               Mark all read
             </Button>
           )}
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1.5, maxHeight: 300, overflowY: 'auto' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mt: 1, maxHeight: 260, overflowY: 'auto' }}>
           {notifications.map((n) => (
             <Box
               key={n.id}
+              component="button"
+              type="button"
               onClick={() => setNotifications((prev) => prev.map((item) => (item.id === n.id ? { ...item, unread: false } : item)))}
               sx={{
-                p: 1.25,
-                borderRadius: '10px',
+                p: 1,
+                borderRadius: '8px',
                 bgcolor: n.unread ? '#F8FAFC' : '#FFFFFF',
                 border: n.unread ? '1px solid #DBEAFE' : '1px solid #F1F5F9',
                 cursor: 'pointer',
-                transition: 'all 0.15s ease',
+                textAlign: 'left',
+                width: '100%',
+                fontFamily: 'inherit',
+                display: 'block',
                 '&:hover': { bgcolor: '#F1F5F9' },
+                '&:focus-visible': { outline: '2px solid #2563EB' },
               }}
             >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
-                <Typography variant="caption" sx={{ fontWeight: n.unread ? 800 : 600, color: '#0F172A', fontSize: '0.82rem' }}>
-                  {n.title}
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.7rem', flexShrink: 0 }}>
-                  {n.time}
-                </Typography>
-              </Box>
-              <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.75rem', mt: 0.25, display: 'block', lineHeight: 1.35 }}>
+              <Typography variant="caption" sx={{ fontWeight: n.unread ? 700 : 600, color: '#0F172A', fontSize: '0.78rem', display: 'block' }}>
+                {n.title}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.72rem', display: 'block', mt: 0.25 }}>
                 {n.desc}
               </Typography>
             </Box>
@@ -448,96 +745,153 @@ export default function StudentNavbar({
         </Box>
       </Popover>
 
-      {/* Quick Action Navigation Dropdown Menu */}
-      <Menu
-        anchorEl={quickActionAnchor}
-        open={isQuickActionOpen}
-        onClose={() => setQuickActionAnchor(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      {/* Logout Dialog */}
+      <Dialog
+        open={logoutDialogOpen}
+        onClose={() => setLogoutDialogOpen(false)}
         slotProps={{
           paper: {
             sx: {
-              borderRadius: '16px',
-              minWidth: 230,
-              mt: 1,
-              p: 0.75,
-              boxShadow: '0 14px 35px rgba(15, 23, 42, 0.12)',
+              borderRadius: '20px',
+              p: 0,
+              maxWidth: { xs: '92vw', sm: 560, md: 580 },
+              width: '100%',
+              boxShadow: '0 24px 48px -12px rgba(15, 23, 42, 0.18)',
               border: '1px solid #E2E8F0',
             },
           },
         }}
       >
-        <MenuItem
-          onClick={() => handleActionSelect('/problems')}
-          sx={{ borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, py: 1.1 }}
-        >
-          <ListItemIcon>
-            <CodeRoundedIcon fontSize="small" sx={{ color: '#2563EB' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary="Daily Challenge"
-            secondary="Solve today's featured problem"
-            slotProps={{
-              primary: { sx: { fontWeight: 700, fontSize: '0.84rem', color: '#0F172A' } },
-              secondary: { sx: { fontSize: '0.72rem', color: '#64748B' } },
-            }}
-          />
-        </MenuItem>
+        <DialogTitle sx={{ pb: 0, pt: 2.25, px: 3, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '12px',
+                bgcolor: '#FEE2E2',
+                border: '1px solid #FECACA',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#DC2626',
+                flexShrink: 0,
+              }}
+            >
+              <WarningAmberRoundedIcon sx={{ fontSize: 22 }} />
+            </Box>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#0F172A', letterSpacing: '-0.01em' }}>
+                Sign Out Confirmation
+              </Typography>
+              <Typography sx={{ fontSize: '0.78rem', color: '#64748B', mt: 0.25 }}>
+                Are you sure you want to end your current session?
+              </Typography>
+            </Box>
+          </Box>
+          <IconButton onClick={() => setLogoutDialogOpen(false)} size="small" sx={{ color: '#94A3B8', '&:hover': { color: '#0F172A' } }}>
+            <CloseRoundedIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </DialogTitle>
 
-        <MenuItem
-          onClick={() => handleActionSelect('/practice')}
-          sx={{ borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, py: 1.1 }}
-        >
-          <ListItemIcon>
-            <TerminalRoundedIcon fontSize="small" sx={{ color: '#10B981' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary="Online Compiler"
-            secondary="Live multi-language sandbox"
-            slotProps={{
-              primary: { sx: { fontWeight: 700, fontSize: '0.84rem', color: '#0F172A' } },
-              secondary: { sx: { fontSize: '0.72rem', color: '#64748B' } },
-            }}
-          />
-        </MenuItem>
+        <DialogContent sx={{ px: 3, pt: '10px !important', pb: 1 }}>
+          {displayName && (
+            <Box
+              sx={{
+                bgcolor: '#F8FAFC',
+                borderRadius: '12px',
+                px: 1.75,
+                py: 1.2,
+                border: '1px solid #F1F5F9',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.25,
+                mb: 1.25,
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: 34,
+                  height: 34,
+                  bgcolor: '#2563EB',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                }}
+              >
+                {initials ? initials : <PersonRoundedIcon sx={{ fontSize: 18 }} />}
+              </Avatar>
+              <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.86rem' }} noWrap>
+                  {displayName}
+                </Typography>
+                <Typography sx={{ color: '#64748B', fontSize: '0.74rem' }} noWrap>
+                  {displayEmail}
+                </Typography>
+              </Box>
+              <Chip
+                label={roleLabel}
+                size="small"
+                sx={{
+                  bgcolor: '#EFF6FF',
+                  color: '#2563EB',
+                  fontWeight: 700,
+                  fontSize: '0.68rem',
+                  border: '1px solid #DBEAFE',
+                }}
+              />
+            </Box>
+          )}
 
-        <Divider sx={{ my: 0.75 }} />
+          <Typography sx={{ fontSize: '0.86rem', color: '#475569', lineHeight: 1.5 }}>
+            You will be redirected to the login portal. Any unsaved problem editor drafts or active test evaluations will be preserved.
+          </Typography>
+        </DialogContent>
 
-        <MenuItem
-          onClick={() => handleActionSelect('/contests')}
-          sx={{ borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, py: 1.1 }}
-        >
-          <ListItemIcon>
-            <EmojiEventsRoundedIcon fontSize="small" sx={{ color: '#F59E0B' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary="Live Contests"
-            secondary="Compete & rank up"
-            slotProps={{
-              primary: { sx: { fontWeight: 700, fontSize: '0.84rem', color: '#0F172A' } },
-              secondary: { sx: { fontSize: '0.72rem', color: '#64748B' } },
+        <DialogActions sx={{ px: 3, pb: 2.25, pt: 1.25, gap: 1.25, justifyContent: 'flex-end' }}>
+          <Button
+            onClick={() => setLogoutDialogOpen(false)}
+            variant="outlined"
+            sx={{
+              borderRadius: '8px',
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              color: '#475569',
+              borderColor: '#CBD5E1',
+              px: 2.5,
+              py: 0.7,
+              '&:hover': { bgcolor: '#F8FAFC', borderColor: '#94A3B8' },
             }}
-          />
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => handleActionSelect('/courses')}
-          sx={{ borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, py: 1.1 }}
-        >
-          <ListItemIcon>
-            <MenuBookRoundedIcon fontSize="small" sx={{ color: '#6366F1' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary="Browse Courses"
-            secondary="Curated DSA & Dev paths"
-            slotProps={{
-              primary: { sx: { fontWeight: 700, fontSize: '0.84rem', color: '#0F172A' } },
-              secondary: { sx: { fontSize: '0.72rem', color: '#64748B' } },
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmLogout}
+            variant="contained"
+            disableElevation
+            startIcon={<LogoutRoundedIcon sx={{ fontSize: 16 }} />}
+            sx={{
+              borderRadius: '8px',
+              textTransform: 'none',
+              fontWeight: 700,
+              fontSize: '0.85rem',
+              bgcolor: '#DC2626',
+              backgroundImage: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
+              color: '#FFFFFF',
+              px: 2.75,
+              py: 0.7,
+              boxShadow: '0 4px 14px rgba(220, 38, 38, 0.3)',
+              '&:hover': {
+                bgcolor: '#B91C1C',
+                boxShadow: '0 6px 20px rgba(220, 38, 38, 0.45)',
+              },
             }}
-          />
-        </MenuItem>
-      </Menu>
-    </Box>
+          >
+            Sign Out
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }

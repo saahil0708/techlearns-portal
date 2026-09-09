@@ -29,6 +29,26 @@ import { apiService } from '@/lib/api-service';
 export default function StudentSettingsTab() {
   const toast = useToast();
 
+  // 2FA state
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+
+  // Load 2FA status
+  React.useEffect(() => {
+    let isMounted = true;
+    apiService.getProfile()
+      .then((profile) => {
+        if (isMounted && profile?.twoFactorEnabled !== undefined) {
+          setTwoFactorEnabled(Boolean(profile.twoFactorEnabled));
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not fetch 2FA status:', err);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Password change modal state
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -117,9 +137,14 @@ export default function StudentSettingsTab() {
               <Typography variant="caption" sx={{ color: '#64748B' }}>Time-based TOTP authenticator protection</Typography>
             </Box>
             <Chip
-              label="Active • Protected"
+              label={twoFactorEnabled ? 'Active • Protected' : 'Not enabled'}
               size="small"
-              sx={{ bgcolor: '#F0FDF4', color: '#16A34A', fontWeight: 700, border: '1px solid #BBF7D0' }}
+              sx={{
+                bgcolor: twoFactorEnabled ? '#F0FDF4' : '#F8FAFC',
+                color: twoFactorEnabled ? '#16A34A' : '#64748B',
+                fontWeight: 700,
+                border: twoFactorEnabled ? '1px solid #BBF7D0' : '1px solid #E2E8F0',
+              }}
             />
           </Box>
 
@@ -162,9 +187,12 @@ export default function StudentSettingsTab() {
           boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', mb: 2, fontSize: '1.1rem' }}>
-          Notification Preferences
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>
+            Notification Preferences
+          </Typography>
+          <Chip label="Coming Soon" size="small" sx={{ bgcolor: '#F1F5F9', color: '#64748B', fontWeight: 600, fontSize: '0.72rem' }} />
+        </Box>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Typography sx={{ color: '#64748B', fontSize: '0.88rem', lineHeight: 1.6 }}>
             Stay updated with real-time alerts on upcoming weekly contests, module completion certificates, and platform leaderboard updates.
@@ -198,18 +226,17 @@ export default function StudentSettingsTab() {
 
           <Button
             variant="contained"
-            onClick={() => toast.success('Your student notification preferences were saved.', 'Preferences Saved')}
+            disabled
             sx={{
-              bgcolor: '#0F172A',
+              bgcolor: '#94A3B8',
               borderRadius: '8px',
               textTransform: 'none',
               fontWeight: 700,
               mt: 2,
               alignSelf: 'flex-start',
-              '&:hover': { bgcolor: '#2563EB' },
             }}
           >
-            Save Preferences
+            Save Preferences (Coming Soon)
           </Button>
         </Box>
       </Card>

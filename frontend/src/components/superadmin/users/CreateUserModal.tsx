@@ -361,7 +361,6 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
               <MenuItem value="COLLEGE_ADMIN">🏛️ College Administrator (Tenant Admin)</MenuItem>
               <MenuItem value="SCHOOL_ADMIN">🏫 School Administrator (STEM Admin)</MenuItem>
               <MenuItem value="FACULTY">👨‍🏫 Faculty / Instructor (Course & Problem Creator)</MenuItem>
-              <MenuItem value="STUDENT">👨‍🎓 Student / Competitive Coder</MenuItem>
               <MenuItem value="RECRUITER">💼 Recruiter / Talent Scout</MenuItem>
             </Select>
           </Box>

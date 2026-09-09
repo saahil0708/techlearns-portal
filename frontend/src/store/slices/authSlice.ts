@@ -46,7 +46,7 @@ const initialState: AuthState = {
   user: initialUser,
   isAuthenticated: !!initialUser,
   isLoading: false,
-  isCheckingSession: false,
+  isCheckingSession: true,
   error: null,
   requires2FA: false,
   challengeToken: null,
@@ -250,6 +250,7 @@ export const authSlice = createSlice({
     setUser: (state, action: PayloadAction<UserProfile | null>) => {
       state.user = action.payload;
       state.isAuthenticated = !!action.payload;
+      state.isCheckingSession = false;
       if (typeof window !== 'undefined') {
         try {
           if (action.payload) {
@@ -279,6 +280,7 @@ export const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isCheckingSession = false;
         if (action.payload?.requires2FA) {
           state.requires2FA = true;
           state.challengeToken = action.payload.challengeToken || null;
@@ -304,6 +306,7 @@ export const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
+        state.isCheckingSession = false;
         state.error = (action.payload as string) || 'Login failed';
       });
 
@@ -315,6 +318,7 @@ export const authSlice = createSlice({
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isCheckingSession = false;
         state.user = action.payload?.user || action.payload;
         state.isAuthenticated = true;
         if (action.payload?.tokens?.accessToken) {
@@ -328,6 +332,7 @@ export const authSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
+        state.isCheckingSession = false;
         state.error = (action.payload as string) || 'Registration failed';
       });
 
@@ -339,6 +344,7 @@ export const authSlice = createSlice({
       })
       .addCase(verify2faLogin.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isCheckingSession = false;
         state.user = action.payload?.user || action.payload;
         state.isAuthenticated = true;
         state.requires2FA = false;
@@ -355,6 +361,7 @@ export const authSlice = createSlice({
       })
       .addCase(verify2faLogin.rejected, (state, action) => {
         state.isLoading = false;
+        state.isCheckingSession = false;
         state.error = (action.payload as string) || 'Invalid 2FA code';
       });
 

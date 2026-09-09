@@ -117,7 +117,7 @@ export default function StudentOverviewTab({
   onEditProfile,
   onUploadResume,
   onViewCert,
-  onRemoveResume = () => {},
+  onRemoveResume = () => { },
 }: StudentOverviewTabProps) {
   const toast = useToast();
   const [medalsModalOpen, setMedalsModalOpen] = useState(false);

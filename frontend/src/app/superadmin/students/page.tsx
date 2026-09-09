@@ -35,15 +35,40 @@ export default async function StudentsPage() {
               ? 'Pupil'
               : 'Newbie';
 
+          const primaryMembership = Array.isArray(u.memberships)
+            ? u.memberships.find((m: any) => m?.college?.name)
+            : null;
+          const collegeName = primaryMembership?.college?.name;
+          const userInstitution = u.institution?.trim();
+
+          const primaryBatch = Array.isArray(u.batchEnrollments)
+            ? u.batchEnrollments.find((b: any) => b?.batch?.name)
+            : null;
+          const batchName = primaryBatch?.batch?.name || u.cohort?.trim();
+
+          const institutionType: 'College' | 'School' | 'Independent' = collegeName
+            ? 'College'
+            : u.institutionType === 'School'
+            ? 'School'
+            : 'Independent';
+
+          const institutionName = collegeName
+            ? collegeName
+            : userInstitution
+            ? userInstitution
+            : 'Self-Enrolled';
+
+          const cohort = batchName ? batchName : 'No Batch Assigned';
+
           return {
             id: u.id,
             name: u.name || 'Student Coder',
             handle: u.email ? u.email.split('@')[0] : `coder_${idx + 1}`,
             email: u.email,
             studentId: u.studentId || `STU-2026-${String(idx + 1).padStart(3, '0')}`,
-            institutionType: (u.memberships?.[0]?.college ? 'College' : 'Independent') as 'College' | 'School' | 'Independent',
-            institutionName: u.memberships?.[0]?.college?.name || 'Academic Campus',
-            cohort: u.cohort || 'Batch 2026 - CS Alpha',
+            institutionType,
+            institutionName,
+            cohort,
             problemsSolved: solved,
             solvedEasy: u.solvedEasy ?? Math.floor(solved * 0.5),
             solvedMedium: u.solvedMedium ?? Math.floor(solved * 0.35),

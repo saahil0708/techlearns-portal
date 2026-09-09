@@ -98,7 +98,9 @@ interface UsersDirectoryClientProps {
 
 export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryClientProps) {
   const toast = useToast();
-  const [users, setUsers] = useState<UserDirectoryEntity[]>(initialUsers);
+  const [users, setUsers] = useState<UserDirectoryEntity[]>(() =>
+    (initialUsers || []).filter((u) => u.role !== 'STUDENT'),
+  );
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('ALL');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL');
@@ -108,23 +110,65 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
   React.useEffect(() => {
     async function loadLiveUsers() {
       try {
-        const liveData = await apiService.getUsers({ limit: 50 });
+        const liveData = await apiService.getUsers({ limit: 100 });
         if (liveData?.items && liveData.items.length > 0) {
-          const mapped: UserDirectoryEntity[] = liveData.items.map((item: any) => ({
-            id: item.id,
-            name: item.name,
-            handle: item.email ? item.email.split('@')[0] : 'user',
-            email: item.email,
-            role: item.globalRole || 'STUDENT',
-            institutionType: 'College',
-            institutionName: 'Campus',
-            twoFactorEnabled: false,
-            lastLoginAt: 'Recently',
-            lastLoginIp: '127.0.0.1',
-            createdAt: item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'Recently',
-            status: item.status === 'ACTIVE' ? 'Active' : 'Suspended',
-            avatarColor: '#7C3AED',
-          }));
+          const mapped: UserDirectoryEntity[] = liveData.items
+            .filter((item: any) => item.globalRole && item.globalRole !== 'STUDENT')
+            .map((item: any) => {
+              const primaryMembership = Array.isArray(item.memberships)
+                ? item.memberships.find((m: any) => m?.college?.name)
+                : null;
+              const collegeName = primaryMembership?.college?.name;
+              const userInstitution = item.institution?.trim();
+
+              const institutionType: 'College' | 'School' | 'Independent' = collegeName
+                ? 'College'
+                : item.institutionType === 'School'
+                ? 'School'
+                : userInstitution
+                ? item.institutionType || 'Independent'
+                : 'Independent';
+
+              const institutionName = collegeName || userInstitution || 'Independent';
+
+              const lastLoginDate = item.lastLoginAt
+                ? new Date(item.lastLoginAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: '2-digit',
+                    year: 'numeric',
+                  })
+                : item.auditLogs?.[0]?.createdAt
+                ? new Date(item.auditLogs[0].createdAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: '2-digit',
+                    year: 'numeric',
+                  })
+                : 'Never';
+
+              const lastLoginIp = item.lastLoginIp || item.auditLogs?.[0]?.ipAddress || '–';
+
+              return {
+                id: item.id,
+                name: item.name,
+                handle: item.email ? item.email.split('@')[0] : 'user',
+                email: item.email,
+                role: item.globalRole || 'FACULTY',
+                institutionType,
+                institutionName,
+                twoFactorEnabled: Boolean(item.twoFactorEnabled),
+                lastLoginAt: lastLoginDate,
+                lastLoginIp,
+                createdAt: item.createdAt
+                  ? new Date(item.createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: '2-digit',
+                      year: 'numeric',
+                    })
+                  : 'Recently',
+                status: item.status === 'ACTIVE' ? 'Active' : 'Suspended',
+                avatarColor: '#7C3AED',
+              };
+            });
           setUsers(mapped);
         }
       } catch (err) {
@@ -312,7 +356,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
             ? 'SUPER_ADMIN'
             : newData.role === 'COLLEGE_ADMIN' || newData.role === 'SCHOOL_ADMIN'
             ? 'COLLEGE_ADMIN'
-            : 'STUDENT',
+            : 'FACULTY',
       });
       if (created?.id) {
         setUsers((prev) =>

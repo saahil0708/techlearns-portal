@@ -398,7 +398,7 @@ type StudentProfile {
   courses: [StudentCourseItem!]!
   currentStreakDays: Int!
   department: String
-  email: String!
+  email: String
   githubUrl: String
   globalRank: Int!
   handle: String!

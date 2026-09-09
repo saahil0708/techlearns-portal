@@ -119,8 +119,8 @@ export class StudentProfileType {
   @Field(() => String)
   handle: string;
 
-  @Field(() => String)
-  email: string;
+  @Field(() => String, { nullable: true })
+  email?: string;
 
   @Field(() => String)
   role: string;

@@ -52,6 +52,30 @@ export const userSanitizedSelect: Prisma.UserSelect = {
       },
     },
   },
+  batchEnrollments: {
+    select: {
+      id: true,
+      batchId: true,
+      batch: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  },
+  auditLogs: {
+    select: {
+      id: true,
+      action: true,
+      ipAddress: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: 1,
+  },
 };
 
 @Injectable()
@@ -115,6 +139,10 @@ export class UsersService {
       data: { passwordHash: newHash },
     });
 
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId },
+    });
+
     await this.logAdminActivity(
       userId,
       'Password Changed',
@@ -125,7 +153,7 @@ export class UsersService {
   }
 
   async getStudentProfile(handleOrId: string) {
-    let user = await this.prisma.user.findFirst({
+    const baseUser = await this.prisma.user.findFirst({
       where: {
         OR: [
           { id: handleOrId },
@@ -133,6 +161,15 @@ export class UsersService {
           { email: { startsWith: handleOrId.toLowerCase() + '@' } },
         ],
       },
+      select: { id: true },
+    });
+
+    if (!baseUser) {
+      throw new NotFoundException(`Student profile '${handleOrId}' not found`);
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: baseUser.id },
       include: {
         submissions: {
           include: {
@@ -159,12 +196,7 @@ export class UsersService {
             contest: {
               include: {
                 leaderboardEntries: {
-                  where: {
-                    OR: [
-                      { userId: handleOrId },
-                      { user: { email: { startsWith: handleOrId.toLowerCase() } } },
-                    ],
-                  },
+                  where: { userId: baseUser.id },
                 },
               },
             },
@@ -173,41 +205,6 @@ export class UsersService {
         lessonProgress: true,
       },
     });
-
-    if (!user) {
-      // Fallback to first student if not found in dev/demo
-      user = await this.prisma.user.findFirst({
-        where: { globalRole: Role.STUDENT },
-        include: {
-          submissions: {
-            include: { problem: true },
-            orderBy: { createdAt: 'desc' },
-            take: 50,
-          },
-          enrollments: {
-            include: {
-              course: {
-                include: {
-                  modules: {
-                    include: { lessons: true },
-                  },
-                },
-              },
-            },
-          },
-          contestRegistrations: {
-            include: {
-              contest: {
-                include: {
-                  leaderboardEntries: true,
-                },
-              },
-            },
-          },
-          lessonProgress: true,
-        },
-      });
-    }
 
     if (!user) {
       throw new NotFoundException(`Student profile '${handleOrId}' not found`);
@@ -243,7 +240,7 @@ export class UsersService {
     const accuracyRate =
       totalSubmissionsCount > 0
         ? `${((acceptedSubmissions.length / totalSubmissionsCount) * 100).toFixed(1)}%`
-        : '94.8%';
+        : '0.0%';
 
     // Map formatted submissions
     const mappedSubmissions = user.submissions.slice(0, 20).map((sub) => {
@@ -275,10 +272,10 @@ export class UsersService {
                 : sub.verdict === 'MEMORY_LIMIT_EXCEEDED'
                   ? 'Memory Limit Exceeded'
                   : 'Runtime Error',
-        runtimeMs: sub.runtime || 12,
-        memoryKb: sub.memory || 14200,
+        runtimeMs: sub.runtime || 0,
+        memoryKb: sub.memory || 0,
         submittedAt: dateStr,
-        codeSnippet: sub.sourceCode || '// Code submission snippet unavailable',
+        codeSnippet: (sub.sourceCode || '// Code submission snippet unavailable') as string | undefined,
       };
     });
 
@@ -295,26 +292,26 @@ export class UsersService {
       ).length;
 
       const progressPct =
-        totalLessons > 0 ? Math.min(100, Math.round((completedLessons / totalLessons) * 100)) : 75;
+        totalLessons > 0 ? Math.min(100, Math.round((completedLessons / totalLessons) * 100)) : 0;
 
       return {
         id: enr.course.id,
         title: enr.course.title,
         slug: enr.course.id,
         instructor: 'CodePlatform Faculty',
-        modulesCompleted: Math.max(1, Math.round(enr.course.modules.length * (progressPct / 100))),
-        totalModules: Math.max(1, enr.course.modules.length),
-        progressPct: progressPct || 80,
+        modulesCompleted: Math.round(enr.course.modules.length * (progressPct / 100)),
+        totalModules: enr.course.modules.length,
+        progressPct,
         status: progressPct >= 100 ? 'Completed' : 'In Progress',
       };
     });
 
     // Map contests
-    const mappedContests = user.contestRegistrations.map((cr, idx) => {
-      const entry = cr.contest.leaderboardEntries[0];
-      const rank = entry?.rank || idx + 4;
-      const score = entry?.score || 600 - idx * 50;
-      const penalty = entry?.penalty ? `${Math.floor(entry.penalty / 60)}m` : '01:14:22';
+    const mappedContests = user.contestRegistrations.map((cr) => {
+      const entry = cr.contest.leaderboardEntries.find((e) => e.userId === user.id) || cr.contest.leaderboardEntries[0];
+      const rank = entry?.rank || 0;
+      const score = entry?.score || 0;
+      const penalty = entry?.penalty ? `${Math.floor(entry.penalty / 60)}m` : '00:00:00';
       const dateStr = new Date(cr.contest.startTime).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -326,23 +323,13 @@ export class UsersService {
         contestName: cr.contest.title,
         contestDate: dateStr,
         rank,
-        totalParticipants: 4200 + idx * 300,
+        totalParticipants: 0,
         score,
         penaltyTime: penalty,
-        ratingDelta: +35 - idx * 10,
-        newRating: user!.contestRating || 2380,
+        ratingDelta: 0,
+        newRating: user!.contestRating || 1500,
       };
     });
-
-    // Topic skills
-    const topics = [
-      { name: 'Dynamic Programming & Memoization', solved: 142, total: 160, pct: 89 },
-      { name: 'Graph Theory & Shortest Path', solved: 118, total: 130, pct: 91 },
-      { name: 'Trees & Binary Search Trees', solved: 95, total: 110, pct: 86 },
-      { name: 'Arrays & Two Pointers', solved: 88, total: 95, pct: 93 },
-      { name: 'String Algorithms (KMP, Tries)', solved: 64, total: 80, pct: 80 },
-      { name: 'Math & Number Theory', solved: 58, total: 75, pct: 77 },
-    ];
 
     const joinedDateStr = new Date(user.createdAt).toLocaleDateString('en-US', {
       month: 'long',
@@ -353,73 +340,36 @@ export class UsersService {
       id: user.id,
       name: user.name,
       handle: user.email.split('@')[0],
-      email: user.email,
+      email: user.email as string | undefined,
       role: user.globalRole,
-      avatarUrl: user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
-      bannerUrl: user.bannerUrl || 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #3B82F6 100%)',
-      bio: user.bio || 'Competitive programmer & algorithm enthusiast.',
-      institution: user.institution || 'School of Computing & Engineering',
-      department: user.department || 'Computer Science',
-      location: user.location || 'New York, USA',
-      phone: user.phone || '+1 (555) 019-2834',
+      avatarUrl: user.avatarUrl,
+      bannerUrl: user.bannerUrl,
+      bio: user.bio,
+      institution: user.institution,
+      department: user.department,
+      location: user.location,
+      phone: user.phone,
       joinedDate: joinedDateStr,
-      githubUrl: user.githubUrl || 'https://github.com',
-      linkedinUrl: user.linkedinUrl || 'https://linkedin.com',
-      websiteUrl: user.websiteUrl || 'https://codeplatform.io',
+      githubUrl: user.githubUrl,
+      linkedinUrl: user.linkedinUrl,
+      websiteUrl: user.websiteUrl,
       resumeUrl: user.resumeUrl,
       resumeFileName: user.resumeFileName,
-      contestRating: user.contestRating || 2380,
-      ratingTier: user.ratingTier || 'Master',
+      contestRating: user.contestRating || 1500,
+      ratingTier: user.ratingTier || 'Novice',
       globalRank: 1,
-      solvedTotal: solvedTotal || 680,
-      solvedEasy: solvedEasy || 240,
-      solvedMedium: solvedMedium || 310,
-      solvedHard: solvedHard || 130,
-      totalSubmissions: totalSubmissionsCount || 1840,
+      solvedTotal,
+      solvedEasy,
+      solvedMedium,
+      solvedHard,
+      totalSubmissions: totalSubmissionsCount,
       accuracyRate,
-      currentStreakDays: 48,
-      maxStreakDays: 65,
-      topics,
-      submissions: mappedSubmissions.length > 0 ? mappedSubmissions : [
-        {
-          id: 'sub-9912',
-          problemTitle: 'Two Sum & Pair Target Lookups',
-          problemSlug: 'two-sum',
-          problemCode: 'PROB-001',
-          difficulty: 'Easy',
-          language: 'CPP',
-          verdict: 'Accepted',
-          runtimeMs: 4,
-          memoryKb: 10400,
-          submittedAt: 'Today, 10:24 AM',
-          codeSnippet: `#include <vector>\n#include <unordered_map>\nusing namespace std;\n\nvector<int> twoSum(vector<int>& nums, int target) {\n    unordered_map<int, int> mp;\n    for (int i = 0; i < nums.size(); ++i) {\n        int comp = target - nums[i];\n        if (mp.count(comp)) return {mp[comp], i};\n        mp[nums[i]] = i;\n    }\n    return {};\n}`,
-        },
-      ],
-      contests: mappedContests.length > 0 ? mappedContests : [
-        {
-          id: 'cnt-142',
-          contestName: 'Weekly Competitive Grand Prix #142',
-          contestDate: 'Mar 01, 2026',
-          rank: 3,
-          totalParticipants: 4820,
-          score: 750,
-          penaltyTime: '01:14:22',
-          ratingDelta: +48,
-          newRating: 2380,
-        },
-      ],
-      courses: mappedCourses.length > 0 ? mappedCourses : [
-        {
-          id: 'crs-1',
-          title: 'Data Structures & Algorithms Mastery',
-          slug: 'data-structures-and-algorithms-mastery',
-          instructor: 'Prof. Thomas Cormen',
-          modulesCompleted: 12,
-          totalModules: 12,
-          progressPct: 100,
-          status: 'Completed',
-        },
-      ],
+      currentStreakDays: 0,
+      maxStreakDays: 0,
+      topics: [],
+      submissions: mappedSubmissions,
+      contests: mappedContests,
+      courses: mappedCourses,
     };
   }
 
@@ -449,56 +399,25 @@ export class UsersService {
     ]);
 
     return {
-      collegesCount: collegesCount || 12,
-      studentsCount: studentsCount || 3420,
-      facultyCount: facultyCount || 180,
-      adminsCount: adminsCount || 42,
-      totalUsersCount: totalUsersCount || 3642,
-      problemsCount: problemsCount || 485,
-      contestsCount: contestsCount || 64,
-      submissionsCount: submissionsCount || 48290,
-      systemStatus: 'Active • Production Cluster',
-      uptimePercentage: '99.98%',
+      collegesCount,
+      studentsCount,
+      facultyCount,
+      adminsCount,
+      totalUsersCount,
+      problemsCount,
+      contestsCount,
+      submissionsCount,
+      systemStatus: 'Healthy',
+      uptimePercentage: '99.99%',
     };
   }
 
   async getAdminAuditLogs(userId: string) {
-    const logs = await this.prisma.auditLog.findMany({
+    return this.prisma.auditLog.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       take: 20,
     });
-
-    if (logs.length === 0) {
-      return [
-        {
-          id: 'log-1',
-          action: 'Password & Credential Verification',
-          detail: 'Session refreshed via primary authenticator',
-          ipAddress: '127.0.0.1',
-          status: 'SUCCESS',
-          createdAt: new Date(),
-        },
-        {
-          id: 'log-2',
-          action: 'Tenant Onboarding Approved',
-          detail: 'Approved college access & roster provisioning',
-          ipAddress: '127.0.0.1',
-          status: 'COMPLETED',
-          createdAt: new Date(Date.now() - 3600 * 1000 * 4),
-        },
-        {
-          id: 'log-3',
-          action: 'Sandbox Compiler Worker Scale-Up',
-          detail: 'Updated Docker isolation cluster limits',
-          ipAddress: '127.0.0.1',
-          status: 'DEPLOYED',
-          createdAt: new Date(Date.now() - 3600 * 1000 * 24),
-        },
-      ];
-    }
-
-    return logs;
   }
 
   async logAdminActivity(

@@ -25,39 +25,9 @@ export default function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardPro
     }
   }, [isCheckingSession, isAuthenticated, pathname, router]);
 
-  // 1. Session verification in progress -> Clean centered loader
-  if (isCheckingSession) {
+  // 1. Session verification in progress or pending redirect -> Clean centered loader only
+  if (isCheckingSession || !isAuthenticated || !user) {
     return <LoadingScreen mode="fullscreen" size={38} />;
-  }
-
-  // 2. Unauthenticated -> Redirect to Login
-  if (!isAuthenticated || !user) {
-    return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: '#0B0F19',
-          gap: 2,
-        }}
-      >
-        <CircularProgress size={28} sx={{ color: '#2563EB' }} />
-        <Typography sx={{ color: '#94A3B8', fontSize: '0.9rem', fontWeight: 500 }}>
-          Redirecting to authentication portal...
-        </Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => router.push('/login')}
-          sx={{ color: '#38BDF8', borderColor: '#0284C7', textTransform: 'none', mt: 1 }}
-        >
-          Go to Sign In
-        </Button>
-      </Box>
-    );
   }
 
   // 3. Authenticated but insufficient permissions (Non-Super-Admin)

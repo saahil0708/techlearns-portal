@@ -269,10 +269,10 @@ export default function CurvedSidebar() {
         slotProps={{
           paper: {
             sx: {
-              borderRadius: '24px',
-              p: 1,
+              borderRadius: '20px',
+              p: 0,
               width: '100%',
-              maxWidth: 440,
+              maxWidth: { xs: '92vw', sm: 560, md: 580 },
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               border: '1px solid #E2E8F0',
               overflow: 'hidden',
@@ -280,7 +280,7 @@ export default function CurvedSidebar() {
           },
         }}
       >
-        <Box sx={{ position: 'relative', pt: 2, px: 2.5, pb: 1 }}>
+        <Box sx={{ position: 'relative', pt: 2.25, px: 3, pb: 0 }}>
           <IconButton
             onClick={() => setLogoutDialogOpen(false)}
             size="small"
@@ -295,12 +295,12 @@ export default function CurvedSidebar() {
             <CloseRoundedIcon sx={{ fontSize: 20 }} />
           </IconButton>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75, mb: 1.25 }}>
             <Box
               sx={{
-                width: 48,
-                height: 48,
-                borderRadius: '16px',
+                width: 42,
+                height: 42,
+                borderRadius: '12px',
                 bgcolor: '#FEF2F2',
                 border: '1px solid #FEE2E2',
                 display: 'flex',
@@ -310,29 +310,30 @@ export default function CurvedSidebar() {
                 flexShrink: 0,
               }}
             >
-              <LogoutRoundedIcon sx={{ fontSize: 26 }} />
+              <LogoutRoundedIcon sx={{ fontSize: 22 }} />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.15rem', lineHeight: 1.2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem', lineHeight: 1.2 }}>
                 Confirm Sign Out
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 500 }}>
+              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 500, fontSize: '0.78rem' }}>
                 End active session on CodePlatform
               </Typography>
             </Box>
           </Box>
         </Box>
 
-        <DialogContent sx={{ px: 3, pt: '22px !important', pb: 2 }}>
-          <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.6, fontSize: '0.92rem', mb: 2 }}>
+        <DialogContent sx={{ px: 3, pt: '8px !important', pb: 1 }}>
+          <Typography variant="body2" sx={{ color: '#475569', lineHeight: 1.5, fontSize: '0.88rem', mb: 1.5 }}>
             Are you sure you want to log out? Any unsaved work or active contest progress will be safely preserved, but you will need to sign in again to access the platform.
           </Typography>
 
           <Box
             sx={{
               bgcolor: '#F8FAFC',
-              borderRadius: '14px',
-              p: 1.75,
+              borderRadius: '12px',
+              px: 1.75,
+              py: 1.2,
               border: '1px solid #F1F5F9',
               display: 'flex',
               alignItems: 'center',
@@ -341,22 +342,22 @@ export default function CurvedSidebar() {
           >
             <Avatar
               sx={{
-                width: 38,
-                height: 38,
+                width: 34,
+                height: 34,
                 bgcolor: '#2563EB',
                 color: '#FFFFFF',
                 fontWeight: 800,
-                fontSize: '0.85rem',
+                fontSize: '0.8rem',
                 border: '1.5px solid #CBD5E1',
               }}
             >
               {initials}
             </Avatar>
             <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.88rem' }} noWrap>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.86rem' }} noWrap>
                 {displayName}
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748B', display: 'block', fontSize: '0.76rem' }} noWrap>
+              <Typography variant="caption" sx={{ color: '#64748B', display: 'block', fontSize: '0.74rem' }} noWrap>
                 {displayEmail}
               </Typography>
             </Box>
@@ -367,7 +368,7 @@ export default function CurvedSidebar() {
                 bgcolor: '#EFF6FF',
                 color: '#2563EB',
                 fontWeight: 700,
-                fontSize: '0.7rem',
+                fontSize: '0.68rem',
                 border: '1px solid #DBEAFE',
                 height: 22,
               }}
@@ -375,19 +376,19 @@ export default function CurvedSidebar() {
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ px: 2.5, pb: 2.5, pt: 2, gap: 1.5, justifyContent: 'flex-end' }}>
+        <DialogActions sx={{ px: 3, pb: 2.25, pt: 1.25, gap: 1.25, justifyContent: 'flex-end' }}>
           <Button
             onClick={() => setLogoutDialogOpen(false)}
             variant="outlined"
             sx={{
-              borderRadius: '7px',
+              borderRadius: '8px',
               textTransform: 'none',
               fontWeight: 700,
               color: '#475569',
               borderColor: '#CBD5E1',
               px: 2.5,
-              py: 0.8,
-              fontSize: '0.88rem',
+              py: 0.7,
+              fontSize: '0.85rem',
               '&:hover': {
                 bgcolor: '#F8FAFC',
                 borderColor: '#94A3B8',
@@ -400,17 +401,17 @@ export default function CurvedSidebar() {
           <Button
             onClick={handleConfirmLogout}
             variant="contained"
-            endIcon={<FluidArrowRight size={16} />}
+            endIcon={<FluidArrowRight size={15} />}
             sx={{
-              borderRadius: '7px',
+              borderRadius: '8px',
               textTransform: 'none',
               fontWeight: 800,
               bgcolor: '#EF4444',
               backgroundImage: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
               color: '#FFFFFF',
-              px: 3,
-              py: 0.8,
-              fontSize: '0.88rem',
+              px: 2.75,
+              py: 0.7,
+              fontSize: '0.85rem',
               boxShadow: '0 4px 14px rgba(239, 68, 68, 0.35)',
               '&:hover': {
                 bgcolor: '#DC2626',

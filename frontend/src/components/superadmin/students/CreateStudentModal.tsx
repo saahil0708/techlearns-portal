@@ -91,8 +91,14 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
       password: password.trim() || 'TemporaryPass123!',
       studentId: studentId.trim() || `STU-${Date.now().toString().slice(-5)}`,
       institutionType,
-      institutionName: institutionType === 'Independent' ? 'Self-Paced Learner' : institutionName,
-      cohort: institutionType === 'Independent' ? 'Global Community' : cohort,
+      institutionName:
+        institutionType === 'Independent'
+          ? 'Self-Enrolled'
+          : institutionName.trim() || 'Academic Campus',
+      cohort:
+        institutionType === 'Independent'
+          ? 'No Batch Assigned'
+          : cohort.trim() || 'Batch 2026 - CS Alpha',
     });
     handleClose();
   };

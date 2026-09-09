@@ -348,11 +348,15 @@ export default function ProblemArchiveClient() {
                 onChange={(e) => setSearch(e.target.value)}
                 slotProps={{
                   input: {
+                    'aria-label': 'Search problem title, code, or tag',
                     startAdornment: (
                       <InputAdornment position="start">
                         <SearchRoundedIcon sx={{ fontSize: 19, color: '#94A3B8' }} />
                       </InputAdornment>
                     ),
+                  },
+                  htmlInput: {
+                    'aria-label': 'Search problem title, code, or tag',
                   },
                 }}
                 sx={{
@@ -368,8 +372,10 @@ export default function ProblemArchiveClient() {
               {/* Difficulty Dropdown */}
               <FormControl size="small" sx={{ minWidth: 130 }}>
                 <Select
+                  aria-label="Filter by difficulty"
                   value={difficultyFilter}
                   onChange={(e) => setDifficultyFilter(e.target.value)}
+                  inputProps={{ 'aria-label': 'Filter by difficulty' }}
                   sx={{
                     borderRadius: '8px',
                     bgcolor: '#F8FAFC',
@@ -388,8 +394,10 @@ export default function ProblemArchiveClient() {
               {/* Category Dropdown */}
               <FormControl size="small" sx={{ minWidth: 160 }}>
                 <Select
+                  aria-label="Filter by category"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
+                  inputProps={{ 'aria-label': 'Filter by category' }}
                   sx={{
                     borderRadius: '8px',
                     bgcolor: '#F8FAFC',

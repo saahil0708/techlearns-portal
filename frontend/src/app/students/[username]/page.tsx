@@ -115,7 +115,7 @@ export default async function DynamicStudentProfilePage({ params }: PageProps) {
     } else {
       const liveUsers = await apiService.getUsers({ search: username, limit: 5 });
       const match = liveUsers?.items?.find(
-        (u: any) => u.email?.toLowerCase().startsWith(username.toLowerCase()) || u.id === username
+        (u: any) => u.email?.toLowerCase().split('@')[0] === username.toLowerCase() || u.id === username
       );
       if (match) {
         profileData = {
@@ -146,28 +146,7 @@ export default async function DynamicStudentProfilePage({ params }: PageProps) {
   }
 
   if (!profileData) {
-    profileData = {
-      id: `stu-${username}`,
-      name: username.charAt(0).toUpperCase() + username.slice(1).replace('_', ' '),
-      handle: username,
-      email: `${username}@codeplatform.internal`,
-      role: 'STUDENT',
-      bio: 'Competitive coding student and platform learner.',
-      institution: 'Academic Institution',
-      location: 'Global',
-      joinedDate: 'Jan 2026',
-      contestRating: 1850,
-      ratingTier: 'Expert',
-      globalRank: 84,
-      solvedTotal: 180,
-      solvedEasy: 90,
-      solvedMedium: 75,
-      solvedHard: 15,
-      totalSubmissions: 420,
-      accuracyRate: '84.0%',
-      currentStreakDays: 8,
-      maxStreakDays: 21,
-    };
+    notFound();
   }
 
   return <StudentProfileClient initialProfile={profileData} isOwner={false} />;

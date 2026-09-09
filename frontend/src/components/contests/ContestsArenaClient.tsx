@@ -452,7 +452,7 @@ export default function ContestsArenaClient() {
                                   }}
                                 >
                                   {isLive
-                                    ? `Ends in: ${formatCountdown(contest.endTime, true)}`
+                                    ? formatCountdown(contest.endTime, true)
                                     : isUpcoming
                                     ? formatCountdown(contest.startTime, false)
                                     : `${contest.durationMinutes} mins`}

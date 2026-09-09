@@ -56,8 +56,9 @@ export default function AuthPageClient() {
   // Status
   const [localError, setLocalError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const isLoading = reduxLoading;
+  const isLoading = reduxLoading || isRedirecting;
   const error = localError || reduxError;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,10 +85,8 @@ export default function AuthPageClient() {
           const targetUrl = getLoginRedirectUrl(userRole, rawRedirectParam);
 
           toast.success('Two-factor authentication verified successfully!', '2FA Verified');
-          setSuccessMessage(`2FA Verified! Loading ${userRole === 'STUDENT' ? 'student' : 'admin'} workspace...`);
-          setTimeout(() => {
-            router.push(targetUrl);
-          }, 350);
+          setIsRedirecting(true);
+          router.push(targetUrl);
         } else {
           toast.error('Invalid 2FA code. Please check your authenticator app.', 'Verification Failed');
         }
@@ -107,10 +106,8 @@ export default function AuthPageClient() {
             const targetUrl = getLoginRedirectUrl(userRole, rawRedirectParam);
 
             toast.success(`Welcome back, ${payload?.user?.name || 'User'}!`, 'Signed In');
-            setSuccessMessage(`Authentication verified! Loading ${userRole === 'STUDENT' ? 'student portal' : 'workspace'}...`);
-            setTimeout(() => {
-              router.push(targetUrl);
-            }, 350);
+            setIsRedirecting(true);
+            router.push(targetUrl);
           }
         } else {
           toast.error('Invalid email or password. Please check your credentials.', 'Sign In Failed');
@@ -130,10 +127,8 @@ export default function AuthPageClient() {
           const targetUrl = getLoginRedirectUrl(userRole, rawRedirectParam);
 
           toast.success('Account created successfully! Welcome to CodePlatform.', 'Account Created');
-          setSuccessMessage('Account created! Loading workspace...');
-          setTimeout(() => {
-            router.push(targetUrl);
-          }, 350);
+          setIsRedirecting(true);
+          router.push(targetUrl);
         } else {
           toast.error('Registration failed. Please check your details.', 'Registration Failed');
         }
@@ -150,28 +145,79 @@ export default function AuthPageClient() {
 
   const handleOAuthLogin = (provider: 'google' | 'github') => {
     toast.success(`Authenticating via ${provider === 'google' ? 'Google' : 'GitHub'} SSO...`, 'OAuth Login');
-    setSuccessMessage(`Signed in with ${provider === 'google' ? 'Google' : 'GitHub'}! Opening workspace...`);
+    setIsRedirecting(true);
     const targetUrl = getLoginRedirectUrl(null, rawRedirectParam);
-    setTimeout(() => {
-      router.push(targetUrl);
-    }, 500);
+    router.push(targetUrl);
   };
 
   return (
     <Box
       sx={{
         position: 'relative',
-        minHeight: '100vh',
-        width: '100vw',
+        height: '100vh',
+        maxHeight: '100vh',
+        width: '100%',
         overflow: 'hidden',
         bgcolor: '#0B132B',
         display: 'flex',
         alignItems: 'center',
         justifyContent: { xs: 'center', lg: 'flex-end' },
-        px: { xs: 2.5, sm: 5, md: 8, lg: 12, xl: 16 },
-        py: { xs: 3, md: 4 },
+        px: { xs: 2, sm: 4, md: 6, lg: 10, xl: 14 },
+        py: { xs: 1.5, md: 2 },
       }}
     >
+      {/* Redirect Transition Overlay */}
+      {isRedirecting && (
+        <Box
+          sx={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99999,
+            bgcolor: 'rgba(11, 19, 43, 0.88)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+            animation: 'fadeInOverlay 0.25s ease-out forwards',
+            '@keyframes fadeInOverlay': {
+              '0%': { opacity: 0 },
+              '100%': { opacity: 1 },
+            },
+          }}
+        >
+          <Box
+            sx={{
+              width: 52,
+              height: 52,
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 32px rgba(37, 99, 235, 0.6)',
+              animation: 'pulseScale 1.4s ease-in-out infinite alternate',
+              '@keyframes pulseScale': {
+                '0%': { transform: 'scale(0.95)' },
+                '100%': { transform: 'scale(1.06)' },
+              },
+            }}
+          >
+            <CodeRoundedIcon sx={{ color: '#FFFFFF', fontSize: 28 }} />
+          </Box>
+          <CircularProgress size={32} thickness={4} sx={{ color: '#38BDF8' }} />
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography sx={{ color: '#FFFFFF', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.01em' }}>
+              Opening workspace...
+            </Typography>
+            <Typography sx={{ color: '#93C5FD', fontSize: '0.82rem', mt: 0.5 }}>
+              Preparing your development session
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
       {/* Background Graphic */}
       <Box
         sx={{
@@ -211,10 +257,10 @@ export default function AuthPageClient() {
         sx={{
           position: 'absolute',
           right: { xs: '15%', lg: '28%' },
-          top: '18%',
+          top: '16%',
           color: 'rgba(96, 165, 250, 0.45)',
           fontFamily: 'monospace',
-          fontSize: '1.4rem',
+          fontSize: '1.3rem',
           fontWeight: 800,
           pointerEvents: 'none',
           zIndex: 2,
@@ -233,10 +279,10 @@ export default function AuthPageClient() {
         sx={{
           position: 'absolute',
           right: { xs: '8%', lg: '6%' },
-          top: '38%',
+          top: '36%',
           color: 'rgba(56, 189, 248, 0.4)',
           fontFamily: 'monospace',
-          fontSize: '1.2rem',
+          fontSize: '1.15rem',
           fontWeight: 800,
           pointerEvents: 'none',
           zIndex: 2,
@@ -257,10 +303,10 @@ export default function AuthPageClient() {
           position: 'absolute',
           right: { xs: '50%', lg: '10%' },
           transform: { xs: 'translateX(50%)', lg: 'none' },
-          width: 440,
-          height: 440,
+          width: 400,
+          height: 400,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(37, 99, 235, 0.08) 55%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(37, 99, 235, 0.06) 55%, transparent 70%)',
           filter: 'blur(50px)',
           zIndex: 1,
           pointerEvents: 'none',
@@ -278,9 +324,13 @@ export default function AuthPageClient() {
           position: 'relative',
           zIndex: 10,
           width: '100%',
-          maxWidth: { xs: '100%', sm: 460, md: 480 },
+          maxWidth: { xs: '100%', sm: 440, md: 450 },
+          maxHeight: '96vh',
+          overflowY: 'auto',
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
           px: { xs: 1.5, sm: 2 },
-          py: 2,
+          py: 1,
           animation: 'fadeInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
           '@keyframes fadeInRight': {
             '0%': { opacity: 0, transform: 'translateX(24px)' },
@@ -289,17 +339,17 @@ export default function AuthPageClient() {
         }}
       >
         {/* Brand Logo Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.25 }}>
           <Box
             sx={{
-              width: 38,
-              height: 38,
-              borderRadius: '10px',
+              width: 34,
+              height: 34,
+              borderRadius: '9px',
               background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 16px rgba(37, 99, 235, 0.5)',
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.5)',
               position: 'relative',
               overflow: 'hidden',
               '&:after': {
@@ -319,25 +369,25 @@ export default function AuthPageClient() {
               },
             }}
           >
-            <CodeRoundedIcon sx={{ color: '#FFFFFF', fontSize: 22 }} />
+            <CodeRoundedIcon sx={{ color: '#FFFFFF', fontSize: 20 }} />
           </Box>
           <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#FFFFFF', lineHeight: 1.1, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+            <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: '#FFFFFF', lineHeight: 1.1, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
               CodePlatform
             </Typography>
-            <Typography sx={{ fontSize: '0.7rem', color: '#93C5FD', fontWeight: 600 }}>
+            <Typography sx={{ fontSize: '0.68rem', color: '#93C5FD', fontWeight: 600 }}>
               Competitive Learning Arena
             </Typography>
           </Box>
         </Box>
 
         {/* Heading & Mode Switcher */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 1.75 }}>
           <Typography
             variant="h1"
             sx={{
               fontWeight: 800,
-              fontSize: { xs: '2.3rem', sm: '2.75rem' },
+              fontSize: { xs: '1.9rem', sm: '2.25rem' },
               color: '#FFFFFF',
               letterSpacing: '-0.03em',
               lineHeight: 1.1,
@@ -347,8 +397,8 @@ export default function AuthPageClient() {
             {mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Create Account' : 'Recovery'}
           </Typography>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.75 }}>
-            <Typography sx={{ fontSize: '0.9rem', color: '#E2E8F0', fontWeight: 500, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.5 }}>
+            <Typography sx={{ fontSize: '0.84rem', color: '#E2E8F0', fontWeight: 500, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
               {mode === 'signin' ? "Don't have an account?" : 'Already registered?'}
             </Typography>
             <Button
@@ -363,7 +413,7 @@ export default function AuthPageClient() {
                 minWidth: 'auto',
                 color: '#60A5FA',
                 fontWeight: 700,
-                fontSize: '0.9rem',
+                fontSize: '0.84rem',
                 textTransform: 'none',
                 transition: 'color 0.2s, transform 0.2s',
                 '&:hover': { bgcolor: 'transparent', color: '#93C5FD', transform: 'translateX(2px)' },
@@ -376,23 +426,23 @@ export default function AuthPageClient() {
 
         {/* Feedback Alerts */}
         {error && (
-          <Alert severity="error" sx={{ mb: 2.5, borderRadius: '12px', fontSize: '0.85rem' }}>
+          <Alert severity="error" sx={{ mb: 1.5, borderRadius: '10px', fontSize: '0.82rem', py: 0.4 }}>
             {error}
           </Alert>
         )}
         {successMessage && (
-          <Alert severity="success" sx={{ mb: 2.5, borderRadius: '12px', fontSize: '0.85rem' }}>
+          <Alert severity="success" sx={{ mb: 1.5, borderRadius: '10px', fontSize: '0.82rem', py: 0.4 }}>
             {successMessage}
           </Alert>
         )}
 
         {/* Main Form Fields with Animated Underline Transitions */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* First Name & Last Name (Sign Up only) */}
           {mode === 'signup' && (
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2.5 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.75 }}>
               <Box>
-                <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#F1F5F9', letterSpacing: '0.06em', mb: 0.25, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
+                <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#F1F5F9', letterSpacing: '0.06em', mb: 0.2, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
                   FIRST NAME <span style={{ color: '#F87171' }}>*</span>
                 </Typography>
                 <TextField
@@ -407,21 +457,21 @@ export default function AuthPageClient() {
                       disableUnderline: false,
                       startAdornment: (
                         <InputAdornment position="start">
-                          <PersonOutlineRoundedIcon sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 18 }} />
+                          <PersonOutlineRoundedIcon sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 17 }} />
                         </InputAdornment>
                       ),
                     },
                   }}
                   sx={{
                     '& .MuiInput-root': {
-                      fontSize: '1rem',
+                      fontSize: '0.92rem',
                       color: '#FFFFFF',
                       fontWeight: 500,
-                      py: 0.5,
+                      py: 0.3,
                       transition: 'all 0.25s ease',
-                      '&:before': { borderBottom: '2px solid rgba(255, 255, 255, 0.55)' },
-                      '&:hover:not(.Mui-disabled):before': { borderBottom: '2px solid #FFFFFF' },
-                      '&:after': { borderBottom: '2.5px solid #38BDF8', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
+                      '&:before': { borderBottom: '1.5px solid rgba(255, 255, 255, 0.55)' },
+                      '&:hover:not(.Mui-disabled):before': { borderBottom: '1.5px solid #FFFFFF' },
+                      '&:after': { borderBottom: '2px solid #38BDF8', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
                       '& input::placeholder': { color: 'rgba(255, 255, 255, 0.65)', opacity: 1 },
                     },
                   }}
@@ -429,7 +479,7 @@ export default function AuthPageClient() {
               </Box>
 
               <Box>
-                <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#F1F5F9', letterSpacing: '0.06em', mb: 0.25, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
+                <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#F1F5F9', letterSpacing: '0.06em', mb: 0.2, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
                   LAST NAME <span style={{ color: '#F87171' }}>*</span>
                 </Typography>
                 <TextField
@@ -446,14 +496,14 @@ export default function AuthPageClient() {
                   }}
                   sx={{
                     '& .MuiInput-root': {
-                      fontSize: '1rem',
+                      fontSize: '0.92rem',
                       color: '#FFFFFF',
                       fontWeight: 500,
-                      py: 0.5,
+                      py: 0.3,
                       transition: 'all 0.25s ease',
-                      '&:before': { borderBottom: '2px solid rgba(255, 255, 255, 0.55)' },
-                      '&:hover:not(.Mui-disabled):before': { borderBottom: '2px solid #FFFFFF' },
-                      '&:after': { borderBottom: '2.5px solid #38BDF8', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
+                      '&:before': { borderBottom: '1.5px solid rgba(255, 255, 255, 0.55)' },
+                      '&:hover:not(.Mui-disabled):before': { borderBottom: '1.5px solid #FFFFFF' },
+                      '&:after': { borderBottom: '2px solid #38BDF8', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
                       '& input::placeholder': { color: 'rgba(255, 255, 255, 0.65)', opacity: 1 },
                     },
                   }}
@@ -464,7 +514,7 @@ export default function AuthPageClient() {
 
           {/* Quick Demo Fill Pills for Role Testing */}
           {mode === 'signin' && (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
               <Box
                 onClick={() => {
                   setEmail('saahil123@gmail.com');
@@ -473,14 +523,14 @@ export default function AuthPageClient() {
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 0.8,
-                  px: 1.4,
-                  py: 0.55,
-                  borderRadius: '20px',
+                  gap: 0.6,
+                  px: 1.2,
+                  py: 0.45,
+                  borderRadius: '16px',
                   bgcolor: 'rgba(56, 189, 248, 0.12)',
                   border: '1px solid rgba(56, 189, 248, 0.3)',
                   color: '#38BDF8',
-                  fontSize: '0.75rem',
+                  fontSize: '0.72rem',
                   fontWeight: 700,
                   cursor: 'pointer',
                   '&:hover': {
@@ -491,7 +541,7 @@ export default function AuthPageClient() {
                   transition: 'all 0.2s ease',
                 }}
               >
-                <ShieldOutlinedIcon sx={{ fontSize: 14 }} />
+                <ShieldOutlinedIcon sx={{ fontSize: 13 }} />
                 <span>Super Admin (saahil123@gmail.com)</span>
               </Box>
 
@@ -503,14 +553,14 @@ export default function AuthPageClient() {
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 0.8,
-                  px: 1.4,
-                  py: 0.55,
-                  borderRadius: '20px',
+                  gap: 0.6,
+                  px: 1.2,
+                  py: 0.45,
+                  borderRadius: '16px',
                   bgcolor: 'rgba(52, 211, 153, 0.12)',
                   border: '1px solid rgba(52, 211, 153, 0.3)',
                   color: '#34D399',
-                  fontSize: '0.75rem',
+                  fontSize: '0.72rem',
                   fontWeight: 700,
                   cursor: 'pointer',
                   '&:hover': {
@@ -521,7 +571,7 @@ export default function AuthPageClient() {
                   transition: 'all 0.2s ease',
                 }}
               >
-                <SchoolRoundedIcon sx={{ fontSize: 14 }} />
+                <SchoolRoundedIcon sx={{ fontSize: 13 }} />
                 <span>Student (liam.vance@stanford.edu)</span>
               </Box>
             </Box>
@@ -529,7 +579,7 @@ export default function AuthPageClient() {
 
           {/* Email Address */}
           <Box>
-            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#F1F5F9', letterSpacing: '0.06em', mb: 0.25, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
+            <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#F1F5F9', letterSpacing: '0.06em', mb: 0.2, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
               EMAIL ADDRESS <span style={{ color: '#F87171' }}>*</span>
             </Typography>
             <TextField
@@ -545,21 +595,21 @@ export default function AuthPageClient() {
                   disableUnderline: false,
                   startAdornment: (
                     <InputAdornment position="start">
-                      <EmailOutlinedIcon sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 18 }} />
+                      <EmailOutlinedIcon sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 17 }} />
                     </InputAdornment>
                   ),
                 },
               }}
               sx={{
                 '& .MuiInput-root': {
-                  fontSize: '1rem',
+                  fontSize: '0.92rem',
                   color: '#FFFFFF',
                   fontWeight: 500,
-                  py: 0.5,
+                  py: 0.3,
                   transition: 'all 0.25s ease',
-                  '&:before': { borderBottom: '2px solid rgba(255, 255, 255, 0.55)' },
-                  '&:hover:not(.Mui-disabled):before': { borderBottom: '2px solid #FFFFFF' },
-                  '&:after': { borderBottom: '2.5px solid #38BDF8', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
+                  '&:before': { borderBottom: '1.5px solid rgba(255, 255, 255, 0.55)' },
+                  '&:hover:not(.Mui-disabled):before': { borderBottom: '1.5px solid #FFFFFF' },
+                  '&:after': { borderBottom: '2px solid #38BDF8', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
                   '& input::placeholder': { color: 'rgba(255, 255, 255, 0.65)', opacity: 1 },
                 },
               }}
@@ -569,7 +619,7 @@ export default function AuthPageClient() {
           {/* Password */}
           {mode !== 'forgot' && (
             <Box>
-              <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#F1F5F9', letterSpacing: '0.06em', mb: 0.25, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
+              <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#F1F5F9', letterSpacing: '0.06em', mb: 0.2, textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>
                 PASSWORD <span style={{ color: '#F87171' }}>*</span>
               </Typography>
               <TextField
@@ -585,7 +635,7 @@ export default function AuthPageClient() {
                     disableUnderline: false,
                     startAdornment: (
                       <InputAdornment position="start">
-                        <LockOutlinedIcon sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 18 }} />
+                        <LockOutlinedIcon sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 17 }} />
                       </InputAdornment>
                     ),
                     endAdornment: (
@@ -593,9 +643,9 @@ export default function AuthPageClient() {
                         <IconButton
                           size="small"
                           onClick={() => setShowPassword(!showPassword)}
-                          sx={{ color: '#CBD5E1', '&:hover': { color: '#FFFFFF', transform: 'scale(1.1)' }, transition: 'all 0.2s' }}
+                          sx={{ color: '#CBD5E1', '&:hover': { color: '#FFFFFF', transform: 'scale(1.1)' }, transition: 'all 0.2s', p: 0.5 }}
                         >
-                          {showPassword ? <VisibilityOffOutlinedIcon fontSize="small" /> : <VisibilityOutlinedIcon fontSize="small" />}
+                          {showPassword ? <VisibilityOffOutlinedIcon sx={{ fontSize: 17 }} /> : <VisibilityOutlinedIcon sx={{ fontSize: 17 }} />}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -603,13 +653,13 @@ export default function AuthPageClient() {
                 }}
                 sx={{
                   '& .MuiInput-root': {
-                    fontSize: '1rem',
+                    fontSize: '0.92rem',
                     color: '#FFFFFF',
                     fontWeight: 500,
-                    py: 0.5,
+                    py: 0.3,
                     transition: 'all 0.25s ease',
-                    '&:before': { borderBottom: '2px solid rgba(255, 255, 255, 0.55)' },
-                    '&:hover:not(.Mui-disabled):before': { borderBottom: '2px solid #FFFFFF' },
+                    '&:before': { borderBottom: '1.5px solid rgba(255, 255, 255, 0.55)' },
+                    '&:hover:not(.Mui-disabled):before': { borderBottom: '1.5px solid #FFFFFF' },
                     '& input::placeholder': { color: 'rgba(255, 255, 255, 0.65)', opacity: 1 },
                   },
                 }}
@@ -621,17 +671,17 @@ export default function AuthPageClient() {
           {requires2FA && (
             <Box
               sx={{
-                p: 2,
-                borderRadius: '12px',
+                p: 1.5,
+                borderRadius: '10px',
                 bgcolor: 'rgba(56, 189, 248, 0.1)',
                 border: '1px solid rgba(56, 189, 248, 0.3)',
                 backdropFilter: 'blur(10px)',
               }}
             >
-              <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#38BDF8', letterSpacing: '0.06em', mb: 0.25 }}>
+              <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#38BDF8', letterSpacing: '0.06em', mb: 0.2 }}>
                 2-FACTOR AUTHENTICATION CODE <span style={{ color: '#F87171' }}>*</span>
               </Typography>
-              <Typography sx={{ fontSize: '0.78rem', color: '#94A3B8', mb: 1 }}>
+              <Typography sx={{ fontSize: '0.75rem', color: '#94A3B8', mb: 0.8 }}>
                 {challengeMessage || 'Enter the 6-digit code from Google Authenticator / Authy or 8-char recovery code'}
               </Typography>
               <TextField
@@ -646,21 +696,21 @@ export default function AuthPageClient() {
                     disableUnderline: false,
                     startAdornment: (
                       <InputAdornment position="start">
-                        <ShieldOutlinedIcon sx={{ color: '#38BDF8', fontSize: 18 }} />
+                        <ShieldOutlinedIcon sx={{ color: '#38BDF8', fontSize: 17 }} />
                       </InputAdornment>
                     ),
                   },
                 }}
                 sx={{
                   '& .MuiInput-root': {
-                    fontSize: '1.15rem',
+                    fontSize: '1.05rem',
                     letterSpacing: '0.15em',
                     color: '#FFFFFF',
                     fontWeight: 700,
-                    py: 0.5,
-                    '&:before': { borderBottom: '2px solid rgba(56, 189, 248, 0.5)' },
-                    '&:hover:not(.Mui-disabled):before': { borderBottom: '2px solid #38BDF8' },
-                    '&:after': { borderBottom: '2.5px solid #38BDF8' },
+                    py: 0.3,
+                    '&:before': { borderBottom: '1.5px solid rgba(56, 189, 248, 0.5)' },
+                    '&:hover:not(.Mui-disabled):before': { borderBottom: '1.5px solid #38BDF8' },
+                    '&:after': { borderBottom: '2px solid #38BDF8' },
                     '& input::placeholder': { color: 'rgba(255, 255, 255, 0.4)', opacity: 1, letterSpacing: '0.15em' },
                   },
                 }}
@@ -677,10 +727,10 @@ export default function AuthPageClient() {
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
                     size="small"
-                    sx={{ color: 'rgba(255, 255, 255, 0.75)', '&.Mui-checked': { color: '#38BDF8' }, p: 0.5 }}
+                    sx={{ color: 'rgba(255, 255, 255, 0.75)', '&.Mui-checked': { color: '#38BDF8' }, p: 0.4 }}
                   />
                 }
-                label={<Typography sx={{ fontSize: '0.84rem', color: '#F1F5F9', fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>Remember session</Typography>}
+                label={<Typography sx={{ fontSize: '0.8rem', color: '#F1F5F9', fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>Remember session</Typography>}
               />
               <Button
                 type="button"
@@ -688,7 +738,7 @@ export default function AuthPageClient() {
                 sx={{
                   color: '#60A5FA',
                   textTransform: 'none',
-                  fontSize: '0.84rem',
+                  fontSize: '0.8rem',
                   fontWeight: 700,
                   p: 0,
                   minWidth: 'auto',
@@ -702,7 +752,7 @@ export default function AuthPageClient() {
           )}
 
           {/* Medium-Width Animated Submit Button with Shimmer & Sliding Arrow */}
-          <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ mt: 0.25, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Button
               type="submit"
               disabled={isLoading}
@@ -711,18 +761,18 @@ export default function AuthPageClient() {
                 background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
                 color: '#FFFFFF',
                 borderRadius: '50px',
-                py: 1.15,
-                pl: 3.5,
-                pr: 1.25,
-                minWidth: 180,
+                py: 0.9,
+                pl: 3,
+                pr: 1,
+                minWidth: 160,
                 textTransform: 'none',
                 fontWeight: 700,
-                fontSize: '0.98rem',
+                fontSize: '0.92rem',
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 2.5,
-                boxShadow: '0 8px 24px rgba(37, 99, 235, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+                gap: 2,
+                boxShadow: '0 6px 20px rgba(37, 99, 235, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
                 position: 'relative',
                 overflow: 'hidden',
                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -743,10 +793,10 @@ export default function AuthPageClient() {
                 },
                 '&:hover': {
                   background: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)',
-                  boxShadow: '0 12px 32px rgba(37, 99, 235, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                  boxShadow: '0 10px 28px rgba(37, 99, 235, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
                   transform: 'translateY(-2px)',
                   '& .arrow-icon-circle': {
-                    transform: 'translateX(4px) scale(1.08)',
+                    transform: 'translateX(3px) scale(1.06)',
                     bgcolor: 'rgba(255, 255, 255, 0.35)',
                   },
                 },
@@ -759,8 +809,8 @@ export default function AuthPageClient() {
               <Box
                 className="arrow-icon-circle"
                 sx={{
-                  width: 32,
-                  height: 32,
+                  width: 28,
+                  height: 28,
                   borderRadius: '50%',
                   bgcolor: 'rgba(255, 255, 255, 0.22)',
                   display: 'flex',
@@ -770,9 +820,9 @@ export default function AuthPageClient() {
                 }}
               >
                 {isLoading ? (
-                  <CircularProgress size={16} sx={{ color: '#FFFFFF' }} />
+                  <CircularProgress size={14} sx={{ color: '#FFFFFF' }} />
                 ) : (
-                  <ArrowForwardRoundedIcon sx={{ fontSize: 18, color: '#FFFFFF' }} />
+                  <ArrowForwardRoundedIcon sx={{ fontSize: 16, color: '#FFFFFF' }} />
                 )}
               </Box>
             </Button>
@@ -782,11 +832,11 @@ export default function AuthPageClient() {
                 fullWidth
                 onClick={() => setMode('signin')}
                 sx={{
-                  mt: 1,
+                  mt: 0.5,
                   color: '#E2E8F0',
                   textTransform: 'none',
                   fontWeight: 600,
-                  fontSize: '0.84rem',
+                  fontSize: '0.8rem',
                   '&:hover': { color: '#FFFFFF' },
                 }}
               >
@@ -797,16 +847,16 @@ export default function AuthPageClient() {
         </form>
 
         {/* SSO Divider */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 3.5, mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 2, mb: 1.25 }}>
           <Divider sx={{ flex: 1, borderColor: 'rgba(255, 255, 255, 0.22)' }} />
-          <Typography sx={{ fontSize: '0.74rem', color: '#E2E8F0', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
+          <Typography sx={{ fontSize: '0.7rem', color: '#E2E8F0', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.07em', textShadow: '0 1px 3px rgba(0,0,0,0.6)' }}>
             or continue with
           </Typography>
           <Divider sx={{ flex: 1, borderColor: 'rgba(255, 255, 255, 0.22)' }} />
         </Box>
 
         {/* Micro-Animated Google & GitHub Buttons */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.25 }}>
           {/* Google Button */}
           <Button
             onClick={() => handleOAuthLogin('google')}
@@ -817,22 +867,22 @@ export default function AuthPageClient() {
               color: '#0F172A',
               textTransform: 'none',
               fontWeight: 700,
-              fontSize: '0.86rem',
-              py: 1,
+              fontSize: '0.82rem',
+              py: 0.75,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 1.25,
-              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.2)',
+              gap: 1,
+              boxShadow: '0 3px 12px rgba(0, 0, 0, 0.2)',
               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
                 bgcolor: '#FFFFFF',
-                boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
+                boxShadow: '0 6px 18px rgba(0, 0, 0, 0.3)',
                 transform: 'translateY(-2px)',
               },
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24">
+            <svg width="16" height="16" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
@@ -863,29 +913,29 @@ export default function AuthPageClient() {
               color: '#0F172A',
               textTransform: 'none',
               fontWeight: 700,
-              fontSize: '0.86rem',
-              py: 1,
+              fontSize: '0.82rem',
+              py: 0.75,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 1.25,
-              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.2)',
+              gap: 1,
+              boxShadow: '0 3px 12px rgba(0, 0, 0, 0.2)',
               transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
                 bgcolor: '#FFFFFF',
-                boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
+                boxShadow: '0 6px 18px rgba(0, 0, 0, 0.3)',
                 transform: 'translateY(-2px)',
               },
             }}
           >
-            <GitHubIcon sx={{ fontSize: 19, color: '#0F172A' }} />
+            <GitHubIcon sx={{ fontSize: 17, color: '#0F172A' }} />
             <span>GitHub</span>
           </Button>
         </Box>
 
         {/* Security & Compliance Footer Micro-text */}
-        <Box sx={{ mt: 3, textAlign: 'center' }}>
-          <Typography sx={{ fontSize: '0.72rem', color: 'rgba(226, 232, 240, 0.65)', fontWeight: 500, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+        <Box sx={{ mt: 1.5, textAlign: 'center' }}>
+          <Typography sx={{ fontSize: '0.68rem', color: 'rgba(226, 232, 240, 0.65)', fontWeight: 500, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
             Secured by CodePlatform Cloud · Privacy & Terms
           </Typography>
         </Box>

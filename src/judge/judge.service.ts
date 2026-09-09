@@ -105,11 +105,12 @@ export class JudgeService {
 
     if (totalTestCases === 0) {
       return {
-        verdict: SubmissionVerdict.ACCEPTED,
-        runtime: 10,
-        memory: 1024,
+        verdict: SubmissionVerdict.SYSTEM_ERROR,
+        runtime: 0,
+        memory: 0,
         passedTestCases: 0,
         totalTestCases: 0,
+        errorMessage: 'No test cases configured for problem',
       };
     }
 
@@ -207,12 +208,11 @@ export class JudgeService {
   private async executeInSandbox(
     _sourceCode: string,
     _language: ProgrammingLanguage,
-    input: string,
+    _input: string,
   ): Promise<{ output?: string; compilationError?: string; runtimeError?: string }> {
-    // For local evaluation, simulate execution or match expected if sandbox container is pending
-    // In full docker sandbox mode, this delegates to an isolated worker / docker container
+    // Fail closed if isolated docker sandbox environment is pending
     return {
-      output: input.trim(), // Default mock echo execution for sandbox test runner
+      runtimeError: 'Sandboxed code execution environment offline or pending queue configuration',
     };
   }
 }
