@@ -203,6 +203,7 @@ export default function StudentSettingsTab() {
               <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Contest Reminders & Starts</Typography>
               <Button
                 size="small"
+                disabled
                 variant={emailContests ? 'contained' : 'outlined'}
                 onClick={() => setEmailContests(!emailContests)}
                 sx={{ textTransform: 'none', borderRadius: '6px', fontSize: '0.78rem', bgcolor: emailContests ? '#2563EB' : 'transparent' }}
@@ -215,6 +216,7 @@ export default function StudentSettingsTab() {
               <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Course & Lesson Milestone Alerts</Typography>
               <Button
                 size="small"
+                disabled
                 variant={emailCourses ? 'contained' : 'outlined'}
                 onClick={() => setEmailCourses(!emailCourses)}
                 sx={{ textTransform: 'none', borderRadius: '6px', fontSize: '0.78rem', bgcolor: emailCourses ? '#2563EB' : 'transparent' }}

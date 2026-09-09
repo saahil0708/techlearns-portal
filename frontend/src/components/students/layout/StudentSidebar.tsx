@@ -36,6 +36,7 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutUser } from '@/store/slices/authSlice';
 import { apiService } from '@/lib/api-service';
+import LogoutConfirmModal from '@/components/shared/LogoutConfirmModal';
 
 // Student / Coder Navigation Matrix
 const STUDENT_NAV_ITEMS = [
@@ -441,85 +442,11 @@ export default function StudentSidebar() {
       </Box>
 
       {/* Logout Confirmation Dialog */}
-      <Dialog
+      <LogoutConfirmModal
         open={logoutDialogOpen}
         onClose={() => setLogoutDialogOpen(false)}
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: '20px',
-              p: 1,
-              maxWidth: 400,
-              width: '100%',
-              bgcolor: '#FFFFFF',
-              boxShadow: '0 20px 48px rgba(0, 0, 0, 0.16)',
-            },
-          },
-        }}
-      >
-        <DialogTitle sx={{ pb: 1, pt: 2, px: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-            <Box
-              sx={{
-                width: 38,
-                height: 38,
-                borderRadius: '12px',
-                bgcolor: '#FEE2E2',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#DC2626',
-              }}
-            >
-              <WarningAmberRoundedIcon sx={{ fontSize: 22 }} />
-            </Box>
-            <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: '#0F172A' }}>
-              Sign Out
-            </Typography>
-          </Box>
-          <IconButton onClick={() => setLogoutDialogOpen(false)} size="small" sx={{ color: '#94A3B8' }}>
-            <CloseRoundedIcon sx={{ fontSize: 18 }} />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent sx={{ px: 3, py: 1.5 }}>
-          <Typography sx={{ fontSize: '0.88rem', color: '#64748B', lineHeight: 1.6 }}>
-            Are you sure you want to log out of your session on CodePlatform? You will need to log in again to access your workspace.
-          </Typography>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, pb: 2.5, pt: 1, gap: 1 }}>
-          <Button
-            onClick={() => setLogoutDialogOpen(false)}
-            variant="outlined"
-            sx={{
-              borderRadius: '10px',
-              textTransform: 'none',
-              fontWeight: 700,
-              color: '#64748B',
-              borderColor: '#E2E8F0',
-              '&:hover': { borderColor: '#CBD5E1', bgcolor: '#F8FAFC' },
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleConfirmLogout}
-            variant="contained"
-            disableElevation
-            sx={{
-              borderRadius: '10px',
-              textTransform: 'none',
-              fontWeight: 700,
-              bgcolor: '#DC2626',
-              color: '#FFFFFF',
-              '&:hover': { bgcolor: '#B91C1C' },
-            }}
-          >
-            Sign Out
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleConfirmLogout}
+      />
     </>
   );
 }

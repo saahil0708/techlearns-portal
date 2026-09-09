@@ -73,30 +73,6 @@ interface ProfileProps {
   uptimePercentage?: string;
 }
 
-const FALLBACK_AUDIT_LOGS = [
-  {
-    id: 'fallback-audit-1',
-    action: 'Password & Credential Verification',
-    detail: 'Password verified and session refreshed via primary authenticator',
-    createdAt: '2026-03-01T10:00:00Z',
-    status: 'Success',
-  },
-  {
-    id: 'fallback-audit-2',
-    action: 'Tenant Onboarding Approved',
-    detail: 'Approved college access & roster provisioning for Stanford School of Computing',
-    createdAt: '2026-03-01T06:00:00Z',
-    status: 'Completed',
-  },
-  {
-    id: 'fallback-audit-3',
-    action: 'Sandbox Compiler Worker Scale-Up',
-    detail: 'Updated Docker isolation cluster limits to 8 parallel execution pods',
-    createdAt: '2026-02-28T10:00:00Z',
-    status: 'Deployed',
-  },
-];
-
 export default function ProfileClient({
   name: propName,
   username: propUsername,
@@ -771,69 +747,77 @@ export default function ProfileClient({
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {(liveAuditLogs.length > 0 ? liveAuditLogs : FALLBACK_AUDIT_LOGS).map((item: any, idx) => {
-                  const timeStr = item.createdAt
-                    ? new Date(item.createdAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                    : 'Recent';
-                  const isSuccess =
-                    item.status?.toUpperCase() === 'SUCCESS' ||
-                    item.status?.toUpperCase() === 'COMPLETED';
-                  const color = isSuccess ? '#16A34A' : '#2563EB';
-                  const badgeBg = isSuccess ? '#F0FDF4' : '#EFF6FF';
+                {liveAuditLogs.length === 0 ? (
+                  <Box sx={{ py: 3, textAlign: 'center' }}>
+                    <Typography sx={{ color: '#64748B', fontSize: '0.88rem', fontWeight: 500 }}>
+                      No recent audit log records available.
+                    </Typography>
+                  </Box>
+                ) : (
+                  liveAuditLogs.map((item: any, idx) => {
+                    const timeStr = item.createdAt
+                      ? new Date(item.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : 'Recent';
+                    const isSuccess =
+                      item.status?.toUpperCase() === 'SUCCESS' ||
+                      item.status?.toUpperCase() === 'COMPLETED';
+                    const color = isSuccess ? '#16A34A' : '#2563EB';
+                    const badgeBg = isSuccess ? '#F0FDF4' : '#EFF6FF';
 
-                  return (
-                    <Box
-                      key={item.id || idx}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        p: 1.5,
-                        borderRadius: '12px',
-                        bgcolor: '#F8FAFC',
-                        border: '1px solid #F1F5F9',
-                        transition: 'all 0.15s ease',
-                        '&:hover': { bgcolor: '#F1F5F9' },
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color }} />
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.86rem' }}>
-                            {item.action}
+                    return (
+                      <Box
+                        key={item.id || idx}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          p: 1.5,
+                          borderRadius: '12px',
+                          bgcolor: '#F8FAFC',
+                          border: '1px solid #F1F5F9',
+                          transition: 'all 0.15s ease',
+                          '&:hover': { bgcolor: '#F1F5F9' },
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color }} />
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.86rem' }}>
+                              {item.action}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.78rem' }}>
+                              {item.detail}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 500, fontSize: '0.76rem' }}>
+                            {timeStr}
                           </Typography>
-                          <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.78rem' }}>
-                            {item.detail}
-                          </Typography>
+                          <Box
+                            sx={{
+                              px: 1.25,
+                              py: 0.3,
+                              borderRadius: '6px',
+                              bgcolor: badgeBg,
+                              color: color,
+                              fontWeight: 700,
+                              fontSize: '0.72rem',
+                            }}
+                          >
+                            {item.status}
+                          </Box>
                         </Box>
                       </Box>
-
-                      <Box sx={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 500, fontSize: '0.76rem' }}>
-                          {timeStr}
-                        </Typography>
-                        <Box
-                          sx={{
-                            px: 1.25,
-                            py: 0.3,
-                            borderRadius: '6px',
-                            bgcolor: badgeBg,
-                            color: color,
-                            fontWeight: 700,
-                            fontSize: '0.72rem',
-                          }}
-                        >
-                          {item.status}
-                        </Box>
-                      </Box>
-                    </Box>
-                  );
-                })}
+                    );
+                  })
+                )}
               </Box>
             </Paper>
           </Box>

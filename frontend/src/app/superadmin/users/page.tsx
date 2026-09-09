@@ -26,24 +26,25 @@ export default async function UsersDirectoryPage() {
           const collegeName = primaryMembership?.college?.name;
           const userInstitution = item.institution?.trim();
 
+          const rawInstType = item.institutionType === 'College' || item.institutionType === 'School' || item.institutionType === 'Independent'
+            ? item.institutionType
+            : 'Independent';
+
           const institutionType: 'College' | 'School' | 'Independent' = collegeName
             ? 'College'
-            : item.institutionType === 'School'
+            : rawInstType === 'School'
             ? 'School'
             : userInstitution
-            ? item.institutionType || 'Independent'
+            ? rawInstType
             : 'Independent';
 
           const institutionName = collegeName || userInstitution || 'Independent';
 
-          const lastLoginDate = item.lastLoginAt
-            ? new Date(item.lastLoginAt).toLocaleDateString('en-US', {
-                month: 'short',
-                day: '2-digit',
-                year: 'numeric',
-              })
-            : item.auditLogs?.[0]?.createdAt
-            ? new Date(item.auditLogs[0].createdAt).toLocaleDateString('en-US', {
+          const lastLoginAtRaw = item.lastLoginAt || item.auditLogs?.[0]?.createdAt || '';
+          const createdAtRaw = item.createdAt || '';
+
+          const lastLoginDate = lastLoginAtRaw
+            ? new Date(lastLoginAtRaw).toLocaleDateString('en-US', {
                 month: 'short',
                 day: '2-digit',
                 year: 'numeric',
@@ -62,14 +63,16 @@ export default async function UsersDirectoryPage() {
             institutionName,
             twoFactorEnabled: Boolean(item.twoFactorEnabled),
             lastLoginAt: lastLoginDate,
+            lastLoginAtRaw,
             lastLoginIp,
-            createdAt: item.createdAt
-              ? new Date(item.createdAt).toLocaleDateString('en-US', {
+            createdAt: createdAtRaw
+              ? new Date(createdAtRaw).toLocaleDateString('en-US', {
                   month: 'short',
                   day: '2-digit',
                   year: 'numeric',
                 })
               : 'Recently',
+            createdAtRaw,
             status: item.status === 'ACTIVE' ? 'Active' : 'Suspended',
             avatarColor: '#7C3AED',
           };

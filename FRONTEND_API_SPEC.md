@@ -70,10 +70,9 @@ interface ApiResponse<T> {
 | `GET` | `/api/v1/colleges/:id` | Single college details & KPI metrics | – | `CollegeDetail` |
 | `PATCH` | `/api/v1/colleges/:id` | Update college details & quota | `{ name?, maxQuota?, status?, domain? }` | `CollegeEntity` |
 | `GET` | `/api/v1/colleges/:id/batches` | Get college batches/cohorts | `?page=&limit=&search=` | `BatchItem[]` + `meta` |
-| `POST` | `/api/v1/colleges/:id/batches` | Create a new batch | `{ name, code, academicYear, capacity }` | `BatchItem` |
-| `GET` | `/api/v1/colleges/:id/students` | Get enrolled student roster | `?batchId=&page=&limit=&search=` | `CollegeStudent[]` + `meta` |
-| `GET` | `/api/v1/colleges/:id/courses` | Get assigned curriculum courses | `?page=&limit=` | `CollegeCourse[]` + `meta` |
 | `GET` | `/api/v1/colleges/:id/faculty` | Get faculty members list | `?department=&page=&limit=` | `FacultyItem[]` + `meta` |
+| `POST` | `/api/v1/colleges/join` | Join an institution via College Code | `{ collegeCode }` | `{ college, membership, user }` |
+| `POST` | `/api/v1/batches/join` | Join a specific batch via Batch Sub-Code | `{ batchCode }` | `{ college, batch, membership, user }` |
 
 ---
 
@@ -254,7 +253,7 @@ interface ApiResponse<T> {
 | Method | Endpoint | Description | Query / Body Payload | Response Entity |
 |---|---|---|---|---|
 | `POST` | `/api/v1/auth/login` | Email/Password login, issue JWT tokens | `{ email, password }` | `{ accessToken, refreshToken, user }` |
-| `POST` | `/api/v1/auth/register` | Student/Faculty registration | `{ name, handle, email, password, role }` | `{ user, accessToken }` |
+| `POST` | `/api/v1/auth/register` | Student/Faculty registration | `{ name, handle, email, password, role, joinCode? }` | `{ user, accessToken }` |
 | `GET` | `/api/v1/auth/me` | Current authenticated user profile | Bearer Token in Header | `UserEntity` |
 | `POST` | `/api/v1/auth/refresh` | Refresh expired access tokens | `{ refreshToken }` | `{ accessToken }` |
 | `POST` | `/api/v1/auth/logout` | Invalidate session tokens | – | `{ success: boolean }` |

@@ -46,6 +46,7 @@ import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import { FluidArrowRight } from '@/utils/fluid_arrow';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 
@@ -55,6 +56,7 @@ import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import { apiService } from '@/lib/api-service';
 import type { NewCollegeData } from '@/components/superadmin/colleges/CreateCollegeModal';
+import EditCollegeModal, { UpdateCollegeData } from '@/components/superadmin/colleges/EditCollegeModal';
 import { useToast } from '@/context/ToastContext';
 
 const CreateCollegeModal = dynamic(() => import('@/components/superadmin/colleges/CreateCollegeModal'), { loading: () => null });
@@ -91,6 +93,7 @@ export default function CollegesDirectoryClient({ initialColleges }: CollegesDir
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [menuAnchor, setMenuAnchor] = useState<{ element: HTMLElement; college: CollegeEntity } | null>(null);
+  const [editingCollege, setEditingCollege] = useState<CollegeEntity | null>(null);
 
   // Client-side live data refresh
   React.useEffect(() => {
@@ -157,8 +160,46 @@ export default function CollegesDirectoryClient({ initialColleges }: CollegesDir
     setSelectedIds((prev) => prev.filter((item) => item !== id));
     try {
       await apiService.deleteCollege(id);
-    } catch (err) {
+      toast.success('College removed successfully.', 'College Deleted');
+    } catch (err: any) {
       console.error(`Failed to delete college ${id}:`, err);
+      toast.error(err?.message || 'Failed to delete college.', 'Delete Error');
+    }
+  };
+
+  const handleUpdateCollege = async (data: UpdateCollegeData) => {
+    const original = colleges.find((c) => c.id === data.id);
+    // Optimistic update
+    setColleges((prev) =>
+      prev.map((c) =>
+        c.id === data.id
+          ? {
+              ...c,
+              name: data.name || c.name,
+              code: data.code || c.code,
+              region: data.region || c.region,
+              status: data.status === 'ACTIVE' ? 'Active' : data.status === 'SUSPENDED' ? 'Suspended' : c.status,
+            }
+          : c
+      )
+    );
+    try {
+      await apiService.updateCollege(data.id, {
+        name: data.name,
+        code: data.code,
+        email: data.email,
+        phone: data.phone,
+        address: data.region,
+        status: data.status,
+      });
+      toast.success(`"${data.name}" updated successfully.`, 'College Updated');
+    } catch (err: any) {
+      // Revert on error
+      if (original) {
+        setColleges((prev) => prev.map((c) => (c.id === data.id ? original : c)));
+      }
+      toast.error(err?.message || 'Failed to update college.', 'Update Error');
+      throw err;
     }
   };
 
@@ -894,6 +935,23 @@ export default function CollegesDirectoryClient({ initialColleges }: CollegesDir
                             >
                               Manage
                             </Button>
+                            <Tooltip title="Edit College">
+                              <IconButton
+                                size="small"
+                                onClick={() => setEditingCollege(college)}
+                                sx={{
+                                  color: '#2563EB',
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: '6px',
+                                  border: '1px solid #DBEAFE',
+                                  bgcolor: '#EFF6FF',
+                                  '&:hover': { color: '#1D4ED8', bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                                }}
+                              >
+                                <EditRoundedIcon sx={{ fontSize: 17 }} />
+                              </IconButton>
+                            </Tooltip>
                             <Tooltip title="Delete College">
                               <IconButton
                                 size="small"
@@ -1254,6 +1312,14 @@ export default function CollegesDirectoryClient({ initialColleges }: CollegesDir
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateCollege}
+      />
+
+      {/* 9. Edit College Modal */}
+      <EditCollegeModal
+        open={Boolean(editingCollege)}
+        college={editingCollege}
+        onClose={() => setEditingCollege(null)}
+        onSubmit={handleUpdateCollege}
       />
     </Box>
   );

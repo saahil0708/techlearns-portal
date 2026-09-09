@@ -91,6 +91,9 @@ describe('JudgeService', () => {
           verdict: SubmissionVerdict.SYSTEM_ERROR,
           passedTestCases: 0,
           totalTestCases: 0,
+          runtime: 0,
+          memory: 0,
+          errorMessage: 'No test cases configured for problem',
         }),
       }),
     );
@@ -120,7 +123,7 @@ describe('JudgeService', () => {
         where: { id: 'sub-mock' },
         data: expect.objectContaining({
           status: SubmissionStatus.COMPLETED,
-          verdict: SubmissionVerdict.RUNTIME_ERROR,
+          verdict: SubmissionVerdict.SYSTEM_ERROR,
           passedTestCases: 0,
           totalTestCases: 1,
         }),

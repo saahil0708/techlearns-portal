@@ -82,8 +82,10 @@ export interface UserDirectoryEntity {
   institutionName: string;
   twoFactorEnabled: boolean;
   lastLoginAt: string;
+  lastLoginAtRaw?: string;
   lastLoginIp: string;
   createdAt: string;
+  createdAtRaw?: string;
   status: 'Active' | 'Invited' | 'Suspended';
   avatarUrl?: string;
   avatarColor: string;
@@ -131,14 +133,10 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
 
               const institutionName = collegeName || userInstitution || 'Independent';
 
-              const lastLoginDate = item.lastLoginAt
-                ? new Date(item.lastLoginAt).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: '2-digit',
-                    year: 'numeric',
-                  })
-                : item.auditLogs?.[0]?.createdAt
-                ? new Date(item.auditLogs[0].createdAt).toLocaleDateString('en-US', {
+              const lastLoginAtRaw = item.lastLoginAt || item.auditLogs?.[0]?.createdAt || '';
+              const createdAtRaw = item.createdAt || '';
+              const lastLoginDate = lastLoginAtRaw
+                ? new Date(lastLoginAtRaw).toLocaleDateString('en-US', {
                     month: 'short',
                     day: '2-digit',
                     year: 'numeric',
@@ -157,6 +155,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                 institutionName,
                 twoFactorEnabled: Boolean(item.twoFactorEnabled),
                 lastLoginAt: lastLoginDate,
+                lastLoginAtRaw,
                 lastLoginIp,
                 createdAt: item.createdAt
                   ? new Date(item.createdAt).toLocaleDateString('en-US', {
@@ -165,6 +164,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                       year: 'numeric',
                     })
                   : 'Recently',
+                createdAtRaw,
                 status: item.status === 'ACTIVE' ? 'Active' : 'Suspended',
                 avatarColor: '#7C3AED',
               };
@@ -278,8 +278,18 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
         return true;
       })
       .sort((a, b) => {
-        let valA: any = a[sortField];
-        let valB: any = b[sortField];
+        let valA: any =
+          sortField === 'lastLoginAt'
+            ? a.lastLoginAtRaw || ''
+            : sortField === 'createdAt'
+            ? a.createdAtRaw || ''
+            : a[sortField];
+        let valB: any =
+          sortField === 'lastLoginAt'
+            ? b.lastLoginAtRaw || ''
+            : sortField === 'createdAt'
+            ? b.createdAtRaw || ''
+            : b[sortField];
 
         if (typeof valA === 'string') {
           valA = valA.toLowerCase();
@@ -328,6 +338,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
   // Add new user handler
   const handleAddUser = async (newData: NewUserData) => {
     const tempId = `usr-${Date.now()}`;
+    const nowIso = new Date().toISOString();
     const newUser: UserDirectoryEntity = {
       id: tempId,
       name: newData.name,
@@ -338,8 +349,10 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
       institutionName: newData.institutionName,
       twoFactorEnabled: false,
       lastLoginAt: 'Invited (Pending)',
+      lastLoginAtRaw: '',
       lastLoginIp: '–',
       createdAt: 'Just now',
+      createdAtRaw: nowIso,
       status: 'Invited',
       avatarColor: '#2563EB',
     };
@@ -356,6 +369,8 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
             ? 'SUPER_ADMIN'
             : newData.role === 'COLLEGE_ADMIN' || newData.role === 'SCHOOL_ADMIN'
             ? 'COLLEGE_ADMIN'
+            : newData.role === 'STUDENT'
+            ? 'STUDENT'
             : 'FACULTY',
       });
       if (created?.id) {

@@ -344,3 +344,60 @@ Update Submission record with Verdict, Runtime, Memory, Error logs
 - [ ] **Phase 9 — Code Submission & Sandboxed Judge Worker**: BullMQ queue, Docker execution worker container, verdict comparator.
 - [ ] **Phase 10 — Contests & Real-Time Leaderboard Engine**: Contest timers, registration, live penalty and score engine.
 - [ ] **Phase 11 — End-to-End Integration & Deployment**: Full full-stack integration, Docker Compose production build, and CI/CD pipelines.
+
+---
+
+## 11. Institution & Student Onboarding Specification
+
+### 11.1 Hierarchical Code System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Institution / College                    │
+│            Auto-Generated Unique Code (e.g. IITB)           │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+            ┌──────────────────┴──────────────────┐
+            ▼                                     ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│       Batch 1: CSE 2026      │    │    Batch 2: AI & DS 2027     │
+│   Sub-Code: IITB-CS26        │    │    Sub-Code: IITB-AI27       │
+└──────────────┬───────────────┘    └──────────────┬───────────────┘
+               │                                   │
+               ▼                                   ▼
+┌──────────────────────────────┐    ┌──────────────────────────────┐
+│  Student Roster (Automated)  │    │  Student Roster (Automated)  │
+└──────────────────────────────┘    └──────────────────────────────┘
+```
+
+### 11.2 Key Mechanics & Rules
+
+1. **Auto-Generated Meaningful Unique Codes**:
+   - **College Code**: When an institution is added manually or via bulk CSV/Excel upload by SuperAdmin, the platform automatically generates a unique, human-readable uppercase code based on the institution's name and acronym (e.g., `IITB`, `MIT-EECS`, `STAN-CS`).
+   - **Batch Sub-Unique Code**: When a cohort/batch is created under an institution, the platform auto-generates a sub-unique join code prefixed with the parent college code (e.g., `IITB-CS26`, `IITB-AI27`).
+
+2. **Student Onboarding Paths**:
+   - **Path A: Direct Batch Join (Fastest 1-Step Onboarding)**
+     - Student enters a batch sub-code (e.g., `IITB-CS26`) during sign-up or from their profile.
+     - The platform automatically:
+       1. Affiliates the student with the institution (`user.institution = college.name`).
+       2. Creates a `CollegeMembership` record (`role = STUDENT`).
+       3. Enrolls the student into the target batch (`BatchStudent` relation).
+   - **Path B: College-Wide Join**
+     - Student enters the top-level college code (e.g., `IITB`).
+     - Student is affiliated with the institution as a general member; faculty can assign them to specific batches at any time.
+
+3. **Faculty Powers & Roster Management**:
+   - Faculty members can generate and copy batch join links/codes to share with their students.
+   - Faculty can directly enroll students by email or upload CSV class rosters directly into their assigned batches.
+
+4. **Email Freedom**:
+   - Students can register with any valid email provider (Gmail, Outlook, personal, or institutional domain); access is authenticated and verified via the cryptographic code lookup.
+
+5. **Platform-Wide Affiliation**:
+   - Verified institution branding and batch badges are automatically displayed on:
+     - Student Profile & Overview
+     - Live Global & College Leaderboards
+     - Timed Contest Standings
+     - Submission Logs & SuperAdmin Directories
+

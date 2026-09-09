@@ -198,6 +198,11 @@ export class UsersService {
                 leaderboardEntries: {
                   where: { userId: baseUser.id },
                 },
+                _count: {
+                  select: {
+                    leaderboardEntries: true,
+                  },
+                },
               },
             },
           },
@@ -285,6 +290,9 @@ export class UsersService {
       for (const mod of enr.course.modules) {
         totalLessons += mod.lessons.length;
       }
+      const completedLessonIds = new Set(
+        user!.lessonProgress.filter((lp) => lp.completed).map((lp) => lp.lessonId),
+      );
       const completedLessons = user!.lessonProgress.filter(
         (lp) =>
           lp.completed &&
@@ -294,12 +302,16 @@ export class UsersService {
       const progressPct =
         totalLessons > 0 ? Math.min(100, Math.round((completedLessons / totalLessons) * 100)) : 0;
 
+      const modulesCompleted = enr.course.modules.filter(
+        (m) => m.lessons.length > 0 && m.lessons.every((l) => completedLessonIds.has(l.id)),
+      ).length;
+
       return {
         id: enr.course.id,
         title: enr.course.title,
         slug: enr.course.id,
         instructor: 'CodePlatform Faculty',
-        modulesCompleted: Math.round(enr.course.modules.length * (progressPct / 100)),
+        modulesCompleted,
         totalModules: enr.course.modules.length,
         progressPct,
         status: progressPct >= 100 ? 'Completed' : 'In Progress',
@@ -311,7 +323,8 @@ export class UsersService {
       const entry = cr.contest.leaderboardEntries.find((e) => e.userId === user.id) || cr.contest.leaderboardEntries[0];
       const rank = entry?.rank || 0;
       const score = entry?.score || 0;
-      const penalty = entry?.penalty ? `${Math.floor(entry.penalty / 60)}m` : '00:00:00';
+      const penalty = entry?.penalty ? `${Math.floor(entry.penalty / 60)}m` : '0m';
+      const totalParticipants = (cr.contest as any)._count?.leaderboardEntries ?? 0;
       const dateStr = new Date(cr.contest.startTime).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
@@ -323,7 +336,7 @@ export class UsersService {
         contestName: cr.contest.title,
         contestDate: dateStr,
         rank,
-        totalParticipants: 0,
+        totalParticipants,
         score,
         penaltyTime: penalty,
         ratingDelta: 0,

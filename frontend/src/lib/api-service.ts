@@ -65,6 +65,33 @@ async function deduplicatedQuery<T>(query: string, variables: Record<string, any
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+async function getAuthHeaders(explicitToken?: string): Promise<Record<string, string>> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  let token = explicitToken;
+
+  if (!token && typeof window !== 'undefined') {
+    const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]*)/);
+    if (match) {
+      token = decodeURIComponent(match[1]);
+    }
+  }
+
+  if (!token && typeof window === 'undefined') {
+    try {
+      const { cookies } = await import('next/headers');
+      const cookieStore = await cookies();
+      token = cookieStore.get('access_token')?.value;
+    } catch {
+      // Called outside request context
+    }
+  }
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 function getClientAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (typeof document !== 'undefined') {
@@ -112,9 +139,10 @@ export const apiService = {
   },
 
   async getProfile() {
+    const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/auth/me`, {
       method: 'GET',
-      headers: getClientAuthHeaders(),
+      headers,
       credentials: 'include',
     });
     if (!res.ok) throw new Error('Failed to fetch user profile');
@@ -122,9 +150,10 @@ export const apiService = {
   },
 
   async changePassword(currentPassword: string, newPassword: string) {
+    const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/auth/change-password`, {
       method: 'POST',
-      headers: getClientAuthHeaders(),
+      headers,
       credentials: 'include',
       body: JSON.stringify({ currentPassword, newPassword }),
     });
@@ -136,9 +165,10 @@ export const apiService = {
   },
 
   async generate2FASecret() {
+    const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/auth/2fa/generate`, {
       method: 'POST',
-      headers: getClientAuthHeaders(),
+      headers,
       credentials: 'include',
     });
     if (!res.ok) throw new Error('Failed to generate 2FA secret');
@@ -146,9 +176,10 @@ export const apiService = {
   },
 
   async enable2FA(secret: string, token: string, recoveryCodes: string[]) {
+    const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/auth/2fa/enable`, {
       method: 'POST',
-      headers: getClientAuthHeaders(),
+      headers,
       credentials: 'include',
       body: JSON.stringify({ secret, token, recoveryCodes }),
     });
@@ -157,9 +188,10 @@ export const apiService = {
   },
 
   async disable2FA(token: string) {
+    const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/auth/2fa/disable`, {
       method: 'POST',
-      headers: getClientAuthHeaders(),
+      headers,
       credentials: 'include',
       body: JSON.stringify({ token }),
     });
@@ -168,9 +200,10 @@ export const apiService = {
   },
 
   async getPasskeys() {
+    const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/auth/passkeys`, {
       method: 'GET',
-      headers: getClientAuthHeaders(),
+      headers,
       credentials: 'include',
     });
     if (!res.ok) return [];
@@ -178,9 +211,10 @@ export const apiService = {
   },
 
   async deletePasskey(id: string) {
+    const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/auth/passkeys/${id}`, {
       method: 'DELETE',
-      headers: getClientAuthHeaders(),
+      headers,
       credentials: 'include',
     });
     return res.ok;
@@ -190,6 +224,33 @@ export const apiService = {
   // COLLEGES & TENANTS
   // ----------------------------------------------------
   async getColleges(params?: { page?: number; limit?: number; search?: string; status?: string }) {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.set('page', params.page.toString());
+    if (params?.limit) queryParams.set('limit', params.limit.toString());
+    if (params?.search?.trim()) queryParams.set('search', params.search.trim());
+    if (params?.status && params.status !== 'ALL') queryParams.set('status', params.status.toUpperCase());
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_URL}/colleges${queryString}`, {
+        method: 'GET',
+        headers,
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.data ?? json;
+        if (Array.isArray(items)) {
+          return { items, meta: { totalItems: items.length } };
+        }
+        if (items && Array.isArray(items.items)) {
+          return items;
+        }
+      }
+    } catch {
+      // Fallback to GraphQL
+    }
     try {
       const cleanParams: Record<string, any> = {};
       if (params?.page) cleanParams.page = params.page;
@@ -209,8 +270,27 @@ export const apiService = {
   },
 
   async getCollegeById(id: string) {
-    const data = await fetchGraphQL<{ college: any }>(COLLEGE_BY_ID_QUERY, { id });
-    return data.college;
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_URL}/colleges/${id}`, {
+        method: 'GET',
+        headers,
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data ?? json;
+      }
+    } catch {
+      // Fallback to GraphQL
+    }
+    try {
+      const data = await fetchGraphQL<{ college: any }>(COLLEGE_BY_ID_QUERY, { id });
+      return data.college;
+    } catch (err) {
+      console.warn(`API getCollegeById fallback failed for ${id}:`, err);
+      return null;
+    }
   },
 
   async createCollege(input: {
@@ -221,8 +301,32 @@ export const apiService = {
     address?: string;
     status?: string;
   }) {
-    const data = await fetchGraphQL<{ createCollege: any }>(CREATE_COLLEGE_MUTATION, { input });
-    return data.createCollege;
+    let isNetworkError = false;
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_URL}/colleges`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(input),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data ?? json;
+      }
+      const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
+      throw new Error(err.message || 'Failed to create college');
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('Failed to create college') && !err.message.includes('HTTP')) {
+        isNetworkError = true;
+      } else {
+        throw err;
+      }
+    }
+    if (isNetworkError) {
+      const data = await fetchGraphQL<{ createCollege: any }>(CREATE_COLLEGE_MUTATION, { input });
+      return data.createCollege;
+    }
   },
 
   async updateCollege(id: string, input: {
@@ -233,13 +337,48 @@ export const apiService = {
     address?: string;
     status?: string;
   }) {
-    const data = await fetchGraphQL<{ updateCollege: any }>(UPDATE_COLLEGE_MUTATION, { id, input });
-    return data.updateCollege;
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_URL}/colleges/${id}`, {
+        method: 'PATCH',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(input),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data ?? json;
+      }
+      const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
+      throw new Error(err.message || 'Failed to update college');
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('HTTP') && !err.message.includes('Failed to update college')) {
+        // Fallback to GraphQL
+        const data = await fetchGraphQL<{ updateCollege: any }>(UPDATE_COLLEGE_MUTATION, { id, input });
+        return data.updateCollege;
+      }
+      throw err;
+    }
   },
 
   async deleteCollege(id: string) {
-    const data = await fetchGraphQL<{ deleteCollege: boolean }>(DELETE_COLLEGE_MUTATION, { id });
-    return data.deleteCollege;
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_URL}/colleges/${id}`, {
+        method: 'DELETE',
+        headers,
+        credentials: 'include',
+      });
+      if (res.ok) return true;
+      const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
+      throw new Error(err.message || 'Failed to delete college');
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('HTTP') && !err.message.includes('Failed to delete college')) {
+        const data = await fetchGraphQL<{ deleteCollege: boolean }>(DELETE_COLLEGE_MUTATION, { id });
+        return data.deleteCollege;
+      }
+      throw err;
+    }
   },
 
   async addCollegeMember(collegeId: string, input: { userId: string; role?: string }) {
@@ -250,6 +389,145 @@ export const apiService = {
   async removeCollegeMember(collegeId: string, userId: string) {
     const data = await fetchGraphQL<{ removeCollegeMember: boolean }>(REMOVE_COLLEGE_MEMBER_MUTATION, { collegeId, userId });
     return data.removeCollegeMember;
+  },
+
+  // ----------------------------------------------------
+  // BATCHES & COHORTS (REST)
+  // ----------------------------------------------------
+  async getBatchesByCollege(collegeId: string) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/batches/college/${collegeId}`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch batches: HTTP ${res.status}`);
+    }
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async getBatchById(id: string) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/batches/${id}`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch batch: HTTP ${res.status}`);
+    }
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async createBatch(input: {
+    name: string;
+    collegeId: string;
+    code?: string;
+    startDate?: string;
+    endDate?: string;
+  }) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/batches`, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({
+        name: input.name,
+        collegeId: input.collegeId,
+        startDate: input.startDate,
+        endDate: input.endDate,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+      throw new Error(err.message || 'Failed to create batch');
+    }
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async updateBatch(id: string, input: {
+    name?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+  }) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/batches/${id}`, {
+      method: 'PATCH',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+      throw new Error(err.message || 'Failed to update batch');
+    }
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async deleteBatch(id: string) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/batches/${id}`, {
+      method: 'DELETE',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+      throw new Error(err.message || 'Failed to delete batch');
+    }
+    const json = await res.json();
+    return json.data ?? json ?? true;
+  },
+
+  async assignStudentsToBatch(id: string, userIds: string[]) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/batches/${id}/students`, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({ userIds }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+      throw new Error(err.message || 'Failed to assign students');
+    }
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async getStudentsInBatch(id: string) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/batches/${id}/students`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch students in batch: HTTP ${res.status}`);
+    }
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async removeStudentFromBatch(id: string, userId: string) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/batches/${id}/students/${userId}`, {
+      method: 'DELETE',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+      throw new Error(err.message || 'Failed to remove student from batch');
+    }
+    const json = await res.json();
+    return json.data ?? json ?? true;
   },
 
   // ----------------------------------------------------
@@ -635,70 +913,6 @@ export const apiService = {
     });
     if (!res.ok) throw new Error('Failed to update lesson progress');
     return res.json();
-  },
-
-  // ----------------------------------------------------
-  // STUDENT BATCHES & COHORTS (REST)
-  // ----------------------------------------------------
-  async getBatchesByCollege(collegeId: string) {
-    const res = await fetch(`${API_URL}/batches/college/${collegeId}`, {
-      method: 'GET',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-    });
-    if (!res.ok) return [];
-    return res.json();
-  },
-
-  async createBatch(input: { name: string; code: string; collegeId: string; academicYear?: string; status?: string }) {
-    const res = await fetch(`${API_URL}/batches`, {
-      method: 'POST',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(input),
-    });
-    if (!res.ok) throw new Error('Failed to create batch');
-    return res.json();
-  },
-
-  async updateBatch(id: string, input: { name?: string; code?: string; academicYear?: string; status?: string }) {
-    const res = await fetch(`${API_URL}/batches/${id}`, {
-      method: 'PATCH',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(input),
-    });
-    if (!res.ok) throw new Error('Failed to update batch');
-    return res.json();
-  },
-
-  async deleteBatch(id: string) {
-    const res = await fetch(`${API_URL}/batches/${id}`, {
-      method: 'DELETE',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-    });
-    return res.ok;
-  },
-
-  async addStudentsToBatch(batchId: string, studentIds: string[]) {
-    const res = await fetch(`${API_URL}/batches/${batchId}/students`, {
-      method: 'POST',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-      body: JSON.stringify({ studentIds }),
-    });
-    if (!res.ok) throw new Error('Failed to add students to batch');
-    return res.json();
-  },
-
-  async removeStudentFromBatch(batchId: string, studentId: string) {
-    const res = await fetch(`${API_URL}/batches/${batchId}/students/${studentId}`, {
-      method: 'DELETE',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-    });
-    return res.ok;
   },
 };
 

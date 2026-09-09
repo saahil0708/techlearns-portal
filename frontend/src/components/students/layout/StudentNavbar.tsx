@@ -46,6 +46,7 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutUser } from '@/store/slices/authSlice';
 import { apiService } from '@/lib/api-service';
+import LogoutConfirmModal from '@/components/shared/LogoutConfirmModal';
 
 interface StudentNavbarProps {
   searchQuery?: string;
@@ -746,152 +747,11 @@ export default function StudentNavbar({
       </Popover>
 
       {/* Logout Dialog */}
-      <Dialog
+      <LogoutConfirmModal
         open={logoutDialogOpen}
         onClose={() => setLogoutDialogOpen(false)}
-        slotProps={{
-          paper: {
-            sx: {
-              borderRadius: '20px',
-              p: 0,
-              maxWidth: { xs: '92vw', sm: 560, md: 580 },
-              width: '100%',
-              boxShadow: '0 24px 48px -12px rgba(15, 23, 42, 0.18)',
-              border: '1px solid #E2E8F0',
-            },
-          },
-        }}
-      >
-        <DialogTitle sx={{ pb: 0, pt: 2.25, px: 3, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '12px',
-                bgcolor: '#FEE2E2',
-                border: '1px solid #FECACA',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#DC2626',
-                flexShrink: 0,
-              }}
-            >
-              <WarningAmberRoundedIcon sx={{ fontSize: 22 }} />
-            </Box>
-            <Box>
-              <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#0F172A', letterSpacing: '-0.01em' }}>
-                Sign Out Confirmation
-              </Typography>
-              <Typography sx={{ fontSize: '0.78rem', color: '#64748B', mt: 0.25 }}>
-                Are you sure you want to end your current session?
-              </Typography>
-            </Box>
-          </Box>
-          <IconButton onClick={() => setLogoutDialogOpen(false)} size="small" sx={{ color: '#94A3B8', '&:hover': { color: '#0F172A' } }}>
-            <CloseRoundedIcon sx={{ fontSize: 18 }} />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent sx={{ px: 3, pt: '10px !important', pb: 1 }}>
-          {displayName && (
-            <Box
-              sx={{
-                bgcolor: '#F8FAFC',
-                borderRadius: '12px',
-                px: 1.75,
-                py: 1.2,
-                border: '1px solid #F1F5F9',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.25,
-                mb: 1.25,
-              }}
-            >
-              <Avatar
-                sx={{
-                  width: 34,
-                  height: 34,
-                  bgcolor: '#2563EB',
-                  color: '#FFFFFF',
-                  fontWeight: 700,
-                  fontSize: '0.8rem',
-                }}
-              >
-                {initials ? initials : <PersonRoundedIcon sx={{ fontSize: 18 }} />}
-              </Avatar>
-              <Box sx={{ minWidth: 0, flex: 1 }}>
-                <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.86rem' }} noWrap>
-                  {displayName}
-                </Typography>
-                <Typography sx={{ color: '#64748B', fontSize: '0.74rem' }} noWrap>
-                  {displayEmail}
-                </Typography>
-              </Box>
-              <Chip
-                label={roleLabel}
-                size="small"
-                sx={{
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
-                  fontWeight: 700,
-                  fontSize: '0.68rem',
-                  border: '1px solid #DBEAFE',
-                }}
-              />
-            </Box>
-          )}
-
-          <Typography sx={{ fontSize: '0.86rem', color: '#475569', lineHeight: 1.5 }}>
-            You will be redirected to the login portal. Any unsaved problem editor drafts or active test evaluations will be preserved.
-          </Typography>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, pb: 2.25, pt: 1.25, gap: 1.25, justifyContent: 'flex-end' }}>
-          <Button
-            onClick={() => setLogoutDialogOpen(false)}
-            variant="outlined"
-            sx={{
-              borderRadius: '8px',
-              textTransform: 'none',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              color: '#475569',
-              borderColor: '#CBD5E1',
-              px: 2.5,
-              py: 0.7,
-              '&:hover': { bgcolor: '#F8FAFC', borderColor: '#94A3B8' },
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleConfirmLogout}
-            variant="contained"
-            disableElevation
-            startIcon={<LogoutRoundedIcon sx={{ fontSize: 16 }} />}
-            sx={{
-              borderRadius: '8px',
-              textTransform: 'none',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              bgcolor: '#DC2626',
-              backgroundImage: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)',
-              color: '#FFFFFF',
-              px: 2.75,
-              py: 0.7,
-              boxShadow: '0 4px 14px rgba(220, 38, 38, 0.3)',
-              '&:hover': {
-                bgcolor: '#B91C1C',
-                boxShadow: '0 6px 20px rgba(220, 38, 38, 0.45)',
-              },
-            }}
-          >
-            Sign Out
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={handleConfirmLogout}
+      />
     </>
   );
 }

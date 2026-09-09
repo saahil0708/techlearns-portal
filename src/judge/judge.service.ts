@@ -140,6 +140,17 @@ export class JudgeService {
         };
       }
 
+      if (execution.systemError) {
+        return {
+          verdict: SubmissionVerdict.SYSTEM_ERROR,
+          runtime: executionTime,
+          memory: estimatedMemory,
+          passedTestCases,
+          totalTestCases,
+          errorMessage: execution.systemError,
+        };
+      }
+
       if (execution.runtimeError) {
         return {
           verdict: SubmissionVerdict.RUNTIME_ERROR,
@@ -209,10 +220,10 @@ export class JudgeService {
     _sourceCode: string,
     _language: ProgrammingLanguage,
     _input: string,
-  ): Promise<{ output?: string; compilationError?: string; runtimeError?: string }> {
+  ): Promise<{ output?: string; compilationError?: string; runtimeError?: string; systemError?: string }> {
     // Fail closed if isolated docker sandbox environment is pending
     return {
-      runtimeError: 'Sandboxed code execution environment offline or pending queue configuration',
+      systemError: 'Sandboxed code execution environment offline or pending queue configuration',
     };
   }
 }

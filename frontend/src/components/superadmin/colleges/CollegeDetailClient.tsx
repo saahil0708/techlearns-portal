@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -52,10 +52,15 @@ import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import { FluidArrowRight } from '@/utils/fluid_arrow';
 
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+
 // Components
 import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import { CollegeEntity } from '@/components/superadmin/colleges/CollegesDirectoryClient';
+import { apiService } from '@/lib/api-service';
+import { useToast } from '@/context/ToastContext';
 
 // Batch interface
 export interface BatchItem {
@@ -344,12 +349,57 @@ export default function CollegeDetailClient({
   initialCourses,
   initialFaculty,
 }: CollegeDetailClientProps) {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  // Live college state (starts from SSR prop, updated by client effect)
+  const [liveCollege, setLiveCollege] = useState<CollegeEntity>(college);
   const [batches, setBatches] = useState<BatchItem[]>(initialBatches);
   const [students] = useState<StudentRosterItem[]>(initialStudents);
   const [faculty] = useState<FacultyCoordinatorItem[]>(initialFaculty);
   const [courses] = useState<CourseAssignmentItem[]>(initialCourses);
+
+  // Tenant Settings edit state
+  const [settingsName, setSettingsName] = useState(college.name);
+  const [settingsEmail, setSettingsEmail] = useState('');
+  const [settingsPhone, setSettingsPhone] = useState('');
+  const [settingsAddress, setSettingsAddress] = useState(college.region || '');
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  // Client-side live college hydration (fixes SSR fallback when token not on server)
+  useEffect(() => {
+    let cancelled = false;
+    async function hydrateLiveCollege() {
+      try {
+        const live = await apiService.getCollegeById(college.id);
+        if (!cancelled && live?.id) {
+          setLiveCollege({
+            id: live.id,
+            name: live.name,
+            code: live.code,
+            domain: live.email && live.email.includes('@') ? live.email.split('@')[1] : `${live.code?.toLowerCase()}.edu`,
+            region: live.address || 'Global',
+            tier: 'Enterprise Tier',
+            studentsCount: live._count?.memberships || 0,
+            maxQuota: 5000,
+            coursesCount: live._count?.courses || 0,
+            cohortsCount: live._count?.batches || 0,
+            facultyCount: 5,
+            status: live.status === 'ACTIVE' ? 'Active' : 'Suspended',
+            logoColor: college.logoColor,
+          });
+          setSettingsName(live.name);
+          setSettingsAddress(live.address || '');
+          if (live.email) setSettingsEmail(live.email);
+          if (live.phone) setSettingsPhone(live.phone);
+        }
+      } catch {
+        // keep SSR-provided college
+      }
+    }
+    hydrateLiveCollege();
+    return () => { cancelled = true; };
+  }, [college.id]);
 
   // Filter & Pagination states for Tab 0: Batches & Cohorts
   const [batchSearch, setBatchSearch] = useState('');
@@ -384,6 +434,66 @@ export default function CollegeDetailClient({
   const [newBatchCode, setNewBatchCode] = useState('');
   const [newBatchCapacity, setNewBatchCapacity] = useState(120);
   const [newBatchFaculty, setNewBatchFaculty] = useState(faculty[0]?.name || 'Dr. Alex Mercer');
+  const [isCreatingBatch, setIsCreatingBatch] = useState(false);
+
+  // Edit Batch Modal State
+  const [editingBatch, setEditingBatch] = useState<BatchItem | null>(null);
+  const [editBatchName, setEditBatchName] = useState('');
+  const [editBatchCapacity, setEditBatchCapacity] = useState(120);
+  const [isEditingBatch, setIsEditingBatch] = useState(false);
+
+  // Live college re-hydration (fixes SSR fallback issue)
+  useEffect(() => {
+    // no-op placeholder — live batches are handled in the batches effect below
+  }, []);
+
+  // Live Batches Loading from Backend API
+  React.useEffect(() => {
+    let isCurrent = true;
+
+    async function loadLiveBatches() {
+      try {
+        if (!college?.id) return;
+        const liveBatches = await apiService.getBatchesByCollege(college.id);
+        if (!isCurrent) return;
+
+        if (Array.isArray(liveBatches)) {
+          const mapped: BatchItem[] = liveBatches.map((b: any) => {
+            const resolvedName = b.name || (b.id ? `Batch ${b.id.slice(-4).toUpperCase()}` : 'Batch');
+            const sanitizedCodeSlug = resolvedName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase();
+            return {
+              id: b.id,
+              name: resolvedName,
+              code: b.code || `${college.code}-${sanitizedCodeSlug || (b.id ? b.id.slice(-4).toUpperCase() : 'B1')}`,
+              studentsCount: b._count?.students || 0,
+              maxCapacity: 120,
+              facultyLead: faculty[0]?.name || 'Dr. Alex Mercer',
+              coursesAssigned: 3,
+              year: b.startDate ? new Date(b.startDate).getFullYear().toString() : '2026-2027',
+              status: 'Active',
+              avgAccuracy: '78.5%',
+            };
+          });
+
+          setBatches((prev) => {
+            // Keep optimistic or freshly added batches that have not yet been reflected in the server response
+            const localOptimistic = prev.filter(
+              (p) => p.id.startsWith('batch-') && !mapped.some((m) => m.id === p.id)
+            );
+            return [...localOptimistic, ...mapped];
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to load live batches for college:', err);
+      }
+    }
+
+    loadLiveBatches();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [college?.id, faculty]);
 
   const handleOpenDownloadMenu = (event: React.MouseEvent<HTMLElement>) => {
     setDownloadAnchorEl(event.currentTarget);
@@ -500,12 +610,14 @@ export default function CollegeDetailClient({
     handleCloseDownloadMenu();
   };
 
-  const handleCreateBatchSubmit = () => {
-    if (!newBatchName || !newBatchCode) return;
+  const handleCreateBatchSubmit = async () => {
+    if (!newBatchName.trim() || !newBatchCode.trim() || isCreatingBatch) return;
+    setIsCreatingBatch(true);
+    const tempId = `batch-${Date.now()}`;
     const created: BatchItem = {
-      id: `batch-${Date.now()}`,
-      name: newBatchName,
-      code: newBatchCode,
+      id: tempId,
+      name: newBatchName.trim(),
+      code: newBatchCode.trim().toUpperCase(),
       studentsCount: 0,
       maxCapacity: Number(newBatchCapacity) || 100,
       facultyLead: newBatchFaculty,
@@ -514,10 +626,74 @@ export default function CollegeDetailClient({
       status: 'Active',
       avgAccuracy: '0.0%',
     };
-    setBatches([created, ...batches]);
+    setBatches((prev) => [created, ...prev]);
     setIsCreateBatchOpen(false);
     setNewBatchName('');
     setNewBatchCode('');
+
+    try {
+      const liveCreated = await apiService.createBatch({
+        name: created.name,
+        collegeId: college.id,
+      });
+      if (liveCreated?.id) {
+        setBatches((prev) =>
+          prev.map((b) => (b.id === tempId ? { ...b, id: liveCreated.id } : b))
+        );
+      }
+      toast.success(`Batch "${created.name}" created successfully.`, 'Batch Created');
+    } catch (err) {
+      console.warn('Batch creation backend sync:', err);
+      setBatches((prev) => prev.filter((b) => b.id !== tempId));
+      toast.error(err instanceof Error ? err.message : 'Failed to create batch on server.', 'Batch Error');
+    } finally {
+      setIsCreatingBatch(false);
+    }
+  };
+
+  const handleOpenEditBatch = (batch: BatchItem) => {
+    setEditingBatch(batch);
+    setEditBatchName(batch.name);
+    setEditBatchCapacity(batch.maxCapacity);
+  };
+
+  const handleEditBatchSubmit = async () => {
+    if (!editingBatch || isEditingBatch) return;
+    setIsEditingBatch(true);
+    const original = editingBatch;
+    // Optimistic update
+    setBatches((prev) =>
+      prev.map((b) =>
+        b.id === editingBatch.id
+          ? { ...b, name: editBatchName, maxCapacity: editBatchCapacity }
+          : b
+      )
+    );
+    setEditingBatch(null);
+    try {
+      await apiService.updateBatch(original.id, { name: editBatchName });
+      toast.success(`Batch "${editBatchName}" updated.`, 'Batch Updated');
+    } catch (err) {
+      // Revert
+      setBatches((prev) =>
+        prev.map((b) => (b.id === original.id ? original : b))
+      );
+      toast.error(err instanceof Error ? err.message : 'Failed to update batch.', 'Batch Error');
+    } finally {
+      setIsEditingBatch(false);
+    }
+  };
+
+  const handleDeleteBatch = async (batchId: string) => {
+    const original = batches.find((b) => b.id === batchId);
+    setBatches((prev) => prev.filter((b) => b.id !== batchId));
+    try {
+      await apiService.deleteBatch(batchId);
+      toast.success('Batch deleted.', 'Batch Deleted');
+    } catch (err) {
+      if (original) setBatches((prev) => [original, ...prev]);
+      toast.error(err instanceof Error ? err.message : 'Failed to delete batch.', 'Batch Error');
+    }
   };
 
   // Filtered & Paginated Batches
@@ -640,7 +816,7 @@ export default function CollegeDetailClient({
               </Button>
               <Typography sx={{ color: '#94A3B8', fontSize: '0.85rem' }}>/</Typography>
               <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.9rem' }}>
-                {college.name}
+                {liveCollege.name}
               </Typography>
             </Box>
 
@@ -1035,29 +1211,65 @@ export default function CollegeDetailClient({
                               />
                             </TableCell>
                             <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                endIcon={<FluidArrowRight size={14} />}
-                                onClick={() => {
-                                  setRosterBatchFilter(batch.name);
-                                  setActiveTab(1);
-                                }}
-                                sx={{
-                                  textTransform: 'none',
-                                  fontWeight: 700,
-                                  fontSize: '0.76rem',
-                                  color: '#2563EB',
-                                  borderColor: '#DBEAFE',
-                                  bgcolor: '#EFF6FF',
-                                  borderRadius: '6px',
-                                  px: 1.5,
-                                  py: 0.4,
-                                  '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
-                                }}
-                              >
-                                View Roster
-                              </Button>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.75 }}>
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  endIcon={<FluidArrowRight size={14} />}
+                                  onClick={() => {
+                                    setRosterBatchFilter(batch.name);
+                                    setActiveTab(1);
+                                  }}
+                                  sx={{
+                                    textTransform: 'none',
+                                    fontWeight: 700,
+                                    fontSize: '0.76rem',
+                                    color: '#2563EB',
+                                    borderColor: '#DBEAFE',
+                                    bgcolor: '#EFF6FF',
+                                    borderRadius: '6px',
+                                    px: 1.5,
+                                    py: 0.4,
+                                    '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                                  }}
+                                >
+                                  View Roster
+                                </Button>
+                                <Tooltip title="Edit Batch">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleOpenEditBatch(batch)}
+                                    sx={{
+                                      color: '#7C3AED',
+                                      width: 30,
+                                      height: 30,
+                                      borderRadius: '6px',
+                                      border: '1px solid #EDE9FE',
+                                      bgcolor: '#F5F3FF',
+                                      '&:hover': { bgcolor: '#EDE9FE', borderColor: '#C4B5FD' },
+                                    }}
+                                  >
+                                    <EditRoundedIcon sx={{ fontSize: 16 }} />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete Batch">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleDeleteBatch(batch.id)}
+                                    sx={{
+                                      color: '#EF4444',
+                                      width: 30,
+                                      height: 30,
+                                      borderRadius: '6px',
+                                      border: '1px solid #FEE2E2',
+                                      bgcolor: '#FEF2F2',
+                                      '&:hover': { bgcolor: '#FEE2E2', borderColor: '#FECACA' },
+                                    }}
+                                  >
+                                    <DeleteOutlineRoundedIcon sx={{ fontSize: 16 }} />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
                             </TableCell>
                           </TableRow>
                         );
@@ -1505,9 +1717,79 @@ export default function CollegeDetailClient({
           {/* TAB 4: Tenant Settings & Quota */}
           {activeTab === 4 && (
             <Card elevation={0} sx={{ p: 3.5, borderRadius: '20px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.15rem' }}>
-                Multi-Tenant Organization Configuration
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.15rem' }}>
+                  Multi-Tenant Organization Configuration
+                </Typography>
+                <Button
+                  variant="contained"
+                  disabled={isSavingSettings}
+                  onClick={async () => {
+                    setIsSavingSettings(true);
+                    try {
+                      const updated = await apiService.updateCollege(liveCollege.id, {
+                        name: settingsName,
+                        email: settingsEmail || undefined,
+                        phone: settingsPhone || undefined,
+                        address: settingsAddress || undefined,
+                      });
+                      if (updated?.name) {
+                        setLiveCollege((prev) => ({ ...prev, name: updated.name, region: updated.address || prev.region }));
+                      }
+                      toast.success('College settings saved.', 'Settings Saved');
+                    } catch (err: any) {
+                      toast.error(err?.message || 'Failed to save settings.', 'Save Error');
+                    } finally {
+                      setIsSavingSettings(false);
+                    }
+                  }}
+                  sx={{
+                    bgcolor: '#2563EB',
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    borderRadius: '10px',
+                    px: 2.5,
+                    py: 0.75,
+                    '&:hover': { bgcolor: '#1D4ED8' },
+                  }}
+                >
+                  {isSavingSettings ? 'Saving...' : 'Save Settings'}
+                </Button>
+              </Box>
+
+              {/* Editable fields */}
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2.5 }}>
+                <TextField
+                  label="Institution Name"
+                  size="small"
+                  fullWidth
+                  value={settingsName}
+                  onChange={(e) => setSettingsName(e.target.value)}
+                />
+                <TextField
+                  label="Contact Email"
+                  size="small"
+                  fullWidth
+                  type="email"
+                  value={settingsEmail}
+                  onChange={(e) => setSettingsEmail(e.target.value)}
+                />
+                <TextField
+                  label="Phone Number"
+                  size="small"
+                  fullWidth
+                  value={settingsPhone}
+                  onChange={(e) => setSettingsPhone(e.target.value)}
+                />
+                <TextField
+                  label="Region / Address"
+                  size="small"
+                  fullWidth
+                  value={settingsAddress}
+                  onChange={(e) => setSettingsAddress(e.target.value)}
+                />
+              </Box>
 
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                 <Box sx={{ p: 2.5, borderRadius: '12px', bgcolor: '#F8FAFC', border: `1px solid ${borderColor}` }}>
@@ -1515,7 +1797,7 @@ export default function CollegeDetailClient({
                     Domain Verification & Auto-Roster
                   </Typography>
                   <Typography sx={{ fontSize: '0.78rem', color: '#64748B', mb: 2 }}>
-                    Students with verified email addresses under <strong>@{college.domain}</strong> automatically gain seat access.
+                    Students with verified email addresses under <strong>@{liveCollege.domain}</strong> automatically gain seat access.
                   </Typography>
                   <Chip icon={<CheckCircleRoundedIcon sx={{ fontSize: 16 }} />} label="Domain Active & Verified" color="success" size="small" />
                 </Box>
@@ -1602,6 +1884,51 @@ export default function CollegeDetailClient({
             sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5 }}
           >
             Create Batch
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Batch Modal Dialog */}
+      <Dialog
+        open={Boolean(editingBatch)}
+        onClose={() => setEditingBatch(null)}
+        slotProps={{
+          paper: {
+            sx: { borderRadius: '18px', width: '100%', maxWidth: 440, p: 1 },
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#0F172A', pb: 1 }}>
+          Edit Batch / Cohort
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, px: 3, pt: '16px !important', pb: 2.5 }}>
+          <TextField
+            label="Batch Name"
+            fullWidth
+            size="small"
+            value={editBatchName}
+            onChange={(e) => setEditBatchName(e.target.value)}
+          />
+          <TextField
+            label="Max Capacity"
+            type="number"
+            fullWidth
+            size="small"
+            value={editBatchCapacity}
+            onChange={(e) => setEditBatchCapacity(Number(e.target.value))}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setEditingBatch(null)} sx={{ textTransform: 'none', color: '#64748B', fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={isEditingBatch}
+            onClick={handleEditBatchSubmit}
+            sx={{ bgcolor: '#7C3AED', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5, '&:hover': { bgcolor: '#6D28D9' } }}
+          >
+            {isEditingBatch ? 'Saving...' : 'Save Changes'}
           </Button>
         </DialogActions>
       </Dialog>
