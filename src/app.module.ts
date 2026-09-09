@@ -1,4 +1,5 @@
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+// import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -14,6 +15,7 @@ import configuration from './config/configuration.js';
 import { validateEnvironment } from './config/env.validation.js';
 import { ContestsModule } from './contests/contests.module.js';
 import { CoursesModule } from './courses/courses.module.js';
+// import { JudgeModule } from './judge/judge.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProblemsModule } from './problems/problems.module.js';
 import { SubmissionsModule } from './submissions/submissions.module.js';
@@ -49,6 +51,22 @@ const dynamicObserveImports = hasValidObserveKeys
       validate: validateEnvironment,
       envFilePath: ['.env'],
     }),
+    // ==========================================
+    // BullMQ & Redis Queue Connection (Disabled for now)
+    // Uncomment when ready to activate background queue worker
+    // ==========================================
+    // BullModule.forRootAsync({
+    //   inject: [ConfigService],
+    //   useFactory: (configService: ConfigService) => ({
+    //     connection: {
+    //       host: configService.get<string>('redis.host', 'localhost'),
+    //       port: configService.get<number>('redis.port', 6379),
+    //       password: configService.get<string>('redis.password') || undefined,
+    //       maxRetriesPerRequest: null,
+    //       enableReadyCheck: false,
+    //     },
+    //   }),
+    // }),
     ...dynamicObserveImports,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
@@ -67,6 +85,7 @@ const dynamicObserveImports = hasValidObserveKeys
     ProblemsModule,
     ContestsModule,
     SubmissionsModule,
+    // JudgeModule, // Disabled for now (BullMQ evaluation worker)
   ],
   controllers: [AppController],
   providers: [AppService],

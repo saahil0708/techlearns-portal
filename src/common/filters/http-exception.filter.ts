@@ -14,7 +14,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost) {
-    if (host.getType<string>() === 'graphql' || !host.switchToHttp().getResponse()) {
+    if ((typeof host.getType === 'function' && host.getType<string>() === 'graphql') || !host.switchToHttp().getResponse()) {
       return exception;
     }
 

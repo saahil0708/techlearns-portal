@@ -70,6 +70,7 @@ export interface StudentProfileData {
   bannerGradient?: string;
   bio: string;
   institution: string;
+  department?: string;
   location: string;
   joinedDate: string;
   githubUrl?: string;

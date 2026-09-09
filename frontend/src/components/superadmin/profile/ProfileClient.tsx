@@ -23,6 +23,7 @@ import {
 import CurvedSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import { useToast } from '@/context/ToastContext';
+import { apiService } from '@/lib/api-service';
 import {
   FaInstagram,
   FaFacebookF,
@@ -128,6 +129,25 @@ export default function ProfileClient({
     }
   }, [authUser]);
 
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [liveAuditLogs, setLiveAuditLogs] = useState<any[]>([]);
+  const [liveMetrics, setLiveMetrics] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [metrics, logs] = await Promise.all([
+          apiService.getAdminMetrics(),
+          apiService.getAdminAuditLogs(),
+        ]);
+        if (metrics) setLiveMetrics(metrics);
+        if (logs && logs.length > 0) setLiveAuditLogs(logs);
+      } catch {}
+    }
+    loadData();
+  }, []);
+
   // Edit Profile Dialog State
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState({ ...profile });
@@ -137,14 +157,32 @@ export default function ProfileClient({
     setEditDialogOpen(true);
   };
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
     if (!editForm.name.trim()) {
       toast.error('Name cannot be empty.', 'Validation Error');
       return;
     }
-    setProfile({ ...editForm });
-    setEditDialogOpen(false);
-    toast.success('Super Admin profile updated successfully!', 'Profile Settings');
+    setIsSavingProfile(true);
+    try {
+      if (authUser?.id) {
+        await apiService.updateUser(authUser.id, {
+          name: editForm.name,
+          email: editForm.email,
+          phone: editForm.phone,
+          location: editForm.location,
+          institution: editForm.school,
+          department: editForm.department,
+          avatarUrl: editForm.avatarUrl,
+        });
+      }
+      setProfile({ ...editForm });
+      setEditDialogOpen(false);
+      toast.success('Super Admin profile updated successfully!', 'Profile Settings');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update profile', 'Update Failed');
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   // Change Password Dialog State
@@ -172,7 +210,7 @@ export default function ProfileClient({
     return { score, label: 'Strong', color: '#16A34A' };
   };
 
-  const handlePasswordSubmit = () => {
+  const handlePasswordSubmit = async () => {
     setPasswordError(null);
     if (!currentPassword) {
       setPasswordError('Please enter your current password.');
@@ -187,12 +225,19 @@ export default function ProfileClient({
       return;
     }
 
-    // Success
-    setPasswordDialogOpen(false);
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    toast.success('Your account password was changed securely.', 'Security Updated');
+    setIsChangingPassword(true);
+    try {
+      await apiService.changePassword(currentPassword, newPassword);
+      setPasswordDialogOpen(false);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      toast.success('Your account password was changed securely.', 'Security Updated');
+    } catch (err: any) {
+      setPasswordError(err?.message || 'Failed to change password');
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   return (
@@ -703,78 +748,88 @@ export default function ProfileClient({
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {[
+                {(liveAuditLogs.length > 0 ? liveAuditLogs : [
                   {
                     action: 'Password & Credential Verification',
                     detail: 'Password verified and session refreshed via primary authenticator',
-                    time: 'Today at 15:42',
+                    createdAt: new Date(),
                     status: 'Success',
-                    color: '#16A34A',
-                    badgeBg: '#F0FDF4',
                   },
                   {
                     action: 'Tenant Onboarding Approved',
                     detail: 'Approved college access & roster provisioning for Stanford School of Computing',
-                    time: 'Today at 11:15',
+                    createdAt: new Date(Date.now() - 3600 * 1000 * 4),
                     status: 'Completed',
-                    color: '#2563EB',
-                    badgeBg: '#EFF6FF',
                   },
                   {
                     action: 'Sandbox Compiler Worker Scale-Up',
                     detail: 'Updated Docker isolation cluster limits to 8 parallel execution pods',
-                    time: 'Yesterday at 17:30',
+                    createdAt: new Date(Date.now() - 3600 * 1000 * 24),
                     status: 'Deployed',
-                    color: '#4F46E5',
-                    badgeBg: '#EEF2FF',
                   },
-                ].map((item, idx) => (
-                  <Box
-                    key={idx}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      p: 1.5,
-                      borderRadius: '12px',
-                      bgcolor: '#F8FAFC',
-                      border: '1px solid #F1F5F9',
-                      transition: 'all 0.15s ease',
-                      '&:hover': { bgcolor: '#F1F5F9' },
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: item.color }} />
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.86rem' }}>
-                          {item.action}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.78rem' }}>
-                          {item.detail}
-                        </Typography>
-                      </Box>
-                    </Box>
+                ]).map((item, idx) => {
+                  const timeStr = item.createdAt
+                    ? new Date(item.createdAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : 'Recent';
+                  const isSuccess =
+                    item.status?.toUpperCase() === 'SUCCESS' ||
+                    item.status?.toUpperCase() === 'COMPLETED';
+                  const color = isSuccess ? '#16A34A' : '#2563EB';
+                  const badgeBg = isSuccess ? '#F0FDF4' : '#EFF6FF';
 
-                    <Box sx={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 500, fontSize: '0.76rem' }}>
-                        {item.time}
-                      </Typography>
-                      <Box
-                        sx={{
-                          px: 1.25,
-                          py: 0.3,
-                          borderRadius: '6px',
-                          bgcolor: item.badgeBg,
-                          color: item.color,
-                          fontWeight: 700,
-                          fontSize: '0.72rem',
-                        }}
-                      >
-                        {item.status}
+                  return (
+                    <Box
+                      key={item.id || idx}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        p: 1.5,
+                        borderRadius: '12px',
+                        bgcolor: '#F8FAFC',
+                        border: '1px solid #F1F5F9',
+                        transition: 'all 0.15s ease',
+                        '&:hover': { bgcolor: '#F1F5F9' },
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color }} />
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.86rem' }}>
+                            {item.action}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.78rem' }}>
+                            {item.detail}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <Box sx={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 500, fontSize: '0.76rem' }}>
+                          {timeStr}
+                        </Typography>
+                        <Box
+                          sx={{
+                            px: 1.25,
+                            py: 0.3,
+                            borderRadius: '6px',
+                            bgcolor: badgeBg,
+                            color: color,
+                            fontWeight: 700,
+                            fontSize: '0.72rem',
+                          }}
+                        >
+                          {item.status}
+                        </Box>
                       </Box>
                     </Box>
-                  </Box>
-                ))}
+                  );
+                })}
               </Box>
             </Paper>
           </Box>

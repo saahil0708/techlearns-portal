@@ -100,6 +100,21 @@ model User {
   twoFactorEnabled       Boolean    @default(false)
   twoFactorSecret        String?
   twoFactorRecoveryCodes String[]   @default([])
+  avatarUrl              String?
+  bannerUrl              String?
+  bio                    String?    @db.Text
+  phone                  String?
+  institution            String?
+  department             String?
+  location               String?
+  birthDate              String?
+  githubUrl              String?
+  linkedinUrl            String?
+  websiteUrl             String?
+  resumeUrl              String?
+  resumeFileName         String?
+  contestRating          Int        @default(1500)
+  ratingTier             String     @default("Novice")
   createdAt              DateTime   @default(now())
   updatedAt              DateTime   @updatedAt
 
@@ -115,11 +130,27 @@ model User {
   leaderboardEntries   LeaderboardEntry[]
   passkeys             PasskeyCredential[]
   refreshTokens        RefreshToken[]
+  auditLogs            AuditLog[]
 
   @@index([globalRole, status])
   @@index([status, createdAt])
   @@index([name])
   @@map("users")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  detail    String?  @db.Text
+  ipAddress String?
+  status    String   @default("SUCCESS")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("audit_logs")
 }
 
 model PasskeyCredential {

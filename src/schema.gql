@@ -13,6 +13,28 @@ input AddContestProblemInput {
   problemId: ID!
 }
 
+type AdminMetrics {
+  adminsCount: Int!
+  collegesCount: Int!
+  contestsCount: Int!
+  facultyCount: Int!
+  problemsCount: Int!
+  studentsCount: Int!
+  submissionsCount: Int!
+  systemStatus: String!
+  totalUsersCount: Int!
+  uptimePercentage: String!
+}
+
+type AuditLogItem {
+  action: String!
+  createdAt: DateTime!
+  detail: String
+  id: ID!
+  ipAddress: String
+  status: String!
+}
+
 input BulkInviteItemInput {
   collegeId: String
   email: String!
@@ -314,6 +336,8 @@ enum ProgrammingLanguage {
 }
 
 type Query {
+  adminAuditLogs: [AuditLogItem!]!
+  adminMetrics: AdminMetrics!
   college(id: ID!): College
   colleges(limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: CollegeStatus): CollegesConnection!
   contest(id: ID!): Contest
@@ -325,6 +349,7 @@ type Query {
   problem(idOrSlug: String!): Problem
   problemTestCases(problemId: ID!): [TestCase!]!
   problems(collegeId: String, difficulty: ProblemDifficulty, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: ProblemStatus): ProblemsConnection!
+  studentProfile(handleOrId: String!): StudentProfile!
   submission(id: ID!): Submission
   submissions(contestId: String, language: ProgrammingLanguage, limit: Int = 10, page: Int = 1, problemId: String, search: String, sortBy: String, sortOrder: String = "desc", userId: String, verdict: SubmissionVerdict): SubmissionsConnection!
   user(id: ID!): User
@@ -338,6 +363,79 @@ enum Role {
   PLATFORM_ADMIN
   STUDENT
   SUPER_ADMIN
+}
+
+type StudentContestItem {
+  contestDate: String!
+  contestName: String!
+  id: ID!
+  newRating: Int!
+  penaltyTime: String!
+  rank: Int!
+  ratingDelta: Int!
+  score: Int!
+  totalParticipants: Int!
+}
+
+type StudentCourseItem {
+  id: ID!
+  instructor: String!
+  modulesCompleted: Int!
+  progressPct: Int!
+  slug: String!
+  status: String!
+  title: String!
+  totalModules: Int!
+}
+
+type StudentProfile {
+  accuracyRate: String!
+  avatarUrl: String
+  bannerUrl: String
+  bio: String
+  contestRating: Int!
+  contests: [StudentContestItem!]!
+  courses: [StudentCourseItem!]!
+  currentStreakDays: Int!
+  department: String
+  email: String!
+  githubUrl: String
+  globalRank: Int!
+  handle: String!
+  id: ID!
+  institution: String
+  joinedDate: String
+  linkedinUrl: String
+  location: String
+  maxStreakDays: Int!
+  name: String!
+  phone: String
+  ratingTier: String!
+  resumeFileName: String
+  resumeUrl: String
+  role: String!
+  solvedEasy: Int!
+  solvedHard: Int!
+  solvedMedium: Int!
+  solvedTotal: Int!
+  submissions: [StudentSubmissionItem!]!
+  topics: [TopicSkill!]!
+  totalSubmissions: Int!
+  websiteUrl: String
+}
+
+type StudentSubmissionItem {
+  codeSnippet: String
+  difficulty: String!
+  id: ID!
+  language: String!
+  memoryKb: Int
+  problemCode: String!
+  problemSlug: String!
+  problemTitle: String!
+  runtimeMs: Int
+  submittedAt: String!
+  verdict: String!
 }
 
 type Submission {
@@ -396,6 +494,13 @@ type TestCase {
   updatedAt: DateTime!
 }
 
+type TopicSkill {
+  name: String!
+  pct: Int!
+  solved: Int!
+  total: Int!
+}
+
 input UpdateCollegeInput {
   address: String
   code: String
@@ -432,21 +537,51 @@ input UpdateProblemInput {
 }
 
 input UpdateUserInput {
+  avatarUrl: String
+  bannerUrl: String
+  bio: String
+  birthDate: String
+  contestRating: Int
+  department: String
   email: String
+  githubUrl: String
   globalRole: Role
+  institution: String
+  linkedinUrl: String
+  location: String
   name: String
   password: String
+  phone: String
+  ratingTier: String
+  resumeFileName: String
+  resumeUrl: String
   status: UserStatus
+  websiteUrl: String
 }
 
 type User {
+  avatarUrl: String
+  bannerUrl: String
+  bio: String
+  birthDate: String
+  contestRating: Int!
   createdAt: DateTime!
+  department: String
   email: String!
+  githubUrl: String
   globalRole: Role!
   id: ID!
+  institution: String
+  linkedinUrl: String
+  location: String
   name: String!
+  phone: String
+  ratingTier: String!
+  resumeFileName: String
+  resumeUrl: String
   status: UserStatus!
   updatedAt: DateTime!
+  websiteUrl: String
 }
 
 """Account activation status"""

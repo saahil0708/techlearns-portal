@@ -2,6 +2,8 @@ import {
   ADD_COLLEGE_MEMBER_MUTATION,
   ADD_CONTEST_PROBLEM_MUTATION,
   ADD_PROBLEM_TEST_CASE_MUTATION,
+  ADMIN_AUDIT_LOGS_QUERY,
+  ADMIN_METRICS_QUERY,
   BULK_INVITE_USERS_MUTATION,
   COLLEGE_BY_ID_QUERY,
   COLLEGES_QUERY,
@@ -26,6 +28,7 @@ import {
   PROBLEMS_QUERY,
   REGISTER_FOR_CONTEST_MUTATION,
   REMOVE_COLLEGE_MEMBER_MUTATION,
+  STUDENT_PROFILE_QUERY,
   SUBMISSION_BY_ID_QUERY,
   SUBMISSIONS_LIST_QUERY,
   SUBMIT_CODE_MUTATION,
@@ -115,6 +118,20 @@ export const apiService = {
       credentials: 'include',
     });
     if (!res.ok) throw new Error('Failed to fetch user profile');
+    return res.json();
+  },
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    const res = await fetch(`${API_URL}/auth/change-password`, {
+      method: 'POST',
+      headers: getClientAuthHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: 'Failed to change password' }));
+      throw new Error(err.message || 'Failed to change password');
+    }
     return res.json();
   },
 
@@ -286,9 +303,63 @@ export const apiService = {
     password?: string;
     globalRole?: string;
     status?: string;
+    avatarUrl?: string;
+    bannerUrl?: string;
+    bio?: string;
+    phone?: string;
+    institution?: string;
+    department?: string;
+    location?: string;
+    birthDate?: string;
+    githubUrl?: string;
+    linkedinUrl?: string;
+    websiteUrl?: string;
+    resumeUrl?: string;
+    resumeFileName?: string;
+    contestRating?: number;
+    ratingTier?: string;
   }) {
     const data = await fetchGraphQL<{ updateUser: any }>(UPDATE_USER_MUTATION, { id, input });
     return data.updateUser;
+  },
+
+  async getStudentProfile(handleOrId: string) {
+    try {
+      const data = await deduplicatedQuery<{ studentProfile: any }>(
+        STUDENT_PROFILE_QUERY,
+        { handleOrId },
+      );
+      return data.studentProfile;
+    } catch (err) {
+      console.warn('API getStudentProfile fallback:', err);
+      return null;
+    }
+  },
+
+  async getAdminMetrics() {
+    try {
+      const data = await deduplicatedQuery<{ adminMetrics: any }>(
+        ADMIN_METRICS_QUERY,
+        {},
+      );
+      return data.adminMetrics;
+    } catch (err) {
+      console.warn('API getAdminMetrics fallback:', err);
+      return null;
+    }
+  },
+
+  async getAdminAuditLogs() {
+    try {
+      const data = await deduplicatedQuery<{ adminAuditLogs: any[] }>(
+        ADMIN_AUDIT_LOGS_QUERY,
+        {},
+      );
+      return data.adminAuditLogs;
+    } catch (err) {
+      console.warn('API getAdminAuditLogs fallback:', err);
+      return [];
+    }
   },
 
   async deleteUser(id: string) {

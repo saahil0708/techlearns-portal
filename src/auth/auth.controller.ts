@@ -19,6 +19,7 @@ import { Public } from '../common/decorators/roles.decorator.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
 import { AuthService } from './auth.service.js';
+import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { RefreshTokenDto, RevokeTokenDto } from './dto/refresh-token.dto.js';
@@ -302,5 +303,17 @@ export class AuthController {
   @ApiOperation({ summary: 'Get profile details of the current authenticated user' })
   async getProfile(@CurrentUser() user: CurrentUserPayload) {
     return this.authService.getProfile(user.id);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change user account password securely' })
+  async changePassword(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(user.id, dto.currentPassword, dto.newPassword);
   }
 }

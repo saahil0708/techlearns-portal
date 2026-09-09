@@ -194,4 +194,11 @@ export class AuthService {
   async getProfile(userId: string) {
     return this.usersService.getProfile(userId);
   }
+
+  /**
+   * Change user password securely with current password validation
+   */
+  async changePassword(userId: string, currentPass: string, newPass: string) {
+    return this.usersService.changePassword(userId, currentPass, newPass);
+  }
 }

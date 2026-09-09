@@ -1,18 +1,31 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+// import { InjectQueue } from '@nestjs/bullmq';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   Prisma,
   ProgrammingLanguage,
   SubmissionStatus,
   SubmissionVerdict,
 } from '@prisma/client';
+// import { Queue } from 'bullmq';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
+// import {
+//   EVALUATE_SUBMISSION_JOB,
+//   EvaluateSubmissionJobData,
+//   JUDGE_QUEUE_NAME,
+// } from '../judge/judge.constants.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { userSanitizedSelect } from '../users/users.service.js';
 import { CreateSubmissionInput } from './dto/create-submission.input.js';
 
 @Injectable()
 export class SubmissionsService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(SubmissionsService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    // @InjectQueue(JUDGE_QUEUE_NAME)
+    // private submissionQueue: Queue<EvaluateSubmissionJobData>,
+  ) {}
 
   async create(input: CreateSubmissionInput, userId: string) {
     const problem = await this.prisma.problem.findUnique({
@@ -29,7 +42,7 @@ export class SubmissionsService {
     const totalTestCases = problem.testCases.length;
 
     // Create submission in QUEUED status
-    return this.prisma.submission.create({
+    const submission = await this.prisma.submission.create({
       data: {
         userId,
         problemId: input.problemId,
@@ -47,6 +60,22 @@ export class SubmissionsService {
         problem: true,
       },
     });
+
+    // ==========================================
+    // BullMQ Asynchronous Job Dispatch (Disabled for now)
+    // Uncomment when ready to activate BullMQ judge queue
+    // ==========================================
+    // try {
+    //   await this.submissionQueue.add(EVALUATE_SUBMISSION_JOB, {
+    //     submissionId: submission.id,
+    //   });
+    // } catch (err: any) {
+    //   this.logger.warn(
+    //     `Failed to enqueue submission ${submission.id} to BullMQ: ${err.message}`,
+    //   );
+    // }
+
+    return submission;
   }
 
   async findPaginated(

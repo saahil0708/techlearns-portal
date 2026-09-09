@@ -40,6 +40,7 @@ export interface ProblemEntity {
   companies: string[];
   statementMarkdown: string;
   sampleTestCases: TestCaseSample[];
+  hints?: string[];
 }
 
 export interface NewProblemData {

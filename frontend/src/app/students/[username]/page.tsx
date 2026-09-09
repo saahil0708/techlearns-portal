@@ -109,32 +109,37 @@ export default async function DynamicStudentProfilePage({ params }: PageProps) {
   let profileData: Partial<StudentProfileData> | undefined = SEED_STUDENTS[username];
 
   try {
-    const liveUsers = await apiService.getUsers({ search: username, limit: 5 });
-    const match = liveUsers?.items?.find(
-      (u: any) => u.email?.toLowerCase().startsWith(username.toLowerCase()) || u.id === username
-    );
-    if (match) {
-      profileData = {
-        id: match.id,
-        name: match.name,
-        handle: match.email ? match.email.split('@')[0] : username,
-        email: match.email,
-        role: match.globalRole || 'STUDENT',
-        institution: 'Campus / Collegiate Division',
-        location: 'Global',
-        joinedDate: match.createdAt ? new Date(match.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Recently',
-        contestRating: 2100,
-        ratingTier: 'Candidate Master',
-        globalRank: 15,
-        solvedTotal: 340,
-        solvedEasy: 140,
-        solvedMedium: 160,
-        solvedHard: 40,
-        totalSubmissions: 820,
-        accuracyRate: '88.2%',
-        currentStreakDays: 14,
-        maxStreakDays: 30,
-      };
+    const liveProfile = await apiService.getStudentProfile(username);
+    if (liveProfile && liveProfile.name) {
+      profileData = liveProfile;
+    } else {
+      const liveUsers = await apiService.getUsers({ search: username, limit: 5 });
+      const match = liveUsers?.items?.find(
+        (u: any) => u.email?.toLowerCase().startsWith(username.toLowerCase()) || u.id === username
+      );
+      if (match) {
+        profileData = {
+          id: match.id,
+          name: match.name,
+          handle: match.email ? match.email.split('@')[0] : username,
+          email: match.email,
+          role: match.globalRole || 'STUDENT',
+          institution: match.institution || 'Campus / Collegiate Division',
+          location: match.location || 'Global',
+          joinedDate: match.createdAt ? new Date(match.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'Recently',
+          contestRating: match.contestRating || 2100,
+          ratingTier: match.ratingTier || 'Candidate Master',
+          globalRank: 15,
+          solvedTotal: 340,
+          solvedEasy: 140,
+          solvedMedium: 160,
+          solvedHard: 40,
+          totalSubmissions: 820,
+          accuracyRate: '88.2%',
+          currentStreakDays: 14,
+          maxStreakDays: 30,
+        };
+      }
     }
   } catch (err) {
     console.warn('Live student query fallback:', err);

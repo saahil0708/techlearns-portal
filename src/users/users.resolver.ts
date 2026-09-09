@@ -10,6 +10,9 @@ import type { CurrentUserPayload } from '../common/types/current-user.interface.
 import { BulkInviteUsersInput } from './dto/bulk-invite.input.js';
 import { CreateUserInput } from './dto/create-user.input.js';
 import { UpdateUserInput } from './dto/update-user.input.js';
+import { AdminMetricsType } from './types/admin-metrics.type.js';
+import { AuditLogItemType } from './types/audit-log.type.js';
+import { StudentProfileType } from './types/student-stats.type.js';
 import { UserType } from './types/user.type.js';
 import { UsersConnection } from './types/users-connection.type.js';
 import { UsersService } from './users.service.js';
@@ -42,6 +45,26 @@ export class UsersResolver {
     return this.usersService.getProfile(currentUser.id);
   }
 
+  @Query(() => StudentProfileType, { name: 'studentProfile' })
+  async getStudentProfile(
+    @Args('handleOrId', { type: () => String }) handleOrId: string,
+  ) {
+    return this.usersService.getStudentProfile(handleOrId);
+  }
+
+  @Query(() => AdminMetricsType, { name: 'adminMetrics' })
+  @UseGuards(GqlAuthGuard, GqlRolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  async getAdminMetrics() {
+    return this.usersService.getSuperAdminMetrics();
+  }
+
+  @Query(() => [AuditLogItemType], { name: 'adminAuditLogs' })
+  @UseGuards(GqlAuthGuard)
+  async getAdminAuditLogs(@GqlCurrentUser() currentUser: CurrentUserPayload) {
+    return this.usersService.getAdminAuditLogs(currentUser.id);
+  }
+
   @Mutation(() => UserType, { name: 'createUser' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
@@ -50,12 +73,20 @@ export class UsersResolver {
   }
 
   @Mutation(() => UserType, { name: 'updateUser' })
-  @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  @UseGuards(GqlAuthGuard)
   async updateUser(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: UpdateUserInput,
+    @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
+    // Only allow updating own profile unless SUPER_ADMIN or PLATFORM_ADMIN
+    if (
+      currentUser.id !== id &&
+      currentUser.globalRole !== Role.SUPER_ADMIN &&
+      currentUser.globalRole !== Role.PLATFORM_ADMIN
+    ) {
+      id = currentUser.id;
+    }
     return this.usersService.updateUser(id, input);
   }
 

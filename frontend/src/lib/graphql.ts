@@ -106,6 +106,35 @@ export const CREATE_USER_MUTATION = `
   }
 `;
 
+export const UPDATE_USER_MUTATION = `
+  mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+    updateUser(id: $id, input: $input) {
+      id
+      name
+      email
+      globalRole
+      status
+      avatarUrl
+      bannerUrl
+      bio
+      phone
+      institution
+      department
+      location
+      birthDate
+      githubUrl
+      linkedinUrl
+      websiteUrl
+      resumeUrl
+      resumeFileName
+      contestRating
+      ratingTier
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 export const COLLEGES_QUERY = `
   query GetColleges($page: Int, $limit: Int, $search: String, $status: CollegeStatus) {
     colleges(page: $page, limit: $limit, search: $search, status: $status) {
@@ -344,19 +373,6 @@ export const DELETE_CONTEST_MUTATION = `
 // ----------------------------------------------------
 // UPDATE MUTATIONS
 // ----------------------------------------------------
-
-export const UPDATE_USER_MUTATION = `
-  mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
-    updateUser(id: $id, input: $input) {
-      id
-      name
-      email
-      globalRole
-      status
-      updatedAt
-    }
-  }
-`;
 
 export const UPDATE_COLLEGE_MUTATION = `
   mutation UpdateCollege($id: ID!, $input: UpdateCollegeInput!) {
@@ -710,6 +726,113 @@ export const SUBMISSION_BY_ID_QUERY = `
     }
   }
 `;
+
+export const STUDENT_PROFILE_QUERY = `
+  query GetStudentProfile($handleOrId: String!) {
+    studentProfile(handleOrId: $handleOrId) {
+      id
+      name
+      handle
+      email
+      role
+      avatarUrl
+      bannerUrl
+      bio
+      institution
+      department
+      location
+      phone
+      joinedDate
+      githubUrl
+      linkedinUrl
+      websiteUrl
+      resumeUrl
+      resumeFileName
+      contestRating
+      ratingTier
+      globalRank
+      solvedTotal
+      solvedEasy
+      solvedMedium
+      solvedHard
+      totalSubmissions
+      accuracyRate
+      currentStreakDays
+      maxStreakDays
+      topics {
+        name
+        solved
+        total
+        pct
+      }
+      submissions {
+        id
+        problemTitle
+        problemSlug
+        problemCode
+        difficulty
+        language
+        verdict
+        runtimeMs
+        memoryKb
+        submittedAt
+        codeSnippet
+      }
+      contests {
+        id
+        contestName
+        contestDate
+        rank
+        totalParticipants
+        score
+        penaltyTime
+        ratingDelta
+        newRating
+      }
+      courses {
+        id
+        title
+        slug
+        instructor
+        modulesCompleted
+        totalModules
+        progressPct
+        status
+      }
+    }
+  }
+`;
+
+export const ADMIN_METRICS_QUERY = `
+  query GetAdminMetrics {
+    adminMetrics {
+      collegesCount
+      studentsCount
+      facultyCount
+      adminsCount
+      totalUsersCount
+      problemsCount
+      contestsCount
+      submissionsCount
+      systemStatus
+      uptimePercentage
+    }
+  }
+`;
+
+export const ADMIN_AUDIT_LOGS_QUERY = `
+  query GetAdminAuditLogs {
+    adminAuditLogs {
+      id
+      action
+      detail
+      ipAddress
+      status
+      createdAt
+    }
+  }
+`;
+
 
 
 

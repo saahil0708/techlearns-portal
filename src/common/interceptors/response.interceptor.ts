@@ -21,7 +21,7 @@ export class ResponseInterceptor<T>
     next: CallHandler,
   ): Observable<any> {
     // For GraphQL requests, skip envelope wrapping as GraphQL requires the raw object schema
-    if (context.getType<string>() === 'graphql' || (context as any).getType?.() === 'graphql') {
+    if (typeof context.getType === 'function' && (context.getType<string>() === 'graphql')) {
       return next.handle();
     }
 

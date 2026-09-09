@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   Box,
   Tooltip,
@@ -16,7 +16,6 @@ import {
   IconButton,
   Chip,
   Skeleton,
-  CircularProgress,
 } from '@mui/material';
 
 // Material Rounded Icons
@@ -46,13 +45,16 @@ const STUDENT_NAV_ITEMS = [
   { label: 'Enrolled Courses', icon: <MenuBookRoundedIcon sx={{ fontSize: 20 }} />, path: '/courses' },
   { label: 'Competitive Contests', icon: <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />, path: '/contests' },
   { label: 'Global Leaderboard', icon: <LeaderboardRoundedIcon sx={{ fontSize: 20 }} />, path: '/leaderboard' },
-  { label: 'My Submissions', icon: <HistoryRoundedIcon sx={{ fontSize: 21 }} />, path: '/students?tab=submissions' },
-  { label: 'Account Settings', icon: <SettingsRoundedIcon sx={{ fontSize: 20 }} />, path: '/students?tab=settings' },
+  { label: 'My Submissions', icon: <HistoryRoundedIcon sx={{ fontSize: 21 }} />, path: '/students/submissions' },
+  { label: 'Account Settings', icon: <SettingsRoundedIcon sx={{ fontSize: 20 }} />, path: '/students/settings' },
 ];
 
 export default function StudentSidebar() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams ? searchParams.get('tab') : null;
+
   const dispatch = useAppDispatch();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
@@ -110,12 +112,72 @@ export default function StudentSidebar() {
         .slice(0, 2)
     : 'U';
 
-  const isProfileActive = pathname === '/students' || pathname.startsWith('/students/');
+  const isProfileActive =
+    (pathname === '/students' || pathname === '/students/profile' || pathname.startsWith('/students/')) &&
+    pathname !== '/students/submissions' &&
+    pathname !== '/students/settings' &&
+    (!currentTab || currentTab === 'overview');
 
   const handleConfirmLogout = async () => {
     setLogoutDialogOpen(false);
     await dispatch(logoutUser());
     router.push('/login');
+  };
+
+  const isItemActive = (itemPath: string) => {
+    // 1. My Submissions / History
+    if (itemPath === '/students/submissions' || itemPath.includes('tab=submissions')) {
+      return (
+        pathname === '/students/submissions' ||
+        (pathname.startsWith('/students') && currentTab === 'submissions')
+      );
+    }
+
+    // 2. Account Settings
+    if (itemPath === '/students/settings' || itemPath.includes('tab=settings')) {
+      return (
+        pathname === '/students/settings' ||
+        (pathname.startsWith('/students') && currentTab === 'settings')
+      );
+    }
+
+    // 3. My Profile & Workspace
+    if (itemPath === '/students' || itemPath === '/students/profile') {
+      const isSubTab = currentTab === 'submissions' || currentTab === 'settings';
+      const isSubRoute = pathname === '/students/submissions' || pathname === '/students/settings';
+      return (
+        (pathname === '/students' || pathname === '/students/profile' || (pathname.startsWith('/students/') && !isSubRoute)) &&
+        !isSubTab &&
+        !isSubRoute
+      );
+    }
+
+    // 4. Practice & Compilers
+    if (itemPath === '/practice') {
+      return pathname === '/practice' || pathname.startsWith('/practice/') || (pathname.startsWith('/students') && currentTab === 'practice');
+    }
+
+    // 5. Problem Archive
+    if (itemPath === '/problems') {
+      return pathname === '/problems' || pathname.startsWith('/problems/');
+    }
+
+    // 6. Enrolled Courses
+    if (itemPath === '/courses') {
+      return pathname === '/courses' || pathname.startsWith('/courses/') || (pathname.startsWith('/students') && currentTab === 'courses');
+    }
+
+    // 7. Competitive Contests
+    if (itemPath === '/contests') {
+      return pathname === '/contests' || pathname.startsWith('/contests/') || (pathname.startsWith('/students') && currentTab === 'contests');
+    }
+
+    // 8. Global Leaderboard
+    if (itemPath === '/leaderboard') {
+      return pathname === '/leaderboard' || pathname.startsWith('/leaderboard/');
+    }
+
+    return pathname === itemPath;
   };
 
   return (
@@ -208,10 +270,7 @@ export default function StudentSidebar() {
           }}
         >
           {STUDENT_NAV_ITEMS.map((item) => {
-            const isActive =
-              item.path === '/students'
-                ? pathname === '/students'
-                : pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
+            const active = isItemActive(item.path);
 
             return (
               <Tooltip key={item.label} title={item.label} placement="right" arrow>
@@ -233,16 +292,16 @@ export default function StudentSidebar() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      bgcolor: isActive ? '#2563EB' : 'transparent',
-                      background: isActive
+                      bgcolor: active ? '#2563EB' : 'transparent',
+                      background: active
                         ? 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)'
                         : 'transparent',
-                      color: isActive ? '#FFFFFF' : '#64748B',
-                      boxShadow: isActive ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none',
+                      color: active ? '#FFFFFF' : '#64748B',
+                      boxShadow: active ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none',
                       transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        bgcolor: isActive ? '#1D4ED8' : 'rgba(37, 99, 235, 0.08)',
-                        color: isActive ? '#FFFFFF' : '#2563EB',
+                        bgcolor: active ? '#1D4ED8' : 'rgba(37, 99, 235, 0.08)',
+                        color: active ? '#FFFFFF' : '#2563EB',
                         transform: 'scale(1.06)',
                       },
                       '&:active': {
@@ -339,11 +398,12 @@ export default function StudentSidebar() {
                       width: 36,
                       height: 36,
                       bgcolor: '#2563EB',
-                      background: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)',
                       color: '#FFFFFF',
-                      fontSize: '0.85rem',
-                      fontWeight: 700,
-                      boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)',
+                      fontSize: '0.82rem',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      border: '1.5px solid #FFFFFF',
+                      boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
                     }}
                   >
                     {initials}
@@ -353,21 +413,24 @@ export default function StudentSidebar() {
             </Link>
           </Tooltip>
 
-          {/* Quick Sign Out Trigger Button */}
-          <Tooltip title="Sign Out of Session" placement="right" arrow>
+          {/* Quick Logout Button */}
+          <Tooltip title="Log Out of Session" placement="right" arrow>
             <IconButton
-              size="small"
               onClick={() => setLogoutDialogOpen(true)}
+              aria-label="Log Out"
               sx={{
-                width: 38,
-                height: 38,
+                width: 40,
+                height: 40,
                 borderRadius: '9999px',
                 color: '#94A3B8',
-                transition: 'all 0.2s ease',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
-                  bgcolor: 'rgba(239, 68, 68, 0.1)',
-                  color: '#EF4444',
+                  bgcolor: '#FEE2E2',
+                  color: '#DC2626',
                   transform: 'scale(1.08)',
+                },
+                '&:active': {
+                  transform: 'scale(0.95)',
                 },
               }}
             >
@@ -385,154 +448,75 @@ export default function StudentSidebar() {
           paper: {
             sx: {
               borderRadius: '20px',
-              p: 1.5,
-              maxWidth: 420,
+              p: 1,
+              maxWidth: 400,
               width: '100%',
               bgcolor: '#FFFFFF',
-              boxShadow: '0 24px 48px -12px rgba(15, 23, 42, 0.18)',
-              border: '1px solid #F1F5F9',
+              boxShadow: '0 20px 48px rgba(0, 0, 0, 0.16)',
             },
           },
         }}
       >
-        <DialogTitle
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            pb: 1,
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <DialogTitle sx={{ pb: 1, pt: 2, px: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
             <Box
               sx={{
-                width: 40,
-                height: 40,
+                width: 38,
+                height: 38,
                 borderRadius: '12px',
-                bgcolor: '#FEF2F2',
+                bgcolor: '#FEE2E2',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#EF4444',
+                color: '#DC2626',
               }}
             >
               <WarningAmberRoundedIcon sx={{ fontSize: 22 }} />
             </Box>
-            <Box>
-              <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: '#0F172A' }}>
-                Sign Out Confirmation
-              </Typography>
-              <Typography sx={{ fontSize: '0.78rem', color: '#64748B' }}>
-                Active Student Session
-              </Typography>
-            </Box>
+            <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: '#0F172A' }}>
+              Sign Out
+            </Typography>
           </Box>
-          <IconButton
-            size="small"
-            onClick={() => setLogoutDialogOpen(false)}
-            sx={{ color: '#94A3B8', '&:hover': { color: '#0F172A' } }}
-          >
-            <CloseRoundedIcon fontSize="small" />
+          <IconButton onClick={() => setLogoutDialogOpen(false)} size="small" sx={{ color: '#94A3B8' }}>
+            <CloseRoundedIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </DialogTitle>
 
-        <DialogContent sx={{ py: 1.5 }}>
-          <Typography sx={{ fontSize: '0.9rem', color: '#475569', mb: 2, lineHeight: 1.5 }}>
-            Are you sure you want to end your current session for <strong>{displayEmail}</strong>?
+        <DialogContent sx={{ px: 3, py: 1.5 }}>
+          <Typography sx={{ fontSize: '0.88rem', color: '#64748B', lineHeight: 1.6 }}>
+            Are you sure you want to log out of your session on CodePlatform? You will need to log in again to access your workspace.
           </Typography>
-
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: '12px',
-              bgcolor: '#F8FAFC',
-              border: '1px solid #E2E8F0',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-            }}
-          >
-            {loading ? (
-              <>
-                <Skeleton variant="circular" width={38} height={38} animation="wave" />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Skeleton variant="text" width="60%" height={20} animation="wave" />
-                  <Skeleton variant="text" width="80%" height={16} animation="wave" />
-                </Box>
-                <Skeleton variant="rounded" width={60} height={24} sx={{ borderRadius: '6px' }} animation="wave" />
-              </>
-            ) : (
-              <>
-                <Avatar
-                  sx={{
-                    width: 38,
-                    height: 38,
-                    bgcolor: '#2563EB',
-                    fontWeight: 700,
-                    fontSize: '0.85rem',
-                  }}
-                >
-                  {initials}
-                </Avatar>
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A' }} noWrap>
-                    {displayName}
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.78rem', color: '#64748B' }} noWrap>
-                    {displayEmail}
-                  </Typography>
-                </Box>
-                <Chip
-                  label={displayRole}
-                  size="small"
-                  sx={{
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
-                    fontWeight: 700,
-                    fontSize: '0.7rem',
-                    borderRadius: '6px',
-                  }}
-                />
-              </>
-            )}
-          </Box>
         </DialogContent>
 
-        <DialogActions sx={{ pt: 1, px: 3, pb: 2, gap: 1 }}>
+        <DialogActions sx={{ px: 3, pb: 2.5, pt: 1, gap: 1 }}>
           <Button
-            variant="outlined"
             onClick={() => setLogoutDialogOpen(false)}
+            variant="outlined"
             sx={{
               borderRadius: '10px',
-              borderColor: '#CBD5E1',
-              color: '#475569',
-              textTransform: 'none',
-              fontWeight: 600,
-              fontSize: '0.88rem',
-              px: 2.5,
-              py: 0.8,
-              '&:hover': { bgcolor: '#F8FAFC', borderColor: '#94A3B8' },
-            }}
-          >
-            Stay Signed In
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleConfirmLogout}
-            sx={{
-              borderRadius: '10px',
-              bgcolor: '#EF4444',
-              color: '#FFFFFF',
               textTransform: 'none',
               fontWeight: 700,
-              fontSize: '0.88rem',
-              px: 2.5,
-              py: 0.8,
-              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)',
-              '&:hover': { bgcolor: '#DC2626' },
+              color: '#64748B',
+              borderColor: '#E2E8F0',
+              '&:hover': { borderColor: '#CBD5E1', bgcolor: '#F8FAFC' },
             }}
           >
-            Sign Out Now
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmLogout}
+            variant="contained"
+            disableElevation
+            sx={{
+              borderRadius: '10px',
+              textTransform: 'none',
+              fontWeight: 700,
+              bgcolor: '#DC2626',
+              color: '#FFFFFF',
+              '&:hover': { bgcolor: '#B91C1C' },
+            }}
+          >
+            Sign Out
           </Button>
         </DialogActions>
       </Dialog>

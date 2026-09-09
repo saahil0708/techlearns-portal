@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Box, Tabs, Tab } from '@mui/material';
+import { Box } from '@mui/material';
 import {
   StudentProfileData,
   StudentSubmission,
@@ -20,8 +20,6 @@ import { apiService } from '@/lib/api-service';
 
 // Layout & Modular Child Components
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
-import StudentProfileHeader from './StudentProfileHeader';
-import StudentMetricsGrid from './StudentMetricsGrid';
 import StudentOverviewTab from './StudentOverviewTab';
 import StudentPracticeTab from './StudentPracticeTab';
 import StudentSubmissionsTab from './StudentSubmissionsTab';
@@ -33,9 +31,12 @@ import ViewSubmissionCodeModal from './ViewSubmissionCodeModal';
 import ViewCertificateModal from './ViewCertificateModal';
 import UploadResumeModal from './UploadResumeModal';
 
+export type StudentTabType = 'overview' | 'practice' | 'submissions' | 'contests' | 'courses' | 'settings';
+
 interface StudentProfileClientProps {
   initialProfile?: Partial<StudentProfileData>;
   isOwner?: boolean;
+  defaultTab?: StudentTabType;
 }
 
 const getInitialOwnerProfile = (): Partial<StudentProfileData> => {
@@ -59,30 +60,32 @@ const getInitialOwnerProfile = (): Partial<StudentProfileData> => {
   return {};
 };
 
+const validTabs: StudentTabType[] = ['overview', 'practice', 'submissions', 'contests', 'courses', 'settings'];
+
 export default function StudentProfileClient({
   initialProfile,
   isOwner = true,
+  defaultTab = 'overview',
 }: StudentProfileClientProps) {
   const toast = useToast();
   const searchParams = useSearchParams();
   const currentUser = useAppSelector((state) => state.auth.user);
 
-  const validTabs = ['overview', 'practice', 'submissions', 'contests', 'courses', 'settings'] as const;
-  type TabType = typeof validTabs[number];
-
-  const initialTabParam = searchParams.get('tab') as TabType | null;
-  const [currentTab, setCurrentTab] = useState<TabType>(
+  const initialTabParam = searchParams.get('tab') as StudentTabType | null;
+  const [currentTab, setCurrentTab] = useState<StudentTabType>(
     initialTabParam && validTabs.includes(initialTabParam)
       ? initialTabParam
-      : 'overview'
+      : defaultTab
   );
 
   useEffect(() => {
-    const tab = searchParams.get('tab') as TabType | null;
+    const tab = searchParams.get('tab') as StudentTabType | null;
     if (tab && validTabs.includes(tab)) {
       setCurrentTab(tab);
+    } else if (!tab && defaultTab) {
+      setCurrentTab(defaultTab);
     }
-  }, [searchParams]);
+  }, [searchParams, defaultTab]);
 
   const [isTabLoading, setIsTabLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -121,6 +124,62 @@ export default function StudentProfileClient({
     maxStreakDays: initialProfile?.maxStreakDays || 65,
   });
 
+  // Submissions state
+  const [submissions, setSubmissions] = useState<StudentSubmission[]>([
+    {
+      id: 'sub-9912',
+      problemTitle: 'Two Sum & Pair Target Lookups',
+      problemSlug: 'two-sum',
+      problemCode: 'PROB-001',
+      difficulty: 'Easy',
+      language: 'CPP',
+      verdict: 'Accepted',
+      runtimeMs: 4,
+      memoryKb: 10400,
+      submittedAt: 'Today, 10:24 AM',
+      codeSnippet: `#include <vector>\n#include <unordered_map>\nusing namespace std;\n\nvector<int> twoSum(vector<int>& nums, int target) {\n    unordered_map<int, int> mp;\n    for (int i = 0; i < nums.size(); ++i) {\n        int comp = target - nums[i];\n        if (mp.count(comp)) return {mp[comp], i};\n        mp[nums[i]] = i;\n    }\n    return {};\n}`,
+    },
+  ]);
+
+  // Contests History
+  const [contests, setContests] = useState<StudentContestHistory[]>([
+    {
+      id: 'cnt-1',
+      contestName: 'CodePlatform Global Round #42 (Div. 1 + 2)',
+      contestDate: 'Aug 24, 2025',
+      rank: 14,
+      totalParticipants: 4820,
+      score: 1850,
+      penaltyTime: '01:14:22',
+      ratingDelta: +48,
+      newRating: 2380,
+    },
+  ]);
+
+  // Courses Progress
+  const [courses, setCourses] = useState<StudentCourseProgress[]>([
+    {
+      id: 'crs-1',
+      title: 'Data Structures & Algorithms Mastery',
+      slug: 'data-structures-and-algorithms-mastery',
+      instructor: 'Prof. Thomas Cormen',
+      modulesCompleted: 12,
+      totalModules: 12,
+      progressPct: 100,
+      status: 'Completed',
+    },
+  ]);
+
+  // Topic Skills
+  const [topics, setTopics] = useState<StudentTopicSkill[]>([
+    { name: 'Dynamic Programming & Memoization', solved: 142, total: 160, pct: 89 },
+    { name: 'Graph Theory & Shortest Path', solved: 118, total: 130, pct: 91 },
+    { name: 'Trees & Binary Search Trees', solved: 95, total: 110, pct: 86 },
+    { name: 'Arrays & Two Pointers', solved: 88, total: 95, pct: 93 },
+    { name: 'String Algorithms (KMP, Tries)', solved: 64, total: 80, pct: 80 },
+    { name: 'Math & Number Theory', solved: 58, total: 75, pct: 77 },
+  ]);
+
   // 1. Sync when Redux currentUser state arrives or updates
   useEffect(() => {
     if (isOwner && currentUser?.name) {
@@ -132,57 +191,42 @@ export default function StudentProfileClient({
         email: currentUser.email || prev.email,
         role: currentUser.globalRole || prev.role,
       }));
-      setIsPageLoading(false);
     }
   }, [currentUser, isOwner]);
 
-  // 2. Query live profile directly from backend /auth/me or localStorage
+  // 2. Query live comprehensive profile statistics from backend
   useEffect(() => {
-    if (!isOwner) return;
-
-    // Check localStorage immediately
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('codeplatform_user');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (parsed?.name) {
-            setProfile((prev) => ({
-              ...prev,
-              id: parsed.id || prev.id,
-              name: parsed.name,
-              handle: parsed.email ? parsed.email.split('@')[0] : prev.handle,
-              email: parsed.email || prev.email,
-              role: parsed.globalRole || prev.role,
-            }));
-            setIsPageLoading(false);
-          }
-        }
-      } catch {}
-    }
-
-    // Query backend /auth/me
     async function fetchLiveProfile() {
       try {
-        const res = await apiService.getProfile();
-        const liveUser = res?.data || res;
-        if (liveUser && liveUser.name) {
+        const handleOrId = initialProfile?.handle || initialProfile?.id || (currentUser?.email ? currentUser.email.split('@')[0] : 'me');
+        const liveData = await apiService.getStudentProfile(handleOrId);
+        if (liveData && liveData.name) {
           setProfile((prev) => ({
             ...prev,
-            id: liveUser.id || prev.id,
-            name: liveUser.name,
-            handle: liveUser.email ? liveUser.email.split('@')[0] : prev.handle,
-            email: liveUser.email || prev.email,
-            role: liveUser.globalRole || prev.role,
+            ...liveData,
+            role: liveData.role || prev.role,
           }));
+          if (liveData.submissions && liveData.submissions.length > 0) {
+            setSubmissions(liveData.submissions);
+          }
+          if (liveData.contests && liveData.contests.length > 0) {
+            setContests(liveData.contests);
+          }
+          if (liveData.courses && liveData.courses.length > 0) {
+            setCourses(liveData.courses);
+          }
+          if (liveData.topics && liveData.topics.length > 0) {
+            setTopics(liveData.topics);
+          }
         }
-      } catch {
+      } catch (err) {
+        console.warn('Student profile live query failed:', err);
       } finally {
         setIsPageLoading(false);
       }
     }
     fetchLiveProfile();
-  }, [isOwner]);
+  }, [isOwner, currentUser, initialProfile]);
 
   // Modal states
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -192,148 +236,18 @@ export default function StudentProfileClient({
   const [selectedCert, setSelectedCert] = useState<StudentCertification | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(null);
 
-  // Submissions state
-  const [submissions] = useState<StudentSubmission[]>([
-    {
-      id: 'sub-9912',
-      problemTitle: 'Two Sum & Pair Target Lookups',
-      problemSlug: 'two-sum',
-      problemCode: 'PROB-001',
-      difficulty: 'Easy',
-      language: 'C++20',
-      verdict: 'Accepted',
-      runtimeMs: 4,
-      memoryKb: 10400,
-      submittedAt: 'Today, 10:24 AM',
-      codeSnippet: `#include <vector>\n#include <unordered_map>\nusing namespace std;\n\nvector<int> twoSum(vector<int>& nums, int target) {\n    unordered_map<int, int> mp;\n    for (int i = 0; i < nums.size(); ++i) {\n        int comp = target - nums[i];\n        if (mp.count(comp)) return {mp[comp], i};\n        mp[nums[i]] = i;\n    }\n    return {};\n}`,
-    },
-    {
-      id: 'sub-9890',
-      problemTitle: 'Trapping Rain Water II (3D Grid)',
-      problemSlug: 'trapping-rain-water-ii',
-      problemCode: 'PROB-407',
-      difficulty: 'Hard',
-      language: 'C++20',
-      verdict: 'Accepted',
-      runtimeMs: 18,
-      memoryKb: 14200,
-      submittedAt: 'Yesterday, 09:14 PM',
-      codeSnippet: `// Priority queue Dijkstra-like 3D boundary propagation...`,
-    },
-    {
-      id: 'sub-9844',
-      problemTitle: 'Optimal Subarray Frequency XOR',
-      problemSlug: 'optimal-subarray-frequency-xor',
-      problemCode: 'PROB-B',
-      difficulty: 'Medium',
-      language: 'Python 3',
-      verdict: 'Accepted',
-      runtimeMs: 52,
-      memoryKb: 19800,
-      submittedAt: '2 days ago',
-      codeSnippet: `class Solution:\n    def solve(self, A: List[int]) -> int:\n        # Prefix XOR hash map\n        pass`,
-    },
-    {
-      id: 'sub-9788',
-      problemTitle: 'Course Schedule IV (Prerequisites Graph)',
-      problemSlug: 'course-schedule-iv',
-      problemCode: 'PROB-1462',
-      difficulty: 'Medium',
-      language: 'Java 21',
-      verdict: 'Time Limit Exceeded',
-      runtimeMs: 2040,
-      memoryKb: 48000,
-      submittedAt: '3 days ago',
-      codeSnippet: `// Naive BFS per query leading to TLE; optimized via reachability matrix next run.`,
-    },
-  ]);
-
-  // Contests History
-  const [contests] = useState<StudentContestHistory[]>([
-    {
-      id: 'cnt-142',
-      contestName: 'Weekly Competitive Grand Prix #142',
-      contestDate: 'Mar 01, 2026',
-      rank: 3,
-      totalParticipants: 4820,
-      score: 750,
-      penaltyTime: '01:14:22',
-      ratingDelta: +48,
-      newRating: 2380,
-    },
-    {
-      id: 'cnt-88',
-      contestName: 'Global Biweekly Clash #88',
-      contestDate: 'Feb 15, 2026',
-      rank: 8,
-      totalParticipants: 5120,
-      score: 600,
-      penaltyTime: '01:28:10',
-      ratingDelta: +32,
-      newRating: 2332,
-    },
-    {
-      id: 'cnt-cup',
-      contestName: 'Collegiate Invitational Cup 2026',
-      contestDate: 'Feb 02, 2026',
-      rank: 12,
-      totalParticipants: 2400,
-      score: 550,
-      penaltyTime: '02:05:40',
-      ratingDelta: +25,
-      newRating: 2300,
-    },
-  ]);
-
-  // Courses Progress
-  const [courses] = useState<StudentCourseProgress[]>([
-    {
-      id: 'crs-1',
-      title: 'Data Structures & Algorithms Mastery',
-      slug: 'data-structures-and-algorithms-mastery',
-      instructor: 'Prof. Thomas Cormen',
-      modulesCompleted: 12,
-      totalModules: 12,
-      progressPct: 100,
-      status: 'Completed',
-    },
-    {
-      id: 'crs-2',
-      title: 'Advanced Graph Algorithms & Network Flow',
-      slug: 'advanced-graph-algorithms',
-      instructor: 'Dr. Robert Sedgewick',
-      modulesCompleted: 14,
-      totalModules: 16,
-      progressPct: 88,
-      status: 'In Progress',
-    },
-    {
-      id: 'crs-3',
-      title: 'Distributed Systems & Consensus Protocols',
-      slug: 'distributed-systems',
-      instructor: 'Prof. Leslie Lamport',
-      modulesCompleted: 6,
-      totalModules: 10,
-      progressPct: 60,
-      status: 'In Progress',
-    },
-  ]);
-
-  // Topic Skills
-  const topics: StudentTopicSkill[] = [
-    { name: 'Dynamic Programming & Memoization', solved: 142, total: 160, pct: 89 },
-    { name: 'Graph Theory & Shortest Path', solved: 118, total: 130, pct: 91 },
-    { name: 'Trees & Binary Search Trees', solved: 95, total: 110, pct: 86 },
-    { name: 'Arrays & Two Pointers', solved: 88, total: 95, pct: 93 },
-    { name: 'String Algorithms (KMP, Tries)', solved: 64, total: 80, pct: 80 },
-    { name: 'Math & Number Theory', solved: 58, total: 75, pct: 77 },
-  ];
-
-  const handleTabChange = (_: React.SyntheticEvent, newTab: TabType) => {
+  const handleTabChange = (newTab: StudentTabType) => {
     if (newTab !== currentTab) {
       setIsTabLoading(true);
       setCurrentTab(newTab);
-      setTimeout(() => setIsTabLoading(false), 160);
+
+      // Keep browser URL and history state in sync
+      if (typeof window !== 'undefined') {
+        const newUrl = newTab === 'overview' ? '/students' : `/students?tab=${newTab}`;
+        window.history.pushState(null, '', newUrl);
+      }
+
+      setTimeout(() => setIsTabLoading(false), 120);
     }
   };
 
@@ -342,25 +256,15 @@ export default function StudentProfileClient({
       if (profile.id) {
         await apiService.updateUser(profile.id, {
           name: updated.name,
-        }).catch(() => null);
+          phone: updated.phone,
+          bio: updated.bio,
+        });
       }
-
-      setProfile((prev) => ({
-        ...prev,
-        ...updated,
-      }));
-
-      toast.success('Your student profile changes have been saved.', 'Profile Updated');
+      setProfile((prev) => ({ ...prev, ...updated }));
+      toast.success('Your profile changes were saved successfully.', 'Profile Updated');
+      setEditModalOpen(false);
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to update profile', 'Update Failed');
-    }
-  };
-
-  const handleShareProfile = () => {
-    if (typeof window !== 'undefined') {
-      const url = `${window.location.origin}/students/${profile.handle}`;
-      navigator.clipboard.writeText(url);
-      toast.success(`Profile URL copied: ${url}`, 'Link Copied');
+      toast.error(err.message || 'Failed to update profile.', 'Error');
     }
   };
 
@@ -450,4 +354,3 @@ export default function StudentProfileClient({
     </StudentAppLayout>
   );
 }
-
