@@ -278,7 +278,7 @@ export default function AnalyticsClient({
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        bgcolor: '#F4F5F7',
+        bgcolor: '#F8FAFC',
         backgroundImage: `
           radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
           radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),

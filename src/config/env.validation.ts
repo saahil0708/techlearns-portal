@@ -51,6 +51,10 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   JUDGE_QUEUE_NAME: string = 'submission-queue';
+
+  @IsString()
+  @IsOptional()
+  JUDGE_IMAGE?: string;
 }
 
 export function validateEnvironment(config: Record<string, unknown>) {

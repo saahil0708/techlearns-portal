@@ -9,6 +9,7 @@ export interface JwtPayload {
   sub: string;
   email: string;
   globalRole: string;
+  iat?: number;
 }
 
 @Injectable()
@@ -38,6 +39,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User account is invalid or inactive');
     }
 
+    if (payload.iat && user.updatedAt) {
+      const userUpdatedAtMs = new Date(user.updatedAt).getTime();
+      const tokenIatMs = payload.iat * 1000;
+      // If user security state was modified after JWT issuance, invalidate token
+      if (userUpdatedAtMs > tokenIatMs) {
+        throw new UnauthorizedException('Session has expired due to account security updates. Please sign in again.');
+      }
+    }
+
     return {
       id: user.id,
       email: user.email,
@@ -50,3 +60,4 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     };
   }
 }
+

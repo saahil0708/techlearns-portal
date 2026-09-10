@@ -279,37 +279,42 @@ export default function ProblemDetailClient({
       return;
     }
 
-    try {
-      if (problem.id) {
-        await apiService.addProblemTestCase(problem.id, {
-          input: newTcInput,
-          expectedOutput: newTcOutput,
-          explanation: newTcExplanation,
-          isHidden: newTcIsHidden,
-          order: testCases.length + 1,
-        }).catch(() => null);
+    const testCaseData = {
+      input: newTcInput,
+      expectedOutput: newTcOutput,
+      explanation: newTcExplanation,
+      isHidden: newTcIsHidden,
+      order: testCases.length + 1,
+    };
+
+    let apiSuccess = false;
+    if (problem.id) {
+      try {
+        await apiService.addProblemTestCase(problem.id, testCaseData);
+        apiSuccess = true;
+      } catch {
+        // API failed — fall through to show error
       }
-
-      const created: TestCaseItem = {
-        id: `tc-${Date.now()}`,
-        order: testCases.length + 1,
-        input: newTcInput,
-        expectedOutput: newTcOutput,
-        explanation: newTcExplanation,
-        isHidden: newTcIsHidden,
-        points: 25,
-      };
-
-      setTestCases((prev) => [...prev, created]);
-      setAddTestCaseOpen(false);
-      setNewTcInput('');
-      setNewTcOutput('');
-      setNewTcExplanation('');
-      setNewTcIsHidden(false);
-      toast.success(`Test case #${created.order} registered successfully.`, 'Test Case Added');
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to register test case', 'Action Failed');
     }
+
+    if (!apiSuccess && problem.id) {
+      toast.error('Failed to save test case to server. Please try again.', 'Server Error');
+      return;
+    }
+
+    const created: TestCaseItem = {
+      id: `tc-${Date.now()}`,
+      ...testCaseData,
+      points: 25,
+    };
+
+    setTestCases((prev) => [...prev, created]);
+    setAddTestCaseOpen(false);
+    setNewTcInput('');
+    setNewTcOutput('');
+    setNewTcExplanation('');
+    setNewTcIsHidden(false);
+    toast.success(`Test case #${created.order} registered successfully.`, 'Test Case Added');
   };
 
   const handleCopyMarkdown = () => {
@@ -318,18 +323,20 @@ export default function ProblemDetailClient({
     toast.success('Problem statement markdown copied to clipboard', 'Copied');
   };
 
+  const csvEscape = (val: string | number) => `"${String(val).replace(/"/g, '""')}"`;
+
   const handleExportSubmissionsCSV = () => {
     const headers = ['Submission ID', 'Student Name', 'Email', 'Institution', 'Verdict', 'Language', 'Runtime (ms)', 'Memory (KB)', 'Submitted At'];
     const rows = submissions.map((s) => [
-      `"${s.id}"`,
-      `"${s.studentName}"`,
-      `"${s.studentEmail}"`,
-      `"${s.institution}"`,
-      `"${s.verdict}"`,
-      `"${s.language}"`,
+      csvEscape(s.id),
+      csvEscape(s.studentName),
+      csvEscape(s.studentEmail),
+      csvEscape(s.institution),
+      csvEscape(s.verdict),
+      csvEscape(s.language),
       s.runtimeMs,
       s.memoryKb,
-      `"${s.submittedAt}"`,
+      csvEscape(s.submittedAt),
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');

@@ -1,8 +1,10 @@
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-// import { BullModule } from '@nestjs/bullmq';
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { createObserveModule } from '@nestjs/observe';
 import { join } from 'path';
 import { AppController } from './app.controller.js';
@@ -11,11 +13,12 @@ import { AuthModule } from './auth/auth.module.js';
 import { BatchesModule } from './batches/batches.module.js';
 import { CollegesModule } from './colleges/colleges.module.js';
 import { registerGraphQLEnums } from './common/graphql/register-enums.js';
+import { GqlThrottlerGuard } from './common/guards/throttler.guard.js';
 import configuration from './config/configuration.js';
 import { validateEnvironment } from './config/env.validation.js';
 import { ContestsModule } from './contests/contests.module.js';
 import { CoursesModule } from './courses/courses.module.js';
-// import { JudgeModule } from './judge/judge.module.js';
+import { JudgeModule } from './judge/judge.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProblemsModule } from './problems/problems.module.js';
 import { SubmissionsModule } from './submissions/submissions.module.js';
@@ -51,29 +54,31 @@ const dynamicObserveImports = hasValidObserveKeys
       validate: validateEnvironment,
       envFilePath: ['.env'],
     }),
-    // ==========================================
-    // BullMQ & Redis Queue Connection (Disabled for now)
-    // Uncomment when ready to activate background queue worker
-    // ==========================================
-    // BullModule.forRootAsync({
-    //   inject: [ConfigService],
-    //   useFactory: (configService: ConfigService) => ({
-    //     connection: {
-    //       host: configService.get<string>('redis.host', 'localhost'),
-    //       port: configService.get<number>('redis.port', 6379),
-    //       password: configService.get<string>('redis.password') || undefined,
-    //       maxRetriesPerRequest: null,
-    //       enableReadyCheck: false,
-    //     },
-    //   }),
-    // }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60_000,
+        limit: 100,
+      },
+    ]),
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>('redis.host', 'localhost'),
+          port: configService.get<number>('redis.port', 6379),
+          password: configService.get<string>('redis.password') || undefined,
+          maxRetriesPerRequest: null,
+          enableReadyCheck: false,
+        },
+      }),
+    }),
     ...dynamicObserveImports,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
-      playground: true,
-      introspection: true,
+      playground: process.env.NODE_ENV !== 'production',
+      introspection: process.env.NODE_ENV !== 'production',
       context: ({ req, res }: { req: any; res: any }) => ({ req, res }),
     }),
     PrismaModule,
@@ -85,9 +90,15 @@ const dynamicObserveImports = hasValidObserveKeys
     ProblemsModule,
     ContestsModule,
     SubmissionsModule,
-    // JudgeModule, // Disabled for now (BullMQ evaluation worker)
+    JudgeModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: GqlThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

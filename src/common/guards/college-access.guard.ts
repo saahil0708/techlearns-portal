@@ -1,12 +1,21 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 import { Role } from '@prisma/client';
 import type { CurrentUserPayload } from '../types/current-user.interface.js';
 
 @Injectable()
 export class CollegeAccessGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
-    const user = request.user as CurrentUserPayload | undefined;
+    const isGql = typeof context.getType === 'function' && (context.getType() as string) === 'graphql';
+    let request: any;
+    if (isGql) {
+      const ctx = GqlExecutionContext.create(context);
+      request = ctx.getContext().req;
+    } else {
+      request = typeof context.switchToHttp === 'function' ? context.switchToHttp().getRequest() : (context as any).req;
+    }
+
+    const user = request?.user as CurrentUserPayload | undefined;
 
     if (!user) {
       return false;
@@ -17,6 +26,7 @@ export class CollegeAccessGuard implements CanActivate {
       return true;
     }
 
+    // Check collegeId from params.collegeId, params.id, body.collegeId, query.collegeId
     const collegeId =
       request.params?.collegeId ||
       request.params?.id ||
@@ -27,14 +37,15 @@ export class CollegeAccessGuard implements CanActivate {
       return true;
     }
 
-    const hasMembership = user.memberships?.some(
+    const membership = user.memberships?.find(
       (m) => m.collegeId === collegeId,
     );
 
-    if (!hasMembership) {
+    if (!membership) {
       throw new ForbiddenException('You do not have access to this college organization');
     }
 
     return true;
   }
 }
+

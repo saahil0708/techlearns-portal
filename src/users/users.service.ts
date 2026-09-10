@@ -158,7 +158,6 @@ export class UsersService {
         OR: [
           { id: handleOrId },
           { email: handleOrId.toLowerCase() },
-          { email: { startsWith: handleOrId.toLowerCase() + '@' } },
         ],
       },
       select: { id: true },

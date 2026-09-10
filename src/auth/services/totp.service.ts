@@ -52,7 +52,7 @@ export class TotpService {
     token: string,
     recoveryCodes: string[],
   ): Promise<boolean> {
-    const result = verifySync({ token, secret });
+    const result = verifySync({ token, secret, epochTolerance: 30 });
     if (!result.valid) {
       throw new BadRequestException('Invalid 6-digit verification code. Please try again.');
     }
@@ -91,26 +91,42 @@ export class TotpService {
     const result = verifySync({
       token: code,
       secret: user.twoFactorSecret,
+      epochTolerance: 30,
     });
 
     if (result.valid) {
       return true;
     }
 
-    // Check if code matches an unused backup recovery code
+    // Check if code matches an unused backup recovery code atomically inside a transaction
     const normalizedCode = code.trim().toUpperCase();
-    const codeIndex = user.twoFactorRecoveryCodes.indexOf(normalizedCode);
+    const consumed = await this.prisma.$transaction(async (tx) => {
+      const freshUser = await tx.user.findUnique({
+        where: { id: userId },
+        select: { twoFactorRecoveryCodes: true },
+      });
 
-    if (codeIndex !== -1) {
-      // Consume the used recovery code
-      const updatedCodes = [...user.twoFactorRecoveryCodes];
+      if (!freshUser) {
+        return false;
+      }
+
+      const codeIndex = freshUser.twoFactorRecoveryCodes.indexOf(normalizedCode);
+      if (codeIndex === -1) {
+        return false;
+      }
+
+      const updatedCodes = [...freshUser.twoFactorRecoveryCodes];
       updatedCodes.splice(codeIndex, 1);
 
-      await this.prisma.user.update({
+      await tx.user.update({
         where: { id: userId },
         data: { twoFactorRecoveryCodes: updatedCodes },
       });
 
+      return true;
+    });
+
+    if (consumed) {
       return true;
     }
 

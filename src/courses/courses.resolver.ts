@@ -22,28 +22,32 @@ export class CoursesResolver {
     @Args() paginationArgs: PaginationArgs,
     @Args('collegeId', { type: () => String, nullable: true }) collegeId?: string,
     @Args('status', { type: () => CourseStatus, nullable: true }) status?: CourseStatus,
+    @GqlCurrentUser() currentUser?: CurrentUserPayload,
   ) {
-    return this.coursesService.findPaginated(paginationArgs, collegeId, status);
+    return this.coursesService.findPaginated(paginationArgs, collegeId, status, currentUser);
   }
 
   @Query(() => CourseType, { name: 'course', nullable: true })
-  async getCourse(@Args('id', { type: () => ID }) id: string) {
-    return this.coursesService.findCourseById(id);
+  async getCourse(
+    @Args('id', { type: () => ID }) id: string,
+    @GqlCurrentUser() currentUser?: CurrentUserPayload,
+  ) {
+    return this.coursesService.findCourseById(id, currentUser);
   }
 
   @Mutation(() => CourseType, { name: 'createCourse' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
   async createCourse(
     @Args('input') input: CreateCourseInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
-    return this.coursesService.createCourse(currentUser.id, input);
+    return this.coursesService.createCourse(currentUser.id, input, currentUser);
   }
 
   @Mutation(() => CourseType, { name: 'updateCourse' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
   async updateCourse(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: UpdateCourseInput,
@@ -54,7 +58,7 @@ export class CoursesResolver {
 
   @Mutation(() => Boolean, { name: 'deleteCourse' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
   async deleteCourse(
     @Args('id', { type: () => ID }) id: string,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
@@ -63,3 +67,4 @@ export class CoursesResolver {
     return true;
   }
 }
+

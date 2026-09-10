@@ -66,7 +66,9 @@ const RUNTIME_MAP: Record<SupportedCompilerLang, LanguageRuntimeConfig> = {
   },
 };
 
-const JUDGE0_ENDPOINT = 'https://ce.judge0.com/submissions?wait=true&base64_encoded=false';
+const JUDGE0_ENDPOINT =
+  process.env.NEXT_PUBLIC_JUDGE0_ENDPOINT ||
+  'https://ce.judge0.com/submissions?wait=true&base64_encoded=false';
 
 export class CompilerService {
   /**

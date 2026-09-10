@@ -35,13 +35,18 @@ describe('SubmissionsService', () => {
       },
       submission: {
         create: vi.fn(),
+        update: vi.fn(),
         findUnique: vi.fn(),
         findMany: vi.fn(),
         count: vi.fn(),
       },
     } as unknown as PrismaService;
 
-    service = new SubmissionsService(prisma);
+    const mockQueue = {
+      add: vi.fn().mockResolvedValue({ id: 'job-1' }),
+    } as any;
+
+    service = new SubmissionsService(prisma, mockQueue);
   });
 
   it('should be defined', () => {

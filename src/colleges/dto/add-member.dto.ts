@@ -2,6 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
+const COLLEGE_ROLES = [Role.COLLEGE_ADMIN, Role.FACULTY, Role.STUDENT] as const;
+
 export class AddMemberDto {
   @ApiProperty({
     example: 'user-uuid-12345',
@@ -12,10 +14,10 @@ export class AddMemberDto {
   userId: string;
 
   @ApiProperty({
-    enum: [Role.COLLEGE_ADMIN, Role.FACULTY, Role.STUDENT],
+    enum: COLLEGE_ROLES,
     example: Role.STUDENT,
     description: 'Role of the member in this college',
   })
-  @IsEnum(Role, { message: 'Valid college role is required' })
-  role: Role;
+  @IsEnum(COLLEGE_ROLES, { message: 'Valid college role is required' })
+  role: (typeof COLLEGE_ROLES)[number];
 }

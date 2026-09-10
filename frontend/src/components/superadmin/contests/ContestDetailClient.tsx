@@ -274,15 +274,17 @@ export default function ContestDetailClient({
     }
   };
 
+  const csvEscape = (val: string | number) => `"${String(val).replace(/"/g, '""')}"`;
+
   const handleExportLeaderboardCSV = () => {
     const headers = ['Rank', 'Student Name', 'Email', 'Institution', 'Total Score', 'Penalty Time', 'Solved Count'];
     const rows = leaderboard.map((e) => [
       e.rank,
-      `"${e.name}"`,
-      `"${e.email}"`,
-      `"${e.institution}"`,
+      csvEscape(e.name),
+      csvEscape(e.email),
+      csvEscape(e.institution),
       e.score,
-      `"${e.penaltyTime}"`,
+      csvEscape(e.penaltyTime),
       e.problemsSolved,
     ]);
 
@@ -301,6 +303,11 @@ export default function ContestDetailClient({
   const handleAddProblemToContest = async () => {
     if (!newProblemTitle.trim()) {
       toast.error('Problem title is required', 'Validation Error');
+      return;
+    }
+
+    if (problems.length >= 26) {
+      toast.error('Maximum 26 problems (A-Z) per contest.', 'Limit Reached');
       return;
     }
 
@@ -618,9 +625,12 @@ export default function ContestDetailClient({
                         <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem' }}>SCORE</TableCell>
                         <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem' }}>PENALTY</TableCell>
                         <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem', textAlign: 'center' }}>PROB A</TableCell>
-                        <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem', textAlign: 'center' }}>PROB B</TableCell>
-                        <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem', textAlign: 'center' }}>PROB C</TableCell>
-                        <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem', textAlign: 'center' }}>PROB D</TableCell>
+                        {problems.length > 1 && <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem', textAlign: 'center' }}>PROB B</TableCell>}
+                        {problems.length > 2 && <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem', textAlign: 'center' }}>PROB C</TableCell>}
+                        {problems.length > 3 && <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem', textAlign: 'center' }}>PROB D</TableCell>}
+                        {problems.length > 4 && problems.slice(4).map((p) => (
+                          <TableCell key={p.order} sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem', textAlign: 'center' }}>PROB {p.order}</TableCell>
+                        ))}
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -657,7 +667,8 @@ export default function ContestDetailClient({
                             </TableCell>
 
                             {/* Problems matrix */}
-                            {['A', 'B', 'C', 'D'].map((probCode) => {
+                            {problems.map((prob) => {
+                              const probCode = prob.order;
                               const st = entry.problemStatus[probCode];
                               return (
                                 <TableCell key={probCode} sx={{ textAlign: 'center' }}>

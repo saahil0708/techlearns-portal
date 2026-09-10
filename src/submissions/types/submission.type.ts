@@ -20,8 +20,8 @@ export class SubmissionType {
   @Field(() => ProgrammingLanguage)
   language: ProgrammingLanguage;
 
-  @Field(() => String)
-  sourceCode: string;
+  @Field(() => String, { nullable: true })
+  sourceCode?: string;
 
   @Field(() => SubmissionStatus)
   status: SubmissionStatus;

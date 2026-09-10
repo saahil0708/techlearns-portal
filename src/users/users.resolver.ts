@@ -26,16 +26,53 @@ export class UsersResolver {
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
   async getUsers(
     @Args() paginationArgs: PaginationArgs,
+    @GqlCurrentUser() currentUser: CurrentUserPayload,
     @Args('role', { type: () => Role, nullable: true }) role?: Role,
-    @Args('status', { type: () => UserStatus, nullable: true }) status?: UserStatus,  
+    @Args('status', { type: () => UserStatus, nullable: true }) status?: UserStatus,
     @Args('collegeId', { type: () => String, nullable: true }) collegeId?: string,
   ) {
+    const isSuperAdmin =
+      currentUser.globalRole === Role.SUPER_ADMIN ||
+      currentUser.globalRole === Role.PLATFORM_ADMIN;
+
+    if (!isSuperAdmin) {
+      const adminCollegeIds =
+        currentUser.memberships
+          ?.filter((m) => m.role === Role.COLLEGE_ADMIN)
+          .map((m) => m.collegeId) || [];
+
+      if (adminCollegeIds.length === 0) {
+        throw new ForbiddenException('You do not have college admin privileges');
+      }
+
+      if (collegeId) {
+        if (!adminCollegeIds.includes(collegeId)) {
+          throw new ForbiddenException('You can only list users within your own college');
+        }
+      } else {
+        collegeId = adminCollegeIds[0];
+      }
+    }
+
     return this.usersService.findPaginated(paginationArgs, role, status, collegeId);
   }
 
   @Query(() => UserType, { name: 'user', nullable: true })
   @UseGuards(GqlAuthGuard)
-  async getUser(@Args('id', { type: () => ID }) id: string) {
+  async getUser(
+    @Args('id', { type: () => ID }) id: string,
+    @GqlCurrentUser() currentUser: CurrentUserPayload,
+  ) {
+    const isSelf = currentUser.id === id;
+    const isAdmin =
+      currentUser.globalRole === Role.SUPER_ADMIN ||
+      currentUser.globalRole === Role.PLATFORM_ADMIN ||
+      currentUser.globalRole === Role.COLLEGE_ADMIN;
+
+    if (!isSelf && !isAdmin) {
+      throw new ForbiddenException('You do not have permission to view this user profile.');
+    }
+
     return this.usersService.findById(id);
   }
 
@@ -89,7 +126,29 @@ export class UsersResolver {
   @Mutation(() => UserType, { name: 'createUser' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
-  async createUser(@Args('input') input: CreateUserInput) {
+  async createUser(
+    @Args('input') input: CreateUserInput,
+    @GqlCurrentUser() currentUser: CurrentUserPayload,
+  ) {
+    const isSuperAdmin =
+      currentUser.globalRole === Role.SUPER_ADMIN ||
+      currentUser.globalRole === Role.PLATFORM_ADMIN;
+
+    if (!isSuperAdmin) {
+      if (!input.collegeId) {
+        throw new ForbiddenException('College admin must specify a collegeId');
+      }
+      const hasAdmin = currentUser.memberships?.some(
+        (m) => m.collegeId === input.collegeId && m.role === Role.COLLEGE_ADMIN,
+      );
+      if (!hasAdmin) {
+        throw new ForbiddenException('You can only create users within your assigned college');
+      }
+      if ((input.globalRole as Role) === Role.SUPER_ADMIN || (input.globalRole as Role) === Role.PLATFORM_ADMIN) {
+        throw new ForbiddenException('College admins cannot assign platform administrator roles');
+      }
+    }
+
     return this.usersService.createWithInput(input);
   }
 
@@ -134,7 +193,33 @@ export class UsersResolver {
   @Mutation(() => [UserType], { name: 'bulkInviteUsers' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
-  async bulkInviteUsers(@Args('input') input: BulkInviteUsersInput) {
+  async bulkInviteUsers(
+    @Args('input') input: BulkInviteUsersInput,
+    @GqlCurrentUser() currentUser: CurrentUserPayload,
+  ) {
+    const isSuperAdmin =
+      currentUser.globalRole === Role.SUPER_ADMIN ||
+      currentUser.globalRole === Role.PLATFORM_ADMIN;
+
+    if (!isSuperAdmin) {
+      const adminCollegeIds =
+        currentUser.memberships
+          ?.filter((m) => m.role === Role.COLLEGE_ADMIN)
+          .map((m) => m.collegeId) || [];
+
+      for (const item of input.users) {
+        if (!item.collegeId || !adminCollegeIds.includes(item.collegeId)) {
+          throw new ForbiddenException(
+            `You can only invite users to your assigned college (${adminCollegeIds.join(', ')})`,
+          );
+        }
+        if ((item.role as Role) === Role.SUPER_ADMIN || (item.role as Role) === Role.PLATFORM_ADMIN) {
+          throw new ForbiddenException('College admins cannot assign platform administrator roles');
+        }
+      }
+    }
+
     return this.usersService.bulkInvite(input);
   }
 }
+

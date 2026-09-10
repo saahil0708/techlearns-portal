@@ -20,10 +20,10 @@ export class RegisterDto {
 
   @ApiProperty({
     example: 'SecurePass123!',
-    description: 'Account password (minimum 6 characters)',
-    minLength: 6,
+    description: 'Account password (minimum 8 characters)',
+    minLength: 8,
   })
   @IsString()
-  @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password: string;
 }

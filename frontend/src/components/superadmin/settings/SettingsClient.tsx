@@ -110,7 +110,7 @@ export default function SettingsClient({
   const borderColor = '#E2E8F0';
 
   const handleSaveSettings = () => {
-    toast.success('Platform configuration and security settings saved successfully.', 'Settings Saved');
+    toast.info('Settings saved locally. Backend persistence not yet implemented — changes will reset on page reload.', 'Local Save Only');
   };
 
   const handleToggleCompiler = (id: string) => {
@@ -704,9 +704,16 @@ export default function SettingsClient({
                       <TableCell padding="checkbox" sx={{ pl: 2.5, py: 1.5 }}>
                         <Checkbox
                           size="small"
-                          checked={selectedAuditIds.length === auditLogs.length && auditLogs.length > 0}
-                          indeterminate={selectedAuditIds.length > 0 && selectedAuditIds.length < auditLogs.length}
-                          onChange={(e) => setSelectedAuditIds(e.target.checked ? auditLogs.map((l) => l.id) : [])}
+                          checked={paginatedAuditLogs.length > 0 && paginatedAuditLogs.every((l) => selectedAuditIds.includes(l.id))}
+                          indeterminate={selectedAuditIds.length > 0 && paginatedAuditLogs.some((l) => selectedAuditIds.includes(l.id)) && !paginatedAuditLogs.every((l) => selectedAuditIds.includes(l.id))}
+                          onChange={(e) => {
+                            const visibleIds = paginatedAuditLogs.map((l) => l.id);
+                            if (e.target.checked) {
+                              setSelectedAuditIds((prev) => [...new Set([...prev, ...visibleIds])]);
+                            } else {
+                              setSelectedAuditIds((prev) => prev.filter((id) => !visibleIds.includes(id)));
+                            }
+                          }}
                           sx={{ color: '#94A3B8', '&.Mui-checked': { color: primaryBlue } }}
                         />
                       </TableCell>

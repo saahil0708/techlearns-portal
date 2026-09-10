@@ -91,29 +91,29 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
       try {
         const liveData = await apiService.getProblems({ limit: 50 });
         if (liveData?.items && liveData.items.length > 0) {
-          const mapped: ProblemEntity[] = liveData.items.map((item: any, idx: number) => ({
+          const mapped: ProblemEntity[] = liveData.items.map((item: any) => ({
             id: item.id,
-            code: `PROB-${String(idx + 1).padStart(3, '0')}`,
+            code: item.code || `PROB-${String(item.id).slice(-3).padStart(3, '0')}`,
             slug: item.slug,
             title: item.title,
-            category: 'Arrays & Two Pointers',
+            category: item.category || 'Arrays & Two Pointers',
             difficulty: item.difficulty === 'HARD' ? 'Hard' : item.difficulty === 'MEDIUM' ? 'Medium' : 'Easy',
-            acceptanceRate: 65.0,
-            totalSubmissions: item._count?.submissions || 0,
-            acceptedSubmissions: Math.floor((item._count?.submissions || 0) * 0.65),
-            testCasesCount: item._count?.testCases || 0,
-            authorName: 'Faculty',
-            tags: ['Algorithms', 'Data Structures'],
+            acceptanceRate: item.acceptanceRate ?? 65.0,
+            totalSubmissions: item._count?.submissions || item.totalSubmissions || 0,
+            acceptedSubmissions: item.acceptedSubmissions ?? Math.floor((item._count?.submissions || item.totalSubmissions || 0) * 0.65),
+            testCasesCount: item._count?.testCases || item.testCasesCount || 0,
+            authorName: item.authorName || 'Faculty',
+            tags: item.tags && item.tags.length > 0 ? item.tags : ['Algorithms', 'Data Structures'],
             status: item.status === 'PUBLISHED' ? 'Published' : 'Draft',
-            points: item.difficulty === 'HARD' ? 200 : item.difficulty === 'MEDIUM' ? 120 : 70,
-            timeLimitMs: item.timeLimit || 1000,
-            memoryLimitMb: item.memoryLimit || 256,
-            likes: 0,
-            dislikes: 0,
-            premium: false,
-            companies: [],
-            statementMarkdown: item.statement || '',
-            sampleTestCases: [],
+            points: item.points || (item.difficulty === 'HARD' ? 200 : item.difficulty === 'MEDIUM' ? 120 : 70),
+            timeLimitMs: item.timeLimit || item.timeLimitMs || 1000,
+            memoryLimitMb: item.memoryLimit || item.memoryLimitMb || 256,
+            likes: item.likes || 0,
+            dislikes: item.dislikes || 0,
+            premium: item.premium || false,
+            companies: item.companies || [],
+            statementMarkdown: item.statement || item.statementMarkdown || '',
+            sampleTestCases: item.sampleTestCases || [],
           }));
           setProblems(mapped);
         }
@@ -148,28 +148,34 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
 
   const handleDeleteSelected = async () => {
     const idsToDelete = [...selectedIds];
-    const count = idsToDelete.length;
-    setProblems((prev) => prev.filter((p) => !selectedIds.includes(p.id)));
     setSelectedIds([]);
+    const failedIds: string[] = [];
     for (const id of idsToDelete) {
       try {
         await apiService.deleteProblem(id);
-      } catch (err) {
-        console.error(`Failed to delete problem ${id}:`, err);
+      } catch {
+        failedIds.push(id);
       }
     }
-    toast.success(`Deleted ${count} coding problem${count > 1 ? 's' : ''} from platform.`, 'Problem Repository');
+    if (failedIds.length > 0) {
+      // Only remove successfully deleted items from local state
+      setProblems((prev) => prev.filter((p) => !idsToDelete.includes(p.id) || failedIds.includes(p.id)));
+      toast.error(`Failed to delete ${failedIds.length} problem${failedIds.length > 1 ? 's' : ''}. They remain on the server.`, 'Partial Failure');
+    } else {
+      setProblems((prev) => prev.filter((p) => !idsToDelete.includes(p.id)));
+      toast.success(`Deleted ${idsToDelete.length} coding problem${idsToDelete.length > 1 ? 's' : ''} from platform.`, 'Problem Repository');
+    }
   };
 
   const handleDeleteSingleProblem = async (id: string) => {
-    setProblems((prev) => prev.filter((p) => p.id !== id));
-    setSelectedIds((prev) => prev.filter((item) => item !== id));
     try {
       await apiService.deleteProblem(id);
-    } catch (err) {
-      console.error(`Failed to delete problem ${id}:`, err);
+      setProblems((prev) => prev.filter((p) => p.id !== id));
+      setSelectedIds((prev) => prev.filter((item) => item !== id));
+      toast.success('Problem deleted successfully.', 'Problem Repository');
+    } catch {
+      toast.error('Failed to delete problem. Please try again.', 'Server Error');
     }
-    toast.success('Problem deleted successfully.', 'Problem Repository');
   };
 
   // Sorting
@@ -367,17 +373,18 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
   };
 
   const downloadProblemsCSV = () => {
+    const csvEscape = (val: string | number) => `"${String(val).replace(/"/g, '""')}"`;
     const headers = ['Code', 'Title', 'Category', 'Difficulty', 'Status', 'AcceptanceRate', 'TotalSubmissions', 'Points', 'Tags'];
     const rows = filteredProblems.map((p) => [
-      `"${p.code}"`,
-      `"${p.title}"`,
-      `"${p.category}"`,
-      `"${p.difficulty}"`,
-      `"${p.status}"`,
-      `"${p.acceptanceRate}%"`,
+      csvEscape(p.code),
+      csvEscape(p.title),
+      csvEscape(p.category),
+      csvEscape(p.difficulty),
+      csvEscape(p.status),
+      csvEscape(`${p.acceptanceRate}%`),
       p.totalSubmissions,
       p.points,
-      `"${p.tags.join(';')}"`,
+      csvEscape(p.tags.join(';')),
     ]);
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -406,7 +413,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        bgcolor: '#F4F5F7',
+        bgcolor: '#F8FAFC',
         backgroundImage: `
           radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
           radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),

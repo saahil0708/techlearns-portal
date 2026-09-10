@@ -50,6 +50,7 @@ describe('CoursesService', () => {
             },
             enrollment: {
               upsert: vi.fn(),
+              findUnique: vi.fn(),
               findMany: vi.fn(),
             },
             lessonProgress: {
@@ -78,7 +79,11 @@ describe('CoursesService', () => {
       const result = await service.createCourse('user-faculty-1', {
         title: 'DSA in C++',
         collegeId: 'college-1',
-      });
+      }, {
+        id: 'user-faculty-1',
+        globalRole: 'FACULTY',
+        memberships: [{ collegeId: 'college-1', role: 'FACULTY' }],
+      } as any);
 
       expect(result).toEqual(mockCourse);
     });
@@ -88,7 +93,7 @@ describe('CoursesService', () => {
     it('should return course by ID', async () => {
       vi.spyOn(prisma.course, 'findUnique').mockResolvedValue(mockCourse as any);
 
-      const result = await service.findCourseById('course-1');
+      const result = await service.findCourseById('course-1', mockUser);
       expect(result).toEqual(mockCourse);
     });
 
@@ -98,6 +103,13 @@ describe('CoursesService', () => {
       await expect(service.findCourseById('non-existent')).rejects.toThrow(NotFoundException);
     });
   });
+
+  const mockUser: any = {
+    id: 'student-1',
+    email: 'student@college.edu',
+    globalRole: 'STUDENT',
+    memberships: [{ collegeId: 'college-1', role: 'STUDENT' }],
+  };
 
   describe('enrollStudent', () => {
     it('should enroll user in course', async () => {
@@ -109,14 +121,21 @@ describe('CoursesService', () => {
         status: 'ACTIVE',
       } as any);
 
-      const result = await service.enrollStudent('course-1', 'student-1');
+      const result = await service.enrollStudent('course-1', mockUser);
       expect(result.id).toBe('enr-1');
     });
   });
 
   describe('updateLessonProgress', () => {
     it('should update progress record', async () => {
-      vi.spyOn(prisma.lesson, 'findUnique').mockResolvedValue({ id: 'lesson-1' } as any);
+      vi.spyOn(prisma.lesson, 'findUnique').mockResolvedValue({
+        id: 'lesson-1',
+        module: { courseId: 'course-1' },
+      } as any);
+      vi.spyOn(prisma.enrollment, 'findUnique').mockResolvedValue({
+        id: 'enr-1',
+        status: 'ACTIVE',
+      } as any);
       vi.spyOn(prisma.lessonProgress, 'upsert').mockResolvedValue({
         id: 'lp-1',
         lessonId: 'lesson-1',

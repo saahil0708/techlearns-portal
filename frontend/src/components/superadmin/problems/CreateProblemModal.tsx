@@ -86,7 +86,7 @@ export default function CreateProblemModal({
     onSubmit({
       ...formData,
       tags: parsedTags,
-      code: formData.code || `PROB-${Math.floor(100 + Math.random() * 900)}`,
+      code: formData.code || `PROB-${Date.now().toString(36).toUpperCase()}`,
     });
 
     onClose();
@@ -221,8 +221,9 @@ export default function CreateProblemModal({
               size="small"
               required
               fullWidth
+              slotProps={{ htmlInput: { min: 10, max: 10000 } }}
               value={formData.points}
-              onChange={(e) => handleChange('points', Number(e.target.value))}
+              onChange={(e) => handleChange('points', Math.max(10, Math.min(10000, Number(e.target.value))))}
             />
           </Box>
 
@@ -234,8 +235,9 @@ export default function CreateProblemModal({
               size="small"
               required
               fullWidth
+              slotProps={{ htmlInput: { min: 100, max: 30000, step: 100 } }}
               value={formData.timeLimitMs}
-              onChange={(e) => handleChange('timeLimitMs', Number(e.target.value))}
+              onChange={(e) => handleChange('timeLimitMs', Math.max(100, Math.min(30000, Number(e.target.value))))}
             />
 
             <TextField
@@ -244,8 +246,9 @@ export default function CreateProblemModal({
               size="small"
               required
               fullWidth
+              slotProps={{ htmlInput: { min: 16, max: 2048, step: 16 } }}
               value={formData.memoryLimitMb}
-              onChange={(e) => handleChange('memoryLimitMb', Number(e.target.value))}
+              onChange={(e) => handleChange('memoryLimitMb', Math.max(16, Math.min(2048, Number(e.target.value))))}
             />
 
             <TextField

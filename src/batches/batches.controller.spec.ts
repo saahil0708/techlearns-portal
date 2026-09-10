@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BatchesController } from './batches.controller.js';
 import { BatchesService } from './batches.service.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 describe('BatchesController', () => {
   let controller: BatchesController;
@@ -28,6 +29,14 @@ describe('BatchesController', () => {
             assignStudents: vi.fn().mockResolvedValue([]),
             getStudents: vi.fn().mockResolvedValue([]),
             removeStudent: vi.fn().mockResolvedValue({ id: 'bs-1' }),
+          },
+        },
+        {
+          provide: PrismaService,
+          useValue: {
+            batch: {
+              findUnique: vi.fn().mockResolvedValue(mockBatch),
+            },
           },
         },
       ],

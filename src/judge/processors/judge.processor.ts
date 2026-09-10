@@ -1,9 +1,3 @@
-// ============================================================================
-// BullMQ Judge Processor (Disabled for now)
-// Uncomment the implementation below when ready to activate BullMQ queue worker
-// ============================================================================
-
-/*
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
@@ -34,5 +28,4 @@ export class JudgeProcessor extends WorkerHost {
     }
   }
 }
-*/
-export {};
+

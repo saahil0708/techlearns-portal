@@ -44,7 +44,7 @@ export class CoursesController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateCourseDto,
   ) {
-    return this.coursesService.createCourse(user.id, dto);
+    return this.coursesService.createCourse(user.id, dto, user);
   }
 
   @Get()
@@ -52,10 +52,11 @@ export class CoursesController {
   @ApiQuery({ name: 'collegeId', required: false })
   @ApiQuery({ name: 'status', enum: CourseStatus, required: false })
   async findAll(
+    @CurrentUser() user: CurrentUserPayload,
     @Query('collegeId') collegeId?: string,
     @Query('status') status?: CourseStatus,
   ) {
-    return this.coursesService.findAll(collegeId, status);
+    return this.coursesService.findAll(collegeId, status, user);
   }
 
   @Get('enrolled')
@@ -66,8 +67,11 @@ export class CoursesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get course curriculum details, modules, and lessons' })
-  async findOne(@Param('id') id: string) {
-    return this.coursesService.findCourseById(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.coursesService.findCourseById(id, user);
   }
 
   @Patch(':id')
@@ -148,7 +152,7 @@ export class CoursesController {
     @Param('lessonId') lessonId: string,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.coursesService.getLesson(lessonId, user.id);
+    return this.coursesService.getLesson(lessonId, user);
   }
 
   @Patch('lessons/:lessonId')
@@ -182,7 +186,7 @@ export class CoursesController {
     @Param('id') courseId: string,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.coursesService.enrollStudent(courseId, user.id);
+    return this.coursesService.enrollStudent(courseId, user);
   }
 
   @Post('lessons/:lessonId/progress')
@@ -201,6 +205,6 @@ export class CoursesController {
     @Param('id') courseId: string,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.coursesService.getCourseProgress(courseId, user.id);
+    return this.coursesService.getCourseProgress(courseId, user);
   }
 }

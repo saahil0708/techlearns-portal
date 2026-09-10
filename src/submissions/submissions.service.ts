@@ -1,18 +1,20 @@
-// import { InjectQueue } from '@nestjs/bullmq';
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { ForbiddenException, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 import {
+  ContestStatus,
   Prisma,
   ProgrammingLanguage,
   SubmissionStatus,
   SubmissionVerdict,
 } from '@prisma/client';
-// import { Queue } from 'bullmq';
+import { Queue } from 'bullmq';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
-// import {
-//   EVALUATE_SUBMISSION_JOB,
-//   EvaluateSubmissionJobData,
-//   JUDGE_QUEUE_NAME,
-// } from '../judge/judge.constants.js';
+import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
+import {
+  EVALUATE_SUBMISSION_JOB,
+  EvaluateSubmissionJobData,
+  JUDGE_QUEUE_NAME,
+} from '../judge/judge.constants.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { userSanitizedSelect } from '../users/users.service.js';
 import { CreateSubmissionInput } from './dto/create-submission.input.js';
@@ -23,11 +25,12 @@ export class SubmissionsService {
 
   constructor(
     private prisma: PrismaService,
-    // @InjectQueue(JUDGE_QUEUE_NAME)
-    // private submissionQueue: Queue<EvaluateSubmissionJobData>,
+    @Optional()
+    @InjectQueue(JUDGE_QUEUE_NAME)
+    private submissionQueue?: Queue<EvaluateSubmissionJobData>,
   ) {}
 
-  async create(input: CreateSubmissionInput, userId: string) {
+  async create(input: CreateSubmissionInput, userId: string, user?: CurrentUserPayload) {
     const problem = await this.prisma.problem.findUnique({
       where: { id: input.problemId },
       include: {
@@ -37,6 +40,41 @@ export class SubmissionsService {
 
     if (!problem) {
       throw new NotFoundException(`Problem with ID ${input.problemId} not found`);
+    }
+
+    if (problem.status && problem.status !== 'PUBLISHED') {
+      throw new ForbiddenException('You cannot submit to an unpublished problem');
+    }
+
+    if (problem.collegeId) {
+      const canAccessCollege = user?.globalRole === 'SUPER_ADMIN' ||
+        user?.globalRole === 'PLATFORM_ADMIN' ||
+        user?.memberships?.some((membership) => membership.collegeId === problem.collegeId);
+      if (!canAccessCollege) {
+        throw new ForbiddenException('You do not have access to this problem');
+      }
+    }
+
+    if (input.contestId) {
+      const contest = await this.prisma.contest.findUnique({
+        where: { id: input.contestId },
+        include: { problems: { where: { problemId: input.problemId } } },
+      });
+      if (!contest || contest.problems.length === 0) {
+        throw new ForbiddenException('This problem is not part of the selected contest');
+      }
+      if (contest.status !== ContestStatus.ONGOING) {
+        throw new ForbiddenException('Submissions are accepted only during an ongoing contest');
+      }
+      if (contest.collegeId && !user?.memberships?.some((membership) => membership.collegeId === contest.collegeId) && user?.globalRole !== 'SUPER_ADMIN' && user?.globalRole !== 'PLATFORM_ADMIN') {
+        throw new ForbiddenException('You do not have access to this contest');
+      }
+      const registration = await this.prisma.contestRegistration.findUnique({
+        where: { contestId_userId: { contestId: input.contestId, userId } },
+      });
+      if (!registration) {
+        throw new ForbiddenException('You must register for the contest before submitting');
+      }
     }
 
     const totalTestCases = problem.testCases.length;
@@ -61,19 +99,50 @@ export class SubmissionsService {
       },
     });
 
-    // ==========================================
-    // BullMQ Asynchronous Job Dispatch (Disabled for now)
-    // Uncomment when ready to activate BullMQ judge queue
-    // ==========================================
-    // try {
-    //   await this.submissionQueue.add(EVALUATE_SUBMISSION_JOB, {
-    //     submissionId: submission.id,
-    //   });
-    // } catch (err: any) {
-    //   this.logger.warn(
-    //     `Failed to enqueue submission ${submission.id} to BullMQ: ${err.message}`,
-    //   );
-    // }
+    // Enqueue to BullMQ worker for evaluation
+    if (this.submissionQueue) {
+      try {
+        await this.submissionQueue.add(EVALUATE_SUBMISSION_JOB, {
+          submissionId: submission.id,
+        });
+      } catch (err: any) {
+        this.logger.warn(
+          `Failed to enqueue submission ${submission.id} to BullMQ: ${err.message}`,
+        );
+        return this.prisma.submission.update({
+          where: { id: submission.id },
+          data: {
+            status: SubmissionStatus.FAILED,
+            verdict: SubmissionVerdict.SYSTEM_ERROR,
+            errorMessage: `Failed to enqueue submission for evaluation: ${err.message}`,
+          },
+          include: {
+            user: {
+              select: userSanitizedSelect,
+            },
+            problem: true,
+          },
+        });
+      }
+    } else {
+      this.logger.warn(
+        `Submission queue is unavailable for submission ${submission.id}`,
+      );
+      return this.prisma.submission.update({
+        where: { id: submission.id },
+        data: {
+          status: SubmissionStatus.FAILED,
+          verdict: SubmissionVerdict.SYSTEM_ERROR,
+          errorMessage: 'Judge submission queue is unavailable',
+        },
+        include: {
+          user: {
+            select: userSanitizedSelect,
+          },
+          problem: true,
+        },
+      });
+    }
 
     return submission;
   }

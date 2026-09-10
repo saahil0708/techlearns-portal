@@ -127,6 +127,10 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
+    if (user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('Your account is inactive or suspended');
+    }
+
     const tokens = await this.tokenService.generateTokenPair(
       user.id,
       user.email,
@@ -148,16 +152,23 @@ export class AuthService {
   async verifyPasskeyLogin(response: any, challengeKey: string, deviceInfo?: string, ipAddress?: string) {
     const result = await this.webAuthnService.verifyPasskeyLogin(response, challengeKey);
 
+    const user = await this.usersService.findById(result.userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('Your account is inactive or suspended');
+    }
+
     const tokens = await this.tokenService.generateTokenPair(
-      result.userId,
-      result.email,
-      result.globalRole,
+      user.id,
+      user.email,
+      user.globalRole,
       undefined,
       deviceInfo,
       ipAddress,
     );
-
-    const user = await this.usersService.findById(result.userId);
 
     return {
       user,

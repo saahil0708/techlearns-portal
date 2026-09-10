@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { Public } from '../common/decorators/roles.decorator.js';
@@ -91,6 +92,7 @@ export class AuthController {
   // ==========================================
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('register')
   @ApiOperation({ summary: 'Register a new user account with high-security password hashing' })
   @ApiResponse({ status: 201, description: 'User created successfully with token pair' })
@@ -108,6 +110,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Log in with email and password (triggers 2FA challenge if enabled)' })
@@ -128,6 +131,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Rotate refresh token (RTR) with token theft & reuse detection' })
@@ -202,6 +206,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('2fa/verify')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify 2FA token or backup recovery code during login challenge' })
@@ -254,6 +259,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('passkey/login-challenge')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Generate WebAuthn challenge for passwordless physical key login' })
@@ -262,6 +268,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('passkey/login-verify')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify physical security key signature and authenticate session' })

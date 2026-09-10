@@ -15,5 +15,6 @@ export default () => ({
   },
   judge: {
     queueName: process.env.JUDGE_QUEUE_NAME || 'submission-queue',
+    image: process.env.JUDGE_IMAGE || undefined,
   },
 });

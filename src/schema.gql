@@ -449,7 +449,7 @@ type Submission {
   problem: Problem
   problemId: String!
   runtime: Int
-  sourceCode: String!
+  sourceCode: String
   status: SubmissionStatus!
   totalTestCases: Int!
   updatedAt: DateTime!

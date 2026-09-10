@@ -22,7 +22,8 @@ export class CoursesService {
   // COURSE MANAGEMENT
   // ----------------------------------------------------
 
-  async createCourse(userId: string, dto: CreateCourseDto) {
+  async createCourse(userId: string, dto: CreateCourseDto, user?: CurrentUserPayload) {
+    this.assertCollegeAssignment(dto.collegeId, user);
     if (dto.collegeId) {
       const college = await this.prisma.college.findUnique({
         where: { id: dto.collegeId },
@@ -48,12 +49,34 @@ export class CoursesService {
     });
   }
 
-  async findAll(collegeId?: string, status?: CourseStatus) {
+  async findAll(collegeId?: string, status?: CourseStatus, user?: CurrentUserPayload) {
+    const isSuperAdmin =
+      user?.globalRole === Role.SUPER_ADMIN ||
+      user?.globalRole === Role.PLATFORM_ADMIN;
+
+    const where: any = {};
+    if (isSuperAdmin) {
+      if (collegeId) where.collegeId = collegeId;
+      if (status) where.status = status;
+    } else {
+      where.status = CourseStatus.PUBLISHED;
+      const userCollegeIds = user?.memberships?.map((m) => m.collegeId) || [];
+      if (collegeId) {
+        if (!userCollegeIds.includes(collegeId)) {
+          where.collegeId = '__unauthorized__';
+        } else {
+          where.collegeId = collegeId;
+        }
+      } else {
+        where.OR = [
+          { collegeId: null },
+          ...(userCollegeIds.length > 0 ? [{ collegeId: { in: userCollegeIds } }] : []),
+        ];
+      }
+    }
+
     return this.prisma.course.findMany({
-      where: {
-        ...(collegeId ? { collegeId } : {}),
-        ...(status ? { status } : {}),
-      },
+      where,
       include: {
         createdBy: {
           select: { id: true, name: true },
@@ -73,6 +96,7 @@ export class CoursesService {
     args: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string },
     collegeId?: string,
     status?: CourseStatus,
+    user?: CurrentUserPayload,
   ) {
     const page = args.page || 1;
     const limit = args.limit || 10;
@@ -87,12 +111,34 @@ export class CoursesService {
       ];
     }
 
-    if (collegeId) {
-      where.collegeId = collegeId;
-    }
+    const isSuperAdmin =
+      user?.globalRole === Role.SUPER_ADMIN ||
+      user?.globalRole === Role.PLATFORM_ADMIN;
 
-    if (status) {
-      where.status = status;
+    if (isSuperAdmin) {
+      if (collegeId) where.collegeId = collegeId;
+      if (status) where.status = status;
+    } else {
+      where.status = CourseStatus.PUBLISHED;
+      const userCollegeIds = user?.memberships?.map((m) => m.collegeId) || [];
+      if (collegeId) {
+        if (!userCollegeIds.includes(collegeId)) {
+          where.collegeId = '__unauthorized__';
+        } else {
+          where.collegeId = collegeId;
+        }
+      } else {
+        const visibilityConditions = [
+          { collegeId: null },
+          ...(userCollegeIds.length > 0 ? [{ collegeId: { in: userCollegeIds } }] : []),
+        ];
+        if (where.OR) {
+          where.AND = [{ OR: where.OR }, { OR: visibilityConditions }];
+          delete where.OR;
+        } else {
+          where.OR = visibilityConditions;
+        }
+      }
     }
 
     const orderBy: any = {};
@@ -139,7 +185,7 @@ export class CoursesService {
     };
   }
 
-  async findCourseById(id: string) {
+  async findCourseById(id: string, user?: CurrentUserPayload) {
     const course = await this.prisma.course.findUnique({
       where: { id },
       include: {
@@ -173,11 +219,36 @@ export class CoursesService {
       throw new NotFoundException(`Course with ID ${id} not found`);
     }
 
+    const isPrivileged =
+      user?.globalRole === Role.SUPER_ADMIN ||
+      user?.globalRole === Role.PLATFORM_ADMIN ||
+      course.createdById === user?.id ||
+      Boolean(
+        course.collegeId &&
+          user?.memberships?.some(
+            (membership) =>
+              membership.collegeId === course.collegeId &&
+              (membership.role === Role.FACULTY || membership.role === Role.COLLEGE_ADMIN),
+          ),
+      );
+
+    if (!isPrivileged) {
+      if (course.status !== CourseStatus.PUBLISHED) {
+        throw new NotFoundException(`Course with ID ${id} not found`);
+      }
+      if (
+        course.collegeId &&
+        !user?.memberships?.some((membership) => membership.collegeId === course.collegeId)
+      ) {
+        throw new NotFoundException(`Course with ID ${id} not found`);
+      }
+    }
+
     return course;
   }
 
   async updateCourse(id: string, dto: UpdateCourseDto, user: CurrentUserPayload) {
-    const course = await this.findCourseById(id);
+    const course = await this.findCourseById(id, user);
     this.assertCourseAuthorOrAdmin(course, user);
 
     return this.prisma.course.update({
@@ -187,7 +258,7 @@ export class CoursesService {
   }
 
   async deleteCourse(id: string, user: CurrentUserPayload) {
-    const course = await this.findCourseById(id);
+    const course = await this.findCourseById(id, user);
     this.assertCourseAuthorOrAdmin(course, user);
 
     return this.prisma.course.delete({
@@ -200,7 +271,7 @@ export class CoursesService {
   // ----------------------------------------------------
 
   async createModule(courseId: string, dto: CreateModuleDto, user: CurrentUserPayload) {
-    const course = await this.findCourseById(courseId);
+    const course = await this.findCourseById(courseId, user);
     this.assertCourseAuthorOrAdmin(course, user);
 
     return this.prisma.module.create({
@@ -317,14 +388,14 @@ export class CoursesService {
     });
   }
 
-  async getLesson(lessonId: string, userId: string) {
+  async getLesson(lessonId: string, user: CurrentUserPayload) {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
       include: {
         module: {
           include: {
             course: {
-              select: { id: true, title: true, status: true },
+              select: { id: true, title: true, status: true, createdById: true, collegeId: true },
             },
           },
         },
@@ -335,10 +406,41 @@ export class CoursesService {
       throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
     }
 
+    const course = lesson.module.course;
+    const isSuperAdmin =
+      user.globalRole === Role.SUPER_ADMIN ||
+      user.globalRole === Role.PLATFORM_ADMIN;
+    const isAuthor = course.createdById === user.id;
+    const isCollegeStaff =
+      course.collegeId &&
+      user.memberships?.some(
+        (m) =>
+          m.collegeId === course.collegeId &&
+          (m.role === Role.FACULTY || m.role === Role.COLLEGE_ADMIN),
+      );
+
+    if (!isSuperAdmin && !isAuthor && !isCollegeStaff) {
+      if (course.status !== CourseStatus.PUBLISHED) {
+        throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
+      }
+      const enrollment = await this.prisma.enrollment.findUnique({
+        where: {
+          userId_courseId: {
+            userId: user.id,
+            courseId: course.id,
+          },
+        },
+      });
+
+      if (!enrollment || enrollment.status !== EnrollmentStatus.ACTIVE) {
+        throw new ForbiddenException('You must be enrolled in this course to view its lessons');
+      }
+    }
+
     const progress = await this.prisma.lessonProgress.findUnique({
       where: {
         userId_lessonId: {
-          userId,
+          userId: user.id,
           lessonId,
         },
       },
@@ -354,13 +456,29 @@ export class CoursesService {
   // ENROLLMENTS & PROGRESS
   // ----------------------------------------------------
 
-  async enrollStudent(courseId: string, userId: string) {
-    await this.findCourseById(courseId);
+  async enrollStudent(courseId: string, user: CurrentUserPayload) {
+    const course = await this.findCourseById(courseId, user);
+
+    const isSuperAdmin =
+      user.globalRole === Role.SUPER_ADMIN ||
+      user.globalRole === Role.PLATFORM_ADMIN;
+
+    if (!isSuperAdmin) {
+      if (course.status !== CourseStatus.PUBLISHED) {
+        throw new ForbiddenException('You cannot enroll in an unpublished course');
+      }
+      if (course.collegeId) {
+        const isMember = user.memberships?.some((m) => m.collegeId === course.collegeId);
+        if (!isMember) {
+          throw new ForbiddenException('You can only enroll in courses offered by your college');
+        }
+      }
+    }
 
     return this.prisma.enrollment.upsert({
       where: {
         userId_courseId: {
-          userId,
+          userId: user.id,
           courseId,
         },
       },
@@ -368,7 +486,7 @@ export class CoursesService {
         status: EnrollmentStatus.ACTIVE,
       },
       create: {
-        userId,
+        userId: user.id,
         courseId,
         status: EnrollmentStatus.ACTIVE,
       },
@@ -402,10 +520,28 @@ export class CoursesService {
   async updateLessonProgress(lessonId: string, userId: string, completed: boolean) {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
+      include: {
+        module: {
+          select: { courseId: true },
+        },
+      },
     });
 
     if (!lesson) {
       throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
+    }
+
+    const enrollment = await this.prisma.enrollment.findUnique({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId: lesson.module.courseId,
+        },
+      },
+    });
+
+    if (!enrollment || enrollment.status !== EnrollmentStatus.ACTIVE) {
+      throw new ForbiddenException('You must be enrolled in this course to update lesson progress');
     }
 
     return this.prisma.lessonProgress.upsert({
@@ -428,8 +564,8 @@ export class CoursesService {
     });
   }
 
-  async getCourseProgress(courseId: string, userId: string) {
-    const course = await this.findCourseById(courseId);
+  async getCourseProgress(courseId: string, user: CurrentUserPayload) {
+    const course = await this.findCourseById(courseId, user);
 
     const lessonIds = course.modules.flatMap((m) => m.lessons.map((l) => l.id));
     const totalLessons = lessonIds.length;
@@ -440,7 +576,7 @@ export class CoursesService {
 
     const completedCount = await this.prisma.lessonProgress.count({
       where: {
-        userId,
+        userId: user.id,
         lessonId: { in: lessonIds },
         completed: true,
       },
@@ -475,5 +611,25 @@ export class CoursesService {
     }
 
     throw new ForbiddenException('You do not have permission to modify this course');
+  }
+
+  private assertCollegeAssignment(collegeId: string | undefined, user?: CurrentUserPayload) {
+    if (!collegeId) {
+      return;
+    }
+    if (!user) {
+      throw new ForbiddenException('Authentication required');
+    }
+    if (user.globalRole === Role.SUPER_ADMIN || user.globalRole === Role.PLATFORM_ADMIN) {
+      return;
+    }
+    const canManageCollege = user.memberships?.some(
+      (membership) =>
+        membership.collegeId === collegeId &&
+        (membership.role === Role.COLLEGE_ADMIN || membership.role === Role.FACULTY),
+    );
+    if (!canManageCollege) {
+      throw new ForbiddenException('You can only create courses in your assigned college');
+    }
   }
 }

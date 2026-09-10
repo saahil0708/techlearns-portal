@@ -28,12 +28,14 @@ export class ProblemsResolver {
     status?: ProblemStatus,
     @Args('collegeId', { type: () => String, nullable: true })
     collegeId?: string,
+    @GqlCurrentUser() currentUser?: CurrentUserPayload,
   ) {
     return this.problemsService.findPaginated(
       paginationArgs,
       difficulty,
       status,
       collegeId,
+      currentUser,
     );
   }
 
@@ -51,47 +53,49 @@ export class ProblemsResolver {
     @Args('problemId', { type: () => ID }) problemId: string,
     @GqlCurrentUser() currentUser?: CurrentUserPayload,
   ) {
-    const isSuperAdmin =
-      currentUser?.globalRole === Role.SUPER_ADMIN ||
-      currentUser?.globalRole === Role.PLATFORM_ADMIN ||
-      currentUser?.globalRole === Role.FACULTY;
-    return this.problemsService.getTestCases(problemId, isSuperAdmin);
+    return this.problemsService.getTestCases(problemId, currentUser);
   }
 
   @Mutation(() => ProblemType, { name: 'createProblem' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
   async createProblem(
     @Args('input') input: CreateProblemInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
-    return this.problemsService.create(input, currentUser.id);
+    return this.problemsService.create(input, currentUser.id, currentUser);
   }
 
   @Mutation(() => ProblemType, { name: 'updateProblem' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
   async updateProblem(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: UpdateProblemInput,
+    @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
-    return this.problemsService.update(id, input);
+    return this.problemsService.update(id, input, currentUser);
   }
 
   @Mutation(() => Boolean, { name: 'deleteProblem' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN)
-  async deleteProblem(@Args('id', { type: () => ID }) id: string) {
-    return this.problemsService.delete(id);
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  async deleteProblem(
+    @Args('id', { type: () => ID }) id: string,
+    @GqlCurrentUser() currentUser: CurrentUserPayload,
+  ) {
+    return this.problemsService.delete(id, currentUser);
   }
 
   @Mutation(() => TestCaseType, { name: 'addProblemTestCase' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
   async addProblemTestCase(
     @Args('problemId', { type: () => ID }) problemId: string,
     @Args('input') input: CreateTestCaseInput,
+    @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
-    return this.problemsService.addTestCase(problemId, input);
+    return this.problemsService.addTestCase(problemId, input, currentUser);
   }
 }
+

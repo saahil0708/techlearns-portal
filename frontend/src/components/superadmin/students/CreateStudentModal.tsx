@@ -44,11 +44,39 @@ interface CreateStudentModalProps {
   onCreate: (data: NewStudentData) => void;
 }
 
+function generateStrongPassword(length = 16): string {
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const lower = 'abcdefghijkmnpqrstuvwxyz';
+  const digits = '23456789';
+  const symbols = '#$@!';
+  const all = upper + lower + digits + symbols;
+  const secureRandom = (max: number) => {
+    const buf = new Uint32Array(1);
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+      crypto.getRandomValues(buf);
+      return buf[0] % max;
+    }
+    return Math.floor(Math.random() * max);
+  };
+  const rand = (set: string) => set.charAt(secureRandom(set.length));
+  // Ensure at least one char from each class for real entropy
+  const parts = [rand(upper), rand(lower), rand(digits), rand(symbols)];
+  for (let i = parts.length; i < length; i++) {
+    parts.push(all.charAt(secureRandom(all.length)));
+  }
+  // Shuffle
+  for (let i = parts.length - 1; i > 0; i--) {
+    const j = secureRandom(i + 1);
+    [parts[i], parts[j]] = [parts[j], parts[i]];
+  }
+  return parts.join('');
+}
+
 export default function CreateStudentModal({ open, onClose, onCreate }: CreateStudentModalProps) {
   const [name, setName] = useState('');
   const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('TemporaryPass123!');
+  const [password, setPassword] = useState(() => generateStrongPassword());
   const [showPassword, setShowPassword] = useState(false);
   const [studentId, setStudentId] = useState('');
   const [institutionType, setInstitutionType] = useState<'College' | 'School' | 'Independent'>('College');
@@ -57,12 +85,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleGeneratePassword = () => {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-    let result = '';
-    for (let i = 0; i < 8; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setPassword(`${result}@2026!`);
+    setPassword(generateStrongPassword());
   };
 
   const handleNameChange = (val: string) => {
@@ -78,6 +101,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
     if (!name.trim()) errs.name = 'Full name is required';
     if (!handle.trim()) errs.handle = 'Handle is required';
     if (!email.trim() || !email.includes('@')) errs.email = 'Valid email is required';
+    if (password.length < 8) errs.password = 'Password must be at least 8 characters';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -88,7 +112,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
       name,
       handle: handle.startsWith('@') ? handle.substring(1) : handle,
       email,
-      password: password.trim() || 'TemporaryPass123!',
+      password: password.trim() || generateStrongPassword(),
       studentId: studentId.trim() || `STU-${Date.now().toString().slice(-5)}`,
       institutionType,
       institutionName:
@@ -107,7 +131,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
     setName('');
     setHandle('');
     setEmail('');
-    setPassword('TemporaryPass123!');
+    setPassword(generateStrongPassword());
     setShowPassword(false);
     setStudentId('');
     setInstitutionType('College');
@@ -323,9 +347,11 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
             fullWidth
             size="small"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Set initial password (e.g. TemporaryPass123!)"
+            placeholder="Auto-generated strong password (16 chars)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            error={Boolean(errors.password)}
+            helperText={errors.password}
             slotProps={{
               input: {
                 startAdornment: (
@@ -364,7 +390,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
           />
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.8 }}>
             <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.72rem' }}>
-              Default: <code style={{ color: '#2563EB', fontWeight: 600 }}>TemporaryPass123!</code>
+              Auto-generated secure password — student can change after first login
             </Typography>
             <Chip
               label="Student can change after login"

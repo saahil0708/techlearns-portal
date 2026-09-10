@@ -90,7 +90,7 @@ export default function CreateContestModal({
     onSubmit({
       ...formData,
       tags: parsedTags,
-      code: formData.code || `CONTEST-${Math.floor(100 + Math.random() * 900)}`,
+      code: formData.code || `CONTEST-${Date.now().toString(36).toUpperCase()}`,
     });
 
     onClose();
@@ -255,8 +255,9 @@ export default function CreateContestModal({
               size="small"
               required
               fullWidth
+              slotProps={{ htmlInput: { min: 30, max: 1440, step: 15 } }}
               value={formData.durationMinutes}
-              onChange={(e) => handleChange('durationMinutes', Number(e.target.value))}
+              onChange={(e) => handleChange('durationMinutes', Math.max(30, Math.min(1440, Number(e.target.value))))}
             />
 
             <TextField
@@ -265,8 +266,9 @@ export default function CreateContestModal({
               size="small"
               required
               fullWidth
+              slotProps={{ htmlInput: { min: 1, max: 50 } }}
               value={formData.problemsCount}
-              onChange={(e) => handleChange('problemsCount', Number(e.target.value))}
+              onChange={(e) => handleChange('problemsCount', Math.max(1, Math.min(50, Number(e.target.value))))}
             />
           </Box>
 

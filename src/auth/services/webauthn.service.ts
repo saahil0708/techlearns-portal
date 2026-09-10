@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Prisma } from '@prisma/client';
 import {
   generateAuthenticationOptions,
   generateRegistrationOptions,
@@ -16,9 +17,6 @@ export class WebAuthnService {
   private readonly rpId: string;
   private readonly expectedOrigin: string;
 
-  // In-memory challenge store (or can be swapped with Redis)
-  private readonly challengeStore = new Map<string, { challenge: string; expiresAt: number }>();
-
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
@@ -28,13 +26,27 @@ export class WebAuthnService {
       this.configService.get<string>('auth.webauthn.origin') || 'http://localhost:3000';
   }
 
-  private cleanExpiredChallenges(): void {
-    const now = Date.now();
-    for (const [key, value] of this.challengeStore.entries()) {
-      if (now > value.expiresAt) {
-        this.challengeStore.delete(key);
-      }
-    }
+  private async saveChallenge(key: string, challenge: string): Promise<void> {
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    await this.prisma.webAuthnChallenge.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    });
+    await this.prisma.webAuthnChallenge.upsert({
+      where: { key },
+      update: { challenge, expiresAt },
+      create: { key, challenge, expiresAt },
+    });
+  }
+
+  private async consumeChallenge(key: string): Promise<string | null> {
+    const rows = await this.prisma.$queryRaw<Array<{ challenge: string }>>(
+      Prisma.sql`
+        DELETE FROM "webauthn_challenges"
+        WHERE "key" = ${key} AND "expiresAt" > NOW()
+        RETURNING "challenge"
+      `,
+    );
+    return rows[0]?.challenge || null;
   }
 
 
@@ -70,12 +82,7 @@ export class WebAuthnService {
       },
     });
 
-    // Save challenge with 5-minute expiry
-    this.cleanExpiredChallenges();
-    this.challengeStore.set(`reg:${userId}`, {
-      challenge: options.challenge,
-      expiresAt: Date.now() + 5 * 60 * 1000,
-    });
+    await this.saveChallenge(`reg:${userId}`, options.challenge);
 
     return options;
   }
@@ -88,18 +95,16 @@ export class WebAuthnService {
     response: any,
     deviceName?: string,
   ): Promise<{ verified: boolean; passkeyId: string }> {
-    const stored = this.challengeStore.get(`reg:${userId}`);
-    if (!stored || Date.now() > stored.expiresAt) {
+    const challenge = await this.consumeChallenge(`reg:${userId}`);
+    if (!challenge) {
       throw new BadRequestException('Passkey registration challenge expired. Please retry.');
     }
-
-    this.challengeStore.delete(`reg:${userId}`);
 
     let verification: VerifiedRegistrationResponse;
     try {
       verification = await verifyRegistrationResponse({
         response,
-        expectedChallenge: stored.challenge,
+        expectedChallenge: challenge,
         expectedOrigin: this.expectedOrigin,
         expectedRPID: this.rpId,
       });
@@ -157,13 +162,8 @@ export class WebAuthnService {
       userVerification: 'preferred',
     });
 
-    // Challenge session key
-    this.cleanExpiredChallenges();
     const sessionKey = email ? `auth:${email}` : `auth:challenge:${options.challenge}`;
-    this.challengeStore.set(sessionKey, {
-      challenge: options.challenge,
-      expiresAt: Date.now() + 5 * 60 * 1000,
-    });
+    await this.saveChallenge(sessionKey, options.challenge);
 
     return { ...options, challengeKey: sessionKey };
   }
@@ -175,12 +175,10 @@ export class WebAuthnService {
     response: any,
     challengeKey: string,
   ): Promise<{ verified: boolean; userId: string; email: string; globalRole: string }> {
-    const stored = this.challengeStore.get(challengeKey);
-    if (!stored || Date.now() > stored.expiresAt) {
+    const challenge = await this.consumeChallenge(challengeKey);
+    if (!challenge) {
       throw new UnauthorizedException('Authentication challenge expired. Please retry.');
     }
-
-    this.challengeStore.delete(challengeKey);
 
     const credentialId = response.id;
     const passkey = await this.prisma.passkeyCredential.findUnique({
@@ -196,7 +194,7 @@ export class WebAuthnService {
     try {
       verification = await verifyAuthenticationResponse({
         response,
-        expectedChallenge: stored.challenge,
+        expectedChallenge: challenge,
         expectedOrigin: this.expectedOrigin,
         expectedRPID: this.rpId,
         credential: {
@@ -217,13 +215,25 @@ export class WebAuthnService {
     }
 
     // Counter rollback protection against replay attacks
-    await this.prisma.passkeyCredential.update({
-      where: { id: passkey.id },
+    const storedCounter = Number(passkey.counter);
+    if (storedCounter > 0 && authenticationInfo.newCounter <= storedCounter) {
+      throw new UnauthorizedException('Replay attack detected: Authenticator counter did not advance.');
+    }
+
+    const counterUpdate = await this.prisma.passkeyCredential.updateMany({
+      where: {
+        id: passkey.id,
+        counter: BigInt(storedCounter),
+      },
       data: {
         counter: BigInt(authenticationInfo.newCounter),
         lastUsedAt: new Date(),
       },
     });
+
+    if (counterUpdate.count !== 1) {
+      throw new UnauthorizedException('Replay attack detected: authenticator counter changed concurrently.');
+    }
 
     return {
       verified: true,

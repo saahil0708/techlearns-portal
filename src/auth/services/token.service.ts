@@ -21,11 +21,15 @@ export class TokenService {
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {
-    this.jwtSecret = this.configService.get<string>('jwt.secret') || 'default-jwt-secret-key-change-in-production';
+    const secret = this.configService.get<string>('jwt.secret') || process.env.JWT_SECRET;
+    if (!secret && process.env.NODE_ENV === 'production') {
+      throw new Error('FATAL: JWT_SECRET environment variable is missing in production environment');
+    }
+    this.jwtSecret = secret || 'default-jwt-secret-key-change-in-production';
   }
 
   /**
-   * Generates a signed Access Token (JWT 15m)
+   * Generates a signed Access Token
    */
   generateAccessToken(userId: string, email: string, globalRole: string): string {
     const payload = {
@@ -120,8 +124,18 @@ export class TokenService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    // Reuse Detection: If an already revoked token is used, trigger emergency family revocation
-    if (existingToken.isRevoked) {
+    // Atomically attempt to revoke the token (CAS: only if isRevoked is false)
+    const updateResult = await this.prisma.refreshToken.updateMany({
+      where: {
+        id: existingToken.id,
+        isRevoked: false,
+      },
+      data: { isRevoked: true },
+    });
+
+    // If update count is 0, the token was already revoked (or rotated concurrently by another request)
+    // Trigger emergency token family revocation for security
+    if (updateResult.count === 0) {
       await this.prisma.refreshToken.updateMany({
         where: { family: existingToken.family },
         data: { isRevoked: true },
@@ -133,22 +147,31 @@ export class TokenService {
 
     // Check expiration
     if (new Date() > existingToken.expiresAt) {
-      await this.prisma.refreshToken.update({
-        where: { id: existingToken.id },
-        data: { isRevoked: true },
-      });
       throw new UnauthorizedException('Refresh token has expired. Please sign in again.');
     }
-
-    // Revoke the old token (one-time use)
-    await this.prisma.refreshToken.update({
-      where: { id: existingToken.id },
-      data: { isRevoked: true },
-    });
 
     // Check if user is active
     if (existingToken.user.status !== 'ACTIVE') {
       throw new UnauthorizedException('User account is inactive or suspended.');
+    }
+
+    // Verify token family remains uncompromised before generating replacement
+    const familyRevocationCheck = await this.prisma.refreshToken.findFirst({
+      where: {
+        family: existingToken.family,
+        isRevoked: true,
+        id: { not: existingToken.id },
+      },
+    });
+
+    if (familyRevocationCheck) {
+      await this.prisma.refreshToken.updateMany({
+        where: { family: existingToken.family },
+        data: { isRevoked: true },
+      });
+      throw new UnauthorizedException(
+        'Token reuse detected. All sessions in this token family have been revoked for your security.',
+      );
     }
 
     // Generate new rotated token pair within the same token family

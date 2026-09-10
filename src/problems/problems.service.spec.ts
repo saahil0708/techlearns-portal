@@ -101,6 +101,7 @@ describe('ProblemsService', () => {
   describe('findByIdOrSlug', () => {
     it('should return a problem when found', async () => {
       vi.mocked(prisma.problem.findFirst).mockResolvedValue(mockProblem as any);
+      vi.mocked(prisma.testCase.findMany).mockResolvedValue(mockProblem.testCases as any);
 
       const result = await service.findByIdOrSlug('two-sum');
       expect(result).toEqual(mockProblem);

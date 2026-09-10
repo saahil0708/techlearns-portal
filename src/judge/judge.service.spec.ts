@@ -26,7 +26,10 @@ describe('JudgeService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should evaluate submission and mark it completed when test cases pass', async () => {
+  it('should fail closed when no isolated sandbox is configured', async () => {
+    const configuredImage = process.env.JUDGE_IMAGE;
+    delete process.env.JUDGE_IMAGE;
+
     const mockSubmission = {
       id: 'sub-1',
       sourceCode: 'print("hello")',
@@ -42,9 +45,8 @@ describe('JudgeService', () => {
 
     vi.mocked(prisma.submission.findUnique).mockResolvedValue(mockSubmission as any);
     vi.mocked(prisma.submission.update).mockResolvedValue({} as any);
-    vi.spyOn(service as any, 'executeInSandbox').mockResolvedValue({ output: 'input1' });
-
     await service.evaluateSubmission('sub-1');
+    process.env.JUDGE_IMAGE = configuredImage;
 
     expect(prisma.submission.update).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -57,9 +59,9 @@ describe('JudgeService', () => {
       expect.objectContaining({
         where: { id: 'sub-1' },
         data: expect.objectContaining({
-          status: SubmissionStatus.COMPLETED,
-          verdict: SubmissionVerdict.ACCEPTED,
-          passedTestCases: 1,
+          status: SubmissionStatus.FAILED,
+          verdict: SubmissionVerdict.SYSTEM_ERROR,
+          passedTestCases: 0,
           totalTestCases: 1,
         }),
       }),
@@ -87,7 +89,7 @@ describe('JudgeService', () => {
       expect.objectContaining({
         where: { id: 'sub-empty' },
         data: expect.objectContaining({
-          status: SubmissionStatus.COMPLETED,
+          status: SubmissionStatus.FAILED,
           verdict: SubmissionVerdict.SYSTEM_ERROR,
           passedTestCases: 0,
           totalTestCases: 0,
@@ -99,7 +101,7 @@ describe('JudgeService', () => {
     );
   });
 
-  it('should fail closed when sandbox environment is offline', async () => {
+  it('should fail closed when sandbox environment returns system error', async () => {
     const mockSubmission = {
       id: 'sub-mock',
       sourceCode: 'print("hello")',
@@ -115,6 +117,7 @@ describe('JudgeService', () => {
 
     vi.mocked(prisma.submission.findUnique).mockResolvedValue(mockSubmission as any);
     vi.mocked(prisma.submission.update).mockResolvedValue({} as any);
+    vi.spyOn(service as any, 'executeInSandbox').mockResolvedValue({ systemError: 'Sandbox offline' });
 
     await service.evaluateSubmission('sub-mock');
 
@@ -122,7 +125,7 @@ describe('JudgeService', () => {
       expect.objectContaining({
         where: { id: 'sub-mock' },
         data: expect.objectContaining({
-          status: SubmissionStatus.COMPLETED,
+          status: SubmissionStatus.FAILED,
           verdict: SubmissionVerdict.SYSTEM_ERROR,
           passedTestCases: 0,
           totalTestCases: 1,

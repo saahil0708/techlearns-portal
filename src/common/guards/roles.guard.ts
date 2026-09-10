@@ -4,6 +4,8 @@ import { Role } from '@prisma/client';
 import { ROLES_KEY } from '../decorators/roles.decorator.js';
 import { CurrentUserPayload } from '../types/current-user.interface.js';
 
+const GLOBAL_ONLY_ROLES: Role[] = [Role.SUPER_ADMIN, Role.PLATFORM_ADMIN];
+
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -36,8 +38,14 @@ export class RolesGuard implements CanActivate {
     }
 
     // Check user's college membership roles
-    if (user.memberships && user.memberships.some((m) => requiredRoles.includes(m.role))) {
-      return true;
+    // BUT: membership roles can NEVER satisfy SUPER_ADMIN or PLATFORM_ADMIN requirements
+    if (user.memberships) {
+      const hasRequiredMembershipRole = user.memberships.some((m) =>
+        requiredRoles.includes(m.role) && !GLOBAL_ONLY_ROLES.includes(m.role),
+      );
+      if (hasRequiredMembershipRole) {
+        return true;
+      }
     }
 
     return false;

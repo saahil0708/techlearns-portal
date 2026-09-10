@@ -56,24 +56,24 @@ describe('CoursesController', () => {
     const dto = { title: 'DSA in C++' };
     const result = await controller.create(mockUser, dto);
     expect(result).toEqual(mockCourse);
-    expect(service.createCourse).toHaveBeenCalledWith(mockUser.id, dto);
+    expect(service.createCourse).toHaveBeenCalledWith(mockUser.id, dto, mockUser);
   });
 
   it('should list all courses', async () => {
-    const result = await controller.findAll();
+    const result = await controller.findAll(mockUser);
     expect(result).toEqual([mockCourse]);
-    expect(service.findAll).toHaveBeenCalled();
+    expect(service.findAll).toHaveBeenCalledWith(undefined, undefined, mockUser);
   });
 
   it('should get course by id', async () => {
-    const result = await controller.findOne('course-1');
+    const result = await controller.findOne('course-1', mockUser);
     expect(result).toEqual(mockCourse);
-    expect(service.findCourseById).toHaveBeenCalledWith('course-1');
+    expect(service.findCourseById).toHaveBeenCalledWith('course-1', mockUser);
   });
 
   it('should enroll in a course', async () => {
     const result = await controller.enroll('course-1', mockUser);
     expect(result).toEqual({ id: 'enr-1' });
-    expect(service.enrollStudent).toHaveBeenCalledWith('course-1', mockUser.id);
+    expect(service.enrollStudent).toHaveBeenCalledWith('course-1', mockUser);
   });
 });
