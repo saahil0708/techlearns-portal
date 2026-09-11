@@ -5,6 +5,9 @@ CREATE TABLE "invitation_deliveries" (
     "activationUrl" TEXT,
     "status" TEXT NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "claimedAt" TIMESTAMP(3) NULL,
+    "attempts" INTEGER NOT NULL DEFAULT 0,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "invitation_deliveries_pkey" PRIMARY KEY ("id")
 );

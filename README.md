@@ -68,7 +68,8 @@ Detailed system architecture is documented in [`docs/SYSTEM_ARCHITECTURE.md`](./
 
 ### 1. Start Infrastructure (Postgres & Redis)
 ```bash
-docker compose up -d
+docker compose up -d                 # start infra
+docker compose --profile judge up -d # start judge service
 ```
 
 ### 2. Install Dependencies

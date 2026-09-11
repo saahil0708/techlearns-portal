@@ -94,9 +94,12 @@ export class UsersService {
     const currentKey = this.configService?.get<string>('auth.totp.encryptionKey') || process.env.TOTP_ENCRYPTION_KEY;
     const previousKeys = this.configService?.get<string[]>('auth.totp.previousEncryptionKeys') ||
       process.env.TOTP_PREVIOUS_ENCRYPTION_KEYS?.split(',').map((key) => key.trim()).filter(Boolean) || [];
-    const legacySecret = this.configService?.get<string>('jwt.secret') || process.env.JWT_SECRET || 'codeplatform_default_secret_key_change_in_prod';
+
     const configuredKeys = [currentKey, ...previousKeys].filter((key): key is string => Boolean(key));
-    const rawKeys = configuredKeys.length > 0 ? configuredKeys : [legacySecret];
+    const rawKeys = configuredKeys.length > 0 ? configuredKeys : [];
+    if (rawKeys.length === 0 && process.env.NODE_ENV !== 'development') {
+      throw new Error('Encryption key is required for TOTP; set auth.totp.encryptionKey or JWT secret');
+    }
     this.encryptionKeys = rawKeys.map((key) =>
       Buffer.from(createHmac('sha256', key).update('codeplatform:invitation:v1').digest()),
     );
@@ -805,6 +808,15 @@ export class UsersService {
       data: { activationUrl: null as any, status: 'EXPIRED' },
     });
 
+    // Reset stale CLAIMED deliveries older than 10 minutes back to PENDING
+    await this.prisma.invitationDelivery.updateMany({
+      where: {
+        status: 'CLAIMED',
+        claimedAt: { lte: new Date(Date.now() - 10 * 60 * 1000) },
+      },
+      data: { status: 'PENDING', updatedAt: new Date() },
+    });
+
     const pendingDeliveries = await this.prisma.invitationDelivery.findMany({
       where: {
         status: 'PENDING',
@@ -819,7 +831,7 @@ export class UsersService {
       // Claim the delivery to avoid concurrent processing
 const claim = await this.prisma.invitationDelivery.updateMany({
   where: { id: delivery.id, status: 'PENDING' },
-  data: { status: 'CLAIMED' },
+  data: { status: 'CLAIMED', claimedAt: new Date(), attempts: { increment: 1 } },
 });
 if (claim.count !== 1) continue; // already claimed by another worker
 const decryptedUrl = this.decryptActivationUrl(delivery.activationUrl);

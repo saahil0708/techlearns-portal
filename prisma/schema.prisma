@@ -241,6 +241,9 @@ model InvitationDelivery {
   activationUrl String?
   status        String         @default("PENDING")
   createdAt     DateTime       @default(now())
+  claimedAt     DateTime?                                 // when a delivery is claimed for processing
+  attempts      Int            @default(0)               // number of processing attempts
+  updatedAt     DateTime       @updatedAt               // automatically updated on any change
 
   invitation UserInvitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
 

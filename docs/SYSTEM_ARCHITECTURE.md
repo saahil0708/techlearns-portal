@@ -125,7 +125,7 @@ flowchart TD
   - Strict resource constraints via Linux `cgroups` (CPU quota, Max RAM 256MB–512MB).
   - Network isolation (`--network none`).
   - Read-only root filesystem with ephemeral `/tmp` execution mounts.
-  - `seccomp` profiles blocking unauthorized syscalls (`fork`, `execve`, socket creation).
+  - `seccomp` profiles blocking unauthorized syscalls (`fork`, socket creation).
 - **Execution Lifecycle & SLA**:
   - Total turnaround: **10–12 seconds** for full batch test evaluation; **< 1.5s** per individual test case.
   - Verdicts: `ACCEPTED` (AC), `WRONG_ANSWER` (WA), `TIME_LIMIT_EXCEEDED` (TLE), `MEMORY_LIMIT_EXCEEDED` (MLE), `COMPILATION_ERROR` (CE), `RUNTIME_ERROR` (RE), `SYSTEM_ERROR`.
