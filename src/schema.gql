@@ -42,6 +42,11 @@ input BulkInviteItemInput {
   role: Role! = STUDENT
 }
 
+type BulkInviteResult {
+  expiresInHours: Int!
+  invited: Int!
+}
+
 input BulkInviteUsersInput {
   users: [BulkInviteItemInput!]!
 }
@@ -254,7 +259,7 @@ type Mutation {
   addCollegeMember(collegeId: ID!, input: AddCollegeMemberInput!): Boolean!
   addContestProblem(contestId: ID!, input: AddContestProblemInput!): ContestProblem!
   addProblemTestCase(input: CreateTestCaseInput!, problemId: ID!): TestCase!
-  bulkInviteUsers(input: BulkInviteUsersInput!): [User!]!
+  bulkInviteUsers(input: BulkInviteUsersInput!): BulkInviteResult!
   createCollege(input: CreateCollegeInput!): College!
   createContest(input: CreateContestInput!): Contest!
   createCourse(input: CreateCourseInput!): Course!

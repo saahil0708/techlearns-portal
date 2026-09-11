@@ -133,7 +133,7 @@ export class ProblemsService {
     }
 
     const orderBy: Prisma.ProblemOrderByWithRelationInput = {};
-    if (args.sortBy) {
+    if (args.sortBy && ['title', 'slug', 'difficulty', 'status', 'timeLimit', 'memoryLimit', 'createdAt', 'updatedAt'].includes(args.sortBy)) {
       orderBy[args.sortBy as keyof Prisma.ProblemOrderByWithRelationInput] =
         args.sortOrder?.toLowerCase() === 'asc' ? 'asc' : 'desc';
     } else {
@@ -314,21 +314,35 @@ export class ProblemsService {
       throw new NotFoundException(`Problem with ID ${problemId} not found`);
     }
 
-    const isSuperAdmin =
+    const isSuperAdmin = Boolean(
       user &&
-      (user.globalRole === Role.SUPER_ADMIN ||
-        user.globalRole === Role.PLATFORM_ADMIN);
-    const isOwner = user && problem.createdById === user.id;
-    const isCollegeStaff =
+        (user.globalRole === Role.SUPER_ADMIN ||
+          user.globalRole === Role.PLATFORM_ADMIN),
+    );
+    const isOwner = Boolean(user && problem.createdById === user.id);
+    const isCollegeStaff = Boolean(
       user &&
-      problem.collegeId &&
-      user.memberships?.some(
-        (m) =>
-          m.collegeId === problem.collegeId &&
-          (m.role === Role.FACULTY || m.role === Role.COLLEGE_ADMIN),
-      );
+        problem.collegeId &&
+        user.memberships?.some(
+          (m) =>
+            m.collegeId === problem.collegeId &&
+            (m.role === Role.FACULTY || m.role === Role.COLLEGE_ADMIN),
+        ),
+    );
 
     const hasPrivilegedAccess = isSuperAdmin || isOwner || isCollegeStaff;
+
+    if (!hasPrivilegedAccess) {
+      if (problem.status !== ProblemStatus.PUBLISHED) {
+        throw new NotFoundException(`Problem with ID ${problemId} not found`);
+      }
+      if (
+        problem.collegeId &&
+        !user?.memberships?.some((membership) => membership.collegeId === problem.collegeId)
+      ) {
+        throw new NotFoundException(`Problem with ID ${problemId} not found`);
+      }
+    }
 
     return this.prisma.testCase.findMany({
       where: {

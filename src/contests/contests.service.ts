@@ -93,7 +93,7 @@ export class ContestsService {
     }
 
     const orderBy: Prisma.ContestOrderByWithRelationInput = {};
-    if (args.sortBy) {
+    if (args.sortBy && ['title', 'status', 'startTime', 'endTime', 'createdAt', 'updatedAt'].includes(args.sortBy)) {
       orderBy[args.sortBy as keyof Prisma.ContestOrderByWithRelationInput] =
         args.sortOrder?.toLowerCase() === 'asc' ? 'asc' : 'desc';
     } else {
@@ -182,12 +182,35 @@ export class ContestsService {
       }
     }
 
+    // Registration rosters contain user profile data. They are an administrative
+    // view, not a participant-facing contest detail.
+    const canViewRegistrations =
+      isSuperAdmin ||
+      contest.createdById === user?.id ||
+      Boolean(
+        contest.collegeId &&
+          user?.memberships?.some(
+            (membership) =>
+              membership.collegeId === contest.collegeId &&
+              membership.role === Role.COLLEGE_ADMIN,
+          ),
+      );
+    if (!canViewRegistrations) {
+      contest.registrations = [];
+    }
+
     return contest;
   }
 
   async update(id: string, input: UpdateContestInput, user?: CurrentUserPayload) {
     const contest = await this.findById(id, user);
     this.assertContestAuthorOrAdmin(contest, user);
+
+    const startTime = input.startTime || contest.startTime;
+    const endTime = input.endTime || contest.endTime;
+    if (endTime <= startTime) {
+      throw new BadRequestException('Contest end time must be after its start time');
+    }
 
     return this.prisma.contest.update({
       where: { id },
@@ -278,8 +301,27 @@ export class ContestsService {
       throw new NotFoundException(`Problem with ID ${input.problemId} not found`);
     }
 
-    if (contest.collegeId && problem.collegeId && contest.collegeId !== problem.collegeId) {
-      throw new ForbiddenException('Contest and problem must belong to the same college');
+    if (problem.status !== 'PUBLISHED') {
+      throw new ForbiddenException('Only published problems can be added to a contest');
+    }
+
+    if (problem.collegeId) {
+      if (contest.collegeId !== problem.collegeId) {
+        throw new ForbiddenException('College problems can only be added to contests from the same college');
+      }
+
+      const canAccessProblem =
+        user?.globalRole === Role.SUPER_ADMIN ||
+        user?.globalRole === Role.PLATFORM_ADMIN ||
+        problem.createdById === user?.id ||
+        user?.memberships?.some(
+          (membership) =>
+            membership.collegeId === problem.collegeId &&
+            (membership.role === Role.FACULTY || membership.role === Role.COLLEGE_ADMIN),
+        );
+      if (!canAccessProblem) {
+        throw new ForbiddenException('You do not have access to this problem');
+      }
     }
 
     return this.prisma.contestProblem.upsert({

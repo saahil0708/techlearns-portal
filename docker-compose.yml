@@ -21,6 +21,12 @@ services:
     volumes:
       - redis_data:/data
 
+  judge:
+    build:
+      context: ./docker/judge
+    image: codeplatform-judge:latest
+    profiles: ['judge']
+
 volumes:
   postgres_data:
   redis_data:

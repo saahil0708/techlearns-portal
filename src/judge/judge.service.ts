@@ -5,6 +5,7 @@ import {
   SubmissionVerdict,
 } from '@prisma/client';
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
@@ -134,6 +135,16 @@ export class JudgeService {
           errorMessage: 'Execution exceeded the problem time limit',
         };
       }
+      if (execution.memoryLimitExceeded) {
+        return {
+          verdict: SubmissionVerdict.MEMORY_LIMIT_EXCEEDED,
+          runtime,
+          memory: execution.memory,
+          passedTestCases,
+          totalTestCases: testCases.length,
+          errorMessage: 'Execution exceeded the problem memory limit',
+        };
+      }
       if (execution.compilationError) {
         return {
           verdict: SubmissionVerdict.COMPILATION_ERROR,
@@ -196,7 +207,7 @@ export class JudgeService {
     input: string,
     timeLimitMs: number,
     memoryLimitMb: number,
-  ): Promise<{ output?: string; compilationError?: string; runtimeError?: string; systemError?: string; timedOut?: boolean; memory: number }> {
+  ): Promise<{ output?: string; compilationError?: string; runtimeError?: string; systemError?: string; timedOut?: boolean; memoryLimitExceeded?: boolean; memory: number }> {
     const extensions: Record<ProgrammingLanguage, string> = {
       [ProgrammingLanguage.PYTHON]: 'py',
       [ProgrammingLanguage.JAVASCRIPT]: 'mjs',
@@ -213,9 +224,11 @@ export class JudgeService {
     }
     const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codeplatform-judge-'));
     const sourcePath = path.join(workDir, `solution.${extensions[language]}`);
+    const containerName = `codeplatform-judge-${randomUUID()}`;
     const args = [
-      'run', '--rm', '--network', 'none', '--read-only',
+      'run', '--rm', '--name', containerName, '--network', 'none', '--read-only',
       '--tmpfs', '/tmp:rw,size=64m', '--memory', `${Math.max(16, memoryLimitMb)}m`,
+      '--memory-swap', `${Math.max(16, memoryLimitMb)}m`,
       '--cpus', '1', '--pids-limit', '64', '--cap-drop', 'ALL',
       '--security-opt', 'no-new-privileges', '--user', '1000:1000',
       '-v', `${sourcePath}:/workspace/${language === ProgrammingLanguage.JAVA ? 'Solution.java' : `solution.${extensions[language]}`}:ro`,
@@ -233,6 +246,7 @@ export class JudgeService {
         const timer = setTimeout(() => {
           timedOut = true;
           child.kill('SIGKILL');
+          spawn('docker', ['rm', '-f', containerName], { windowsHide: true, stdio: 'ignore' });
         }, Math.max(100, timeLimitMs));
         child.stdout.on('data', (chunk: Buffer) => {
           output += chunk.toString();
@@ -252,6 +266,8 @@ export class JudgeService {
             resolve({ timedOut: true, memory: memoryLimitMb });
           } else if (exitCode === 0) {
             resolve({ output, memory: memoryLimitMb });
+          } else if (exitCode === 137) {
+            resolve({ memoryLimitExceeded: !timedOut, memory: memoryLimitMb });
           } else if (exitCode === 2) {
             resolve({ compilationError: error.trim() || 'Compilation failed', memory: memoryLimitMb });
           } else {

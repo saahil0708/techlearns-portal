@@ -23,11 +23,6 @@ export class Verify2faDto {
   @IsOptional()
   challengeToken?: string;
 
-  @ApiPropertyOptional({ description: 'User ID undergoing 2FA challenge (fallback)' })
-  @IsString()
-  @IsOptional()
-  userId?: string;
-
   @ApiProperty({ description: '6-digit TOTP code or 8-character backup recovery code' })
   @IsString()
   @IsNotEmpty()

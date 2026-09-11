@@ -138,6 +138,21 @@ export const apiService = {
     return res.json();
   },
 
+  async acceptInvitation(token: string, password: string) {
+    const res = await fetch(`${API_URL}/auth/accept-invitation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ token, password }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: 'Unable to activate invitation' }));
+      throw new Error(err.message || 'Unable to activate invitation');
+    }
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
   async getProfile() {
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/auth/me`, {
@@ -646,7 +661,7 @@ export const apiService = {
   },
 
   async bulkInviteUsers(input: { users: Array<{ name: string; email: string; role?: string; collegeId?: string }> }) {
-    const data = await fetchGraphQL<{ bulkInviteUsers: any[] }>(BULK_INVITE_USERS_MUTATION, { input });
+    const data = await fetchGraphQL<{ bulkInviteUsers: { invited: number; expiresInHours: number } }>(BULK_INVITE_USERS_MUTATION, { input });
     return data.bulkInviteUsers;
   },
 
@@ -915,5 +930,3 @@ export const apiService = {
     return res.json();
   },
 };
-
-

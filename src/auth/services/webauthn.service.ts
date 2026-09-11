@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
 import {
   generateAuthenticationOptions,
   generateRegistrationOptions,
@@ -162,7 +163,7 @@ export class WebAuthnService {
       userVerification: 'preferred',
     });
 
-    const sessionKey = email ? `auth:${email}` : `auth:challenge:${options.challenge}`;
+    const sessionKey = `auth:${randomUUID()}`;
     await this.saveChallenge(sessionKey, options.challenge);
 
     return { ...options, challengeKey: sessionKey };

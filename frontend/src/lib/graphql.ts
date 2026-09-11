@@ -441,11 +441,8 @@ export const UPDATE_CONTEST_MUTATION = `
 export const BULK_INVITE_USERS_MUTATION = `
   mutation BulkInviteUsers($input: BulkInviteUsersInput!) {
     bulkInviteUsers(input: $input) {
-      id
-      name
-      email
-      globalRole
-      status
+      invited
+      expiresInHours
     }
   }
 `;
@@ -832,7 +829,6 @@ export const ADMIN_AUDIT_LOGS_QUERY = `
     }
   }
 `;
-
 
 
 

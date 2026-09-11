@@ -38,6 +38,14 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsOptional()
+  TOTP_ENCRYPTION_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  TOTP_PREVIOUS_ENCRYPTION_KEYS?: string;
+
+  @IsString()
+  @IsOptional()
   REDIS_HOST: string = 'localhost';
 
   @IsNumber()

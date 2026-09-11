@@ -78,7 +78,7 @@ export class CollegesService {
     }
 
     const orderBy: Prisma.CollegeOrderByWithRelationInput = {};
-    if (args.sortBy) {
+    if (args.sortBy && ['name', 'code', 'status', 'createdAt', 'updatedAt'].includes(args.sortBy)) {
       orderBy[args.sortBy as keyof Prisma.CollegeOrderByWithRelationInput] =
         args.sortOrder?.toLowerCase() === 'asc' ? 'asc' : 'desc';
     } else {

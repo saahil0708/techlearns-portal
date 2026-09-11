@@ -142,7 +142,7 @@ export class CoursesService {
     }
 
     const orderBy: any = {};
-    if (args.sortBy) {
+    if (args.sortBy && ['title', 'status', 'createdAt', 'updatedAt'].includes(args.sortBy)) {
       orderBy[args.sortBy] = args.sortOrder?.toLowerCase() === 'asc' ? 'asc' : 'desc';
     } else {
       orderBy.createdAt = 'desc';

@@ -13,6 +13,7 @@ describe('AuthService', () => {
   let service: AuthService;
   let usersService: UsersService;
   let tokenService: TokenService;
+  let totpService: TotpService;
 
   const mockUser = {
     id: 'user-uuid-1',
@@ -65,6 +66,8 @@ describe('AuthService', () => {
           useValue: {
             generateTokenPair: vi.fn().mockResolvedValue(mockTokens),
             rotateRefreshToken: vi.fn().mockResolvedValue(mockTokens),
+            verify2faChallengeToken: vi.fn(),
+            consume2faChallengeToken: vi.fn(),
             revokeRefreshToken: vi.fn().mockResolvedValue({ message: 'Logged out' }),
             revokeAllUserSessions: vi.fn().mockResolvedValue({ message: 'All sessions revoked' }),
           },
@@ -76,6 +79,7 @@ describe('AuthService', () => {
             enableTotp: vi.fn(),
             disableTotp: vi.fn(),
             verifyTotpToken: vi.fn(),
+            verify2FA: vi.fn(),
             generateLogin2faChallengeToken: vi.fn(),
             verifyLogin2faChallengeToken: vi.fn(),
           },
@@ -95,6 +99,7 @@ describe('AuthService', () => {
     service = module.get<AuthService>(AuthService);
     usersService = module.get<UsersService>(UsersService);
     tokenService = module.get<TokenService>(TokenService);
+    totpService = module.get<TotpService>(TotpService);
   });
 
   it('should be defined', () => {
@@ -172,5 +177,26 @@ describe('AuthService', () => {
       ).rejects.toThrow(UnauthorizedException);
     });
   });
-});
 
+  describe('verify2faLogin', () => {
+    it('consumes the one-time challenge only after the 2FA code is validated', async () => {
+      const challengeToken = 'challenge-token';
+      vi.spyOn(tokenService, 'verify2faChallengeToken').mockResolvedValue(mockUser.id);
+      vi.spyOn(totpService, 'verify2FA').mockResolvedValue(true);
+      vi.spyOn(usersService, 'findById').mockResolvedValue(mockSanitizedUser as any);
+
+      await service.verify2faLogin({ challengeToken }, '123456');
+
+      expect(totpService.verify2FA).toHaveBeenCalledWith(mockUser.id, '123456');
+      expect(tokenService.consume2faChallengeToken).toHaveBeenCalledWith(challengeToken, mockUser.id);
+      expect(tokenService.generateTokenPair).toHaveBeenCalledWith(
+        mockUser.id,
+        mockUser.email,
+        mockUser.globalRole,
+        undefined,
+        undefined,
+        undefined,
+      );
+    });
+  });
+});

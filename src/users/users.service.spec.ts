@@ -108,4 +108,88 @@ describe('UsersService', () => {
       expect(prisma.user.create).toHaveBeenCalled();
     });
   });
+
+  describe('invitation encryption & delivery outbox', () => {
+    it('should encrypt and decrypt activation URLs correctly', () => {
+      const originalUrl = 'http://localhost:3000/accept-invitation?token=secret_token_123';
+      const encrypted = service.encryptActivationUrl(originalUrl);
+
+      expect(encrypted).toMatch(/^enc:v1:/);
+      expect(encrypted).not.toContain('secret_token_123');
+
+      const decrypted = service.decryptActivationUrl(encrypted);
+      expect(decrypted).toBe(originalUrl);
+    });
+
+    it('should persist encrypted activationUrl in outbox during bulkInvite', async () => {
+      const createdInvitations: any[] = [];
+      const createdDeliveries: any[] = [];
+
+      const txMock = {
+        user: { findUnique: vi.fn().mockResolvedValue(null) },
+        userInvitation: {
+          findFirst: vi.fn().mockResolvedValue(null),
+          create: vi.fn().mockImplementation(async ({ data }) => {
+            createdInvitations.push(data);
+            return { id: 'inv-1', ...data };
+          }),
+        },
+        invitationDelivery: {
+          create: vi.fn().mockImplementation(async ({ data }) => {
+            createdDeliveries.push(data);
+            return { id: 'del-1', ...data };
+          }),
+        },
+        college: { findUnique: vi.fn().mockResolvedValue({ id: 'col-1' }) },
+      };
+
+      prisma.$transaction = vi.fn().mockImplementation(async (cb: any) => cb(txMock)) as any;
+
+      const result = await service.bulkInvite({
+        users: [{ email: 'student@example.com', name: 'Student 1', role: Role.STUDENT }],
+      });
+
+      expect(result.invited).toBe(1);
+      expect(createdDeliveries.length).toBe(1);
+      expect(createdDeliveries[0].activationUrl).toMatch(/^enc:v1:/);
+      expect(createdDeliveries[0].activationUrl).not.toContain('accept-invitation');
+    });
+
+    it('should redact activationUrl upon successful acceptInvitation', async () => {
+      const updatedDeliveries: any[] = [];
+      const txMock = {
+        userInvitation: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: 'inv-1',
+            email: 'student@example.com',
+            name: 'Student 1',
+            role: Role.STUDENT,
+            collegeId: null,
+            expiresAt: new Date(Date.now() + 100000),
+            acceptedAt: null,
+            revokedAt: null,
+          }),
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+        user: {
+          findUnique: vi.fn().mockResolvedValue(null),
+          create: vi.fn().mockResolvedValue(mockSanitizedUser),
+        },
+        invitationDelivery: {
+          updateMany: vi.fn().mockImplementation(async (args) => {
+            updatedDeliveries.push(args);
+            return { count: 1 };
+          }),
+        },
+      };
+
+      prisma.$transaction = vi.fn().mockImplementation(async (cb: any) => cb(txMock)) as any;
+
+      const result = await service.acceptInvitation('raw_token', 'NewSecurePassword123!');
+      expect(result).toBeDefined();
+      expect(updatedDeliveries.length).toBe(1);
+      expect(updatedDeliveries[0].data.activationUrl).toBeNull();
+      expect(updatedDeliveries[0].data.status).toBe('DELIVERED');
+    });
+  });
 });

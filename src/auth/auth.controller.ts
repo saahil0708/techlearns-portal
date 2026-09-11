@@ -21,6 +21,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
 import { AuthService } from './auth.service.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
+import { AcceptInvitationDto } from './dto/accept-invitation.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { RefreshTokenDto, RevokeTokenDto } from './dto/refresh-token.dto.js';
@@ -105,6 +106,21 @@ export class AuthController {
     const deviceInfo = req.headers['user-agent'];
     const ipAddress = req.ip;
     const result = await this.authService.register(dto, deviceInfo, ipAddress);
+    this.setAuthCookies(res, result.tokens);
+    return result;
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Post('accept-invitation')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Activate a one-time user invitation and set an account password' })
+  async acceptInvitation(
+    @Body() dto: AcceptInvitationDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.acceptInvitation(dto.token, dto.password, req.headers['user-agent'], req.ip);
     this.setAuthCookies(res, result.tokens);
     return result;
   }
@@ -218,7 +234,7 @@ export class AuthController {
     const deviceInfo = req.headers['user-agent'];
     const ipAddress = req.ip;
     const result = await this.authService.verify2faLogin(
-      { challengeToken: dto.challengeToken, userId: dto.userId },
+      { challengeToken: dto.challengeToken },
       dto.code,
       deviceInfo,
       ipAddress,

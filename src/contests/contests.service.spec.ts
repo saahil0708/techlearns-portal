@@ -1,5 +1,5 @@
-import { NotFoundException } from '@nestjs/common';
-import { ContestStatus } from '@prisma/client';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ContestStatus, ProblemStatus, Role } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ContestsService } from './contests.service.js';
@@ -83,6 +83,59 @@ describe('ContestsService', () => {
       vi.mocked(prisma.contest.findUnique).mockResolvedValue(null);
 
       await expect(service.findById('unknown-contest')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('addProblem', () => {
+    it('rejects a college problem on a global contest', async () => {
+      vi.mocked(prisma.contest.findUnique).mockResolvedValue(mockContest as any);
+      vi.mocked(prisma.problem.findUnique).mockResolvedValue({
+        id: 'problem-1',
+        collegeId: 'college-1',
+        createdById: 'faculty-1',
+        status: ProblemStatus.PUBLISHED,
+      } as any);
+
+      await expect(
+        service.addProblem(
+          'contest-1',
+          { problemId: 'problem-1' },
+          {
+            id: 'faculty-1',
+            email: 'faculty@example.com',
+            name: 'Faculty',
+            globalRole: Role.FACULTY,
+            memberships: [{ collegeId: 'college-1', role: Role.FACULTY }],
+          },
+        ),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('rejects an unpublished problem', async () => {
+      vi.mocked(prisma.contest.findUnique).mockResolvedValue({
+        ...mockContest,
+        collegeId: 'college-1',
+      } as any);
+      vi.mocked(prisma.problem.findUnique).mockResolvedValue({
+        id: 'problem-1',
+        collegeId: 'college-1',
+        createdById: 'faculty-1',
+        status: ProblemStatus.DRAFT,
+      } as any);
+
+      await expect(
+        service.addProblem(
+          'contest-1',
+          { problemId: 'problem-1' },
+          {
+            id: 'faculty-1',
+            email: 'faculty@example.com',
+            name: 'Faculty',
+            globalRole: Role.FACULTY,
+            memberships: [{ collegeId: 'college-1', role: Role.FACULTY }],
+          },
+        ),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 });

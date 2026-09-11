@@ -15,6 +15,7 @@ import { AuditLogItemType } from './types/audit-log.type.js';
 import { StudentProfileType } from './types/student-stats.type.js';
 import { UserType } from './types/user.type.js';
 import { UsersConnection } from './types/users-connection.type.js';
+import { BulkInviteResultType } from './types/bulk-invite-result.type.js';
 import { UsersService } from './users.service.js';
 
 @Resolver(() => UserType)
@@ -73,6 +74,24 @@ export class UsersResolver {
       throw new ForbiddenException('You do not have permission to view this user profile.');
     }
 
+    if (currentUser.globalRole === Role.COLLEGE_ADMIN) {
+      const target = await this.usersService.findById(id);
+      const targetMemberships = (target as (typeof target & {
+        memberships?: Array<{ collegeId: string; role: Role }>;
+      }) | null)?.memberships;
+      const allowed = targetMemberships?.some((membership) =>
+        currentUser.memberships?.some(
+          (ownMembership) =>
+            ownMembership.collegeId === membership.collegeId &&
+            ownMembership.role === Role.COLLEGE_ADMIN,
+        ),
+      );
+      if (!allowed) {
+        throw new ForbiddenException('You do not have permission to view this user profile.');
+      }
+      return target;
+    }
+
     return this.usersService.findById(id);
   }
 
@@ -113,8 +132,8 @@ export class UsersResolver {
   @Query(() => AdminMetricsType, { name: 'adminMetrics' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
-  async getAdminMetrics() {
-    return this.usersService.getSuperAdminMetrics();
+  async getAdminMetrics(@GqlCurrentUser() currentUser: CurrentUserPayload) {
+    return this.usersService.getSuperAdminMetrics(currentUser);
   }
 
   @Query(() => [AuditLogItemType], { name: 'adminAuditLogs' })
@@ -190,7 +209,7 @@ export class UsersResolver {
     return this.usersService.deleteUser(id);
   }
 
-  @Mutation(() => [UserType], { name: 'bulkInviteUsers' })
+  @Mutation(() => BulkInviteResultType, { name: 'bulkInviteUsers' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
   async bulkInviteUsers(
@@ -222,4 +241,3 @@ export class UsersResolver {
     return this.usersService.bulkInvite(input);
   }
 }
-

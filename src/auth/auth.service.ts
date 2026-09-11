@@ -55,6 +55,23 @@ export class AuthService {
     };
   }
 
+  async acceptInvitation(token: string, password: string, deviceInfo?: string, ipAddress?: string) {
+    const user = await this.usersService.acceptInvitation(token, password);
+    try {
+      const tokens = await this.tokenService.generateTokenPair(
+        user.id, user.email, user.globalRole, undefined, deviceInfo, ipAddress,
+      );
+      return { user, tokens, requiresLogin: false };
+    } catch {
+      return {
+        user,
+        tokens: undefined,
+        requiresLogin: true,
+        message: 'Account activated successfully. Please log in to continue.',
+      };
+    }
+  }
+
   /**
    * Log in with password verification. If 2FA is active, triggers 2FA challenge flow.
    */
@@ -75,7 +92,7 @@ export class AuthService {
 
     // If 2FA is enabled on this account, return 2FA challenge requirement with signed temporary challenge token
     if (user.twoFactorEnabled) {
-      const challengeToken = this.tokenService.generate2faChallengeToken(user.id);
+      const challengeToken = await this.tokenService.generate2faChallengeToken(user.id);
       return {
         requires2FA: true,
         challengeToken,
@@ -113,14 +130,13 @@ export class AuthService {
     let resolvedUserId: string;
 
     if (target.challengeToken) {
-      resolvedUserId = this.tokenService.verify2faChallengeToken(target.challengeToken);
-    } else if (target.userId) {
-      resolvedUserId = target.userId;
+      resolvedUserId = await this.tokenService.verify2faChallengeToken(target.challengeToken);
     } else {
-      throw new UnauthorizedException('Either challengeToken or userId must be provided.');
+      throw new UnauthorizedException('A valid 2FA challenge token is required.');
     }
 
     await this.totpService.verify2FA(resolvedUserId, code);
+    await this.tokenService.consume2faChallengeToken(target.challengeToken!, resolvedUserId);
 
     const user = await this.usersService.findById(resolvedUserId);
     if (!user) {

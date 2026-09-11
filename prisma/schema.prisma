@@ -130,6 +130,7 @@ model User {
   leaderboardEntries   LeaderboardEntry[]
   passkeys             PasskeyCredential[]
   refreshTokens        RefreshToken[]
+  twoFactorChallenges  TwoFactorChallenge[]
   auditLogs            AuditLog[]
 
   @@index([globalRole, status])
@@ -183,6 +184,20 @@ model WebAuthnChallenge {
   @@map("webauthn_challenges")
 }
 
+model TwoFactorChallenge {
+  id        String   @id @default(uuid())
+  jti       String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([userId])
+  @@map("two_factor_challenges")
+}
+
 model RefreshToken {
   id         String   @id @default(uuid())
   userId     String
@@ -199,6 +214,38 @@ model RefreshToken {
   @@index([userId, family])
   @@index([userId, isRevoked])
   @@map("refresh_tokens")
+}
+
+model UserInvitation {
+  id          String   @id @default(uuid())
+  email       String
+  name        String
+  role        Role     @default(STUDENT)
+  collegeId   String?
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime @default(now())
+  delivery    InvitationDelivery?
+
+  @@index([email, expiresAt])
+  @@index([collegeId, expiresAt])
+  @@map("user_invitations")
+}
+
+model InvitationDelivery {
+  id            String         @id @default(uuid())
+  invitationId  String         @unique
+  email         String
+  activationUrl String?
+  status        String         @default("PENDING")
+  createdAt     DateTime       @default(now())
+
+  invitation UserInvitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@map("invitation_deliveries")
 }
 
 model College {

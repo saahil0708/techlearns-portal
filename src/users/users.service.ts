@@ -2,11 +2,15 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Prisma, Role, User, UserStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from 'node:crypto';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { BulkInviteUsersInput } from './dto/bulk-invite.input.js';
@@ -80,7 +84,23 @@ export const userSanitizedSelect: Prisma.UserSelect = {
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(UsersService.name);
+  private readonly encryptionKeys: Buffer[];
+
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private configService?: ConfigService,
+  ) {
+    const currentKey = this.configService?.get<string>('auth.totp.encryptionKey') || process.env.TOTP_ENCRYPTION_KEY;
+    const previousKeys = this.configService?.get<string[]>('auth.totp.previousEncryptionKeys') ||
+      process.env.TOTP_PREVIOUS_ENCRYPTION_KEYS?.split(',').map((key) => key.trim()).filter(Boolean) || [];
+    const legacySecret = this.configService?.get<string>('jwt.secret') || process.env.JWT_SECRET || 'codeplatform_default_secret_key_change_in_prod';
+    const configuredKeys = [currentKey, ...previousKeys].filter((key): key is string => Boolean(key));
+    const rawKeys = configuredKeys.length > 0 ? configuredKeys : [legacySecret];
+    this.encryptionKeys = rawKeys.map((key) =>
+      Buffer.from(createHmac('sha256', key).update('codeplatform:invitation:v1').digest()),
+    );
+  }
 
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
@@ -385,7 +405,14 @@ export class UsersService {
     };
   }
 
-  async getSuperAdminMetrics() {
+  async getSuperAdminMetrics(user?: { globalRole: Role; memberships?: { collegeId: string }[] }) {
+    const isPlatformAdmin =
+      user?.globalRole === Role.SUPER_ADMIN || user?.globalRole === Role.PLATFORM_ADMIN;
+    const collegeIds = user?.memberships?.map((membership) => membership.collegeId) || [];
+    const scopedCollege = isPlatformAdmin ? undefined : { in: collegeIds };
+    const scopedMembership = isPlatformAdmin
+      ? undefined
+      : { some: { collegeId: { in: collegeIds } } };
     const [
       collegesCount,
       studentsCount,
@@ -396,18 +423,21 @@ export class UsersService {
       contestsCount,
       submissionsCount,
     ] = await Promise.all([
-      this.prisma.college.count(),
-      this.prisma.user.count({ where: { globalRole: Role.STUDENT } }),
-      this.prisma.user.count({ where: { globalRole: Role.FACULTY } }),
+      this.prisma.college.count({ where: scopedCollege ? { id: scopedCollege } : undefined }),
+      this.prisma.user.count({ where: { globalRole: Role.STUDENT, memberships: scopedMembership } }),
+      this.prisma.user.count({ where: { globalRole: Role.FACULTY, memberships: scopedMembership } }),
       this.prisma.user.count({
         where: {
           globalRole: { in: [Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN] },
+          memberships: scopedMembership,
         },
       }),
-      this.prisma.user.count(),
-      this.prisma.problem.count(),
-      this.prisma.contest.count(),
-      this.prisma.submission.count(),
+      this.prisma.user.count({ where: { memberships: scopedMembership } }),
+      this.prisma.problem.count({ where: scopedCollege ? { collegeId: scopedCollege } : undefined }),
+      this.prisma.contest.count({ where: scopedCollege ? { collegeId: scopedCollege } : undefined }),
+      this.prisma.submission.count({
+        where: scopedCollege ? { problem: { collegeId: scopedCollege } } : undefined,
+      }),
     ]);
 
     return {
@@ -490,7 +520,7 @@ export class UsersService {
     }
 
     const orderBy: Prisma.UserOrderByWithRelationInput = {};
-    if (args.sortBy) {
+    if (args.sortBy && ['name', 'email', 'globalRole', 'status', 'contestRating', 'createdAt', 'updatedAt'].includes(args.sortBy)) {
       orderBy[args.sortBy as keyof Prisma.UserOrderByWithRelationInput] =
         args.sortOrder?.toLowerCase() === 'asc' ? 'asc' : 'desc';
     } else {
@@ -645,38 +675,182 @@ export class UsersService {
     return true;
   }
 
-  async bulkInvite(input: BulkInviteUsersInput): Promise<SanitizedUser[]> {
-    const defaultPasswordHash = await bcrypt.hash('TempPassword123!', 10);
-    const createdUsers: SanitizedUser[] = [];
+  async bulkInvite(input: BulkInviteUsersInput): Promise<{ invited: number; expiresInHours: number }> {
+    const emails = input.users.map((item) => item.email.toLowerCase());
+    if (new Set(emails).size !== emails.length) {
+      throw new BadRequestException('Each bulk invitation must have a unique email address');
+    }
 
-    for (const item of input.users) {
-      try {
-        const existing = await this.findByEmail(item.email);
-        if (existing) continue;
+    const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
+    const appUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const deliveries: Array<{ email: string; activationUrl: string }> = [];
 
-        const user = await this.createUser({
-          email: item.email,
-          name: item.name,
-          passwordHash: defaultPasswordHash,
-          globalRole: item.role,
-        });
-
-        if (item.collegeId) {
-          await this.prisma.collegeMembership.create({
-            data: {
-              userId: user.id,
-              collegeId: item.collegeId,
-              role: item.role,
-            },
-          });
+    await this.prisma.$transaction(async (tx) => {
+      for (const item of input.users) {
+        const email = item.email.toLowerCase();
+        const existing = await tx.user.findUnique({ where: { email } });
+        if (existing) {
+          throw new ConflictException(`An account already exists for ${item.email}`);
         }
+        const pendingInvitation = await tx.userInvitation.findFirst({
+          where: { email, acceptedAt: null, revokedAt: null, expiresAt: { gt: new Date() } },
+        });
+        if (pendingInvitation) {
+          throw new ConflictException(`An active invitation already exists for ${item.email}`);
+        }
+        if (item.collegeId) {
+          const college = await tx.college.findUnique({ where: { id: item.collegeId }, select: { id: true } });
+          if (!college) throw new BadRequestException(`College ${item.collegeId} does not exist`);
+        }
+      }
 
-        createdUsers.push(user);
-      } catch {
-        // Skip duplicate or error rows gracefully
+      for (const item of input.users) {
+        const email = item.email.toLowerCase();
+        const rawToken = randomBytes(32).toString('base64url');
+        const invitation = await tx.userInvitation.create({
+          data: { email, name: item.name, role: item.role, collegeId: item.collegeId, tokenHash: this.hashInvitationToken(rawToken), expiresAt },
+        });
+        const activationUrl = `${appUrl}/accept-invitation?token=${rawToken}`;
+        const encryptedActivationUrl = this.encryptActivationUrl(activationUrl);
+        await tx.invitationDelivery.create({
+          data: { invitationId: invitation.id, email, activationUrl: encryptedActivationUrl },
+        });
+        deliveries.push({ email, activationUrl });
+      }
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+
+    const debugInvitationUrls = process.env.NODE_ENV !== 'production' && process.env.DEBUG_INVITATION_URLS === 'true';
+    for (const delivery of deliveries) {
+      if (debugInvitationUrls) {
+        this.logger.log(`DEV invitation for ${delivery.email}: ${delivery.activationUrl}`);
+      } else {
+        this.logger.log(`Invitation queued for ${delivery.email}`);
       }
     }
 
-    return createdUsers;
+    return { invited: input.users.length, expiresInHours: 72 };
+  }
+
+  async acceptInvitation(token: string, password: string): Promise<SanitizedUser> {
+    const tokenHash = this.hashInvitationToken(token);
+    const now = new Date();
+    return this.prisma.$transaction(async (tx) => {
+      const invitation = await tx.userInvitation.findUnique({ where: { tokenHash } });
+      if (!invitation || invitation.acceptedAt || invitation.revokedAt || invitation.expiresAt <= now) {
+        throw new UnauthorizedException('This invitation is invalid or has expired');
+      }
+      const existing = await tx.user.findUnique({ where: { email: invitation.email } });
+      if (existing) throw new ConflictException('An account already exists for this email address');
+
+      const user = await tx.user.create({
+        data: {
+          email: invitation.email,
+          name: invitation.name,
+          passwordHash: await bcrypt.hash(password, 12),
+          globalRole: invitation.role,
+        },
+        select: userSanitizedSelect,
+      });
+      if (invitation.collegeId) {
+        await tx.collegeMembership.create({
+          data: { userId: user.id, collegeId: invitation.collegeId, role: invitation.role },
+        });
+      }
+      const consumed = await tx.userInvitation.updateMany({
+        where: { id: invitation.id, acceptedAt: null, revokedAt: null },
+        data: { acceptedAt: now },
+      });
+      if (consumed.count !== 1) throw new UnauthorizedException('This invitation has already been used');
+
+      await tx.invitationDelivery.updateMany({
+        where: { invitationId: invitation.id },
+        data: { activationUrl: null as any, status: 'DELIVERED' },
+      });
+
+      return user as unknown as SanitizedUser;
+    });
+  }
+
+  encryptActivationUrl(url: string): string {
+    const iv = randomBytes(12);
+    const cipher = createCipheriv('aes-256-gcm', this.encryptionKeys[0], iv);
+    const encrypted = Buffer.concat([cipher.update(url, 'utf8'), cipher.final()]);
+    return `enc:v1:${iv.toString('base64url')}:${cipher.getAuthTag().toString('base64url')}:${encrypted.toString('base64url')}`;
+  }
+
+  decryptActivationUrl(value: string): string {
+    if (!value.startsWith('enc:v1:')) return value;
+    const [, , iv, tag, encrypted] = value.split(':');
+    for (const key of this.encryptionKeys) {
+      try {
+        const decipher = createDecipheriv('aes-256-gcm', key, Buffer.from(iv, 'base64url'));
+        decipher.setAuthTag(Buffer.from(tag, 'base64url'));
+        return Buffer.concat([decipher.update(Buffer.from(encrypted, 'base64url')), decipher.final()]).toString('utf8');
+      } catch {
+        continue;
+      }
+    }
+    throw new UnauthorizedException('Unable to decrypt invitation URL');
+  }
+
+  async processPendingDeliveries(
+    sender?: (delivery: { email: string; activationUrl: string; invitationId: string }) => Promise<boolean>,
+  ): Promise<{ delivered: number; expired: number }> {
+    const now = new Date();
+    const expiredResult = await this.prisma.invitationDelivery.updateMany({
+      where: {
+        status: 'PENDING',
+        invitation: { expiresAt: { lte: now } },
+      },
+      data: { activationUrl: null as any, status: 'EXPIRED' },
+    });
+
+    const pendingDeliveries = await this.prisma.invitationDelivery.findMany({
+      where: {
+        status: 'PENDING',
+        invitation: { expiresAt: { gt: now }, acceptedAt: null, revokedAt: null },
+      },
+      include: { invitation: true },
+    });
+
+    let deliveredCount = 0;
+    for (const delivery of pendingDeliveries) {
+      if (!delivery.activationUrl) continue;
+      // Claim the delivery to avoid concurrent processing
+const claim = await this.prisma.invitationDelivery.updateMany({
+  where: { id: delivery.id, status: 'PENDING' },
+  data: { status: 'CLAIMED' },
+});
+if (claim.count !== 1) continue; // already claimed by another worker
+const decryptedUrl = this.decryptActivationUrl(delivery.activationUrl);
+      let success = false; // default to failure unless sender succeeds
+      if (sender) {
+        try {
+          success = await sender({ email: delivery.email, activationUrl: decryptedUrl, invitationId: delivery.invitationId });
+        } catch {
+          success = false;
+        }
+      }
+
+      if (success) {
+        await this.prisma.invitationDelivery.update({
+          where: { id: delivery.id },
+          data: { activationUrl: null as any, status: 'DELIVERED' },
+        });
+        deliveredCount++;
+      } else {
+        // Release claim back to PENDING for retry, keep activationUrl unchanged
+        await this.prisma.invitationDelivery.update({
+          where: { id: delivery.id },
+          data: { status: 'PENDING' },
+        });
+      }
+    }
+
+    return { delivered: deliveredCount, expired: expiredResult.count };
+  }
+
+  private hashInvitationToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
   }
 }

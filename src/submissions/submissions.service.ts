@@ -237,8 +237,9 @@ export class SubmissionsService {
   }
 
   async getLiveFeed(limit: number = 20) {
+    const boundedLimit = Math.min(Math.max(Math.trunc(limit) || 20, 1), 100);
     return this.prisma.submission.findMany({
-      take: limit,
+      take: boundedLimit,
       orderBy: { createdAt: 'desc' },
       include: {
         user: {

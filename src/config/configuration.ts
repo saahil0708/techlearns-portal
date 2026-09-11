@@ -8,6 +8,15 @@ export default () => ({
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   },
+  auth: {
+    totp: {
+      encryptionKey: process.env.TOTP_ENCRYPTION_KEY,
+      previousEncryptionKeys: process.env.TOTP_PREVIOUS_ENCRYPTION_KEYS
+        ?.split(',')
+        .map((key) => key.trim())
+        .filter(Boolean),
+    },
+  },
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379', 10),

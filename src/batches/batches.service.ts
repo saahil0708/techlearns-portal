@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { userSanitizedSelect } from '../users/users.service.js';
 import { CreateBatchDto } from './dto/create-batch.dto.js';
@@ -82,9 +82,20 @@ export class BatchesService {
   }
 
   async assignStudents(batchId: string, userIds: string[]) {
-    await this.findOne(batchId);
+    const batch = await this.findOne(batchId);
+    const uniqueUserIds = [...new Set(userIds)];
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: uniqueUserIds } },
+      select: {
+        id: true,
+        memberships: { where: { collegeId: batch.collegeId }, select: { id: true } },
+      },
+    });
+    if (users.length !== uniqueUserIds.length || users.some((user) => user.memberships.length === 0)) {
+      throw new ForbiddenException('All assigned students must belong to the batch college');
+    }
 
-    const assignments = userIds.map((userId) =>
+    const assignments = uniqueUserIds.map((userId) =>
       this.prisma.batchStudent.upsert({
         where: {
           batchId_userId: {
