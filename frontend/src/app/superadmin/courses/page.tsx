@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: 'Curriculum modules, interactive coding sandboxes, accredited computer science lessons, and progress tracking.',
 };
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Courses Directory Page (React Server Component)
  * Dynamically queries live courses from PostgreSQL via NestJS GraphQL API

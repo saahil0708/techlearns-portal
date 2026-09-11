@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: 'Manage inter-collegiate coding competitions, timed assessments, live leaderboards, and auto-judged tournaments.',
 };
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Contests Directory Page (React Server Component)
  * Dynamically queries live contests from PostgreSQL via NestJS GraphQL API

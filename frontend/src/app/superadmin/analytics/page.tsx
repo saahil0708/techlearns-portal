@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   description: 'Student problem-solving mastery, DSA topic weakness heatmaps, college placement benchmarks, and tournament analytics.',
 };
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Analytics Page (React Server Component)
  * Dynamically aggregates live metrics, college benchmarks, topic stats, and contest standings from PostgreSQL via NestJS

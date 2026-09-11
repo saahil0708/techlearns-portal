@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: 'Enterprise online learning and competitive programming platform management portal.',
 };
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Super Admin Dashboard (React Server Component)
  * Dynamically queries live platform metrics, submissions, and directories from PostgreSQL via NestJS

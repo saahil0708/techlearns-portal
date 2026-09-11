@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Multi-tenant secondary education organizations, AP/IB coding labs & grade cohort management portal.',
 };
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Schools Directory Page (React Server Component)
  * Dynamically queries live schools/organizations from PostgreSQL via NestJS GraphQL API

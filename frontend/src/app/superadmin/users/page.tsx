@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Role-based access control (RBAC), multi-tenant administration, security audits & authentication directory.',
 };
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Users Directory Page (React Server Component)
  * Dynamically queries live users from PostgreSQL via NestJS GraphQL API

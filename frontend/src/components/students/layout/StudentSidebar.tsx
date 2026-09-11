@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Box,
   Tooltip,
@@ -53,8 +53,6 @@ const STUDENT_NAV_ITEMS = [
 export default function StudentSidebar() {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const currentTab = searchParams ? searchParams.get('tab') : null;
 
   const dispatch = useAppDispatch();
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
@@ -116,8 +114,7 @@ export default function StudentSidebar() {
   const isProfileActive =
     (pathname === '/students' || pathname === '/students/profile' || pathname.startsWith('/students/')) &&
     pathname !== '/students/submissions' &&
-    pathname !== '/students/settings' &&
-    (!currentTab || currentTab === 'overview');
+    pathname !== '/students/settings';
 
   const handleConfirmLogout = async () => {
     setLogoutDialogOpen(false);
@@ -127,35 +124,23 @@ export default function StudentSidebar() {
 
   const isItemActive = (itemPath: string) => {
     // 1. My Submissions / History
-    if (itemPath === '/students/submissions' || itemPath.includes('tab=submissions')) {
-      return (
-        pathname === '/students/submissions' ||
-        (pathname.startsWith('/students') && currentTab === 'submissions')
-      );
+    if (itemPath === '/students/submissions') {
+      return pathname === '/students/submissions';
     }
 
     // 2. Account Settings
-    if (itemPath === '/students/settings' || itemPath.includes('tab=settings')) {
-      return (
-        pathname === '/students/settings' ||
-        (pathname.startsWith('/students') && currentTab === 'settings')
-      );
+    if (itemPath === '/students/settings') {
+      return pathname === '/students/settings';
     }
 
     // 3. My Profile & Workspace
     if (itemPath === '/students' || itemPath === '/students/profile') {
-      const isSubTab = currentTab === 'submissions' || currentTab === 'settings';
-      const isSubRoute = pathname === '/students/submissions' || pathname === '/students/settings';
-      return (
-        (pathname === '/students' || pathname === '/students/profile' || (pathname.startsWith('/students/') && !isSubRoute)) &&
-        !isSubTab &&
-        !isSubRoute
-      );
+      return isProfileActive;
     }
 
     // 4. Practice & Compilers
     if (itemPath === '/practice') {
-      return pathname === '/practice' || pathname.startsWith('/practice/') || (pathname.startsWith('/students') && currentTab === 'practice');
+      return pathname === '/practice' || pathname.startsWith('/practice/');
     }
 
     // 5. Problem Archive
@@ -165,12 +150,12 @@ export default function StudentSidebar() {
 
     // 6. Enrolled Courses
     if (itemPath === '/courses') {
-      return pathname === '/courses' || pathname.startsWith('/courses/') || (pathname.startsWith('/students') && currentTab === 'courses');
+      return pathname === '/courses' || pathname.startsWith('/courses/');
     }
 
     // 7. Competitive Contests
     if (itemPath === '/contests') {
-      return pathname === '/contests' || pathname.startsWith('/contests/') || (pathname.startsWith('/students') && currentTab === 'contests');
+      return pathname === '/contests' || pathname.startsWith('/contests/');
     }
 
     // 8. Global Leaderboard

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import StudentProfileClient from '@/components/students/profile/StudentProfileClient';
 
@@ -10,5 +11,10 @@ export const metadata: Metadata = {
  * Dedicated Student Account Settings Page (React Server Component)
  */
 export default function StudentSettingsPage() {
-  return <StudentProfileClient isOwner={true} defaultTab="settings" />;
+  return (
+    <Suspense fallback={null}>
+      <StudentProfileClient isOwner={true} defaultTab="settings" />
+    </Suspense>
+  );
 }
+

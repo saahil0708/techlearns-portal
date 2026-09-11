@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import StudentProfileClient, { StudentProfileData } from '@/components/students/profile/StudentProfileClient';
@@ -149,5 +150,9 @@ export default async function DynamicStudentProfilePage({ params }: PageProps) {
     notFound();
   }
 
-  return <StudentProfileClient initialProfile={profileData} isOwner={false} />;
+  return (
+    <Suspense fallback={null}>
+      <StudentProfileClient initialProfile={profileData} isOwner={false} />
+    </Suspense>
+  );
 }

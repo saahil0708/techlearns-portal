@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   Box,
   Typography,
@@ -71,8 +71,6 @@ export default function StudentNavbar({
 }: StudentNavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const currentTab = searchParams ? searchParams.get('tab') : null;
   const dispatch = useAppDispatch();
 
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -188,8 +186,7 @@ export default function StudentNavbar({
 
   const isExploreActive =
     pathname.startsWith('/practice') ||
-    pathname === '/students/submissions' ||
-    (pathname.startsWith('/students') && currentTab === 'submissions');
+    pathname === '/students/submissions';
 
   return (
     <>

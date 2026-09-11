@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Global developer leaderboard, collegiate cohorts, K-12 STEM coders & student profiles.',
 };
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Students Directory Page (React Server Component)
  * Dynamically queries live student accounts from PostgreSQL via NestJS GraphQL API

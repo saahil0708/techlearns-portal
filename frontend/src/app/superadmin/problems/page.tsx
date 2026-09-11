@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: 'Manage institutional coding problems, test cases, judge runtime constraints, submission logs, and contest question mappings.',
 };
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Problems Directory Page (React Server Component)
  * Dynamically queries live problems from PostgreSQL via NestJS GraphQL API

@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: 'Multi-tenant academic organizations, cohort roster isolation & seat quotas management portal.',
 };
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Colleges Directory Page (React Server Component)
  * Dynamically queries live colleges from PostgreSQL via NestJS GraphQL API
