@@ -106,17 +106,7 @@ export default function StudentNavbar({
   ]);
 
   useEffect(() => {
-    if (user?.name) {
-      setActiveUser(user);
-    } else if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('codeplatform_user');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (parsed?.name) setActiveUser(parsed);
-        }
-      } catch {}
-    }
+    setActiveUser(user || null);
   }, [user]);
 
   useEffect(() => {
@@ -156,10 +146,17 @@ export default function StudentNavbar({
         .slice(0, 2)
     : null;
 
-  const handleActionSelect = (route: string) => {
+  const getProfilePath = () => {
+    const role = (activeUser?.globalRole || user?.globalRole || '').toUpperCase();
+    if (role === 'SUPER_ADMIN' || role === 'PLATFORM_ADMIN') return '/superadmin/profile';
+    if (role === 'FACULTY' || role === 'COLLEGE_ADMIN') return '/faculty/profile';
+    return '/students';
+  };
+
+  const handleActionSelect = (path: string) => {
     setExploreAnchor(null);
     setUserMenuAnchor(null);
-    router.push(route);
+    router.push(path);
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -556,7 +553,7 @@ export default function StudentNavbar({
         <Divider sx={{ my: 0.5 }} />
 
         <MenuItem
-          onClick={() => handleActionSelect('/students')}
+          onClick={() => handleActionSelect(getProfilePath())}
           sx={{ borderRadius: '6px', fontSize: '0.84rem', fontWeight: 600, py: 1 }}
         >
           <ListItemIcon>
@@ -564,7 +561,7 @@ export default function StudentNavbar({
           </ListItemIcon>
           <ListItemText
             primary="Personal Workspace"
-            secondary="Profile & certifications"
+            secondary="Profile & academic workspace"
             slotProps={{
               primary: { sx: { fontWeight: 600, fontSize: '0.82rem', color: '#0F172A' } },
               secondary: { sx: { fontSize: '0.7rem', color: '#64748B' } },
@@ -623,7 +620,7 @@ export default function StudentNavbar({
         </Box>
 
         <MenuItem
-          onClick={() => handleActionSelect('/students')}
+          onClick={() => handleActionSelect(getProfilePath())}
           sx={{ borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, py: 0.8 }}
         >
           <ListItemIcon>

@@ -28,7 +28,7 @@ export interface LiveLeaderboardUser {
   subDate: string;
   avatar: string;
   score: number;
-  trend: 'up' | 'down';
+  trend?: 'up' | 'down' | null;
   isCurrentUser?: boolean;
 }
 
@@ -55,18 +55,31 @@ export default function LeaderboardWidgetCard({
       try {
         const liveData = await apiService.getUsers({ role: 'STUDENT', limit: 10 });
         if (liveData?.items && liveData.items.length > 0) {
-          const mapped: LiveLeaderboardUser[] = liveData.items.slice(0, 5).map((u: any, idx: number) => ({
-            rank: idx + 1,
-            name: u.name || 'Student Developer',
-            subDate: u.createdAt ? `Joined: ${new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}` : 'Active Competitor',
-            avatar: DEFAULT_AVATARS[idx % DEFAULT_AVATARS.length],
-            score: 700 - idx * 30,
-            trend: idx % 2 === 0 ? 'up' : 'down',
-          }));
-          setLeaderboardUsers(mapped);
+          // Filter students who have actual contest scores or rating points > 0
+          const ranked = liveData.items
+            .filter((u: any) => (typeof u.score === 'number' && u.score > 0) || (typeof u.contestRating === 'number' && u.contestRating > 0 && u.contestRating !== 1200 && u.contestRating !== 1500))
+            .slice(0, 5)
+            .map((u: any, idx: number) => {
+              const serverTrend = (u.trend === 'up' || u.trend === 'down')
+                ? u.trend
+                : (u.trendDirection === 'UP' ? 'up' : u.trendDirection === 'DOWN' ? 'down' : null);
+
+              return {
+                rank: idx + 1,
+                name: u.name || 'Student Developer',
+                subDate: u.createdAt ? `Joined: ${new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}` : 'Active Competitor',
+                avatar: DEFAULT_AVATARS[idx % DEFAULT_AVATARS.length],
+                score: u.score || u.contestRating || 0,
+                trend: serverTrend,
+              };
+            });
+          setLeaderboardUsers(ranked);
+        } else {
+          setLeaderboardUsers([]);
         }
       } catch (err) {
         console.warn('Leaderboard live stats fetch:', err);
+        setLeaderboardUsers([]);
       }
     }
     loadLeaderboard();
@@ -102,7 +115,7 @@ export default function LeaderboardWidgetCard({
               <td>${u.name}</td>
               <td align="right">${u.score}</td>
               <td>${u.subDate}</td>
-              <td>${u.trend.toUpperCase()}</td>
+              <td>${u.trend ? u.trend.toUpperCase() : '-'}</td>
             </tr>`
           ).join('')}
         </table>
@@ -128,7 +141,7 @@ export default function LeaderboardWidgetCard({
       `"${user.name}"`,
       user.score,
       `"${user.subDate}"`,
-      user.trend.toUpperCase(),
+      user.trend ? user.trend.toUpperCase() : '-',
     ]);
 
     const csvContent = [headers.join(','), ...rows.map((e: any[]) => e.join(','))].join('\n');
@@ -297,7 +310,26 @@ export default function LeaderboardWidgetCard({
 
       {/* Top 5 Roster Stack */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.45 }}>
-        {topUsers.map((user) => {
+        {topUsers.length === 0 ? (
+          <Box
+            sx={{
+              py: 3.5,
+              px: 2,
+              textAlign: 'center',
+              bgcolor: '#F8FAFC',
+              borderRadius: '16px',
+              border: '1px dashed #CBD5E1',
+            }}
+          >
+            <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: '#475569' }}>
+              No active live ranks yet
+            </Typography>
+            <Typography sx={{ fontSize: '0.74rem', color: '#94A3B8', mt: 0.5 }}>
+              Live leaderboard updates when coders score points in contests or problem submissions.
+            </Typography>
+          </Box>
+        ) : (
+          topUsers.map((user) => {
           const numRank = Number(user.rank);
           const style =
             numRank === 1
@@ -448,27 +480,29 @@ export default function LeaderboardWidgetCard({
                   </Typography>
                 </Box>
 
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 24,
-                    height: 24,
-                    borderRadius: '50%',
-                    bgcolor: 'rgba(255, 255, 255, 0.14)',
-                  }}
-                >
-                  {user.trend === 'up' ? (
-                    <KeyboardArrowUpRoundedIcon sx={{ fontSize: 20, color: style.trendUpColor }} />
-                  ) : (
-                    <KeyboardArrowDownRoundedIcon sx={{ fontSize: 20, color: '#FECACA' }} />
-                  )}
-                </Box>
+                {user.trend ? (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 24,
+                      height: 24,
+                      borderRadius: '50%',
+                      bgcolor: 'rgba(255, 255, 255, 0.14)',
+                    }}
+                  >
+                    {user.trend === 'up' ? (
+                      <KeyboardArrowUpRoundedIcon sx={{ fontSize: 20, color: style.trendUpColor }} />
+                    ) : (
+                      <KeyboardArrowDownRoundedIcon sx={{ fontSize: 20, color: '#FECACA' }} />
+                    )}
+                  </Box>
+                ) : null}
               </Box>
             </Box>
           );
-        })}
+        }))}
       </Box>
     </Card>
   );

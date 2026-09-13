@@ -106,6 +106,8 @@ model User {
   phone                  String?
   institution            String?
   department             String?
+  specialization         String?
+  officeHours            String?
   location               String?
   birthDate              String?
   githubUrl              String?
@@ -222,6 +224,7 @@ model UserInvitation {
   name        String
   role        Role     @default(STUDENT)
   collegeId   String?
+  batchId     String?
   tokenHash   String   @unique
   expiresAt   DateTime
   acceptedAt  DateTime?
@@ -231,6 +234,7 @@ model UserInvitation {
 
   @@index([email, expiresAt])
   @@index([collegeId, expiresAt])
+  @@index([batchId, expiresAt])
   @@map("user_invitations")
 }
 
@@ -290,14 +294,15 @@ model CollegeMembership {
 }
 
 model Batch {
-  id        String    @id @default(uuid())
-  name      String
-  collegeId String
-  startDate DateTime?
-  endDate   DateTime?
-  status    String    @default("ACTIVE")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  name        String
+  collegeId   String
+  maxCapacity Int       @default(100)
+  startDate   DateTime?
+  endDate     DateTime?
+  status      String    @default("ACTIVE")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   college  College        @relation(fields: [collegeId], references: [id], onDelete: Cascade)
   students BatchStudent[]

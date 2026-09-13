@@ -23,6 +23,11 @@ export class BulkInviteItemInput {
   @IsOptional()
   @IsString()
   collegeId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  batchId?: string;
 }
 
 @InputType('BulkInviteUsersInput')

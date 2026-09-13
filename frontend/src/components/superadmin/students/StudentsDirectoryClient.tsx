@@ -28,6 +28,7 @@ import {
   Divider,
 } from '@mui/material';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
@@ -86,6 +87,7 @@ export interface StudentDirectoryEntity {
   solvedEasy: number;
   solvedMedium: number;
   solvedHard: number;
+  hasVerifiedDifficulty?: boolean;
   contestRating: number;
   ratingTier: 'Master' | 'Candidate Master' | 'Expert' | 'Specialist' | 'Pupil' | 'Newbie';
   globalRank: number;
@@ -104,8 +106,9 @@ interface StudentsDirectoryClientProps {
 }
 
 export default function StudentsDirectoryClient({ initialStudents }: StudentsDirectoryClientProps) {
+  const router = useRouter();
   const toast = useToast();
-  const [students, setStudents] = useState<StudentDirectoryEntity[]>(initialStudents);
+  const [students, setStudents] = useState<StudentDirectoryEntity[]>(initialStudents || []);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('ALL');
   const [selectedTier, setSelectedTier] = useState<string>('ALL');
@@ -123,6 +126,11 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
             .filter((u: any) => u.globalRole === 'STUDENT' || !u.globalRole)
             .map((u: any, idx: number) => {
               const solved = u.problemsSolved ?? (u._count?.submissions || 0);
+              const hasVerifiedDifficulty = typeof u.solvedEasy === 'number' && typeof u.solvedMedium === 'number' && typeof u.solvedHard === 'number';
+              const solvedEasy = hasVerifiedDifficulty ? u.solvedEasy : Math.floor(solved * 0.5);
+              const solvedMedium = hasVerifiedDifficulty ? u.solvedMedium : Math.floor(solved * 0.35);
+              const solvedHard = hasVerifiedDifficulty ? u.solvedHard : Math.max(0, solved - solvedEasy - solvedMedium);
+
               const rating = u.contestRating ?? 1200;
               const tier =
                 rating > 2100
@@ -172,9 +180,10 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                 institutionName,
                 cohort,
                 problemsSolved: solved,
-                solvedEasy: u.solvedEasy ?? Math.floor(solved * 0.5),
-                solvedMedium: u.solvedMedium ?? Math.floor(solved * 0.35),
-                solvedHard: u.solvedHard ?? Math.floor(solved * 0.15),
+                solvedEasy,
+                solvedMedium,
+                solvedHard,
+                hasVerifiedDifficulty,
                 contestRating: rating,
                 ratingTier: tier as any,
                 globalRank: u.globalRank ?? (solved > 0 ? idx + 1 : 0),
@@ -363,6 +372,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
       solvedEasy: 0,
       solvedMedium: 0,
       solvedHard: 0,
+      hasVerifiedDifficulty: true,
       contestRating: 1200,
       ratingTier: 'Newbie',
       globalRank: students.length + 1,
@@ -659,13 +669,18 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
 
             <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
               <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Global Master Tier
+                Total Problems Solved
               </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#D97706', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {students.filter((s) => s.contestRating >= 2200 || s.ratingTier === 'Expert' || (s.ratingTier as string) === 'Master').length} Coders
+              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#2563EB', mt: 0.5, letterSpacing: '-0.02em' }}>
+                {students.reduce((acc, s) => acc + s.problemsSolved, 0).toLocaleString()}
               </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#D97706', fontWeight: 600, mt: 0.25 }}>
-                Rating &gt; 2200+ Elo
+              <Typography sx={{ fontSize: '0.74rem', color: '#2563EB', fontWeight: 600, mt: 0.25 }}>
+                {students.reduce((acc, s) => acc + (s.solvedEasy || 0), 0)} Easy • {students.reduce((acc, s) => acc + (s.solvedMedium || 0), 0)} Med • {students.reduce((acc, s) => acc + (s.solvedHard || 0), 0)} Hard
+                {students.length > 0 && students.some((s) => !s.hasVerifiedDifficulty && s.problemsSolved > 0) && (
+                  <Typography component="span" sx={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 500, ml: 0.5 }}>
+                    (Est.)
+                  </Typography>
+                )}
               </Typography>
             </Card>
 
@@ -813,32 +828,6 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
               <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, mr: 0.5 }}>
                 FILTERS:
               </Typography>
-
-              {/* Rating Tier */}
-              <Select
-                size="small"
-                value={selectedTier}
-                onChange={(e) => {
-                  setSelectedTier(e.target.value);
-                  setPage(0);
-                }}
-                sx={{
-                  bgcolor: '#F8FAFC',
-                  color: '#0F172A',
-                  borderRadius: '9999px',
-                  fontSize: '0.78rem',
-                  fontWeight: 600,
-                  height: 32,
-                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-                  '& .MuiSvgIcon-root': { color: '#64748B' },
-                }}
-              >
-                <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>All Rating Tiers</MenuItem>
-                <MenuItem value="Master" sx={{ fontSize: '0.8rem' }}>Master (2200+)</MenuItem>
-                <MenuItem value="Candidate Master" sx={{ fontSize: '0.8rem' }}>Candidate Master (1900+)</MenuItem>
-                <MenuItem value="Expert" sx={{ fontSize: '0.8rem' }}>Expert (1600+)</MenuItem>
-                <MenuItem value="Specialist" sx={{ fontSize: '0.8rem' }}>Specialist (1400+)</MenuItem>
-              </Select>
 
               {/* Min Solved */}
               <Select
@@ -1097,30 +1086,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                       </Box>
                     </TableCell>
 
-                    {/* Contest Rating (Sortable) */}
-                    <TableCell
-                      onClick={() => handleSort('contestRating')}
-                      sx={{
-                        color: '#64748B',
-                        fontWeight: 700,
-                        fontSize: '0.74rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        borderColor: '#E2E8F0',
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        Rating & Tier
-                        {sortField === 'contestRating' &&
-                          (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ))}
-                      </Box>
-                    </TableCell>
+
 
                     {/* Accuracy & Streak (Sortable) */}
                     <TableCell
@@ -1368,7 +1334,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                               <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem' }}>
                                 {stu.problemsSolved}
                               </Typography>
-                              <Box sx={{ display: 'flex', gap: 0.5, mt: 0.2 }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.2 }}>
                                 <Typography variant="caption" sx={{ color: '#16A34A', fontWeight: 700, fontSize: '0.68rem' }}>
                                   E: {stu.solvedEasy}
                                 </Typography>
@@ -1380,47 +1346,16 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                                 <Typography variant="caption" sx={{ color: '#DC2626', fontWeight: 700, fontSize: '0.68rem' }}>
                                   H: {stu.solvedHard}
                                 </Typography>
+                                {!stu.hasVerifiedDifficulty && stu.problemsSolved > 0 && (
+                                  <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.65rem', fontStyle: 'italic', ml: 0.25 }}>
+                                    (est.)
+                                  </Typography>
+                                )}
                               </Box>
                             </Box>
                           </TableCell>
 
-                          {/* Contest Rating & Tier */}
-                          <TableCell sx={{ borderColor: '#E2E8F0' }}>
-                            <Box>
-                              <Typography sx={{ fontWeight: 800, color: '#2563EB', fontSize: '0.88rem', fontFamily: 'monospace' }}>
-                                {stu.contestRating}
-                              </Typography>
-                              <Chip
-                                label={stu.ratingTier}
-                                size="small"
-                                sx={{
-                                  height: 20,
-                                  fontSize: '0.65rem',
-                                  fontWeight: 800,
-                                  borderRadius: '9999px',
-                                  bgcolor:
-                                    stu.ratingTier === 'Master'
-                                      ? '#FEF2F2'
-                                      : stu.ratingTier === 'Candidate Master'
-                                      ? '#FFFBEB'
-                                      : '#EFF6FF',
-                                  color:
-                                    stu.ratingTier === 'Master'
-                                      ? '#DC2626'
-                                      : stu.ratingTier === 'Candidate Master'
-                                      ? '#D97706'
-                                      : '#2563EB',
-                                  border: '1px solid',
-                                  borderColor:
-                                    stu.ratingTier === 'Master'
-                                      ? '#FECACA'
-                                      : stu.ratingTier === 'Candidate Master'
-                                      ? '#FDE68A'
-                                      : '#BFDBFE',
-                                }}
-                              />
-                            </Box>
-                          </TableCell>
+
 
                           {/* Accuracy & Streak */}
                           <TableCell sx={{ borderColor: '#E2E8F0' }}>

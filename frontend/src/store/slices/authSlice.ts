@@ -3,6 +3,12 @@ import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/tool
 export interface UserMembership {
   collegeId: string;
   role: string;
+  college?: {
+    id: string;
+    name: string;
+    code: string;
+    email?: string;
+  };
 }
 
 export interface UserProfile {

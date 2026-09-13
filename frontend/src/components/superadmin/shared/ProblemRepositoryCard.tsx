@@ -76,6 +76,7 @@ export default function ProblemRepositoryCard({
   const [mediumCount, setMediumCount] = useState(0);
   const [hardCount, setHardCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
+  const [topicTags, setTopicTags] = useState<{ name: string; count: number }[]>([]);
 
   React.useEffect(() => {
     async function loadStats() {
@@ -91,6 +92,20 @@ export default function ProblemRepositoryCard({
           setMediumCount(m);
           setHardCount(h);
           setTotalCount(tot);
+
+          // Extract dynamic tags from live problems
+          const tagMap = new Map<string, number>();
+          items.forEach((p: any) => {
+            if (Array.isArray(p.tags) && p.tags.length > 0) {
+              p.tags.forEach((t: string) => {
+                tagMap.set(t, (tagMap.get(t) || 0) + 1);
+              });
+            }
+          });
+          const tagsList = Array.from(tagMap.entries())
+            .map(([name, count]) => ({ name, count }))
+            .sort((a, b) => b.count - a.count);
+          setTopicTags(tagsList.slice(0, 6));
         }
       } catch (err) {
         console.warn('Problem repository live stats fetch:', err);
@@ -122,14 +137,6 @@ export default function ProblemRepositoryCard({
       color: '#EF4444',
       glowColor: 'rgba(239, 68, 68, 0.4)',
     },
-  ];
-
-  const topicTags = [
-    { name: 'Algorithms', count: totalCount },
-    { name: 'Data Structures', count: totalCount > 0 ? Math.max(1, Math.floor(totalCount * 0.8)) : 0 },
-    { name: 'Dynamic Prog.', count: totalCount > 0 ? Math.max(1, Math.floor(totalCount * 0.4)) : 0 },
-    { name: 'Trees & Graphs', count: totalCount > 0 ? Math.max(1, Math.floor(totalCount * 0.35)) : 0 },
-    { name: 'Two Pointers', count: totalCount > 0 ? Math.max(1, Math.floor(totalCount * 0.5)) : 0 },
   ];
 
   const handleOpenDownloadMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -487,31 +494,37 @@ export default function ProblemRepositoryCard({
         <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', mb: 1.2 }}>
           Popular Domains & Tracks
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-          {topicTags.map((tag) => (
-            <Chip
-              key={tag.name}
-              label={`${tag.name} (${tag.count})`}
-              size="small"
-              sx={{
-                fontSize: '0.74rem',
-                fontWeight: 600,
-                color: '#334155',
-                bgcolor: '#F8FAFC',
-                border: '1px solid #E2E8F0',
-                borderRadius: '8px',
-                height: 26,
-                '&:hover': {
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
-                  borderColor: '#BFDBFE',
-                },
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            />
-          ))}
-        </Box>
+        {topicTags.length > 0 ? (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+            {topicTags.map((tag) => (
+              <Chip
+                key={tag.name}
+                label={`${tag.name} (${tag.count})`}
+                size="small"
+                sx={{
+                  fontSize: '0.74rem',
+                  fontWeight: 600,
+                  color: '#334155',
+                  bgcolor: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '8px',
+                  height: 26,
+                  '&:hover': {
+                    bgcolor: '#EFF6FF',
+                    color: '#2563EB',
+                    borderColor: '#BFDBFE',
+                  },
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              />
+            ))}
+          </Box>
+        ) : (
+          <Typography sx={{ fontSize: '0.78rem', color: '#94A3B8', fontStyle: 'italic', py: 0.5 }}>
+            No active problem tracks recorded yet
+          </Typography>
+        )}
       </Box>
     </Card>
   );

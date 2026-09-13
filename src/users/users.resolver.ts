@@ -144,7 +144,7 @@ export class UsersResolver {
 
   @Mutation(() => UserType, { name: 'createUser' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
   async createUser(
     @Args('input') input: CreateUserInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
@@ -155,16 +155,18 @@ export class UsersResolver {
 
     if (!isSuperAdmin) {
       if (!input.collegeId) {
-        throw new ForbiddenException('College admin must specify a collegeId');
+        throw new ForbiddenException('College admin or faculty must specify a collegeId');
       }
-      const hasAdmin = currentUser.memberships?.some(
-        (m) => m.collegeId === input.collegeId && m.role === Role.COLLEGE_ADMIN,
-      );
-      if (!hasAdmin) {
+      const membership = currentUser.memberships?.find((m) => m.collegeId === input.collegeId);
+      if (!membership || (membership.role !== Role.COLLEGE_ADMIN && membership.role !== Role.FACULTY)) {
         throw new ForbiddenException('You can only create users within your assigned college');
       }
       if ((input.globalRole as Role) === Role.SUPER_ADMIN || (input.globalRole as Role) === Role.PLATFORM_ADMIN) {
-        throw new ForbiddenException('College admins cannot assign platform administrator roles');
+        throw new ForbiddenException('Cannot assign platform administrator roles');
+      }
+      const isFacultyInCollege = membership.role === Role.FACULTY || currentUser.globalRole === Role.FACULTY;
+      if (isFacultyInCollege && (input.globalRole as Role) !== Role.STUDENT) {
+        throw new ForbiddenException('Faculty members can only create student accounts');
       }
     }
 
@@ -211,7 +213,7 @@ export class UsersResolver {
 
   @Mutation(() => BulkInviteResultType, { name: 'bulkInviteUsers' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
   async bulkInviteUsers(
     @Args('input') input: BulkInviteUsersInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
@@ -221,19 +223,27 @@ export class UsersResolver {
       currentUser.globalRole === Role.PLATFORM_ADMIN;
 
     if (!isSuperAdmin) {
-      const adminCollegeIds =
+      const allowedCollegeIds =
         currentUser.memberships
-          ?.filter((m) => m.role === Role.COLLEGE_ADMIN)
+          ?.filter((m) => m.role === Role.COLLEGE_ADMIN || m.role === Role.FACULTY)
           .map((m) => m.collegeId) || [];
 
       for (const item of input.users) {
-        if (!item.collegeId || !adminCollegeIds.includes(item.collegeId)) {
+        if (!item.collegeId) {
+          throw new ForbiddenException('Each invited user must specify a collegeId');
+        }
+        const membership = currentUser.memberships?.find((m) => m.collegeId === item.collegeId);
+        if (!membership || (membership.role !== Role.COLLEGE_ADMIN && membership.role !== Role.FACULTY)) {
           throw new ForbiddenException(
-            `You can only invite users to your assigned college (${adminCollegeIds.join(', ')})`,
+            `You can only invite users to your assigned college (${allowedCollegeIds.join(', ')})`,
           );
         }
         if ((item.role as Role) === Role.SUPER_ADMIN || (item.role as Role) === Role.PLATFORM_ADMIN) {
-          throw new ForbiddenException('College admins cannot assign platform administrator roles');
+          throw new ForbiddenException('Cannot assign platform administrator roles');
+        }
+        const isFacultyInCollege = membership.role === Role.FACULTY || currentUser.globalRole === Role.FACULTY;
+        if (isFacultyInCollege && (item.role as Role) !== Role.STUDENT) {
+          throw new ForbiddenException('Faculty members can only invite student accounts');
         }
       }
     }

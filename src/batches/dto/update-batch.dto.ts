@@ -10,6 +10,12 @@ export class UpdateBatchDto {
   name?: string;
 
   @ApiPropertyOptional({
+    example: 30,
+  })
+  @IsOptional()
+  maxCapacity?: number;
+
+  @ApiPropertyOptional({
     example: '2026-08-01T00:00:00.000Z',
   })
   @IsOptional()

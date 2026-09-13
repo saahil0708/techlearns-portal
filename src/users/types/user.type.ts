@@ -37,6 +37,12 @@ export class UserType {
   department?: string;
 
   @Field(() => String, { nullable: true })
+  specialization?: string;
+
+  @Field(() => String, { nullable: true })
+  officeHours?: string;
+
+  @Field(() => String, { nullable: true })
   location?: string;
 
   @Field(() => String, { nullable: true })

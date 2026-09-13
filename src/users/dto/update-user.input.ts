@@ -63,6 +63,16 @@ export class UpdateUserInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
+  specialization?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  officeHours?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
   location?: string;
 
   @Field(() => String, { nullable: true })

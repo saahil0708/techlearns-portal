@@ -54,6 +54,9 @@ import { FluidArrowRight } from '@/utils/fluid_arrow';
 
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
+import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
+import SendRoundedIcon from '@mui/icons-material/SendRounded';
 
 // Components
 import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
@@ -355,9 +358,9 @@ export default function CollegeDetailClient({
   // Live college state (starts from SSR prop, updated by client effect)
   const [liveCollege, setLiveCollege] = useState<CollegeEntity>(college);
   const [batches, setBatches] = useState<BatchItem[]>(initialBatches);
-  const [students] = useState<StudentRosterItem[]>(initialStudents);
-  const [faculty] = useState<FacultyCoordinatorItem[]>(initialFaculty);
-  const [courses] = useState<CourseAssignmentItem[]>(initialCourses);
+  const [students, setStudents] = useState<StudentRosterItem[]>(initialStudents);
+  const [faculty, setFaculty] = useState<FacultyCoordinatorItem[]>(initialFaculty);
+  const [courses, setCourses] = useState<CourseAssignmentItem[]>(initialCourses);
 
   // Tenant Settings edit state
   const [settingsName, setSettingsName] = useState(college.name);
@@ -366,6 +369,79 @@ export default function CollegeDetailClient({
   const [settingsAddress, setSettingsAddress] = useState(college.region || '');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
+  // Add Faculty Modal State
+  const [isAddFacultyOpen, setIsAddFacultyOpen] = useState(false);
+  const [newFacultyName, setNewFacultyName] = useState('');
+  const [newFacultyEmail, setNewFacultyEmail] = useState('');
+  const [newFacultyRole, setNewFacultyRole] = useState<'FACULTY' | 'COLLEGE_ADMIN'>('FACULTY');
+  const [newFacultyDepartment, setNewFacultyDepartment] = useState('Computer Science & Engineering');
+  const [isSubmittingFaculty, setIsSubmittingFaculty] = useState(false);
+
+  // Enroll Student Modal State
+  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
+  const [newStudentName, setNewStudentName] = useState('');
+  const [newStudentEmail, setNewStudentEmail] = useState('');
+  const [newStudentBatch, setNewStudentBatch] = useState('Unassigned');
+  const [isSubmittingStudent, setIsSubmittingStudent] = useState(false);
+
+  // Invitation Success & Copy Modal State
+  const [invitationSuccessData, setInvitationSuccessData] = useState<{
+    name: string;
+    email: string;
+    role: string;
+    activationUrl: string;
+  } | null>(null);
+
+  // Assign / Reassign Batch Modal State (Retry / Quick Assign)
+  const [assigningStudent, setAssigningStudent] = useState<StudentRosterItem | null>(null);
+  const [assignTargetBatchId, setAssignTargetBatchId] = useState<string>('');
+  const [isAssigningBatch, setIsAssigningBatch] = useState<boolean>(false);
+
+  const handleOpenAssignBatchModal = (student: StudentRosterItem) => {
+    setAssigningStudent(student);
+    if (batches.length > 0) {
+      const match = batches.find((b) => b.name === student.batch);
+      setAssignTargetBatchId(match ? match.id : batches[0].id);
+    }
+  };
+
+  const handleAssignBatchSubmit = async () => {
+    if (!assigningStudent || !assignTargetBatchId || isAssigningBatch) return;
+    const studentSnapshot = assigningStudent;
+    const targetBatchId = assignTargetBatchId;
+    const targetBatch = batches.find((b) => b.id === targetBatchId);
+    const oldBatch = batches.find((b) => b.name === studentSnapshot.batch);
+
+    // No-op if student is already in target batch
+    if (oldBatch && oldBatch.id === targetBatchId) {
+      setAssigningStudent(null);
+      return;
+    }
+
+    setIsAssigningBatch(true);
+    try {
+      await apiService.assignStudentsToBatch(targetBatchId, [studentSnapshot.id]);
+      const targetBatchName = targetBatch ? targetBatch.name : 'Assigned';
+
+      setBatches((prev) =>
+        prev.map((b) => {
+          if (b.id === targetBatchId) return { ...b, studentsCount: (b.studentsCount || 0) + 1 };
+          if (oldBatch && b.id === oldBatch.id) return { ...b, studentsCount: Math.max(0, (b.studentsCount || 0) - 1) };
+          return b;
+        })
+      );
+      setStudents((prev) =>
+        prev.map((s) => (s.id === studentSnapshot.id ? { ...s, batch: targetBatchName } : s))
+      );
+      toast.success(`${studentSnapshot.name} assigned to ${targetBatchName}.`, 'Batch Assigned');
+      setAssigningStudent(null);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to assign batch.', 'Assignment Error');
+    } finally {
+      setIsAssigningBatch(false);
+    }
+  };
+
   // Client-side live college hydration (fixes SSR fallback when token not on server)
   useEffect(() => {
     let cancelled = false;
@@ -373,18 +449,25 @@ export default function CollegeDetailClient({
       try {
         const live = await apiService.getCollegeById(college.id);
         if (!cancelled && live?.id) {
+          const facultyMembers = Array.isArray(live.memberships)
+            ? live.memberships.filter((m: any) => m.role === 'FACULTY' || m.role === 'COLLEGE_ADMIN').length
+            : (live.facultyCount ?? 0);
+          const studentMembers = Array.isArray(live.memberships)
+            ? live.memberships.filter((m: any) => m.role === 'STUDENT').length
+            : (live._count?.memberships ?? 0);
+
           setLiveCollege({
             id: live.id,
             name: live.name,
             code: live.code,
             domain: live.email && live.email.includes('@') ? live.email.split('@')[1] : `${live.code?.toLowerCase()}.edu`,
-            region: live.address || 'Global',
-            tier: 'Enterprise Tier',
-            studentsCount: live._count?.memberships || 0,
-            maxQuota: 5000,
+            region: live.address || live.region || 'Asia-Pacific',
+            tier: live.tier || 'Standard Academic',
+            studentsCount: studentMembers,
+            maxQuota: live.quota || live.maxQuota || 100,
             coursesCount: live._count?.courses || 0,
             cohortsCount: live._count?.batches || 0,
-            facultyCount: 5,
+            facultyCount: facultyMembers,
             status: live.status === 'ACTIVE' ? 'Active' : 'Suspended',
             logoColor: college.logoColor,
           });
@@ -392,6 +475,40 @@ export default function CollegeDetailClient({
           setSettingsAddress(live.address || '');
           if (live.email) setSettingsEmail(live.email);
           if (live.phone) setSettingsPhone(live.phone);
+
+          if (Array.isArray(live.memberships)) {
+            const facultyList: FacultyCoordinatorItem[] = live.memberships
+              .filter((m: any) => m.role === 'FACULTY' || m.role === 'COLLEGE_ADMIN')
+              .map((m: any) => ({
+                id: m.user?.id || m.userId,
+                name: m.user?.name || 'Faculty Member',
+                email: m.user?.email || '',
+                department: m.user?.department || 'Computer Science & Engineering',
+                role: m.role === 'COLLEGE_ADMIN' ? 'Department Head' : 'Senior Mentor',
+                batchesAssigned: [],
+                activeCourses: 0,
+              }));
+            setFaculty(facultyList);
+
+            const studentList: StudentRosterItem[] = live.memberships
+              .filter((m: any) => m.role === 'STUDENT')
+              .map((m: any, idx: number) => {
+                const batchEnrollment = m.user?.batchEnrollments?.[0]?.batch;
+                return {
+                  id: m.user?.id || m.userId,
+                  name: m.user?.name || 'Student Developer',
+                  rollNo: `STU-${(m.user?.id || m.userId).slice(0, 4).toUpperCase()}`,
+                  email: m.user?.email || '',
+                  batch: batchEnrollment?.name || 'Unassigned',
+                  problemsSolved: 0,
+                  accuracy: '0.0%',
+                  streakDays: 0,
+                  rank: idx + 1,
+                  status: 'Active',
+                };
+              });
+            setStudents(studentList);
+          }
         }
       } catch {
         // keep SSR-provided college
@@ -433,7 +550,7 @@ export default function CollegeDetailClient({
   const [newBatchName, setNewBatchName] = useState('');
   const [newBatchCode, setNewBatchCode] = useState('');
   const [newBatchCapacity, setNewBatchCapacity] = useState(120);
-  const [newBatchFaculty, setNewBatchFaculty] = useState(faculty[0]?.name || 'Dr. Alex Mercer');
+  const [newBatchFaculty, setNewBatchFaculty] = useState('Unassigned');
   const [isCreatingBatch, setIsCreatingBatch] = useState(false);
 
   // Edit Batch Modal State
@@ -466,12 +583,12 @@ export default function CollegeDetailClient({
               name: resolvedName,
               code: b.code || `${college.code}-${sanitizedCodeSlug || (b.id ? b.id.slice(-4).toUpperCase() : 'B1')}`,
               studentsCount: b._count?.students || 0,
-              maxCapacity: 120,
-              facultyLead: faculty[0]?.name || 'Dr. Alex Mercer',
-              coursesAssigned: 3,
+              maxCapacity: b.maxCapacity || 100,
+              facultyLead: b.facultyLead || (faculty.length > 0 ? faculty[0].name : 'Unassigned'),
+              coursesAssigned: b._count?.courses || 0,
               year: b.startDate ? new Date(b.startDate).getFullYear().toString() : '2026-2027',
-              status: 'Active',
-              avgAccuracy: '78.5%',
+              status: b.status === 'ACTIVE' || !b.status ? 'Active' : b.status,
+              avgAccuracy: b.avgAccuracy || '0.0%',
             };
           });
 
@@ -620,8 +737,8 @@ export default function CollegeDetailClient({
       code: newBatchCode.trim().toUpperCase(),
       studentsCount: 0,
       maxCapacity: Number(newBatchCapacity) || 100,
-      facultyLead: newBatchFaculty,
-      coursesAssigned: 3,
+      facultyLead: newBatchFaculty || (faculty.length > 0 ? faculty[0].name : 'Unassigned'),
+      coursesAssigned: 0,
       year: '2026-2027',
       status: 'Active',
       avgAccuracy: '0.0%',
@@ -635,10 +752,11 @@ export default function CollegeDetailClient({
       const liveCreated = await apiService.createBatch({
         name: created.name,
         collegeId: college.id,
+        maxCapacity: created.maxCapacity,
       });
       if (liveCreated?.id) {
         setBatches((prev) =>
-          prev.map((b) => (b.id === tempId ? { ...b, id: liveCreated.id } : b))
+          prev.map((b) => (b.id === tempId ? { ...b, id: liveCreated.id, maxCapacity: liveCreated.maxCapacity ?? created.maxCapacity } : b))
         );
       }
       toast.success(`Batch "${created.name}" created successfully.`, 'Batch Created');
@@ -671,7 +789,10 @@ export default function CollegeDetailClient({
     );
     setEditingBatch(null);
     try {
-      await apiService.updateBatch(original.id, { name: editBatchName });
+      await apiService.updateBatch(original.id, {
+        name: editBatchName,
+        maxCapacity: editBatchCapacity,
+      });
       toast.success(`Batch "${editBatchName}" updated.`, 'Batch Updated');
     } catch (err) {
       // Revert
@@ -693,6 +814,147 @@ export default function CollegeDetailClient({
     } catch (err) {
       if (original) setBatches((prev) => [original, ...prev]);
       toast.error(err instanceof Error ? err.message : 'Failed to delete batch.', 'Batch Error');
+    }
+  };
+
+  const handleAddFacultySubmit = async () => {
+    if (!newFacultyName.trim() || !newFacultyEmail.trim() || isSubmittingFaculty) return;
+    setIsSubmittingFaculty(true);
+    try {
+      const result = await apiService.bulkInviteUsers({
+        users: [
+          {
+            name: newFacultyName.trim(),
+            email: newFacultyEmail.trim().toLowerCase(),
+            role: newFacultyRole,
+            collegeId: college.id,
+          },
+        ],
+      });
+
+      const activationUrl = result?.invitationLinks?.[0]?.activationUrl || `${window.location.origin}/accept-invitation`;
+
+      const newFacultyItem: FacultyCoordinatorItem = {
+        id: `fac-${Date.now()}`,
+        name: newFacultyName.trim(),
+        email: newFacultyEmail.trim().toLowerCase(),
+        department: newFacultyDepartment,
+        role: newFacultyRole === 'COLLEGE_ADMIN' ? 'Department Head' : 'Senior Mentor',
+        batchesAssigned: [],
+        activeCourses: 0,
+      };
+      setFaculty((prev) => [newFacultyItem, ...prev]);
+      setLiveCollege((prev) => ({ ...prev, facultyCount: prev.facultyCount + 1 }));
+      setIsAddFacultyOpen(false);
+
+      setInvitationSuccessData({
+        name: newFacultyName.trim(),
+        email: newFacultyEmail.trim().toLowerCase(),
+        role: newFacultyRole === 'COLLEGE_ADMIN' ? 'College Administrator' : 'Faculty Mentor',
+        activationUrl,
+      });
+
+      setNewFacultyName('');
+      setNewFacultyEmail('');
+      toast.success(`Invitation created for ${newFacultyName.trim()}.`, 'Invitation Sent');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to send invitation.', 'Error');
+    } finally {
+      setIsSubmittingFaculty(false);
+    }
+  };
+
+  const handleAddStudentSubmit = async () => {
+    if (!newStudentName.trim() || !newStudentEmail.trim() || isSubmittingStudent) return;
+    setIsSubmittingStudent(true);
+    try {
+      const assignedPassword = `StudentPass@${Date.now().toString().slice(-4)}!`;
+      const newUser = await apiService.createUser({
+        name: newStudentName.trim(),
+        email: newStudentEmail.trim().toLowerCase(),
+        password: assignedPassword,
+        globalRole: 'STUDENT',
+        collegeId: college.id,
+      });
+
+      let assignedBatchName = 'Unassigned';
+      const selectedBatch = batches.find((b) => b.id === newStudentBatch || b.name === newStudentBatch);
+      if (selectedBatch && selectedBatch.id && !selectedBatch.id.startsWith('batch-') && selectedBatch.id !== 'Unassigned' && newUser?.id) {
+        try {
+          await apiService.assignStudentsToBatch(selectedBatch.id, [newUser.id]);
+          assignedBatchName = selectedBatch.name;
+          setBatches((prev) =>
+            prev.map((b) =>
+              b.id === selectedBatch.id ? { ...b, studentsCount: (b.studentsCount || 0) + 1 } : b
+            )
+          );
+        } catch (batchErr) {
+          console.warn('Failed to assign batch during student creation:', batchErr);
+          assignedBatchName = 'Unassigned';
+          toast.error(
+            `Student created, but batch assignment failed. You can assign ${newStudentName.trim()} to ${selectedBatch.name} from the roster.`,
+            'Batch Assignment Incomplete'
+          );
+        }
+      }
+
+      let invitationLinkUrl: string | null = null;
+      try {
+        const result = await apiService.bulkInviteUsers({
+          users: [
+            {
+              name: newStudentName.trim(),
+              email: newStudentEmail.trim().toLowerCase(),
+              role: 'STUDENT',
+              collegeId: college.id,
+            },
+          ],
+        });
+        if (result?.invitationLinks?.[0]?.activationUrl) {
+          invitationLinkUrl = result.invitationLinks[0].activationUrl;
+        }
+      } catch (inviteErr) {
+        console.warn('Student invitation dispatch failed:', inviteErr);
+      }
+
+      const newStudentItem: StudentRosterItem = {
+        id: newUser?.id || `stu-${Date.now()}`,
+        name: newStudentName.trim(),
+        rollNo: `STU-${(newUser?.id || Date.now().toString()).slice(-4).toUpperCase()}`,
+        email: newStudentEmail.trim().toLowerCase(),
+        batch: assignedBatchName,
+        problemsSolved: 0,
+        accuracy: '0.0%',
+        streakDays: 0,
+        rank: students.length + 1,
+        status: 'Active',
+      };
+      setStudents((prev) => [newStudentItem, ...prev]);
+      setLiveCollege((prev) => ({ ...prev, studentsCount: prev.studentsCount + 1 }));
+      setIsAddStudentOpen(false);
+
+      if (invitationLinkUrl) {
+        setInvitationSuccessData({
+          name: newStudentName.trim(),
+          email: newStudentEmail.trim().toLowerCase(),
+          role: 'Student Coder',
+          activationUrl: invitationLinkUrl,
+        });
+      } else {
+        toast.error(
+          `Account created for ${newStudentName.trim()}, but invitation link generation failed. You can resend the invite or reset access.`,
+          'Invitation Error'
+        );
+      }
+
+      setNewStudentName('');
+      setNewStudentEmail('');
+      setNewStudentBatch('Unassigned');
+      toast.success(`Student ${newStudentName.trim()} enrolled successfully.`, 'Student Added');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to enroll student.', 'Error');
+    } finally {
+      setIsSubmittingStudent(false);
     }
   };
 
@@ -768,7 +1030,7 @@ export default function CollegeDetailClient({
     facultyPage * facultyRowsPerPage + facultyRowsPerPage
   );
 
-  const quotaPercent = Math.round((college.studentsCount / college.maxQuota) * 100);
+  const quotaPercent = Math.round((liveCollege.studentsCount / (liveCollege.maxQuota || 1)) * 100);
   const borderColor = '#E2E8F0';
 
   return (
@@ -996,10 +1258,10 @@ export default function CollegeDetailClient({
                 Enrolled Students
               </Typography>
               <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {college.studentsCount.toLocaleString()}
+                {liveCollege.studentsCount.toLocaleString()}
               </Typography>
               <Typography sx={{ fontSize: '0.74rem', color: '#059669', fontWeight: 600, mt: 0.25 }}>
-                Active in 8 Cohorts
+                Active in {batches.length} Cohorts
               </Typography>
             </Card>
 
@@ -1192,7 +1454,7 @@ export default function CollegeDetailClient({
                             </TableCell>
                             <TableCell sx={{ py: 1.75 }}>
                               <Typography sx={{ fontSize: '0.82rem', color: '#475569' }}>
-                                {batch.coursesAssigned} Courses Assigned
+                                {batch.coursesAssigned === 1 ? '1 Course Assigned' : `${batch.coursesAssigned} Courses Assigned`}
                               </Typography>
                             </TableCell>
                             <TableCell sx={{ py: 1.75 }}>
@@ -1350,9 +1612,31 @@ export default function CollegeDetailClient({
                   </Select>
                 </Box>
 
-                <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
-                  Showing <strong style={{ color: '#0F172A' }}>{filteredStudents.length}</strong> students
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
+                    Showing <strong style={{ color: '#0F172A' }}>{filteredStudents.length}</strong> students
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    startIcon={<SendRoundedIcon sx={{ fontSize: 15 }} />}
+                    onClick={() => setIsAddStudentOpen(true)}
+                    sx={{
+                      bgcolor: '#2563EB',
+                      color: '#FFFFFF',
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      px: 1.75,
+                      py: 0.6,
+                      boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
+                      '&:hover': { bgcolor: '#1D4ED8' },
+                    }}
+                  >
+                    Invite Student
+                  </Button>
+                </Box>
               </Card>
 
               {/* Roster Table */}
@@ -1388,7 +1672,45 @@ export default function CollegeDetailClient({
                             {s.rollNo}
                           </TableCell>
                           <TableCell sx={{ py: 1.6 }}>
-                            <Chip label={s.batch} size="small" sx={{ height: 22, fontSize: '0.72rem', bgcolor: '#F1F5F9', color: '#334155', borderRadius: '5px' }} />
+                            {s.batch === 'Unassigned' ? (
+                              <Tooltip title="Click to Assign to Cohort">
+                                <Chip
+                                  label="Unassigned ⚡"
+                                  size="small"
+                                  clickable
+                                  onClick={() => handleOpenAssignBatchModal(s)}
+                                  sx={{
+                                    height: 22,
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    bgcolor: '#FEF2F2',
+                                    color: '#DC2626',
+                                    border: '1px solid #FECACA',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer',
+                                    '&:hover': { bgcolor: '#FEE2E2' },
+                                  }}
+                                />
+                              </Tooltip>
+                            ) : (
+                              <Tooltip title="Click to Change Cohort">
+                                <Chip
+                                  label={s.batch}
+                                  size="small"
+                                  clickable
+                                  onClick={() => handleOpenAssignBatchModal(s)}
+                                  sx={{
+                                    height: 22,
+                                    fontSize: '0.72rem',
+                                    bgcolor: '#F1F5F9',
+                                    color: '#334155',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer',
+                                    '&:hover': { bgcolor: '#E2E8F0' },
+                                  }}
+                                />
+                              </Tooltip>
+                            )}
                           </TableCell>
                           <TableCell sx={{ py: 1.6 }}>
                             <Typography sx={{ fontSize: '0.86rem', fontWeight: 800, color: '#0F172A' }}>
@@ -1644,9 +1966,31 @@ export default function CollegeDetailClient({
                   </Select>
                 </Box>
 
-                <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
-                  Showing <strong style={{ color: '#0F172A' }}>{filteredFaculty.length}</strong> faculty members
-                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
+                    Showing <strong style={{ color: '#0F172A' }}>{filteredFaculty.length}</strong> faculty members
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    startIcon={<SendRoundedIcon sx={{ fontSize: 15 }} />}
+                    onClick={() => setIsAddFacultyOpen(true)}
+                    sx={{
+                      bgcolor: '#2563EB',
+                      color: '#FFFFFF',
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      px: 1.75,
+                      py: 0.6,
+                      boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
+                      '&:hover': { bgcolor: '#1D4ED8' },
+                    }}
+                  >
+                    Invite Faculty / Admin
+                  </Button>
+                </Box>
               </Card>
 
               {/* Faculty Table */}
@@ -1866,6 +2210,7 @@ export default function CollegeDetailClient({
               onChange={(e) => setNewBatchFaculty(e.target.value)}
               sx={{ borderRadius: '8px', fontSize: '0.85rem' }}
             >
+              <MenuItem value="Unassigned">Unassigned</MenuItem>
               {faculty.map((f) => (
                 <MenuItem key={f.id} value={f.name}>
                   {f.name} ({f.department})
@@ -1929,6 +2274,287 @@ export default function CollegeDetailClient({
             sx={{ bgcolor: '#7C3AED', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5, '&:hover': { bgcolor: '#6D28D9' } }}
           >
             {isEditingBatch ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Faculty / College Admin Modal Dialog */}
+      <Dialog
+        open={isAddFacultyOpen}
+        onClose={() => setIsAddFacultyOpen(false)}
+        slotProps={{
+          paper: {
+            sx: { borderRadius: '18px', width: '100%', maxWidth: 460, p: 1 },
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.2rem', color: '#0F172A' }}>
+          Add Faculty or College Admin
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, px: 3, pt: '20px !important', pb: 2 }}>
+          <TextField
+            label="Full Name"
+            placeholder="e.g. Dr. Ramesh Kumar"
+            fullWidth
+            size="small"
+            value={newFacultyName}
+            onChange={(e) => setNewFacultyName(e.target.value)}
+          />
+          <TextField
+            label="Email Address"
+            placeholder="e.g. ramesh@sviet.edu"
+            type="email"
+            fullWidth
+            size="small"
+            value={newFacultyEmail}
+            onChange={(e) => setNewFacultyEmail(e.target.value)}
+          />
+          <Box>
+            <Typography sx={{ fontSize: '0.76rem', fontWeight: 600, color: '#64748B', mb: 0.5 }}>
+              Institutional Role
+            </Typography>
+            <Select
+              fullWidth
+              size="small"
+              value={newFacultyRole}
+              onChange={(e) => setNewFacultyRole(e.target.value as any)}
+              sx={{ borderRadius: '8px', fontSize: '0.85rem' }}
+            >
+              <MenuItem value="FACULTY">Faculty Mentor (Instructor)</MenuItem>
+              <MenuItem value="COLLEGE_ADMIN">College Administrator (Campus Lead)</MenuItem>
+            </Select>
+          </Box>
+          <TextField
+            label="Department / Specialization"
+            placeholder="e.g. Computer Science & Engineering"
+            fullWidth
+            size="small"
+            value={newFacultyDepartment}
+            onChange={(e) => setNewFacultyDepartment(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setIsAddFacultyOpen(false)} sx={{ textTransform: 'none', color: '#64748B', fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={isSubmittingFaculty}
+            onClick={handleAddFacultySubmit}
+            startIcon={<SendRoundedIcon sx={{ fontSize: 16 }} />}
+            sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5, '&:hover': { bgcolor: '#1D4ED8' } }}
+          >
+            {isSubmittingFaculty ? 'Sending...' : 'Send Invitation Link'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Enroll Student Modal Dialog */}
+      <Dialog
+        open={isAddStudentOpen}
+        onClose={() => setIsAddStudentOpen(false)}
+        slotProps={{
+          paper: {
+            sx: { borderRadius: '18px', width: '100%', maxWidth: 460, p: 1 },
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.2rem', color: '#0F172A' }}>
+          Invite Student to {liveCollege.name}
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, px: 3, pt: '20px !important', pb: 2 }}>
+          <TextField
+            label="Student Full Name"
+            placeholder="e.g. Priya Sharma"
+            fullWidth
+            size="small"
+            value={newStudentName}
+            onChange={(e) => setNewStudentName(e.target.value)}
+          />
+          <TextField
+            label="Student Email Address"
+            placeholder="e.g. priya@sviet.edu"
+            type="email"
+            fullWidth
+            size="small"
+            value={newStudentEmail}
+            onChange={(e) => setNewStudentEmail(e.target.value)}
+          />
+          <Box>
+            <Typography sx={{ fontSize: '0.76rem', fontWeight: 600, color: '#64748B', mb: 0.5 }}>
+              Assign to Initial Batch (Optional)
+            </Typography>
+            <Select
+              fullWidth
+              size="small"
+              value={newStudentBatch}
+              onChange={(e) => setNewStudentBatch(e.target.value)}
+              sx={{ borderRadius: '8px', fontSize: '0.85rem' }}
+            >
+              <MenuItem value="Unassigned">Unassigned (General College Roster)</MenuItem>
+              {batches.map((b) => (
+                <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>
+              ))}
+            </Select>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setIsAddStudentOpen(false)} sx={{ textTransform: 'none', color: '#64748B', fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={isSubmittingStudent}
+            onClick={handleAddStudentSubmit}
+            startIcon={<SendRoundedIcon sx={{ fontSize: 16 }} />}
+            sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5, '&:hover': { bgcolor: '#1D4ED8' } }}
+          >
+            {isSubmittingStudent ? 'Sending...' : 'Send Student Invite'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Invitation Success & Copy Link Modal */}
+      <Dialog
+        open={Boolean(invitationSuccessData)}
+        onClose={() => setInvitationSuccessData(null)}
+        slotProps={{
+          paper: {
+            sx: { borderRadius: '20px', width: '100%', maxWidth: 520, p: 1 },
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.25rem', color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 38,
+              height: 38,
+              borderRadius: '10px',
+              bgcolor: '#ECFDF5',
+              color: '#059669',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <CheckCircleRoundedIcon sx={{ fontSize: 24 }} />
+          </Box>
+          Invitation Created!
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, px: 3, pt: '12px !important', pb: 2.5 }}>
+          <Typography sx={{ fontSize: '0.86rem', color: '#475569', lineHeight: 1.6 }}>
+            An activation invitation has been generated for <strong>{invitationSuccessData?.name}</strong> (<code>{invitationSuccessData?.email}</code>) as <strong>{invitationSuccessData?.role}</strong> under <strong>{liveCollege.name}</strong>.
+          </Typography>
+
+          <Box sx={{ p: 2, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
+            <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', mb: 1, letterSpacing: '0.04em' }}>
+              Activation & Password Setup Link (Valid 72h)
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, bgcolor: '#FFFFFF', p: 1, px: 1.5, borderRadius: '8px', border: '1px solid #CBD5E1' }}>
+              <Typography
+                sx={{
+                  fontFamily: 'monospace',
+                  fontSize: '0.78rem',
+                  color: '#0F172A',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  flex: 1,
+                }}
+              >
+                {invitationSuccessData?.activationUrl}
+              </Typography>
+              <Tooltip title="Copy Link to Clipboard">
+                <IconButton
+                  size="small"
+                  onClick={() => {
+                    if (invitationSuccessData?.activationUrl) {
+                      navigator.clipboard.writeText(invitationSuccessData.activationUrl);
+                      toast.success('Invitation activation link copied!', 'Copied');
+                    }
+                  }}
+                  sx={{ color: '#2563EB', '&:hover': { bgcolor: '#EFF6FF' } }}
+                >
+                  <ContentCopyRoundedIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+
+          <Typography sx={{ fontSize: '0.78rem', color: '#64748B' }}>
+            When the user opens this link, they will choose their password and gain immediate access with their designated role.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5, pt: 0, gap: 1 }}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              if (invitationSuccessData?.activationUrl) {
+                window.open(invitationSuccessData.activationUrl, '_blank');
+              }
+            }}
+            startIcon={<OpenInNewRoundedIcon sx={{ fontSize: 16 }} />}
+            sx={{ textTransform: 'none', fontWeight: 600, borderRadius: '8px', color: '#475569', borderColor: '#CBD5E1' }}
+          >
+            Test Link in New Tab
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => setInvitationSuccessData(null)}
+            sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5 }}
+          >
+            Done
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Assign / Re-assign Batch Modal Dialog */}
+      <Dialog
+        open={Boolean(assigningStudent)}
+        onClose={() => setAssigningStudent(null)}
+        slotProps={{
+          paper: {
+            sx: { borderRadius: '18px', width: '100%', maxWidth: 440, p: 1 },
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.15rem', color: '#0F172A' }}>
+          Assign Student to Batch / Cohort
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, px: 3, pt: '16px !important', pb: 2 }}>
+          <Typography sx={{ fontSize: '0.84rem', color: '#64748B' }}>
+            Assign <strong>{assigningStudent?.name}</strong> ({assigningStudent?.email}) to an active cohort in {liveCollege.name}.
+          </Typography>
+          <Box>
+            <Typography sx={{ fontSize: '0.76rem', fontWeight: 600, color: '#64748B', mb: 0.5 }}>
+              Select Cohort
+            </Typography>
+            <Select
+              fullWidth
+              size="small"
+              value={assignTargetBatchId}
+              onChange={(e) => setAssignTargetBatchId(e.target.value)}
+              sx={{ borderRadius: '8px', fontSize: '0.85rem' }}
+            >
+              {batches.map((b) => (
+                <MenuItem key={b.id} value={b.id}>
+                  {b.name} ({b.studentsCount || 0} enrolled)
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setAssigningStudent(null)} sx={{ textTransform: 'none', color: '#64748B', fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={isAssigningBatch || !assignTargetBatchId}
+            onClick={handleAssignBatchSubmit}
+            sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5, '&:hover': { bgcolor: '#1D4ED8' } }}
+          >
+            {isAssigningBatch ? 'Assigning...' : 'Assign to Batch'}
           </Button>
         </DialogActions>
       </Dialog>

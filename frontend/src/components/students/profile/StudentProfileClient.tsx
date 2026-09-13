@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Box } from '@mui/material';
 import {
   StudentProfileData,
@@ -51,7 +51,16 @@ const getInitialOwnerProfile = (): Partial<StudentProfileData> => {
             name: u.name,
             handle: u.email ? u.email.split('@')[0] : 'coder',
             email: u.email,
-            role: u.globalRole || 'STUDENT',
+            role: u.globalRole ?? 'STUDENT',
+            bio: u.bio ?? '',
+            institution: u.institution ?? u.memberships?.[0]?.college?.name ?? '',
+            phone: u.phone ?? '',
+            location: u.location ?? '',
+            githubUrl: u.githubUrl ?? '',
+            linkedinUrl: u.linkedinUrl ?? '',
+            websiteUrl: u.websiteUrl ?? '',
+            contestRating: u.contestRating ?? 1500,
+            ratingTier: u.ratingTier ?? 'Novice',
           };
         }
       }
@@ -67,9 +76,22 @@ export default function StudentProfileClient({
   isOwner = true,
   defaultTab = 'overview',
 }: StudentProfileClientProps) {
+  const router = useRouter();
   const toast = useToast();
   const searchParams = useSearchParams();
   const currentUser = useAppSelector((state) => state.auth.user);
+
+  // Role-based profile protection: redirect faculty or admin accounts to their dedicated profile workspaces
+  useEffect(() => {
+    if (isOwner) {
+      const activeRole = (currentUser?.globalRole || getInitialOwnerProfile().role || '').toUpperCase();
+      if (activeRole === 'FACULTY' || activeRole === 'COLLEGE_ADMIN') {
+        router.replace('/faculty/profile');
+      } else if (activeRole === 'SUPER_ADMIN' || activeRole === 'PLATFORM_ADMIN') {
+        router.replace('/superadmin/profile');
+      }
+    }
+  }, [currentUser, isOwner, router]);
 
   const initialTabParam = searchParams.get('tab') as StudentTabType | null;
   const [currentTab, setCurrentTab] = useState<StudentTabType>(
@@ -97,31 +119,32 @@ export default function StudentProfileClient({
 
   // Profile data state
   const [profile, setProfile] = useState<StudentProfileData>({
-    id: initialProfile?.id || currentUser?.id || initialOwner.id || 'stu-default',
-    name: initialProfile?.name || currentUser?.name || initialOwner.name || '',
-    handle: initialProfile?.handle || (currentUser?.email ? currentUser.email.split('@')[0] : initialOwner.handle || 'student_coder'),
-    email: initialProfile?.email || currentUser?.email || initialOwner.email || '',
-    role: initialProfile?.role || currentUser?.globalRole || initialOwner.role || 'STUDENT',
-    avatarUrl: initialProfile?.avatarUrl,
+    id: initialProfile?.id ?? currentUser?.id ?? initialOwner.id ?? 'stu-default',
+    name: initialProfile?.name ?? currentUser?.name ?? initialOwner.name ?? '',
+    handle: initialProfile?.handle ?? (currentUser?.email ? currentUser.email.split('@')[0] : initialOwner.handle ?? 'student_coder'),
+    email: initialProfile?.email ?? currentUser?.email ?? initialOwner.email ?? '',
+    role: initialProfile?.role ?? currentUser?.globalRole ?? initialOwner.role ?? 'STUDENT',
+    avatarUrl: initialProfile?.avatarUrl ?? (currentUser as any)?.avatarUrl,
     bannerGradient: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #3B82F6 100%)',
-    bio: initialProfile?.bio || 'Competitive programmer & USACO Gold contender. Focused on graph algorithms, segment trees, and dynamic programming optimization.',
-    institution: initialProfile?.institution || 'Stuyvesant High School of Science',
-    location: initialProfile?.location || 'New York, NY, USA',
-    joinedDate: initialProfile?.joinedDate || 'January 2025',
-    githubUrl: initialProfile?.githubUrl || 'https://github.com',
-    linkedinUrl: initialProfile?.linkedinUrl || 'https://linkedin.com',
-    websiteUrl: initialProfile?.websiteUrl || 'https://codeplatform.io',
-    contestRating: initialProfile?.contestRating || 2380,
-    ratingTier: initialProfile?.ratingTier || 'Master',
-    globalRank: initialProfile?.globalRank || 1,
-    solvedTotal: initialProfile?.solvedTotal || 680,
-    solvedEasy: initialProfile?.solvedEasy || 240,
-    solvedMedium: initialProfile?.solvedMedium || 310,
-    solvedHard: initialProfile?.solvedHard || 130,
-    totalSubmissions: initialProfile?.totalSubmissions || 1840,
-    accuracyRate: initialProfile?.accuracyRate || '96.4%',
-    currentStreakDays: initialProfile?.currentStreakDays || 48,
-    maxStreakDays: initialProfile?.maxStreakDays || 65,
+    bio: initialProfile?.bio ?? (currentUser as any)?.bio ?? initialOwner.bio ?? '',
+    institution: initialProfile?.institution ?? (currentUser as any)?.institution ?? (currentUser as any)?.memberships?.[0]?.college?.name ?? initialOwner.institution ?? '',
+    location: initialProfile?.location ?? (currentUser as any)?.location ?? initialOwner.location ?? '',
+    phone: initialProfile?.phone ?? (currentUser as any)?.phone ?? initialOwner.phone ?? '',
+    joinedDate: initialProfile?.joinedDate ?? 'January 2026',
+    githubUrl: initialProfile?.githubUrl ?? (currentUser as any)?.githubUrl ?? initialOwner.githubUrl ?? '',
+    linkedinUrl: initialProfile?.linkedinUrl ?? (currentUser as any)?.linkedinUrl ?? initialOwner.linkedinUrl ?? '',
+    websiteUrl: initialProfile?.websiteUrl ?? (currentUser as any)?.websiteUrl ?? initialOwner.websiteUrl ?? '',
+    contestRating: initialProfile?.contestRating ?? (currentUser as any)?.contestRating ?? initialOwner.contestRating ?? 1500,
+    ratingTier: initialProfile?.ratingTier ?? (currentUser as any)?.ratingTier ?? initialOwner.ratingTier ?? 'Novice',
+    globalRank: initialProfile?.globalRank ?? 1,
+    solvedTotal: initialProfile?.solvedTotal ?? 0,
+    solvedEasy: initialProfile?.solvedEasy ?? 0,
+    solvedMedium: initialProfile?.solvedMedium ?? 0,
+    solvedHard: initialProfile?.solvedHard ?? 0,
+    totalSubmissions: initialProfile?.totalSubmissions ?? 0,
+    accuracyRate: initialProfile?.accuracyRate ?? '100%',
+    currentStreakDays: initialProfile?.currentStreakDays ?? 1,
+    maxStreakDays: initialProfile?.maxStreakDays ?? 1,
   });
 
   // Submissions state
@@ -152,7 +175,7 @@ export default function StudentProfileClient({
       score: 1850,
       penaltyTime: '01:14:22',
       ratingDelta: +48,
-      newRating: 2380,
+      newRating: 1500,
     },
   ]);
 
@@ -190,6 +213,16 @@ export default function StudentProfileClient({
         handle: currentUser.email ? currentUser.email.split('@')[0] : prev.handle,
         email: currentUser.email || prev.email,
         role: currentUser.globalRole || prev.role,
+        bio: (currentUser as any).bio !== undefined && (currentUser as any).bio !== null ? (currentUser as any).bio : prev.bio,
+        institution: (currentUser as any).institution || (currentUser as any).memberships?.[0]?.college?.name || prev.institution,
+        location: (currentUser as any).location !== undefined && (currentUser as any).location !== null ? (currentUser as any).location : prev.location,
+        phone: (currentUser as any).phone !== undefined && (currentUser as any).phone !== null ? (currentUser as any).phone : prev.phone,
+        githubUrl: (currentUser as any).githubUrl !== undefined && (currentUser as any).githubUrl !== null ? (currentUser as any).githubUrl : prev.githubUrl,
+        linkedinUrl: (currentUser as any).linkedinUrl !== undefined && (currentUser as any).linkedinUrl !== null ? (currentUser as any).linkedinUrl : prev.linkedinUrl,
+        websiteUrl: (currentUser as any).websiteUrl !== undefined && (currentUser as any).websiteUrl !== null ? (currentUser as any).websiteUrl : prev.websiteUrl,
+        contestRating: (currentUser as any).contestRating !== undefined ? (currentUser as any).contestRating : prev.contestRating,
+        ratingTier: (currentUser as any).ratingTier || prev.ratingTier,
+        avatarUrl: (currentUser as any).avatarUrl || prev.avatarUrl,
       }));
     }
   }, [currentUser, isOwner]);

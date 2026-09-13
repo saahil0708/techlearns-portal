@@ -120,6 +120,8 @@ export const UPDATE_USER_MUTATION = `
       phone
       institution
       department
+      specialization
+      officeHours
       location
       birthDate
       githubUrl
@@ -443,6 +445,10 @@ export const BULK_INVITE_USERS_MUTATION = `
     bulkInviteUsers(input: $input) {
       invited
       expiresInHours
+      invitationLinks {
+        email
+        activationUrl
+      }
     }
   }
 `;

@@ -440,6 +440,7 @@ export const apiService = {
   async createBatch(input: {
     name: string;
     collegeId: string;
+    maxCapacity?: number;
     code?: string;
     startDate?: string;
     endDate?: string;
@@ -452,6 +453,7 @@ export const apiService = {
       body: JSON.stringify({
         name: input.name,
         collegeId: input.collegeId,
+        maxCapacity: input.maxCapacity,
         startDate: input.startDate,
         endDate: input.endDate,
       }),
@@ -466,6 +468,7 @@ export const apiService = {
 
   async updateBatch(id: string, input: {
     name?: string;
+    maxCapacity?: number;
     startDate?: string;
     endDate?: string;
     status?: string;
@@ -576,16 +579,13 @@ export const apiService = {
   async createUser(input: {
     name: string;
     email: string;
-    password?: string;
+    password: string;
     globalRole?: string;
     status?: string;
     collegeId?: string;
   }) {
     const data = await fetchGraphQL<{ createUser: any }>(CREATE_USER_MUTATION, {
-      input: {
-        ...input,
-        password: input.password || 'TemporaryPass123!',
-      },
+      input,
     });
     return data.createUser;
   },
@@ -602,6 +602,8 @@ export const apiService = {
     phone?: string;
     institution?: string;
     department?: string;
+    specialization?: string;
+    officeHours?: string;
     location?: string;
     birthDate?: string;
     githubUrl?: string;
@@ -660,8 +662,8 @@ export const apiService = {
     return data.deleteUser;
   },
 
-  async bulkInviteUsers(input: { users: Array<{ name: string; email: string; role?: string; collegeId?: string }> }) {
-    const data = await fetchGraphQL<{ bulkInviteUsers: { invited: number; expiresInHours: number } }>(BULK_INVITE_USERS_MUTATION, { input });
+  async bulkInviteUsers(input: { users: Array<{ name: string; email: string; role?: string; collegeId?: string; batchId?: string }> }) {
+    const data = await fetchGraphQL<{ bulkInviteUsers: { invited: number; expiresInHours: number; invitationLinks?: Array<{ email: string; activationUrl: string }> } }>(BULK_INVITE_USERS_MUTATION, { input });
     return data.bulkInviteUsers;
   },
 

@@ -117,7 +117,7 @@ export default function DashboardClientView({
   }, []);
 
   const primaryBlue = '#2563eb';
-  const allDirectoryList = [...institutions, ...individualStudents];
+  const allDirectoryList = institutions;
 
   // Filter Submissions
   const filteredSubmissions = submissions.filter((sub) => {
@@ -126,11 +126,10 @@ export default function DashboardClientView({
     return true;
   });
 
-  // Filter Directory Entries
-  const filteredDirectory = allDirectoryList.filter((item) => {
+  // Filter Directory Entries (Institutions Only)
+  const filteredDirectory = institutions.filter((item) => {
     if (instTab === 'COLLEGE' && item.type !== 'College') return false;
     if (instTab === 'SCHOOL' && item.type !== 'School') return false;
-    if (instTab === 'INDIVIDUAL' && item.type !== 'Individual') return false;
     if (searchQuery && !item.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });

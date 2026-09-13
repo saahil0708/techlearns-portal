@@ -30,6 +30,9 @@ export class CollegesService {
         status: dto.status,
       },
       include: {
+        memberships: {
+          select: { role: true },
+        },
         _count: {
           select: {
             memberships: true,
@@ -45,6 +48,9 @@ export class CollegesService {
   async findAll() {
     return this.prisma.college.findMany({
       include: {
+        memberships: {
+          select: { role: true },
+        },
         _count: {
           select: {
             memberships: true,
@@ -92,6 +98,9 @@ export class CollegesService {
         take: limit,
         orderBy,
         include: {
+          memberships: {
+            select: { role: true },
+          },
           _count: {
             select: {
               memberships: true,
@@ -122,6 +131,13 @@ export class CollegesService {
     const college = await this.prisma.college.findUnique({
       where: { id },
       include: {
+        memberships: {
+          include: {
+            user: {
+              select: userSanitizedSelect,
+            },
+          },
+        },
         _count: {
           select: {
             memberships: true,

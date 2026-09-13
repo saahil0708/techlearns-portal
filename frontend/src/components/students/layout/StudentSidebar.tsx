@@ -62,22 +62,9 @@ export default function StudentSidebar() {
   const [loading, setLoading] = useState<boolean>(!user?.name);
 
   useEffect(() => {
+    setActiveUser(user || null);
     if (user?.name) {
-      setActiveUser(user);
       setLoading(false);
-    } else {
-      if (typeof window !== 'undefined') {
-        try {
-          const stored = localStorage.getItem('codeplatform_user');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed?.name) {
-              setActiveUser(parsed);
-              setLoading(false);
-            }
-          }
-        } catch {}
-      }
     }
   }, [user]);
 

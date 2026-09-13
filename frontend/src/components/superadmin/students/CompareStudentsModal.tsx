@@ -36,7 +36,6 @@ export default function CompareStudentsModal({
 }: CompareStudentsModalProps) {
   if (selectedStudents.length < 2) return null;
 
-  const maxRating = Math.max(...selectedStudents.map((s) => s.contestRating), 2500);
   const borderColor = '#E2E8F0';
 
   return (
@@ -209,60 +208,6 @@ export default function CompareStudentsModal({
 
         {/* Metric Comparison Sections */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-          {/* Contest Rating Comparison */}
-          <Box
-            sx={{
-              p: '20px',
-              borderRadius: '16px',
-              bgcolor: '#FFFFFF',
-              border: `1px solid ${borderColor}`,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 1 }}>
-                <EmojiEventsRoundedIcon sx={{ color: '#D97706', fontSize: '1.1rem' }} />
-                Contest Rating & Tier
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${selectedStudents.length}, 1fr)`, gap: 2.5 }}>
-              {selectedStudents.map((stu) => (
-                <Box key={stu.id}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.8 }}>
-                    <Typography sx={{ fontWeight: 800, color: '#2563EB', fontSize: '1.1rem', fontFamily: 'monospace' }}>
-                      {stu.contestRating}
-                    </Typography>
-                    <Chip
-                      label={stu.ratingTier}
-                      size="small"
-                      sx={{
-                        fontSize: '0.7rem',
-                        fontWeight: 800,
-                        borderRadius: '9999px',
-                        bgcolor: '#EFF6FF',
-                        color: '#2563EB',
-                        border: '1px solid #BFDBFE',
-                      }}
-                    />
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={Math.min((stu.contestRating / maxRating) * 100, 100)}
-                    sx={{
-                      height: 8,
-                      borderRadius: '9999px',
-                      bgcolor: '#F1F5F9',
-                      '& .MuiLinearProgress-bar': {
-                        borderRadius: '9999px',
-                        bgcolor: '#2563EB',
-                      },
-                    }}
-                  />
-                </Box>
-              ))}
-            </Box>
-          </Box>
-
           {/* Total Problems Solved Breakdown */}
           <Box
             sx={{

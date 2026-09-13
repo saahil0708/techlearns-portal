@@ -259,6 +259,7 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
             });
             colorIdx++;
           });
+          domMapped.sort((a, b) => b.count - a.count);
           setDomainSubmissions(domMapped.slice(0, 5));
         } else {
           setTopProblems([]);
@@ -280,6 +281,9 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
   };
 
   const totalProblemSubmissions = topProblems.reduce((acc, curr) => acc + curr.total, 0);
+  const topDomain = domainSubmissions.length > 0
+    ? domainSubmissions.reduce((max, d) => (d.count > max.count ? d : max), domainSubmissions[0])
+    : null;
 
   const downloadAsExcel = () => {
     let tableContent = '';
@@ -595,7 +599,7 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75, mt: 0.3 }}>
             <Typography sx={{ fontSize: '1.35rem', fontWeight: 800, color: '#D4FF00', letterSpacing: '-0.02em' }}>
-              5 Tracks
+              {domainSubmissions.length} {domainSubmissions.length === 1 ? 'Track' : 'Tracks'}
             </Typography>
             <Typography sx={{ fontSize: '0.7rem', color: 'rgba(255, 255, 255, 0.75)' }}>
               tracked
@@ -606,52 +610,66 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
 
       {/* Recharts Bar Graph */}
       <Box sx={{ width: '100%', height: 185 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          {viewMode === 'problems' ? (
-            <BarChart data={topProblems} margin={{ top: 10, right: 5, left: -22, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.12)" vertical={false} />
-              <XAxis dataKey="short" stroke="rgba(255, 255, 255, 0.75)" fontSize={10} tickLine={false} axisLine={false} dy={4} />
-              <YAxis
-                stroke="rgba(255, 255, 255, 0.75)"
-                fontSize={10}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(val) => (val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val)}
-              />
-              <RechartsTooltip content={<ProblemBarTooltip viewMode="problems" />} />
-              <Bar
-                dataKey="accepted"
-                name="Accepted"
-                fill="#D4FF00"
-                radius={[5, 5, 0, 0]}
-              />
-              <Bar
-                dataKey="failed"
-                name="Wrong / TLE"
-                fill="rgba(255, 255, 255, 0.35)"
-                radius={[5, 5, 0, 0]}
-              />
-            </BarChart>
-          ) : (
-            <BarChart data={domainSubmissions} margin={{ top: 10, right: 5, left: -22, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.12)" vertical={false} />
-              <XAxis dataKey="short" stroke="rgba(255, 255, 255, 0.75)" fontSize={10} tickLine={false} axisLine={false} dy={4} />
-              <YAxis
-                stroke="rgba(255, 255, 255, 0.75)"
-                fontSize={10}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(val) => (val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val)}
-              />
-              <RechartsTooltip content={<ProblemBarTooltip viewMode="domains" />} />
-              <Bar dataKey="count" name="Submissions" radius={[5, 5, 0, 0]}>
-                {domainSubmissions.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={index === 0 ? '#D4FF00' : entry.color} />
-                ))}
-              </Bar>
-            </BarChart>
-          )}
-        </ResponsiveContainer>
+        {viewMode === 'problems' && topProblems.length === 0 ? (
+          <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(0, 0, 0, 0.12)', borderRadius: '12px' }}>
+            <Typography sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem', fontStyle: 'italic' }}>
+              No problem submission activity recorded yet
+            </Typography>
+          </Box>
+        ) : viewMode === 'domains' && domainSubmissions.length === 0 ? (
+          <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(0, 0, 0, 0.12)', borderRadius: '12px' }}>
+            <Typography sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem', fontStyle: 'italic' }}>
+              No domain tracks recorded yet
+            </Typography>
+          </Box>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            {viewMode === 'problems' ? (
+              <BarChart data={topProblems} margin={{ top: 10, right: 5, left: -22, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.12)" vertical={false} />
+                <XAxis dataKey="short" stroke="rgba(255, 255, 255, 0.75)" fontSize={10} tickLine={false} axisLine={false} dy={4} />
+                <YAxis
+                  stroke="rgba(255, 255, 255, 0.75)"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(val) => (val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val)}
+                />
+                <RechartsTooltip content={<ProblemBarTooltip viewMode="problems" />} />
+                <Bar
+                  dataKey="accepted"
+                  name="Accepted"
+                  fill="#D4FF00"
+                  radius={[5, 5, 0, 0]}
+                />
+                <Bar
+                  dataKey="failed"
+                  name="Wrong / TLE"
+                  fill="rgba(255, 255, 255, 0.35)"
+                  radius={[5, 5, 0, 0]}
+                />
+              </BarChart>
+            ) : (
+              <BarChart data={domainSubmissions} margin={{ top: 10, right: 5, left: -22, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.12)" vertical={false} />
+                <XAxis dataKey="short" stroke="rgba(255, 255, 255, 0.75)" fontSize={10} tickLine={false} axisLine={false} dy={4} />
+                <YAxis
+                  stroke="rgba(255, 255, 255, 0.75)"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(val) => (val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val)}
+                />
+                <RechartsTooltip content={<ProblemBarTooltip viewMode="domains" />} />
+                <Bar dataKey="count" name="Submissions" radius={[5, 5, 0, 0]}>
+                  {domainSubmissions.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={index === 0 ? '#D4FF00' : entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            )}
+          </ResponsiveContainer>
+        )}
       </Box>
 
       {/* Dynamic Legend & Summary Info */}
@@ -685,7 +703,14 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TrendingUpRoundedIcon sx={{ fontSize: 16, color: '#D4FF00' }} />
               <Typography sx={{ fontSize: '0.72rem', color: '#FFFFFF', fontWeight: 600 }}>
-                Top Domain: <strong style={{ color: '#D4FF00' }}>Arrays & Hashing (4,150)</strong>
+                Top Domain:{' '}
+                {topDomain && topDomain.count > 0 ? (
+                  <strong style={{ color: '#D4FF00' }}>
+                    {topDomain.domain} ({topDomain.count.toLocaleString()})
+                  </strong>
+                ) : (
+                  <span style={{ color: 'rgba(255, 255, 255, 0.75)' }}>None</span>
+                )}
               </Typography>
             </Box>
           )}

@@ -94,7 +94,7 @@ export function getRoleDefaultPath(roleOrToken?: string | null): string {
     case 'COLLEGE_ADMIN':
       return '/superadmin';
     case 'FACULTY':
-      return '/superadmin/courses';
+      return '/faculty/profile';
     case 'STUDENT':
       return '/students';
     default:

@@ -16,6 +16,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { BulkInviteUsersInput } from './dto/bulk-invite.input.js';
 import { CreateUserInput } from './dto/create-user.input.js';
 import { UpdateUserInput } from './dto/update-user.input.js';
+import { BulkInviteResult } from './types/bulk-invite-result.type.js';
 
 export type SanitizedUser = Omit<User, 'passwordHash'>;
 
@@ -31,6 +32,8 @@ export const userSanitizedSelect: Prisma.UserSelect = {
   phone: true,
   institution: true,
   department: true,
+  specialization: true,
+  officeHours: true,
   location: true,
   birthDate: true,
   githubUrl: true,
@@ -620,6 +623,8 @@ export class UsersService {
     if (input.phone !== undefined) data.phone = input.phone;
     if (input.institution !== undefined) data.institution = input.institution;
     if (input.department !== undefined) data.department = input.department;
+    if (input.specialization !== undefined) data.specialization = input.specialization;
+    if (input.officeHours !== undefined) data.officeHours = input.officeHours;
     if (input.location !== undefined) data.location = input.location;
     if (input.birthDate !== undefined) data.birthDate = input.birthDate;
     if (input.githubUrl !== undefined) data.githubUrl = input.githubUrl;
@@ -678,7 +683,7 @@ export class UsersService {
     return true;
   }
 
-  async bulkInvite(input: BulkInviteUsersInput): Promise<{ invited: number; expiresInHours: number }> {
+  async bulkInvite(input: BulkInviteUsersInput): Promise<BulkInviteResult> {
     const emails = input.users.map((item) => item.email.toLowerCase());
     if (new Set(emails).size !== emails.length) {
       throw new BadRequestException('Each bulk invitation must have a unique email address');
@@ -701,6 +706,16 @@ export class UsersService {
         if (pendingInvitation) {
           throw new ConflictException(`An active invitation already exists for ${item.email}`);
         }
+        if (item.batchId) {
+          const batch = await tx.batch.findUnique({ where: { id: item.batchId }, select: { id: true, collegeId: true } });
+          if (!batch) throw new BadRequestException(`Batch ${item.batchId} does not exist`);
+          if (item.collegeId && batch.collegeId !== item.collegeId) {
+            throw new BadRequestException(`Batch ${item.batchId} does not belong to college ${item.collegeId}`);
+          }
+          if (!item.collegeId) {
+            item.collegeId = batch.collegeId;
+          }
+        }
         if (item.collegeId) {
           const college = await tx.college.findUnique({ where: { id: item.collegeId }, select: { id: true } });
           if (!college) throw new BadRequestException(`College ${item.collegeId} does not exist`);
@@ -711,7 +726,15 @@ export class UsersService {
         const email = item.email.toLowerCase();
         const rawToken = randomBytes(32).toString('base64url');
         const invitation = await tx.userInvitation.create({
-          data: { email, name: item.name, role: item.role, collegeId: item.collegeId, tokenHash: this.hashInvitationToken(rawToken), expiresAt },
+          data: {
+            email,
+            name: item.name,
+            role: item.role,
+            collegeId: item.collegeId,
+            batchId: item.batchId,
+            tokenHash: this.hashInvitationToken(rawToken),
+            expiresAt,
+          },
         });
         const activationUrl = `${appUrl}/accept-invitation?token=${rawToken}`;
         const encryptedActivationUrl = this.encryptActivationUrl(activationUrl);
@@ -731,7 +754,7 @@ export class UsersService {
       }
     }
 
-    return { invited: input.users.length, expiresInHours: 72 };
+    return { invited: input.users.length, expiresInHours: 72, invitationLinks: deliveries };
   }
 
   async acceptInvitation(token: string, password: string): Promise<SanitizedUser> {
@@ -757,6 +780,21 @@ export class UsersService {
       if (invitation.collegeId) {
         await tx.collegeMembership.create({
           data: { userId: user.id, collegeId: invitation.collegeId, role: invitation.role },
+        });
+      }
+      if (invitation.batchId) {
+        await tx.batchStudent.upsert({
+          where: {
+            batchId_userId: {
+              batchId: invitation.batchId,
+              userId: user.id,
+            },
+          },
+          update: {},
+          create: {
+            batchId: invitation.batchId,
+            userId: user.id,
+          },
         });
       }
       const consumed = await tx.userInvitation.updateMany({

@@ -182,7 +182,7 @@ export default function PlatformDirectoryTable({
             </Typography>
           </Box>
           <Typography sx={{ fontSize: '0.82rem', fontWeight: 500, color: '#64748B', mt: 0.25 }}>
-            Colleges, High Schools & Independent Self-Paced Learners
+            Colleges, Universities & Academic Campus Tenants
           </Typography>
         </Box>
 
@@ -222,10 +222,9 @@ export default function PlatformDirectoryTable({
               },
             }}
           >
-            <ToggleButton value="ALL">All Entities ({totalAll})</ToggleButton>
+            <ToggleButton value="ALL">All Institutions ({totalAll})</ToggleButton>
             <ToggleButton value="COLLEGE">Colleges ({collegeCount})</ToggleButton>
             <ToggleButton value="SCHOOL">Schools ({schoolCount})</ToggleButton>
-            <ToggleButton value="INDIVIDUAL">Individual Students ({individualCount})</ToggleButton>
           </ToggleButtonGroup>
 
           {/* Download Excel / CSV Button */}

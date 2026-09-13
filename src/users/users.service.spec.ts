@@ -150,6 +150,10 @@ describe('UsersService', () => {
       });
 
       expect(result.invited).toBe(1);
+      expect(result.expiresInHours).toBe(72);
+      expect(result.invitationLinks).toHaveLength(1);
+      expect(result.invitationLinks?.[0].email).toBe('student@example.com');
+      expect(result.invitationLinks?.[0].activationUrl).toContain('accept-invitation');
       expect(createdDeliveries.length).toBe(1);
       expect(createdDeliveries[0].activationUrl).toMatch(/^enc:v1:/);
       expect(createdDeliveries[0].activationUrl).not.toContain('accept-invitation');
@@ -190,6 +194,57 @@ describe('UsersService', () => {
       expect(updatedDeliveries.length).toBe(1);
       expect(updatedDeliveries[0].data.activationUrl).toBeNull();
       expect(updatedDeliveries[0].data.status).toBe('DELIVERED');
+    });
+
+    it('should enroll user into batchStudent when invitation has batchId', async () => {
+      const batchStudentUpsertMock = vi.fn().mockResolvedValue({ id: 'bs-1' });
+      const txMock = {
+        userInvitation: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: 'inv-batch-1',
+            email: 'batchstudent@example.com',
+            name: 'Batch Student',
+            role: Role.STUDENT,
+            collegeId: 'college-1',
+            batchId: 'batch-alpha-1',
+            expiresAt: new Date(Date.now() + 100000),
+            acceptedAt: null,
+            revokedAt: null,
+          }),
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+        user: {
+          findUnique: vi.fn().mockResolvedValue(null),
+          create: vi.fn().mockResolvedValue(mockSanitizedUser),
+        },
+        collegeMembership: {
+          create: vi.fn().mockResolvedValue({ id: 'cm-1' }),
+        },
+        batchStudent: {
+          upsert: batchStudentUpsertMock,
+        },
+        invitationDelivery: {
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+      };
+
+      prisma.$transaction = vi.fn().mockImplementation(async (cb: any) => cb(txMock)) as any;
+
+      const result = await service.acceptInvitation('raw_token_batch', 'NewSecurePassword123!');
+      expect(result).toBeDefined();
+      expect(batchStudentUpsertMock).toHaveBeenCalledWith({
+        where: {
+          batchId_userId: {
+            batchId: 'batch-alpha-1',
+            userId: mockSanitizedUser.id,
+          },
+        },
+        update: {},
+        create: {
+          batchId: 'batch-alpha-1',
+          userId: mockSanitizedUser.id,
+        },
+      });
     });
   });
 });

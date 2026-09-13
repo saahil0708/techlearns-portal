@@ -19,6 +19,13 @@ export class CreateBatchDto {
   collegeId: string;
 
   @ApiPropertyOptional({
+    example: 30,
+    description: 'Maximum student capacity for this cohort/batch',
+  })
+  @IsOptional()
+  maxCapacity?: number;
+
+  @ApiPropertyOptional({
     example: '2026-08-01T00:00:00.000Z',
     description: 'Batch start date',
   })

@@ -21,6 +21,7 @@ export class BatchesService {
       data: {
         name: dto.name,
         collegeId: dto.collegeId,
+        maxCapacity: dto.maxCapacity !== undefined ? Number(dto.maxCapacity) : 100,
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         endDate: dto.endDate ? new Date(dto.endDate) : null,
       },
@@ -66,6 +67,7 @@ export class BatchesService {
       where: { id },
       data: {
         name: dto.name,
+        maxCapacity: dto.maxCapacity !== undefined ? Number(dto.maxCapacity) : undefined,
         status: dto.status,
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
