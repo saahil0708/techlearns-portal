@@ -23,10 +23,24 @@ export class CollegesResolver {
       return;
     }
     const hasAdmin = user.memberships?.some(
+      (m) =>
+        m.collegeId === targetCollegeId &&
+        (m.role === Role.COLLEGE_ADMIN || m.role === Role.FACULTY),
+    );
+    if (!hasAdmin) {
+      throw new ForbiddenException('You do not have administrative or faculty access to this college');
+    }
+  }
+
+  private checkCollegeUpdateAccess(user: CurrentUserPayload, targetCollegeId: string): void {
+    if (user.globalRole === Role.SUPER_ADMIN || user.globalRole === Role.PLATFORM_ADMIN) {
+      return;
+    }
+    const hasAdmin = user.memberships?.some(
       (m) => m.collegeId === targetCollegeId && m.role === Role.COLLEGE_ADMIN,
     );
     if (!hasAdmin) {
-      throw new ForbiddenException('You do not have administrative access to this college');
+      throw new ForbiddenException('You do not have administrative access to update this college');
     }
   }
 
@@ -77,7 +91,7 @@ export class CollegesResolver {
     @Args('input') input: UpdateCollegeInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
-    this.checkCollegeAdminAccess(currentUser, id);
+    this.checkCollegeUpdateAccess(currentUser, id);
     return this.collegesService.update(id, input);
   }
 
@@ -90,7 +104,7 @@ export class CollegesResolver {
 
   @Mutation(() => Boolean, { name: 'addCollegeMember' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
   async addCollegeMember(
     @Args('collegeId', { type: () => ID }) collegeId: string,
     @Args('input') input: AddCollegeMemberInput,
@@ -103,7 +117,7 @@ export class CollegesResolver {
 
   @Mutation(() => Boolean, { name: 'removeCollegeMember' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
   async removeCollegeMember(
     @Args('collegeId', { type: () => ID }) collegeId: string,
     @Args('userId', { type: () => ID }) userId: string,

@@ -236,14 +236,28 @@ export class CollegesService {
       throw new NotFoundException('User is not a member of this college');
     }
 
-    await this.prisma.collegeMembership.delete({
-      where: {
-        userId_collegeId: {
-          userId,
-          collegeId,
-        },
-      },
+    const collegeBatches = await this.prisma.batch.findMany({
+      where: { collegeId },
+      select: { id: true },
     });
+    const batchIds = collegeBatches.map((b) => b.id);
+
+    await this.prisma.$transaction([
+      this.prisma.batchStudent.deleteMany({
+        where: {
+          userId,
+          batchId: { in: batchIds },
+        },
+      }),
+      this.prisma.collegeMembership.delete({
+        where: {
+          userId_collegeId: {
+            userId,
+            collegeId,
+          },
+        },
+      }),
+    ]);
 
     return true;
   }

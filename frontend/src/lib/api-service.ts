@@ -406,6 +406,24 @@ export const apiService = {
     return data.removeCollegeMember;
   },
 
+  async getCollegeMembers(collegeId: string) {
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_URL}/colleges/${collegeId}/members`, {
+        method: 'GET',
+        headers,
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data ?? json;
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  },
+
   // ----------------------------------------------------
   // BATCHES & COHORTS (REST)
   // ----------------------------------------------------
@@ -662,7 +680,7 @@ export const apiService = {
     return data.deleteUser;
   },
 
-  async bulkInviteUsers(input: { users: Array<{ name: string; email: string; role?: string; collegeId?: string; batchId?: string }> }) {
+  async bulkInviteUsers(input: { users: Array<{ name: string; email: string; role?: string; collegeId?: string; batchId?: string; rollNo?: string }> }) {
     const data = await fetchGraphQL<{ bulkInviteUsers: { invited: number; expiresInHours: number; invitationLinks?: Array<{ email: string; activationUrl: string }> } }>(BULK_INVITE_USERS_MUTATION, { input });
     return data.bulkInviteUsers;
   },

@@ -25,6 +25,7 @@ import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import { generateSafeCsv, downloadCsvBlob } from '@/utils/csv';
 import type { FacultyBatchItem } from '@/data';
 
 interface FacultyInviteStudentsModalProps {
@@ -55,11 +56,8 @@ export default function FacultyInviteStudentsModal({
   // Bulk Upload State
   const [fileName, setFileName] = useState<string | null>(null);
   const [rowCount, setRowCount] = useState<number>(0);
-  const [parsedStudents, setParsedStudents] = useState<Array<{ name: string; email: string; rollNo?: string; cohort?: string }>>([]);
+  const [parsedStudents, setParsedStudents] = useState<Array<{ name: string; email: string; rollNo?: string }>>([]);
   const [isParsing, setIsParsing] = useState(false);
-  const [cohortValidationErrors, setCohortValidationErrors] = useState<
-    Array<{ row: number; name: string; email: string; cohort: string }>
-  >([]);
 
   // Execution State
   const [isProcessing, setIsProcessing] = useState(false);
@@ -85,7 +83,6 @@ export default function FacultyInviteStudentsModal({
       setRowCount(0);
       setParsedStudents([]);
       setIsParsing(false);
-      setCohortValidationErrors([]);
       setHasBatchEnrollment(false);
       setInvitationResults(null);
       setIsProcessing(false);
@@ -99,7 +96,6 @@ export default function FacultyInviteStudentsModal({
       setFileName(file.name);
       setParsedStudents([]);
       setRowCount(0);
-      setCohortValidationErrors([]);
       setIsParsing(true);
 
       const reader = new FileReader();
@@ -108,7 +104,7 @@ export default function FacultyInviteStudentsModal({
           const text = evt.target?.result as string;
           if (text) {
             const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-            const entries: Array<{ name: string; email: string; rollNo?: string; cohort?: string }> = [];
+            const entries: Array<{ name: string; email: string; rollNo?: string }> = [];
             const startIndex =
               lines[0].toLowerCase().includes('email') || lines[0].toLowerCase().includes('name') ? 1 : 0;
             for (let i = startIndex; i < lines.length; i++) {
@@ -117,9 +113,8 @@ export default function FacultyInviteStudentsModal({
                 const name = parts[0] || 'Student Coder';
                 const email = parts.find((p) => p.includes('@')) || parts[1] || '';
                 const rollNo = parts.length >= 3 ? parts[2] : undefined;
-                const cohort = parts.length >= 4 ? parts[3] : undefined;
                 if (email) {
-                  entries.push({ name, email, rollNo, cohort });
+                  entries.push({ name, email, rollNo });
                 }
               }
             }
@@ -147,19 +142,15 @@ export default function FacultyInviteStudentsModal({
   };
 
   const handleDownloadSample = () => {
-    const csvContent =
-      'data:text/csv;charset=utf-8,Full Name,Email,Student ID,Cohort\n' +
-      'Alex Johnson,alex.johnson@campus.edu,STU-2026-001,Batch 2026 Alpha\n' +
-      'Samantha Reed,samantha.reed@campus.edu,STU-2026-002,Batch 2026 Alpha\n' +
-      'Devon Patel,devon.patel@campus.edu,STU-2026-003,Batch 2026 Beta\n';
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', 'student_invitation_template.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.info('Student invitation CSV template downloaded.', 'Template Downloaded');
+    const headers = ['Full Name', 'Email', 'Student ID'];
+    const rows = [
+      ['Alex Johnson', 'alex.johnson@campus.edu', 'STU-2026-001'],
+      ['Samantha Reed', 'samantha.reed@campus.edu', 'STU-2026-002'],
+      ['Devon Patel', 'devon.patel@campus.edu', 'STU-2026-003'],
+    ];
+    const csvData = generateSafeCsv(headers, rows);
+    downloadCsvBlob('student_roster_template.csv', csvData);
+    toast.info('Student roster CSV template downloaded.', 'Template Downloaded');
   };
 
   const handleSendBulkInvites = async () => {
@@ -168,57 +159,18 @@ export default function FacultyInviteStudentsModal({
       return;
     }
 
-    const resolveCohortBatch = (cohortText?: string): { batchId?: string; unmatchedCohort?: string } => {
-      if (!cohortText || !cohortText.trim()) {
-        return { batchId: selectedBatchId || undefined };
-      }
-      const normalized = cohortText.trim().toLowerCase();
-      const match = batches.find(
-        (b) =>
-          b.id.toLowerCase() === normalized ||
-          b.name.toLowerCase() === normalized ||
-          b.code.toLowerCase() === normalized
-      );
-      if (match) {
-        return { batchId: match.id };
-      }
-      // An unmatched CSV cohort returns no batch instead of falling back to selectedBatchId
-      return { batchId: undefined, unmatchedCohort: cohortText.trim() };
-    };
+    const targetBatchId = selectedBatchId && selectedBatchId.trim().length > 0 ? selectedBatchId.trim() : undefined;
+    const targetCollegeId = collegeId && collegeId.trim().length > 0 ? collegeId.trim() : undefined;
+    const resolvedPayload = parsedStudents.map((s) => ({
+      name: s.name,
+      email: s.email.toLowerCase().trim(),
+      role: 'STUDENT',
+      ...(s.rollNo ? { rollNo: s.rollNo } : {}),
+      ...(targetCollegeId ? { collegeId: targetCollegeId } : {}),
+      ...(targetBatchId ? { batchId: targetBatchId } : {}),
+    }));
 
-    // Validate every resolved batch ID and collect unmatched cohort values
-    const unmatchedRows: Array<{ row: number; name: string; email: string; cohort: string }> = [];
-    const resolvedPayload = parsedStudents.map((s, idx) => {
-      const { batchId, unmatchedCohort } = resolveCohortBatch(s.cohort);
-      if (unmatchedCohort) {
-        unmatchedRows.push({ row: idx + 1, name: s.name, email: s.email, cohort: unmatchedCohort });
-      }
-      return {
-        name: s.name,
-        email: s.email.toLowerCase(),
-        role: 'STUDENT',
-        collegeId: collegeId,
-        batchId: batchId,
-      };
-    });
-
-    if (unmatchedRows.length > 0) {
-      setCohortValidationErrors(unmatchedRows);
-      const sampleErrors = unmatchedRows
-        .slice(0, 3)
-        .map((r) => `Row ${r.row} (${r.name}): "${r.cohort}"`)
-        .join(', ');
-      const moreText = unmatchedRows.length > 3 ? ` and ${unmatchedRows.length - 3} other row(s)` : '';
-      toast.error(
-        `Unmatched cohort values detected: ${sampleErrors}${moreText}. Please ensure all cohorts match existing batches.`,
-        'Batch Resolution Error'
-      );
-      return;
-    }
-
-    const hasAnyBatchResolved = resolvedPayload.some((u) => Boolean(u.batchId));
-    setHasBatchEnrollment(hasAnyBatchResolved);
-    setCohortValidationErrors([]);
+    setHasBatchEnrollment(Boolean(targetBatchId));
     setIsProcessing(true);
     try {
       const result = await apiService.bulkInviteUsers({
@@ -231,7 +183,7 @@ export default function FacultyInviteStudentsModal({
 
       toast.success(
         `Successfully queued ${parsedStudents.length} student invitations!`,
-        hasAnyBatchResolved ? 'Roster Invitations Sent' : 'Student Invitations Sent'
+        targetBatchId ? 'Roster Invitations Sent' : 'Student Invitations Sent'
       );
       onInviteSuccess?.(parsedStudents.length);
       if (!result?.invitationLinks || result.invitationLinks.length === 0) {
@@ -299,7 +251,7 @@ export default function FacultyInviteStudentsModal({
               Invite Students via Roster
             </Typography>
             <Typography variant="body2" sx={{ color: '#64748B', fontSize: '0.8rem' }}>
-              {collegeName} • Instant activation links{selectedBatchId ? ' & cohort enrollment' : ' for student accounts'}
+              {collegeName} • Instant activation links{selectedBatchId ? ' & batch enrollment' : ' for student accounts'}
             </Typography>
           </Box>
         </Box>
@@ -393,7 +345,7 @@ export default function FacultyInviteStudentsModal({
           <>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Typography variant="caption" sx={{ color: '#475569', fontWeight: 700 }}>
-                ASSIGNED BATCH / COHORT (DEFAULT)
+                ASSIGNED BATCH (FOR ENROLLMENT)
               </Typography>
               <Select
                 size="small"
@@ -418,8 +370,8 @@ export default function FacultyInviteStudentsModal({
               </Select>
               <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.75rem' }}>
                 {selectedBatchId
-                  ? 'Students with a Cohort specified in the CSV will be assigned to their designated batch; otherwise, this default batch applies for batch enrollment.'
-                  : 'Students with a Cohort specified in the CSV will be enrolled into their designated batch; without a batch specified, invitations will create active accounts without batch enrollment.'}
+                  ? 'All uploaded students will be invited and automatically enrolled into the selected batch.'
+                  : 'Without a batch selected, invitations will create active student accounts without batch enrollment.'}
               </Typography>
             </Box>
 
@@ -451,7 +403,7 @@ export default function FacultyInviteStudentsModal({
                   {fileName ? fileName : 'Click to upload or drag & drop CSV roster'}
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mt: 0.5 }}>
-                  Columns: Full Name, Email, Student ID, Cohort
+                  Columns: Full Name, Email, Student ID
                 </Typography>
               </Box>
               {isParsing ? (
@@ -503,39 +455,6 @@ export default function FacultyInviteStudentsModal({
                 Download CSV Sample
               </Button>
             </Box>
-
-            {cohortValidationErrors.length > 0 && (
-              <Box
-                sx={{
-                  p: 2,
-                  borderRadius: '12px',
-                  bgcolor: '#FEF2F2',
-                  border: '1px solid #FECACA',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 0.5,
-                }}
-              >
-                <Typography variant="subtitle2" sx={{ color: '#DC2626', fontWeight: 700 }}>
-                  Cohort Resolution Errors ({cohortValidationErrors.length})
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#991B1B' }}>
-                  The following rows specified cohorts that do not match any existing batch:
-                </Typography>
-                <Box component="ul" sx={{ m: 0, pl: 2, mt: 0.5 }}>
-                  {cohortValidationErrors.slice(0, 5).map((err, i) => (
-                    <Typography component="li" variant="caption" key={i} sx={{ color: '#B91C1C' }}>
-                      <strong>Row {err.row}</strong> ({err.name || err.email}): &ldquo;{err.cohort}&rdquo;
-                    </Typography>
-                  ))}
-                  {cohortValidationErrors.length > 5 && (
-                    <Typography component="li" variant="caption" sx={{ color: '#B91C1C', fontStyle: 'italic' }}>
-                      ...and {cohortValidationErrors.length - 5} more rows
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
-            )}
           </>
         )}
       </DialogContent>

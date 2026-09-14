@@ -21,8 +21,9 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import { parseCsvText } from '@/utils/csv';
 
-interface BulkImportStudentsModalProps {
+export interface BulkImportStudentsModalProps {
   open: boolean;
   onClose: () => void;
   onImportSuccess: (count: number) => void;
@@ -37,7 +38,7 @@ export default function BulkImportStudentsModal({
   const [selectedInstitution, setSelectedInstitution] = useState('Stanford University - Dept of CS');
   const [fileName, setFileName] = useState<string | null>(null);
   const [rowCount, setRowCount] = useState<number>(0);
-  const [parsedStudents, setParsedStudents] = useState<Array<{ name: string; email: string }>>([]);
+  const [parsedStudents, setParsedStudents] = useState<Array<{ name: string; email: string; rollNo?: string }>>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const borderColor = '#E2E8F0';
 
@@ -49,16 +50,38 @@ export default function BulkImportStudentsModal({
       reader.onload = (evt) => {
         const text = evt.target?.result as string;
         if (text) {
-          const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
-          const entries: Array<{ name: string; email: string }> = [];
-          const startIndex = lines[0].toLowerCase().includes('email') || lines[0].toLowerCase().includes('name') ? 1 : 0;
-          for (let i = startIndex; i < lines.length; i++) {
-            const parts = lines[i].split(',').map((p) => p.trim().replace(/^["']|["']$/g, ''));
+          const rows = parseCsvText(text);
+          if (rows.length === 0) {
+            setParsedStudents([]);
+            setRowCount(0);
+            return;
+          }
+
+          const headerRow = rows[0].map((h) => h.trim().toLowerCase());
+          const hasHeader = headerRow.some((h) => h.includes('email') || h.includes('name'));
+          const startIndex = hasHeader ? 1 : 0;
+
+          let nameIdx = -1;
+          let emailIdx = -1;
+          let rollNoIdx = -1;
+
+          if (hasHeader) {
+            nameIdx = headerRow.findIndex((h) => ['student name', 'full name', 'name'].includes(h));
+            emailIdx = headerRow.findIndex((h) => ['email', 'e-mail', 'email address'].includes(h));
+            rollNoIdx = headerRow.findIndex((h) =>
+              ['student id', 'roll no', 'roll number', 'roll_no', 'student_id', 'rollno', 'roll'].includes(h)
+            );
+          }
+
+          const entries: Array<{ name: string; email: string; rollNo?: string }> = [];
+          for (let i = startIndex; i < rows.length; i++) {
+            const parts = rows[i];
             if (parts.length >= 2) {
-              const name = parts[0] || 'Student Candidate';
-              const email = parts.find((p) => p.includes('@')) || parts[2] || parts[1] || '';
+              const name = (nameIdx >= 0 && parts[nameIdx] ? parts[nameIdx] : parts[0]) || 'Student Candidate';
+              const email = (emailIdx >= 0 && parts[emailIdx] ? parts[emailIdx] : parts.find((p) => p.includes('@'))) || parts[1] || '';
+              const rollNo = rollNoIdx >= 0 && parts[rollNoIdx] ? parts[rollNoIdx] : undefined;
               if (email) {
-                entries.push({ name, email });
+                entries.push({ name, email, ...(rollNo ? { rollNo } : {}) });
               }
             }
           }
@@ -95,6 +118,7 @@ export default function BulkImportStudentsModal({
             name: s.name,
             email: s.email,
             role: 'STUDENT',
+            ...(s.rollNo ? { rollNo: s.rollNo } : {}),
           })),
         });
       }

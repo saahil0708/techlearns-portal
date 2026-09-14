@@ -29,7 +29,7 @@ export class BatchesController {
 
   @Post()
   @UseGuards(CollegeAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Create a new student batch/cohort' })
   @ApiResponse({ status: 201, description: 'Batch created successfully' })
   async create(@Body() dto: CreateBatchDto) {
@@ -55,7 +55,7 @@ export class BatchesController {
 
   @Patch(':id')
   @UseGuards(BatchAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Update batch details' })
   @ApiResponse({ status: 200, description: 'Batch updated successfully' })
   async update(@Param('id') id: string, @Body() dto: UpdateBatchDto) {
@@ -64,7 +64,7 @@ export class BatchesController {
 
   @Delete(':id')
   @UseGuards(BatchAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Delete a batch' })
   @ApiResponse({ status: 200, description: 'Batch deleted successfully' })
   async delete(@Param('id') id: string) {
@@ -91,7 +91,7 @@ export class BatchesController {
 
   @Delete(':id/students/:userId')
   @UseGuards(BatchAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Remove a student from a batch' })
   @ApiResponse({ status: 200, description: 'Student removed from batch successfully' })
   async removeStudent(@Param('id') id: string, @Param('userId') userId: string) {

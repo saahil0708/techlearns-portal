@@ -15,6 +15,7 @@ import {
 // Material Rounded Icons
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
@@ -31,8 +32,9 @@ import LogoutConfirmModal from '@/components/shared/LogoutConfirmModal';
 const FACULTY_NAV_ITEMS = [
   { label: 'Faculty Profile & Bio', icon: <PersonRoundedIcon sx={{ fontSize: 21 }} />, path: '/faculty/profile' },
   { label: 'Assigned Cohorts & Batches', icon: <SchoolRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=batches' },
+  { label: 'College Students Roster', icon: <GroupRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=students' },
   { label: 'Curriculum & Courses', icon: <MenuBookRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=courses' },
-  { label: 'Problem Archive & Workspace', icon: <CodeRoundedIcon sx={{ fontSize: 21 }} />, path: '/problems' },
+  { label: 'Lab Challenges & Question Bank', icon: <CodeRoundedIcon sx={{ fontSize: 21 }} />, path: '/faculty/profile?tab=problems' },
   { label: 'Competitive Contests', icon: <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />, path: '/contests' },
   { label: 'Global Leaderboard', icon: <LeaderboardRoundedIcon sx={{ fontSize: 20 }} />, path: '/leaderboard' },
 ];
@@ -105,14 +107,23 @@ export default function FacultySidebar() {
     if (itemPath === '/faculty/profile?tab=batches') {
       return pathname.startsWith('/faculty') && currentTab === 'batches';
     }
+    if (itemPath === '/faculty/profile?tab=students') {
+      return pathname.startsWith('/faculty') && currentTab === 'students';
+    }
     if (itemPath === '/faculty/profile?tab=courses') {
       return (pathname.startsWith('/faculty') && currentTab === 'courses') || pathname.startsWith('/courses');
     }
-    if (itemPath === '/faculty/profile') {
-      return pathname.startsWith('/faculty') && currentTab !== 'batches' && currentTab !== 'courses';
+    if (itemPath === '/faculty/profile?tab=problems') {
+      return (pathname.startsWith('/faculty') && currentTab === 'problems') || pathname.startsWith('/problems');
     }
-    if (itemPath === '/problems') {
-      return pathname === '/problems' || pathname.startsWith('/problems/');
+    if (itemPath === '/faculty/profile') {
+      return (
+        pathname.startsWith('/faculty') &&
+        currentTab !== 'batches' &&
+        currentTab !== 'students' &&
+        currentTab !== 'courses' &&
+        currentTab !== 'problems'
+      );
     }
     if (itemPath === '/contests') {
       return pathname === '/contests' || pathname.startsWith('/contests/');

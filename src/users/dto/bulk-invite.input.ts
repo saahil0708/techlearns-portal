@@ -28,6 +28,11 @@ export class BulkInviteItemInput {
   @IsOptional()
   @IsString()
   batchId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  rollNo?: string;
 }
 
 @InputType('BulkInviteUsersInput')

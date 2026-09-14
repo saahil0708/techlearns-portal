@@ -35,6 +35,12 @@ describe('CollegesService', () => {
               update: vi.fn(),
               delete: vi.fn(),
             },
+            batch: {
+              findMany: vi.fn(),
+            },
+            batchStudent: {
+              deleteMany: vi.fn(),
+            },
             user: {
               findUnique: vi.fn(),
             },
@@ -44,6 +50,7 @@ describe('CollegesService', () => {
               delete: vi.fn(),
               findMany: vi.fn(),
             },
+            $transaction: vi.fn().mockImplementation((promises) => Promise.all(promises)),
           },
         },
       ],
@@ -114,6 +121,24 @@ describe('CollegesService', () => {
       });
 
       expect(result.role).toBe(Role.FACULTY);
+    });
+  });
+
+  describe('removeMember', () => {
+    it('should remove a member and clean up batch enrollments', async () => {
+      vi.spyOn(prisma.college, 'findUnique').mockResolvedValue(mockCollege as any);
+      vi.spyOn(prisma.collegeMembership, 'findUnique').mockResolvedValue({
+        id: 'mem-1',
+        collegeId: 'college-1',
+        userId: 'user-1',
+        role: Role.STUDENT,
+      } as any);
+      vi.spyOn(prisma.batch, 'findMany').mockResolvedValue([{ id: 'batch-1' }] as any);
+      vi.spyOn(prisma.batchStudent, 'deleteMany').mockResolvedValue({ count: 1 } as any);
+      vi.spyOn(prisma.collegeMembership, 'delete').mockResolvedValue({ id: 'mem-1' } as any);
+
+      const result = await service.removeMember('college-1', 'user-1');
+      expect(result).toBe(true);
     });
   });
 });

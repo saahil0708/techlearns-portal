@@ -175,7 +175,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                 name: u.name || 'Student Coder',
                 handle: u.email ? u.email.split('@')[0] : `coder_${idx + 1}`,
                 email: u.email,
-                studentId: u.studentId || `STU-2026-${String(idx + 1).padStart(3, '0')}`,
+                studentId: u.rollNo || u.studentId || primaryBatch?.rollNo || `STU-2026-${String(idx + 1).padStart(3, '0')}`,
                 institutionType,
                 institutionName,
                 cohort,

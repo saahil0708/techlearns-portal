@@ -26,4 +26,13 @@ export default () => ({
     queueName: process.env.JUDGE_QUEUE_NAME || 'submission-queue',
     image: process.env.JUDGE_IMAGE || undefined,
   },
+  mail: {
+    host: process.env.SMTP_HOST || 'localhost',
+    port: parseInt(process.env.SMTP_PORT || '1025', 10),
+    secure: process.env.SMTP_SECURE === 'true',
+    user: process.env.SMTP_USER || undefined,
+    pass: process.env.SMTP_PASS || undefined,
+    from: process.env.MAIL_FROM || '"CodePlatform" <no-reply@codeplatform.local>',
+    devMode: process.env.MAIL_DEV_MODE === 'true' || (process.env.NODE_ENV === 'development' && process.env.MAIL_DEV_MODE !== 'false'),
+  },
 });

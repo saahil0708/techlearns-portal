@@ -123,7 +123,7 @@ export async function deleteUserApi(id: string) {
   return data.deleteUser;
 }
 
-export async function bulkInviteUsersApi(input: { users: Array<{ name: string; email: string; role?: string; collegeId?: string }> }) {
+export async function bulkInviteUsersApi(input: { users: Array<{ name: string; email: string; role?: string; collegeId?: string; batchId?: string; rollNo?: string }> }) {
   const data = await fetchGraphQL<{ bulkInviteUsers: { invited: number; expiresInHours: number; invitationLinks?: Array<{ email: string; activationUrl: string }> } }>(BULK_INVITE_USERS_MUTATION, { input });
   return data.bulkInviteUsers;
 }

@@ -115,6 +115,7 @@ model User {
   websiteUrl             String?
   resumeUrl              String?
   resumeFileName         String?
+  rollNo                 String?
   contestRating          Int        @default(1500)
   ratingTier             String     @default("Novice")
   createdAt              DateTime   @default(now())
@@ -225,6 +226,7 @@ model UserInvitation {
   role        Role     @default(STUDENT)
   collegeId   String?
   batchId     String?
+  rollNo      String?
   tokenHash   String   @unique
   expiresAt   DateTime
   acceptedAt  DateTime?
@@ -315,6 +317,7 @@ model BatchStudent {
   id         String   @id @default(uuid())
   batchId    String
   userId     String
+  rollNo     String?
   enrolledAt DateTime @default(now())
 
   batch Batch @relation(fields: [batchId], references: [id], onDelete: Cascade)

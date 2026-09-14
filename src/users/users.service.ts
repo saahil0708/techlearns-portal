@@ -13,6 +13,7 @@ import bcrypt from 'bcryptjs';
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes } from 'node:crypto';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { MailService } from '../mail/mail.service.js';
 import { BulkInviteUsersInput } from './dto/bulk-invite.input.js';
 import { CreateUserInput } from './dto/create-user.input.js';
 import { UpdateUserInput } from './dto/update-user.input.js';
@@ -41,6 +42,7 @@ export const userSanitizedSelect: Prisma.UserSelect = {
   websiteUrl: true,
   resumeUrl: true,
   resumeFileName: true,
+  rollNo: true,
   contestRating: true,
   ratingTier: true,
   createdAt: true,
@@ -63,6 +65,7 @@ export const userSanitizedSelect: Prisma.UserSelect = {
     select: {
       id: true,
       batchId: true,
+      rollNo: true,
       batch: {
         select: {
           id: true,
@@ -93,6 +96,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     @Optional() private configService?: ConfigService,
+    @Optional() private mailService?: MailService,
   ) {
     const currentKey = this.configService?.get<string>('auth.totp.encryptionKey') || process.env.TOTP_ENCRYPTION_KEY;
     const previousKeys = this.configService?.get<string[]>('auth.totp.previousEncryptionKeys') ||
@@ -632,6 +636,7 @@ export class UsersService {
     if (input.websiteUrl !== undefined) data.websiteUrl = input.websiteUrl;
     if (input.resumeUrl !== undefined) data.resumeUrl = input.resumeUrl;
     if (input.resumeFileName !== undefined) data.resumeFileName = input.resumeFileName;
+    if (input.rollNo !== undefined) data.rollNo = input.rollNo;
     if (input.contestRating !== undefined) data.contestRating = input.contestRating;
     if (input.ratingTier !== undefined) data.ratingTier = input.ratingTier;
 
@@ -691,7 +696,7 @@ export class UsersService {
 
     const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
     const appUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const deliveries: Array<{ email: string; activationUrl: string }> = [];
+    const deliveries: Array<{ email: string; activationUrl: string; invitationId: string }> = [];
 
     await this.prisma.$transaction(async (tx) => {
       for (const item of input.users) {
@@ -732,6 +737,7 @@ export class UsersService {
             role: item.role,
             collegeId: item.collegeId,
             batchId: item.batchId,
+            rollNo: item.rollNo,
             tokenHash: this.hashInvitationToken(rawToken),
             expiresAt,
           },
@@ -741,7 +747,7 @@ export class UsersService {
         await tx.invitationDelivery.create({
           data: { invitationId: invitation.id, email, activationUrl: encryptedActivationUrl },
         });
-        deliveries.push({ email, activationUrl });
+        deliveries.push({ email, activationUrl, invitationId: invitation.id });
       }
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 
@@ -754,7 +760,50 @@ export class UsersService {
       }
     }
 
-    return { invited: input.users.length, expiresInHours: 72, invitationLinks: deliveries };
+    // Dispatch rich invitation emails asynchronously
+    if (this.mailService) {
+      const batchIds = [...new Set(input.users.map((u) => u.batchId).filter(Boolean))] as string[];
+      const collegeIds = [...new Set(input.users.map((u) => u.collegeId).filter(Boolean))] as string[];
+
+      const [batches, colleges] = await Promise.all([
+        batchIds.length > 0 ? this.prisma.batch.findMany({ where: { id: { in: batchIds } }, select: { id: true, name: true } }) : [],
+        collegeIds.length > 0 ? this.prisma.college.findMany({ where: { id: { in: collegeIds } }, select: { id: true, name: true } }) : [],
+      ]);
+
+      const batchMap = new Map(batches.map((b) => [b.id, b.name]));
+      const collegeMap = new Map(colleges.map((c) => [c.id, c.name]));
+
+      for (const item of input.users) {
+        const delivery = deliveries.find((d) => d.email.toLowerCase() === item.email.toLowerCase());
+        if (delivery) {
+          const batchName = item.batchId ? batchMap.get(item.batchId) : undefined;
+          const collegeName = item.collegeId ? collegeMap.get(item.collegeId) : undefined;
+          this.mailService
+            .sendInvitationEmail({
+              to: item.email,
+              name: item.name,
+              activationUrl: delivery.activationUrl,
+              batchName,
+              collegeName,
+              expiresInHours: 72,
+            })
+            .then(async (res) => {
+              if (res.success) {
+                await this.prisma.invitationDelivery.updateMany({
+                  where: { invitationId: delivery.invitationId, status: 'PENDING' },
+                  data: { activationUrl: null as any, status: 'DELIVERED' },
+                });
+              }
+            })
+            .catch((err) => {
+              this.logger.warn(`Failed to dispatch background invitation email to ${item.email}: ${err.message}`);
+            });
+        }
+      }
+    }
+
+    const invitationLinks = deliveries.map(({ email, activationUrl }) => ({ email, activationUrl }));
+    return { invited: input.users.length, expiresInHours: 72, invitationLinks };
   }
 
   async acceptInvitation(token: string, password: string): Promise<SanitizedUser> {
@@ -774,6 +823,7 @@ export class UsersService {
           name: invitation.name,
           passwordHash: await bcrypt.hash(password, 12),
           globalRole: invitation.role,
+          rollNo: invitation.rollNo,
         },
         select: userSanitizedSelect,
       });
@@ -790,10 +840,13 @@ export class UsersService {
               userId: user.id,
             },
           },
-          update: {},
+          update: {
+            rollNo: invitation.rollNo,
+          },
           create: {
             batchId: invitation.batchId,
             userId: user.id,
+            rollNo: invitation.rollNo,
           },
         });
       }

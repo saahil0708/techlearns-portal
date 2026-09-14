@@ -41,6 +41,7 @@ input BulkInviteItemInput {
   email: String!
   name: String!
   role: Role! = STUDENT
+  rollNo: String
 }
 
 type BulkInviteResult {
@@ -568,6 +569,7 @@ input UpdateUserInput {
   ratingTier: String
   resumeFileName: String
   resumeUrl: String
+  rollNo: String
   specialization: String
   status: UserStatus
   websiteUrl: String
@@ -576,6 +578,7 @@ input UpdateUserInput {
 type User {
   avatarUrl: String
   bannerUrl: String
+  batchEnrollments: [UserBatchEnrollment!]
   bio: String
   birthDate: String
   contestRating: Int!
@@ -588,16 +591,44 @@ type User {
   institution: String
   linkedinUrl: String
   location: String
+  memberships: [UserCollegeMembership!]
   name: String!
   officeHours: String
   phone: String
   ratingTier: String!
   resumeFileName: String
   resumeUrl: String
+  rollNo: String
   specialization: String
   status: UserStatus!
   updatedAt: DateTime!
   websiteUrl: String
+}
+
+type UserBatchEnrollment {
+  batch: UserBatchEnrollmentBatch
+  batchId: String!
+  id: ID!
+  rollNo: String
+}
+
+type UserBatchEnrollmentBatch {
+  code: String
+  id: ID!
+  name: String!
+}
+
+type UserCollegeMembership {
+  college: UserCollegeMembershipCollege
+  collegeId: String!
+  id: ID!
+  role: Role!
+}
+
+type UserCollegeMembershipCollege {
+  code: String
+  id: ID!
+  name: String!
 }
 
 """Account activation status"""

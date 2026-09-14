@@ -57,6 +57,7 @@ import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import { generateBatchCode } from '@/utils/batch-code';
 
 // Components
 import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
@@ -577,11 +578,10 @@ export default function CollegeDetailClient({
         if (Array.isArray(liveBatches)) {
           const mapped: BatchItem[] = liveBatches.map((b: any) => {
             const resolvedName = b.name || (b.id ? `Batch ${b.id.slice(-4).toUpperCase()}` : 'Batch');
-            const sanitizedCodeSlug = resolvedName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase();
             return {
               id: b.id,
               name: resolvedName,
-              code: b.code || `${college.code}-${sanitizedCodeSlug || (b.id ? b.id.slice(-4).toUpperCase() : 'B1')}`,
+              code: b.code || generateBatchCode(resolvedName, b.id),
               studentsCount: b._count?.students || 0,
               maxCapacity: b.maxCapacity || 100,
               facultyLead: b.facultyLead || (faculty.length > 0 ? faculty[0].name : 'Unassigned'),

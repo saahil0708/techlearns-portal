@@ -105,6 +105,11 @@ export class UpdateUserInput {
   @IsString()
   resumeFileName?: string;
 
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  rollNo?: string;
+
   @Field(() => Int, { nullable: true })
   @IsOptional()
   @IsInt()

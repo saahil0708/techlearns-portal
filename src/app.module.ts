@@ -19,6 +19,7 @@ import { validateEnvironment } from './config/env.validation.js';
 import { ContestsModule } from './contests/contests.module.js';
 import { CoursesModule } from './courses/courses.module.js';
 import { JudgeModule } from './judge/judge.module.js';
+import { MailModule } from './mail/mail.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { ProblemsModule } from './problems/problems.module.js';
 import { SubmissionsModule } from './submissions/submissions.module.js';
@@ -82,6 +83,7 @@ const dynamicObserveImports = hasValidObserveKeys
       context: ({ req, res }: { req: any; res: any }) => ({ req, res }),
     }),
     PrismaModule,
+    MailModule,
     UsersModule,
     AuthModule,
     CollegesModule,

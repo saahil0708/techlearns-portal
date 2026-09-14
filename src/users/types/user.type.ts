@@ -1,6 +1,60 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Role, UserStatus } from '@prisma/client';
 
+@ObjectType('UserCollegeMembershipCollege')
+export class UserCollegeMembershipCollegeType {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  name: string;
+
+  @Field(() => String, { nullable: true })
+  code?: string;
+}
+
+@ObjectType('UserCollegeMembership')
+export class UserCollegeMembershipType {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  collegeId: string;
+
+  @Field(() => Role)
+  role: Role;
+
+  @Field(() => UserCollegeMembershipCollegeType, { nullable: true })
+  college?: UserCollegeMembershipCollegeType;
+}
+
+@ObjectType('UserBatchEnrollmentBatch')
+export class UserBatchEnrollmentBatchType {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  name: string;
+
+  @Field(() => String, { nullable: true })
+  code?: string;
+}
+
+@ObjectType('UserBatchEnrollment')
+export class UserBatchEnrollmentType {
+  @Field(() => ID)
+  id: string;
+
+  @Field(() => String)
+  batchId: string;
+
+  @Field(() => String, { nullable: true })
+  rollNo?: string;
+
+  @Field(() => UserBatchEnrollmentBatchType, { nullable: true })
+  batch?: UserBatchEnrollmentBatchType;
+}
+
 @ObjectType('User')
 export class UserType {
   @Field(() => ID)
@@ -63,11 +117,20 @@ export class UserType {
   @Field(() => String, { nullable: true })
   resumeFileName?: string;
 
+  @Field(() => String, { nullable: true })
+  rollNo?: string;
+
   @Field(() => Int, { defaultValue: 1500 })
   contestRating: number;
 
   @Field(() => String, { defaultValue: 'Novice' })
   ratingTier: string;
+
+  @Field(() => [UserCollegeMembershipType], { nullable: true })
+  memberships?: UserCollegeMembershipType[];
+
+  @Field(() => [UserBatchEnrollmentType], { nullable: true })
+  batchEnrollments?: UserBatchEnrollmentType[];
 
   @Field(() => Date)
   createdAt: Date;

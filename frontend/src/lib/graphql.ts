@@ -55,15 +55,24 @@ export async function fetchGraphQL<T = any>(
     cache: 'no-store',
   });
 
+  let result: GraphQLResponse<T> | null = null;
+  try {
+    result = await response.json();
+  } catch {
+    // Non-JSON response
+  }
+
+  if (result?.errors && result.errors.length > 0) {
+    const errorMessages = result.errors.map((e) => e.message).join(', ');
+    throw new Error(errorMessages || `GraphQL error: ${response.status} ${response.statusText}`);
+  }
+
   if (!response.ok) {
     throw new Error(`GraphQL HTTP error: ${response.status} ${response.statusText}`);
   }
 
-  const result: GraphQLResponse<T> = await response.json();
-
-  if (result.errors && result.errors.length > 0) {
-    const errorMessages = result.errors.map((e) => e.message).join(', ');
-    throw new Error(`GraphQL error: ${errorMessages}`);
+  if (!result || result.data === undefined) {
+    throw new Error(`GraphQL transport error: Invalid or empty JSON response from server (status ${response.status})`);
   }
 
   return result.data as T;
@@ -83,6 +92,29 @@ export const USERS_QUERY = `
         globalRole
         status
         createdAt
+        institution
+        department
+        rollNo
+        memberships {
+          id
+          collegeId
+          role
+          college {
+            id
+            name
+            code
+          }
+        }
+        batchEnrollments {
+          id
+          batchId
+          rollNo
+          batch {
+            id
+            name
+            code
+          }
+        }
       }
       meta {
         total
