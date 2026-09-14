@@ -860,7 +860,7 @@ export const apiService = {
   // ----------------------------------------------------
   // COURSES & CURRICULUM
   // ----------------------------------------------------
-  async getCourses(params?: { page?: number; limit?: number; search?: string; status?: string }) {
+  async getCourses(params?: { page?: number; limit?: number; search?: string; status?: string; collegeId?: string }) {
     try {
       const data = await deduplicatedQuery<{ courses: { items: any[]; meta: any } }>(
         COURSES_QUERY,

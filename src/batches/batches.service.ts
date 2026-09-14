@@ -1,8 +1,15 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { userSanitizedSelect } from '../users/users.service.js';
 import { CreateBatchDto } from './dto/create-batch.dto.js';
 import { UpdateBatchDto } from './dto/update-batch.dto.js';
+
+export interface StudentAssignment {
+  userId: string;
+  rollNo?: string;
+}
 
 @Injectable()
 export class BatchesService {
@@ -22,8 +29,17 @@ export class BatchesService {
         name: dto.name,
         collegeId: dto.collegeId,
         maxCapacity: dto.maxCapacity !== undefined ? Number(dto.maxCapacity) : 100,
+        status: dto.status || 'ACTIVE',
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         endDate: dto.endDate ? new Date(dto.endDate) : null,
+      },
+      include: {
+        college: {
+          select: { id: true, name: true, code: true },
+        },
+        _count: {
+          select: { students: true },
+        },
       },
     });
   }
@@ -32,12 +48,64 @@ export class BatchesService {
     return this.prisma.batch.findMany({
       where: { collegeId },
       include: {
+        college: {
+          select: { id: true, name: true, code: true },
+        },
         _count: {
           select: { students: true },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async findPaginated(args: PaginationArgs, collegeId?: string) {
+    const page = Math.max(1, args.page || 1);
+    const limit = Math.min(100, Math.max(1, args.limit || 10));
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.BatchWhereInput = {};
+    if (collegeId) {
+      where.collegeId = collegeId;
+    }
+
+    if (args.search?.trim()) {
+      where.name = { contains: args.search.trim(), mode: 'insensitive' };
+    }
+
+    const [total, items] = await Promise.all([
+      this.prisma.batch.count({ where }),
+      this.prisma.batch.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: args.sortBy
+          ? { [args.sortBy]: (args.sortOrder?.toLowerCase() as 'asc' | 'desc') || 'desc' }
+          : { createdAt: 'desc' },
+        include: {
+          college: {
+            select: { id: true, name: true, code: true },
+          },
+          _count: {
+            select: { students: true },
+          },
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    return {
+      items,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 
   async findOne(id: string) {
@@ -72,6 +140,14 @@ export class BatchesService {
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
       },
+      include: {
+        college: {
+          select: { id: true, name: true, code: true },
+        },
+        _count: {
+          select: { students: true },
+        },
+      },
     });
   }
 
@@ -83,9 +159,29 @@ export class BatchesService {
     });
   }
 
-  async assignStudents(batchId: string, userIds: string[]) {
+  async assignStudents(
+    batchId: string,
+    studentsOrIds: string[] | StudentAssignment[],
+  ) {
     const batch = await this.findOne(batchId);
-    const uniqueUserIds = [...new Set(userIds)];
+
+    // Normalize input to StudentAssignment array
+    const assignmentsList: StudentAssignment[] = Array.isArray(studentsOrIds)
+      ? studentsOrIds.map((item) => (typeof item === 'string' ? { userId: item } : item))
+      : [];
+
+    const uniqueAssignmentsMap = new Map<string, StudentAssignment>();
+    for (const assignment of assignmentsList) {
+      if (assignment.userId && !uniqueAssignmentsMap.has(assignment.userId)) {
+        uniqueAssignmentsMap.set(assignment.userId, assignment);
+      }
+    }
+
+    const uniqueUserIds = Array.from(uniqueAssignmentsMap.keys());
+    if (uniqueUserIds.length === 0) {
+      return this.getStudents(batchId);
+    }
+
     const users = await this.prisma.user.findMany({
       where: { id: { in: uniqueUserIds } },
       select: {
@@ -93,27 +189,30 @@ export class BatchesService {
         memberships: { where: { collegeId: batch.collegeId }, select: { id: true } },
       },
     });
+
     if (users.length !== uniqueUserIds.length || users.some((user) => user.memberships.length === 0)) {
       throw new ForbiddenException('All assigned students must belong to the batch college');
     }
 
-    const assignments = uniqueUserIds.map((userId) =>
-      this.prisma.batchStudent.upsert({
+    const operations = uniqueUserIds.map((userId) => {
+      const assignment = uniqueAssignmentsMap.get(userId);
+      return this.prisma.batchStudent.upsert({
         where: {
           batchId_userId: {
             batchId,
             userId,
           },
         },
-        update: {},
+        update: assignment?.rollNo !== undefined ? { rollNo: assignment.rollNo } : {},
         create: {
           batchId,
           userId,
+          rollNo: assignment?.rollNo ?? null,
         },
-      }),
-    );
+      });
+    });
 
-    await this.prisma.$transaction(assignments);
+    await this.prisma.$transaction(operations);
 
     return this.getStudents(batchId);
   }
@@ -156,5 +255,54 @@ export class BatchesService {
       },
       orderBy: { enrolledAt: 'desc' },
     });
+  }
+
+  async getStudentsPaginated(batchId: string, args: PaginationArgs) {
+    await this.findOne(batchId);
+
+    const page = Math.max(1, args.page || 1);
+    const limit = Math.min(100, Math.max(1, args.limit || 10));
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.BatchStudentWhereInput = { batchId };
+
+    if (args.search?.trim()) {
+      const term = args.search.trim();
+      where.OR = [
+        { rollNo: { contains: term, mode: 'insensitive' } },
+        { user: { name: { contains: term, mode: 'insensitive' } } },
+        { user: { email: { contains: term, mode: 'insensitive' } } },
+        { user: { phone: { contains: term, mode: 'insensitive' } } },
+      ];
+    }
+
+    const [total, items] = await Promise.all([
+      this.prisma.batchStudent.count({ where }),
+      this.prisma.batchStudent.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          user: {
+            select: userSanitizedSelect,
+          },
+        },
+        orderBy: { enrolledAt: 'desc' },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    return {
+      items,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
   }
 }

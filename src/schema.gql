@@ -26,6 +26,12 @@ type AdminMetrics {
   uptimePercentage: String!
 }
 
+input AssignStudentsInput {
+  batchId: String!
+  students: [BatchStudentAssignmentItem!]
+  userIds: [String!]
+}
+
 type AuditLogItem {
   action: String!
   createdAt: DateTime!
@@ -33,6 +39,49 @@ type AuditLogItem {
   id: ID!
   ipAddress: String
   status: String!
+}
+
+type Batch {
+  _count: BatchCounts
+  college: College
+  collegeId: String!
+  createdAt: DateTime!
+  endDate: DateTime
+  id: ID!
+  maxCapacity: Int!
+  name: String!
+  startDate: DateTime
+  status: String!
+  students: [BatchStudent!]
+  updatedAt: DateTime!
+}
+
+type BatchCounts {
+  students: Int!
+}
+
+type BatchStudent {
+  batchId: String!
+  enrolledAt: DateTime!
+  id: ID!
+  rollNo: String
+  user: User
+  userId: String!
+}
+
+input BatchStudentAssignmentItem {
+  rollNo: String
+  userId: String!
+}
+
+type BatchStudentsConnection {
+  items: [BatchStudent!]!
+  meta: PaginationMeta!
+}
+
+type BatchesConnection {
+  items: [Batch!]!
+  meta: PaginationMeta!
 }
 
 input BulkInviteItemInput {
@@ -168,6 +217,15 @@ type CoursesConnection {
   meta: PaginationMeta!
 }
 
+input CreateBatchInput {
+  collegeId: String!
+  endDate: String
+  maxCapacity: Int = 100
+  name: String!
+  startDate: String
+  status: String = "ACTIVE"
+}
+
 input CreateCollegeInput {
   address: String
   code: String!
@@ -267,12 +325,15 @@ type Mutation {
   addCollegeMember(collegeId: ID!, input: AddCollegeMemberInput!): Boolean!
   addContestProblem(contestId: ID!, input: AddContestProblemInput!): ContestProblem!
   addProblemTestCase(input: CreateTestCaseInput!, problemId: ID!): TestCase!
+  assignStudentsToBatch(input: AssignStudentsInput!): [BatchStudent!]!
   bulkInviteUsers(input: BulkInviteUsersInput!): BulkInviteResult!
+  createBatch(input: CreateBatchInput!): Batch!
   createCollege(input: CreateCollegeInput!): College!
   createContest(input: CreateContestInput!): Contest!
   createCourse(input: CreateCourseInput!): Course!
   createProblem(input: CreateProblemInput!): Problem!
   createUser(input: CreateUserInput!): User!
+  deleteBatch(id: ID!): Batch!
   deleteCollege(id: ID!): Boolean!
   deleteContest(id: ID!): Boolean!
   deleteCourse(id: ID!): Boolean!
@@ -280,7 +341,9 @@ type Mutation {
   deleteUser(id: ID!): Boolean!
   registerForContest(contestId: ID!): ContestRegistration!
   removeCollegeMember(collegeId: ID!, userId: ID!): Boolean!
+  removeStudentFromBatch(batchId: ID!, userId: ID!): BatchStudent!
   submitCode(input: CreateSubmissionInput!): Submission!
+  updateBatch(id: ID!, input: UpdateBatchInput!): Batch!
   updateCollege(id: ID!, input: UpdateCollegeInput!): College!
   updateContest(id: ID!, input: UpdateContestInput!): Contest!
   updateCourse(id: ID!, input: UpdateCourseInput!): Course!
@@ -351,6 +414,9 @@ enum ProgrammingLanguage {
 type Query {
   adminAuditLogs: [AuditLogItem!]!
   adminMetrics: AdminMetrics!
+  batch(id: ID!): Batch!
+  batchStudents(batchId: ID!, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc"): BatchStudentsConnection!
+  batches(collegeId: String, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc"): BatchesConnection!
   college(id: ID!): College
   colleges(limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: CollegeStatus): CollegesConnection!
   contest(id: ID!): Contest
@@ -512,6 +578,14 @@ type TopicSkill {
   pct: Int!
   solved: Int!
   total: Int!
+}
+
+input UpdateBatchInput {
+  endDate: String
+  maxCapacity: Int
+  name: String
+  startDate: String
+  status: String
 }
 
 input UpdateCollegeInput {

@@ -26,6 +26,14 @@ export class CreateBatchDto {
   maxCapacity?: number;
 
   @ApiPropertyOptional({
+    example: 'ACTIVE',
+    description: 'Status of the cohort or batch',
+  })
+  @IsOptional()
+  @IsString()
+  status?: string;
+
+  @ApiPropertyOptional({
     example: '2026-08-01T00:00:00.000Z',
     description: 'Batch start date',
   })

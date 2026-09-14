@@ -77,7 +77,11 @@ export class BatchesController {
   @ApiOperation({ summary: 'Assign students to a batch' })
   @ApiResponse({ status: 201, description: 'Students assigned successfully' })
   async assignStudents(@Param('id') id: string, @Body() dto: AssignStudentsDto) {
-    return this.batchesService.assignStudents(id, dto.userIds);
+    const assignments =
+      dto.students && dto.students.length > 0
+        ? dto.students
+        : dto.userIds || [];
+    return this.batchesService.assignStudents(id, assignments);
   }
 
   @Get(':id/students')
