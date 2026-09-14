@@ -407,21 +407,17 @@ export const apiService = {
   },
 
   async getCollegeMembers(collegeId: string) {
-    try {
-      const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/colleges/${collegeId}/members`, {
-        method: 'GET',
-        headers,
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const json = await res.json();
-        return json.data ?? json;
-      }
-      return [];
-    } catch {
-      return [];
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/colleges/${collegeId}/members`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to fetch college members: HTTP ${res.status}`);
     }
+    const json = await res.json();
+    return json.data ?? json ?? [];
   },
 
   // ----------------------------------------------------

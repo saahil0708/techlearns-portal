@@ -45,6 +45,13 @@ export default function BulkImportStudentsModal({
   const handleSimulateFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      if (!file.name.toLowerCase().endsWith('.csv')) {
+        setFileName(null);
+        setRowCount(0);
+        setParsedStudents([]);
+        toast.error('Please upload a valid .csv file.', 'Invalid File Format');
+        return;
+      }
       setFileName(file.name);
       const reader = new FileReader();
       reader.onload = (evt) => {
@@ -86,8 +93,12 @@ export default function BulkImportStudentsModal({
             }
           }
           setParsedStudents(entries);
-          setRowCount(entries.length || 1);
-          toast.success(`Parsed ${entries.length} student records from ${file.name}`, 'CSV Loaded');
+          setRowCount(entries.length);
+          if (entries.length === 0) {
+            toast.error('No valid student records found in the uploaded file.', 'Parse Error');
+          } else {
+            toast.success(`Parsed ${entries.length} student records from ${file.name}`, 'CSV Loaded');
+          }
         }
       };
       reader.readAsText(file);
@@ -110,27 +121,27 @@ export default function BulkImportStudentsModal({
   };
 
   const handleExecuteImport = async () => {
+    if (parsedStudents.length === 0) return;
     setIsProcessing(true);
     try {
-      if (parsedStudents.length > 0) {
-        await apiService.bulkInviteUsers({
-          users: parsedStudents.map((s) => ({
-            name: s.name,
-            email: s.email,
-            role: 'STUDENT',
-            ...(s.rollNo ? { rollNo: s.rollNo } : {}),
-          })),
-        });
-      }
-    } catch (err) {
-      console.error('Failed to bulk import students:', err);
-    } finally {
-      setIsProcessing(false);
-      onImportSuccess(rowCount || parsedStudents.length || 1);
+      await apiService.bulkInviteUsers({
+        users: parsedStudents.map((s) => ({
+          name: s.name,
+          email: s.email,
+          role: 'STUDENT',
+          ...(s.rollNo ? { rollNo: s.rollNo } : {}),
+        })),
+      });
+      onImportSuccess(parsedStudents.length);
       onClose();
       setFileName(null);
       setRowCount(0);
       setParsedStudents([]);
+    } catch (err: any) {
+      console.error('Failed to bulk import students:', err);
+      toast.error(err?.message || 'Failed to import student roster', 'Import Failed');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -179,7 +190,7 @@ export default function BulkImportStudentsModal({
           </Box>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>
-              Bulk Roster Import (CSV / Excel)
+              Bulk Roster Import (CSV)
             </Typography>
             <Typography variant="body2" sx={{ color: '#64748B', fontSize: '0.8rem' }}>
               Upload and provision student coder accounts into cohorts
@@ -246,14 +257,14 @@ export default function BulkImportStudentsModal({
             },
           }}
         >
-          <input type="file" accept=".csv, .xlsx, .xls" hidden onChange={handleSimulateFileSelect} />
+          <input type="file" accept=".csv" hidden onChange={handleSimulateFileSelect} />
           <CloudUploadRoundedIcon sx={{ fontSize: '2.8rem', color: '#2563EB' }} />
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A' }}>
-              {fileName ? fileName : 'Click to select or drag CSV / Excel file'}
+              {fileName ? fileName : 'Click to select or drag CSV file'}
             </Typography>
             <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mt: 0.5 }}>
-              Supported formats: .CSV, .XLSX, .XLS (Up to 5,000 students per batch)
+              Supported format: .CSV (Up to 5,000 students per batch)
             </Typography>
           </Box>
           {fileName && (
@@ -309,7 +320,7 @@ export default function BulkImportStudentsModal({
           Cancel
         </Button>
         <Button
-          disabled={!fileName || isProcessing}
+          disabled={!fileName || isProcessing || parsedStudents.length === 0}
           onClick={handleExecuteImport}
           variant="contained"
           sx={{

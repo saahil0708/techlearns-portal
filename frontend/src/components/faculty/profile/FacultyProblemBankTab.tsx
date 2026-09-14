@@ -64,6 +64,7 @@ export default function FacultyProblemBankTab({
   // Test Cases Inspection State
   const [inspectingProblem, setInspectingProblem] = useState<any | null>(null);
   const [testCases, setTestCases] = useState<any[]>([]);
+  const [testCaseError, setTestCaseError] = useState<string | null>(null);
   const [loadingTestCases, setLoadingTestCases] = useState(false);
   const requestTokenRef = React.useRef<number>(0);
 
@@ -91,15 +92,19 @@ export default function FacultyProblemBankTab({
   const handleOpenTestCases = async (problem: any) => {
     const token = ++requestTokenRef.current;
     setInspectingProblem(problem);
+    setTestCaseError(null);
+    setTestCases([]);
     setLoadingTestCases(true);
     try {
       const cases = await apiService.getProblemTestCases(problem.id);
       if (token === requestTokenRef.current) {
         setTestCases(Array.isArray(cases) ? cases : []);
       }
-    } catch {
+    } catch (err: any) {
       if (token === requestTokenRef.current) {
-        setTestCases([]);
+        const errorMsg = err?.message || 'Failed to load test cases for this problem.';
+        setTestCaseError(errorMsg);
+        toast.error(errorMsg, 'Test Case Error');
       }
     } finally {
       if (token === requestTokenRef.current) {
@@ -151,7 +156,7 @@ export default function FacultyProblemBankTab({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flex: 1, minWidth: 260, flexWrap: 'wrap' }}>
           <TextField
             size="small"
-            placeholder="Search problems by title, slug, tag..."
+            placeholder="Search problems by title or slug..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             slotProps={{
@@ -460,6 +465,12 @@ export default function FacultyProblemBankTab({
           {loadingTestCases ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
               <CircularProgress size={28} sx={{ color: '#2563EB' }} />
+            </Box>
+          ) : testCaseError ? (
+            <Box sx={{ textAlign: 'center', py: 6, color: '#DC2626' }}>
+              <Typography sx={{ fontSize: '0.88rem', fontWeight: 600 }}>
+                {testCaseError}
+              </Typography>
             </Box>
           ) : testCases.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 6, color: '#94A3B8' }}>

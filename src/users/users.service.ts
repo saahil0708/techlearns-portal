@@ -762,6 +762,7 @@ export class UsersService {
 
     // Dispatch rich invitation emails asynchronously
     if (this.mailService) {
+      const mailService = this.mailService;
       const batchIds = [...new Set(input.users.map((u) => u.batchId).filter(Boolean))] as string[];
       const collegeIds = [...new Set(input.users.map((u) => u.collegeId).filter(Boolean))] as string[];
 
@@ -778,25 +779,55 @@ export class UsersService {
         if (delivery) {
           const batchName = item.batchId ? batchMap.get(item.batchId) : undefined;
           const collegeName = item.collegeId ? collegeMap.get(item.collegeId) : undefined;
-          this.mailService
-            .sendInvitationEmail({
-              to: item.email,
-              name: item.name,
-              activationUrl: delivery.activationUrl,
-              batchName,
-              collegeName,
-              expiresInHours: 72,
+          this.prisma.invitationDelivery
+            .updateMany({
+              where: { invitationId: delivery.invitationId, status: 'PENDING' },
+              data: { status: 'CLAIMED', claimedAt: new Date(), attempts: { increment: 1 } },
             })
-            .then(async (res) => {
-              if (res.success) {
-                await this.prisma.invitationDelivery.updateMany({
-                  where: { invitationId: delivery.invitationId, status: 'PENDING' },
-                  data: { activationUrl: null as any, status: 'DELIVERED' },
+            .then(async (claim) => {
+              if (claim.count !== 1) return;
+              let sendSucceeded = false;
+              try {
+                const res = await mailService.sendInvitationEmail({
+                  to: item.email,
+                  name: item.name,
+                  activationUrl: delivery.activationUrl,
+                  batchName,
+                  collegeName,
+                  expiresInHours: 72,
                 });
+                sendSucceeded = Boolean(res?.success);
+              } catch (err: any) {
+                sendSucceeded = false;
+                this.logger.warn(`Failed to dispatch background invitation email to ${item.email}: ${err.message}`);
+              }
+
+              if (sendSucceeded) {
+                try {
+                  await this.prisma.invitationDelivery.updateMany({
+                    where: { invitationId: delivery.invitationId, status: 'CLAIMED' },
+                    data: { activationUrl: null as any, status: 'DELIVERED' },
+                  });
+                } catch (finalizeErr: any) {
+                  this.logger.error(
+                    `Invitation email sent to ${item.email}, but failed to finalize delivery record: ${finalizeErr.message}`,
+                  );
+                }
+              } else {
+                await this.prisma.invitationDelivery
+                  .updateMany({
+                    where: { invitationId: delivery.invitationId, status: 'CLAIMED' },
+                    data: { status: 'PENDING' },
+                  })
+                  .catch((revertErr) => {
+                    this.logger.warn(
+                      `Failed to reset invitation delivery status to PENDING for ${item.email}: ${revertErr.message}`,
+                    );
+                  });
               }
             })
             .catch((err) => {
-              this.logger.warn(`Failed to dispatch background invitation email to ${item.email}: ${err.message}`);
+              this.logger.warn(`Failed to claim invitation delivery for ${item.email}: ${err.message}`);
             });
         }
       }

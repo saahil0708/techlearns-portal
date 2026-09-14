@@ -87,6 +87,16 @@ export default function FacultyCreateProblemModal({
       toast.error('Please provide a problem statement.', 'Validation Error');
       return;
     }
+    const hasSampleInput = Boolean(sampleInput.trim());
+    const hasSampleOutput = Boolean(sampleOutput.trim());
+
+    if ((hasSampleInput && !hasSampleOutput) || (!hasSampleInput && hasSampleOutput)) {
+      toast.error(
+        'Please provide both Sample Input and Expected Output, or leave both empty.',
+        'Validation Error'
+      );
+      return;
+    }
 
     setCreating(true);
     try {
@@ -104,11 +114,11 @@ export default function FacultyCreateProblemModal({
       });
 
       // If sample test case provided, add it
-      if (created?.id && sampleInput.trim() && sampleOutput.trim()) {
+      if (created?.id && hasSampleInput && hasSampleOutput) {
         try {
           await apiService.addProblemTestCase(created.id, {
-            input: sampleInput.trim(),
-            expectedOutput: sampleOutput.trim(),
+            input: sampleInput,
+            expectedOutput: sampleOutput,
             explanation: sampleExplanation.trim() || undefined,
             isHidden: false,
             order: 0,

@@ -19,6 +19,16 @@ export interface SentEmailRecord {
   previewUrl?: string;
 }
 
+function escapeHtml(val: string | number | null | undefined): string {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 @Injectable()
 export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
@@ -87,13 +97,20 @@ Best regards,
 CodePlatform Team
     `.trim();
 
+    const safeName = escapeHtml(options.name);
+    const safeCollege = escapeHtml(college);
+    const safeBatch = escapeHtml(batch);
+    const safeTo = escapeHtml(options.to);
+    const safeActivationUrl = escapeHtml(options.activationUrl);
+    const safeSubject = escapeHtml(subject);
+
     const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${subject}</title>
+  <title>${safeSubject}</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0F172A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #F8FAFC;">
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="min-width: 100%; background-color: #0F172A;">
@@ -110,7 +127,7 @@ CodePlatform Team
                       ⚡ CODE<span style="color: #F8FAFC;">PLATFORM</span>
                     </div>
                     <div style="font-size: 12px; color: #94A3B8; margin-top: 4px; font-weight: 500;">
-                      ${college}
+                      ${safeCollege}
                     </div>
                   </td>
                 </tr>
@@ -122,20 +139,20 @@ CodePlatform Team
           <tr>
             <td style="padding: 32px;">
               <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 700; color: #F8FAFC; letter-spacing: -0.3px;">
-                You've been invited to join ${batch}
+                You've been invited to join ${safeBatch}
               </h1>
               <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #CBD5E1;">
-                Hello <strong>${options.name}</strong>,
+                Hello <strong>${safeName}</strong>,
               </p>
               <p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #CBD5E1;">
-                Your instructor has created your account on CodePlatform for <strong>${college}</strong>. You'll have access to hands-on coding challenges, real-time code evaluation, interactive courses, and competitive contests.
+                Your instructor has created your account on CodePlatform for <strong>${safeCollege}</strong>. You'll have access to hands-on coding challenges, real-time code evaluation, interactive courses, and competitive contests.
               </p>
 
               <!-- CTA Button -->
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 28px 0;">
                 <tr>
                   <td align="center" style="border-radius: 10px; background-color: #2563EB;">
-                    <a href="${options.activationUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 15px; font-weight: 700; color: #FFFFFF; text-decoration: none; border-radius: 10px; background-color: #2563EB; letter-spacing: 0.2px;">
+                    <a href="${safeActivationUrl}" target="_blank" style="display: inline-block; padding: 14px 32px; font-size: 15px; font-weight: 700; color: #FFFFFF; text-decoration: none; border-radius: 10px; background-color: #2563EB; letter-spacing: 0.2px;">
                       Activate Your Account &rarr;
                     </a>
                   </td>
@@ -154,7 +171,7 @@ CodePlatform Team
                 If the button above does not work, copy and paste this link into your browser:
               </p>
               <p style="margin: 0; font-size: 12px; line-height: 1.4; color: #38BDF8; word-break: break-all; font-family: monospace; background-color: #0F172A; padding: 10px; border-radius: 6px; border: 1px solid #334155;">
-                ${options.activationUrl}
+                ${safeActivationUrl}
               </p>
             </td>
           </tr>
@@ -163,7 +180,7 @@ CodePlatform Team
           <tr>
             <td style="padding: 24px 32px; border-top: 1px solid #334155; background-color: #0F172A; text-align: center;">
               <p style="margin: 0 0 6px 0; font-size: 12px; color: #64748B;">
-                This invitation was dispatched for ${options.to}
+                This invitation was dispatched for ${safeTo}
               </p>
               <p style="margin: 0; font-size: 11px; color: #475569;">
                 &copy; ${new Date().getFullYear()} CodePlatform. All rights reserved.

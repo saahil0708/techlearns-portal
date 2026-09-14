@@ -29,17 +29,20 @@ import { UpdateCollegeDto } from './dto/update-college.dto.js';
 export class CollegesController {
   constructor(private collegesService: CollegesService) {}
 
-  private assertCollegeAdminAccess(user: CurrentUserPayload, targetCollegeId: string): void {
+  private assertCollegeAdminAccess(
+    user: CurrentUserPayload,
+    targetCollegeId: string,
+    targetRole?: Role,
+  ): void {
     if (user.globalRole === Role.SUPER_ADMIN || user.globalRole === Role.PLATFORM_ADMIN) {
       return;
     }
-    const hasAdmin = user.memberships?.some(
-      (m) =>
-        m.collegeId === targetCollegeId &&
-        (m.role === Role.COLLEGE_ADMIN || m.role === Role.FACULTY),
-    );
-    if (!hasAdmin) {
+    const membership = user.memberships?.find((m) => m.collegeId === targetCollegeId);
+    if (!membership || (membership.role !== Role.COLLEGE_ADMIN && membership.role !== Role.FACULTY)) {
       throw new ForbiddenException('You do not have administrative or faculty access to this college');
+    }
+    if (membership.role === Role.FACULTY && targetRole && targetRole !== Role.STUDENT) {
+      throw new ForbiddenException('Faculty can only manage student memberships');
     }
   }
 
@@ -91,8 +94,15 @@ export class CollegesController {
     @Body() dto: AddMemberDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    this.assertCollegeAdminAccess(user, id);
-    return this.collegesService.addMember(id, dto);
+    this.assertCollegeAdminAccess(user, id, dto.role);
+    let allowedTargetRole: Role | undefined;
+    if (user.globalRole !== Role.SUPER_ADMIN && user.globalRole !== Role.PLATFORM_ADMIN) {
+      const membership = user.memberships?.find((m) => m.collegeId === id);
+      if (membership?.role === Role.FACULTY) {
+        allowedTargetRole = Role.STUDENT;
+      }
+    }
+    return this.collegesService.addMember(id, dto, allowedTargetRole);
   }
 
   @Get(':id/members')
@@ -113,6 +123,13 @@ export class CollegesController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     this.assertCollegeAdminAccess(user, id);
-    return this.collegesService.removeMember(id, userId);
+    let allowedRole: Role | undefined;
+    if (user.globalRole !== Role.SUPER_ADMIN && user.globalRole !== Role.PLATFORM_ADMIN) {
+      const membership = user.memberships?.find((m) => m.collegeId === id);
+      if (membership?.role === Role.FACULTY) {
+        allowedRole = Role.STUDENT;
+      }
+    }
+    return this.collegesService.removeMember(id, userId, allowedRole);
   }
 }

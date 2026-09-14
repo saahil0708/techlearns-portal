@@ -55,11 +55,17 @@ export function parseCsvText(text: string): string[][] {
   let currentField = '';
   let inQuotes = false;
   let hasRowSyntax = false;
+  let isFieldQuoted = false;
   let i = 0;
 
-  const pushCurrentRow = () => {
-    currentRow.push(currentField.trim());
+  const pushCurrentField = () => {
+    currentRow.push(isFieldQuoted ? currentField : currentField.trim());
     currentField = '';
+    isFieldQuoted = false;
+  };
+
+  const pushCurrentRow = () => {
+    pushCurrentField();
     const shouldKeep =
       hasRowSyntax ||
       currentRow.length > 1 ||
@@ -76,6 +82,7 @@ export function parseCsvText(text: string): string[][] {
 
     if (char === '"') {
       hasRowSyntax = true;
+      isFieldQuoted = true;
       if (inQuotes && text[i + 1] === '"') {
         currentField += '"';
         i += 2;
@@ -84,8 +91,7 @@ export function parseCsvText(text: string): string[][] {
       inQuotes = !inQuotes;
     } else if (char === ',' && !inQuotes) {
       hasRowSyntax = true;
-      currentRow.push(currentField.trim());
-      currentField = '';
+      pushCurrentField();
     } else if ((char === '\r' || char === '\n') && !inQuotes) {
       if (char === '\r' && text[i + 1] === '\n') {
         i++;
@@ -100,7 +106,7 @@ export function parseCsvText(text: string): string[][] {
     i++;
   }
 
-  if (hasRowSyntax || currentField.length > 0 || currentRow.length > 0) {
+  if (hasRowSyntax || currentField.length > 0 || currentRow.length > 0 || isFieldQuoted) {
     pushCurrentRow();
   }
 

@@ -18,17 +18,20 @@ import { CollegesConnection } from './types/colleges-connection.type.js';
 export class CollegesResolver {
   constructor(private collegesService: CollegesService) {}
 
-  private checkCollegeAdminAccess(user: CurrentUserPayload, targetCollegeId: string): void {
+  private checkCollegeAdminAccess(
+    user: CurrentUserPayload,
+    targetCollegeId: string,
+    targetRole?: Role,
+  ): void {
     if (user.globalRole === Role.SUPER_ADMIN || user.globalRole === Role.PLATFORM_ADMIN) {
       return;
     }
-    const hasAdmin = user.memberships?.some(
-      (m) =>
-        m.collegeId === targetCollegeId &&
-        (m.role === Role.COLLEGE_ADMIN || m.role === Role.FACULTY),
-    );
-    if (!hasAdmin) {
+    const membership = user.memberships?.find((m) => m.collegeId === targetCollegeId);
+    if (!membership || (membership.role !== Role.COLLEGE_ADMIN && membership.role !== Role.FACULTY)) {
       throw new ForbiddenException('You do not have administrative or faculty access to this college');
+    }
+    if (membership.role === Role.FACULTY && targetRole && targetRole !== Role.STUDENT) {
+      throw new ForbiddenException('Faculty can only manage student memberships');
     }
   }
 
@@ -110,8 +113,18 @@ export class CollegesResolver {
     @Args('input') input: AddCollegeMemberInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
-    this.checkCollegeAdminAccess(currentUser, collegeId);
-    await this.collegesService.addMember(collegeId, input);
+    this.checkCollegeAdminAccess(currentUser, collegeId, input.role);
+    let allowedTargetRole: Role | undefined;
+    if (
+      currentUser.globalRole !== Role.SUPER_ADMIN &&
+      currentUser.globalRole !== Role.PLATFORM_ADMIN
+    ) {
+      const membership = currentUser.memberships?.find((m) => m.collegeId === collegeId);
+      if (membership?.role === Role.FACULTY) {
+        allowedTargetRole = Role.STUDENT;
+      }
+    }
+    await this.collegesService.addMember(collegeId, input, allowedTargetRole);
     return true;
   }
 
@@ -124,7 +137,17 @@ export class CollegesResolver {
     @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
     this.checkCollegeAdminAccess(currentUser, collegeId);
-    await this.collegesService.removeMember(collegeId, userId);
+    let allowedRole: Role | undefined;
+    if (
+      currentUser.globalRole !== Role.SUPER_ADMIN &&
+      currentUser.globalRole !== Role.PLATFORM_ADMIN
+    ) {
+      const membership = currentUser.memberships?.find((m) => m.collegeId === collegeId);
+      if (membership?.role === Role.FACULTY) {
+        allowedRole = Role.STUDENT;
+      }
+    }
+    await this.collegesService.removeMember(collegeId, userId, allowedRole);
     return true;
   }
 }

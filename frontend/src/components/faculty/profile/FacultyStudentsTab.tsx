@@ -143,7 +143,7 @@ export default function FacultyStudentsTab({
 
           const batchId = batchEnrollment?.batchId || batchEnrollment?.batch?.id;
           const batchName = batchEnrollment?.batch?.name || (batchId ? batchMap.get(batchId) : undefined) || 'Unassigned Cohort';
-          const rollNo = u.rollNo || batchEnrollment?.rollNo || u.studentId || `STU-${String(idx + 1).padStart(3, '0')}`;
+          const rollNo = u.rollNo || batchEnrollment?.rollNo || u.studentId || '—';
 
           return {
             id: u.id,

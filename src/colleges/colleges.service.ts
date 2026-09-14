@@ -1,5 +1,5 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { CollegeStatus, Prisma } from '@prisma/client';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { CollegeStatus, Prisma, Role } from '@prisma/client';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { userSanitizedSelect } from '../users/users.service.js';
@@ -186,7 +186,7 @@ export class CollegesService {
     return true;
   }
 
-  async addMember(collegeId: string, dto: AddMemberDto) {
+  async addMember(collegeId: string, dto: AddMemberDto, allowedTargetRole?: Role) {
     await this.findOne(collegeId);
 
     const user = await this.prisma.user.findUnique({
@@ -197,30 +197,49 @@ export class CollegesService {
       throw new NotFoundException(`User with ID ${dto.userId} not found`);
     }
 
-    return this.prisma.collegeMembership.upsert({
-      where: {
-        userId_collegeId: {
+    if (allowedTargetRole && dto.role !== allowedTargetRole) {
+      throw new ForbiddenException(`Faculty can only assign ${allowedTargetRole.toLowerCase()} role`);
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const existingMembership = await tx.collegeMembership.findUnique({
+        where: {
+          userId_collegeId: {
+            userId: dto.userId,
+            collegeId,
+          },
+        },
+      });
+
+      if (allowedTargetRole && existingMembership && existingMembership.role !== allowedTargetRole) {
+        throw new ForbiddenException('Faculty can only manage student memberships');
+      }
+
+      return tx.collegeMembership.upsert({
+        where: {
+          userId_collegeId: {
+            userId: dto.userId,
+            collegeId,
+          },
+        },
+        update: {
+          role: dto.role,
+        },
+        create: {
           userId: dto.userId,
           collegeId,
+          role: dto.role,
         },
-      },
-      update: {
-        role: dto.role,
-      },
-      create: {
-        userId: dto.userId,
-        collegeId,
-        role: dto.role,
-      },
-      include: {
-        user: {
-          select: userSanitizedSelect,
+        include: {
+          user: {
+            select: userSanitizedSelect,
+          },
         },
-      },
-    });
+      });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 
-  async removeMember(collegeId: string, userId: string) {
+  async removeMember(collegeId: string, userId: string, allowedRole?: Role) {
     await this.findOne(collegeId);
 
     const membership = await this.prisma.collegeMembership.findUnique({
@@ -236,30 +255,40 @@ export class CollegesService {
       throw new NotFoundException('User is not a member of this college');
     }
 
-    const collegeBatches = await this.prisma.batch.findMany({
-      where: { collegeId },
-      select: { id: true },
-    });
-    const batchIds = collegeBatches.map((b) => b.id);
+    if (allowedRole && membership.role !== allowedRole) {
+      throw new ForbiddenException(`Faculty can only remove ${allowedRole.toLowerCase()} members`);
+    }
 
-    await this.prisma.$transaction([
-      this.prisma.batchStudent.deleteMany({
+    return this.prisma.$transaction(async (tx) => {
+      const collegeBatches = await tx.batch.findMany({
+        where: { collegeId },
+        select: { id: true },
+      });
+      const batchIds = collegeBatches.map((b) => b.id);
+
+      if (batchIds.length > 0) {
+        await tx.batchStudent.deleteMany({
+          where: {
+            userId,
+            batchId: { in: batchIds },
+          },
+        });
+      }
+
+      const deleted = await tx.collegeMembership.deleteMany({
         where: {
           userId,
-          batchId: { in: batchIds },
+          collegeId,
+          ...(allowedRole ? { role: allowedRole } : {}),
         },
-      }),
-      this.prisma.collegeMembership.delete({
-        where: {
-          userId_collegeId: {
-            userId,
-            collegeId,
-          },
-        },
-      }),
-    ]);
+      });
 
-    return true;
+      if (deleted.count === 0) {
+        throw new ForbiddenException(`Faculty can only remove ${allowedRole ? allowedRole.toLowerCase() : 'permitted'} members`);
+      }
+
+      return true;
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 
   async getMembers(collegeId: string) {
@@ -273,6 +302,17 @@ export class CollegesService {
         },
       },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getMember(collegeId: string, userId: string) {
+    return this.prisma.collegeMembership.findUnique({
+      where: {
+        userId_collegeId: {
+          userId,
+          collegeId,
+        },
+      },
     });
   }
 }
