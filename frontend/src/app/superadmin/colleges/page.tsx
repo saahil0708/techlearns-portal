@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import CollegesDirectoryClient, { CollegeEntity } from '@/components/superadmin/colleges/CollegesDirectoryClient';
 import { apiService } from '@/lib/api-service';
+import { isCollegeOrganization } from '@/utils/organization';
 
 export const metadata: Metadata = {
   title: 'Colleges & University Tenants | CodePlatform Super Admin',
@@ -19,7 +20,8 @@ export default async function CollegesPage() {
   try {
     const liveData = await apiService.getColleges({ limit: 50 });
     if (liveData?.items && liveData.items.length > 0) {
-      colleges = liveData.items.map((item: any) => {
+      const collegeItems = liveData.items.filter((item: any) => isCollegeOrganization(item));
+      colleges = collegeItems.map((item: any) => {
         const faculty = Array.isArray(item.memberships)
           ? item.memberships.filter((m: any) => m.role === 'FACULTY' || m.role === 'COLLEGE_ADMIN').length
           : (item.facultyCount ?? 0);

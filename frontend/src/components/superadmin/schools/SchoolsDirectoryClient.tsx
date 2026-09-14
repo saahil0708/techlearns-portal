@@ -57,6 +57,7 @@ import Navbar from '@/components/superadmin/layout/Navbar';
 import type { NewSchoolData } from '@/components/superadmin/schools/CreateSchoolModal';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import { isSchoolOrganization } from '@/utils/organization';
 
 const CreateSchoolModal = dynamic(() => import('@/components/superadmin/schools/CreateSchoolModal'), { loading: () => null });
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
@@ -98,23 +99,34 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
     async function loadLiveSchools() {
       try {
         const liveData = await apiService.getColleges({ limit: 50 });
-        if (liveData?.items && liveData.items.length > 0) {
-          const mapped: SchoolEntity[] = liveData.items.map((item: any, idx: number) => ({
-            id: item.id,
-            name: item.name,
-            code: item.code,
-            domain: item.email && item.email.includes('@') ? item.email.split('@')[1] : `${item.code.toLowerCase()}.edu`,
-            district: 'Regional STEM District',
-            curriculum: idx % 2 === 0 ? 'STEM Honors / AP' : 'IB Diploma Programme',
-            grades: 'Grades 9–12',
-            studentsCount: item._count?.memberships || 0,
-            maxQuota: 3000,
-            labsCount: (item._count?.courses || 0) * 2 || 6,
-            gradeCohortsCount: item._count?.batches || 4,
-            teachersCount: 8,
-            status: item.status === 'ACTIVE' ? 'Active' : 'Suspended',
-            logoColor: ['#2563EB', '#DC2626', '#059669', '#7C3AED', '#D97706'][idx % 5],
-          }));
+        if (liveData?.items && Array.isArray(liveData.items)) {
+          const schoolItems = liveData.items.filter((item: any) => isSchoolOrganization(item));
+          const mapped: SchoolEntity[] = schoolItems.map((item: any, idx: number) => {
+            const studentCount = Array.isArray(item.memberships)
+              ? item.memberships.filter((m: any) => m.role === 'STUDENT').length
+              : (item.studentsCount ?? item._count?.memberships ?? 0);
+
+            const facultyCount = Array.isArray(item.memberships)
+              ? item.memberships.filter((m: any) => m.role === 'FACULTY' || m.role === 'COLLEGE_ADMIN').length
+              : (item.facultyCount ?? item.teachersCount ?? 8);
+
+            return {
+              id: item.id,
+              name: item.name,
+              code: item.code,
+              domain: item.email && item.email.includes('@') ? item.email.split('@')[1] : `${item.code.toLowerCase()}.edu`,
+              district: item.district || item.address || item.region || 'Regional STEM District',
+              curriculum: item.curriculum || item.tier || (idx % 2 === 0 ? 'STEM Honors / AP' : 'IB Diploma Programme'),
+              grades: item.grades || 'Grades 9–12',
+              studentsCount: studentCount,
+              maxQuota: item.maxQuota ?? item.quota ?? 3000,
+              labsCount: item.labsCount ?? (item._count?.courses !== undefined ? item._count.courses * 2 : 6),
+              gradeCohortsCount: item.gradeCohortsCount ?? item._count?.batches ?? 4,
+              teachersCount: facultyCount,
+              status: item.status === 'ACTIVE' ? 'Active' : (item.status || 'Active'),
+              logoColor: item.logoColor || ['#2563EB', '#DC2626', '#059669', '#7C3AED', '#D97706'][idx % 5],
+            };
+          });
           setSchools(mapped);
         }
       } catch (err) {
@@ -527,11 +539,13 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                 Quota Utilization
               </Typography>
               <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#059669', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {Math.round(
-                  (schools.reduce((acc, c) => acc + c.studentsCount, 0) /
-                    schools.reduce((acc, c) => acc + c.maxQuota, 0)) *
-                    100
-                )}%
+                {schools.reduce((acc, c) => acc + c.maxQuota, 0) > 0
+                  ? `${Math.round(
+                      (schools.reduce((acc, c) => acc + c.studentsCount, 0) /
+                        schools.reduce((acc, c) => acc + c.maxQuota, 0)) *
+                        100
+                    )}%`
+                  : '0%'}
               </Typography>
               <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
                 {schools.reduce((acc, c) => acc + c.studentsCount, 0).toLocaleString()} /{' '}
@@ -766,7 +780,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                 <TableBody>
                   {paginatedSchools.map((school) => {
                     const isSelected = selectedIds.includes(school.id);
-                    const quotaPercent = Math.round((school.studentsCount / school.maxQuota) * 100);
+                    const quotaPercent = school.maxQuota > 0 ? Math.round((school.studentsCount / school.maxQuota) * 100) : 0;
 
                     return (
                       <TableRow

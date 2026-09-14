@@ -74,12 +74,16 @@ export default function CurvedSidebar() {
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         gap: { xs: 2, md: 2.75 },
         zIndex: 1200,
         width: 58,
         py: 2,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        scrollbarWidth: 'none',
+        '&::-webkit-scrollbar': { display: 'none' },
       }}
     >
       {/* 1. Dedicated Top Logo Pill Capsule */}
@@ -200,8 +204,9 @@ export default function CurvedSidebar() {
       >
         {/* Logout Button */}
         <Tooltip title="Logout" placement="right" arrow>
-          <Box
+          <IconButton
             onClick={() => setLogoutDialogOpen(true)}
+            aria-label="Logout"
             sx={{
               width: 44,
               height: 44,
@@ -223,7 +228,7 @@ export default function CurvedSidebar() {
             }}
           >
             <LogoutRoundedIcon sx={{ fontSize: 20 }} />
-          </Box>
+          </IconButton>
         </Tooltip>
 
         {/* User Profile Avatar */}

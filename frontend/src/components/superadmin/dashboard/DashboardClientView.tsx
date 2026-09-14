@@ -30,6 +30,7 @@ const PlatformDirectoryTable = dynamic(
 
 import { useRouter } from 'next/navigation';
 import { apiService } from '@/lib/api-service';
+import { isSchoolOrganization } from '@/utils/organization';
 
 interface DashboardClientViewProps {
   initialSubmissions: SubmissionItem[];
@@ -61,7 +62,7 @@ export default function DashboardClientView({
           apiService.getUsers({ limit: 10 }).catch(() => null),
         ]);
 
-        if (submissionsData && submissionsData.length > 0) {
+        if (Array.isArray(submissionsData)) {
           setSubmissions(
             submissionsData.map((sub: any) => ({
               id: sub.id,
@@ -79,21 +80,27 @@ export default function DashboardClientView({
           );
         }
 
-        if (collegesData?.items && collegesData.items.length > 0) {
+        if (collegesData && Array.isArray(collegesData.items)) {
           setInstitutions(
-            collegesData.items.map((col: any) => ({
-              name: col.name,
-              type: 'College',
-              code: col.code,
-              count: `${col._count?.memberships || 0} students`,
-              detail: `${col._count?.courses || 0} courses • ${col._count?.batches || 0} cohorts`,
-              region: 'Global',
-              status: col.status === 'ACTIVE' ? 'Active' : 'Suspended',
-            }))
+            collegesData.items.map((col: any) => {
+              const studentCount = Array.isArray(col.memberships)
+                ? col.memberships.filter((m: any) => m.role === 'STUDENT').length
+                : (col._count?.memberships || 0);
+
+              return {
+                name: col.name,
+                type: isSchoolOrganization(col) ? 'School' : 'College',
+                code: col.code,
+                count: `${studentCount} ${studentCount === 1 ? 'student' : 'students'}`,
+                detail: `${col._count?.courses || 0} courses • ${col._count?.batches || 0} cohorts`,
+                region: 'Global',
+                status: col.status === 'ACTIVE' ? 'Active' : 'Suspended',
+              };
+            })
           );
         }
 
-        if (usersData?.items && usersData.items.length > 0) {
+        if (usersData && Array.isArray(usersData.items)) {
           setIndividualStudents(
             usersData.items
               .filter((u: any) => u.globalRole === 'STUDENT')

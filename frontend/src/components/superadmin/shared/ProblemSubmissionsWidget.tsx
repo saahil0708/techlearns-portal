@@ -191,7 +191,7 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
   const [viewMode, setViewMode] = useState<'problems' | 'domains'>('problems');
   const [downloadAnchorEl, setDownloadAnchorEl] = useState<null | HTMLElement>(null);
   const [topProblems, setTopProblems] = useState<ProblemSubmissionStat[]>([]);
-  const [domainSubmissions, setDomainSubmissions] = useState<DomainSubmissionStat[]>(DEFAULT_DOMAINS);
+  const [domainSubmissions, setDomainSubmissions] = useState<DomainSubmissionStat[]>([]);
 
   React.useEffect(() => {
     async function loadLiveProblemStats() {

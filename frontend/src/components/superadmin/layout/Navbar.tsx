@@ -126,8 +126,9 @@ export default function Navbar({
       sx={{
         width: '100%',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: { xs: 'flex-start', sm: 'center' },
         justifyContent: 'space-between',
+        flexWrap: 'wrap',
         gap: 2,
         pt: { xs: 2, md: 2 },
         pb: 1,
@@ -158,7 +159,16 @@ export default function Navbar({
       </Box>
 
       {/* SearchBar, Notifications & Action Button */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.75 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.75,
+          flexWrap: 'wrap',
+          width: { xs: '100%', md: 'auto' },
+          justifyContent: { xs: 'space-between', sm: 'flex-end' },
+        }}
+      >
         <TextField
           inputRef={searchInputRef}
           size="small"
@@ -194,8 +204,9 @@ export default function Navbar({
             },
           }}
           sx={{
-            width: { xs: 160, sm: 270 },
-            display: { xs: 'none', sm: 'block' },
+            width: { xs: '100%', sm: 270 },
+            display: 'block',
+            flex: { xs: '1 1 100%', sm: 'none' },
             '& .MuiOutlinedInput-root': {
               borderRadius: '20px',
               bgcolor: '#FFFFFF',
@@ -350,11 +361,12 @@ export default function Navbar({
             fontWeight: 700,
             fontSize: '0.84rem',
             borderRadius: '20px',
-            px: 2.4,
+            px: { xs: 1.6, sm: 2.4 },
             py: 0.95,
             height: 40,
             boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
             border: 'none',
+            whiteSpace: 'nowrap',
             '&:hover': {
               background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
               boxShadow: '0 6px 20px rgba(37, 99, 235, 0.45)',
@@ -363,7 +375,7 @@ export default function Navbar({
             transition: 'all 0.2s ease',
           }}
         >
-          Add User / Org
+          Add<Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>&nbsp;User / Org</Box>
         </Button>
 
         {/* Quick Create Dropdown Menu */}

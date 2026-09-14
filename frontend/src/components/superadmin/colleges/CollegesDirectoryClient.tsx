@@ -58,6 +58,7 @@ import { apiService } from '@/lib/api-service';
 import type { NewCollegeData } from '@/components/superadmin/colleges/CreateCollegeModal';
 import EditCollegeModal, { UpdateCollegeData } from '@/components/superadmin/colleges/EditCollegeModal';
 import { useToast } from '@/context/ToastContext';
+import { isCollegeOrganization } from '@/utils/organization';
 
 const CreateCollegeModal = dynamic(() => import('@/components/superadmin/colleges/CreateCollegeModal'), { loading: () => null });
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
@@ -100,8 +101,9 @@ export default function CollegesDirectoryClient({ initialColleges }: CollegesDir
     async function loadLiveColleges() {
       try {
         const liveData = await apiService.getColleges({ limit: 50 });
-        if (liveData?.items && liveData.items.length > 0) {
-          const mapped: CollegeEntity[] = liveData.items.map((item: any) => {
+        if (liveData?.items && Array.isArray(liveData.items)) {
+          const collegeItems = liveData.items.filter((item: any) => isCollegeOrganization(item));
+          const mapped: CollegeEntity[] = collegeItems.map((item: any) => {
             const faculty = Array.isArray(item.memberships)
               ? item.memberships.filter((m: any) => m.role === 'FACULTY' || m.role === 'COLLEGE_ADMIN').length
               : (item.facultyCount ?? 0);
