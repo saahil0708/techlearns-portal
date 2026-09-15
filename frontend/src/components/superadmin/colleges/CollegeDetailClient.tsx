@@ -65,6 +65,8 @@ import Navbar from '@/components/superadmin/layout/Navbar';
 import { CollegeEntity } from '@/components/superadmin/colleges/CollegesDirectoryClient';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import StatsCard from '@/components/superadmin/shared/StatsCard';
+import SupervisorAccountRoundedIcon from '@mui/icons-material/SupervisorAccountRounded';
 
 // Batch interface
 export interface BatchItem {
@@ -1251,55 +1253,42 @@ export default function CollegeDetailClient({
             </Box>
           </Card> */}
 
-          {/* 4 Summary Metric Cards */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Enrolled Students
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {liveCollege.studentsCount.toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#059669', fontWeight: 600, mt: 0.25 }}>
-                Active in {batches.length} Cohorts
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Enrolled Students"
+              value={liveCollege.studentsCount.toLocaleString()}
+              icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="mountains"
+              subtitle={`Active in ${batches.length} Cohorts`}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Active Batches
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#2563EB', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {batches.length}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                100% Assigned to Mentors
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Active Batches"
+              value={batches.length}
+              icon={<PeopleAltRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="curves"
+              subtitle="100% Assigned to Mentors"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Assigned Courses
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#7C3AED', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {courses.length}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Curriculum tracks & labs
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Assigned Courses"
+              value={courses.length}
+              icon={<MenuBookRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="peaks"
+              subtitle="Curriculum tracks & labs"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Faculty Coordinators
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#D97706', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {faculty.length}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Department leads
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Faculty Coordinators"
+              value={faculty.length}
+              icon={<SupervisorAccountRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="waves"
+              subtitle="Department leads"
+            />
           </Box>
 
           {/* Navigation Tabs */}

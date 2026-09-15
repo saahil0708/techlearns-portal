@@ -65,6 +65,7 @@ import Navbar from '@/components/superadmin/layout/Navbar';
 import type { NewUserData, UserRole } from '@/components/superadmin/users/CreateUserModal';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 
 const CreateUserModal = dynamic(() => import('@/components/superadmin/users/CreateUserModal'), { loading: () => null });
 const UserQuickPeekDrawer = dynamic(() => import('@/components/superadmin/users/UserQuickPeekDrawer'), { loading: () => null });
@@ -207,7 +208,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
   };
 
   // Delete Handlers
-  const handleRequestDeleteSingle = (user: UserDirectoryEntity) => {
+  const _handleRequestDeleteSingle = (user: UserDirectoryEntity) => {
     setDeleteTargetUsers([user]);
   };
 
@@ -638,53 +639,41 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
 
           {/* 4 Summary Metric Cards (Light Royal Blue Standard) */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Total Accounts
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {totalCount}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#2563EB', fontWeight: 600, mt: 0.25 }}>
-                {adminCount} Admins • {facultyCount} Faculty • {recruiterCount} Recruiters
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Total Accounts"
+              value={totalCount}
+              icon={<SupervisorAccountRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="mountains"
+              subtitle={`${adminCount} Admins • ${facultyCount} Faculty • ${recruiterCount} Recruiters`}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Platform Administrators
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#7C3AED', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {adminCount}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Super & Tenant Admins
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Platform Administrators"
+              value={adminCount}
+              icon={<AdminPanelSettingsRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="curves"
+              subtitle="Super & Tenant Admins"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                2FA Adoption Rate
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#16A34A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {twoFaRate}%
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#16A34A', fontWeight: 600, mt: 0.25 }}>
-                High Security Tier
-              </Typography>
-            </Card>
+            <StatsCard
+              title="2FA Adoption Rate"
+              value={`${twoFaRate}%`}
+              icon={<SecurityRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="peaks"
+              subtitle="High Security Tier"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Active Session Health
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#059669', mt: 0.5, letterSpacing: '-0.02em' }}>
-                99.8%
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Zero active lockouts
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Active Session Health"
+              value="99.8%"
+              icon={<VerifiedUserRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="waves"
+              subtitle="Zero active lockouts"
+            />
           </Box>
 
           {/* Filter Toolbar Card with MUI Tabs */}

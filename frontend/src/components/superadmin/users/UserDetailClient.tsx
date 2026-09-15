@@ -55,6 +55,7 @@ import Navbar from '@/components/superadmin/layout/Navbar';
 import { UserDirectoryEntity } from '@/components/superadmin/users/UsersDirectoryClient';
 import { useToast } from '@/context/ToastContext';
 import { MuiCenterLoader } from '@/components/shared/MuiLoadingFallback';
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 
 // Sub-Tab Interfaces
 export interface UserSecurityLogItem {
@@ -624,53 +625,41 @@ export default function UserDetailClient({
 
           {/* 4 Summary Security Cards */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Two-Factor Auth
-              </Typography>
-              <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: user.twoFactorEnabled ? '#16A34A' : '#D97706', mt: 0.5 }}>
-                {user.twoFactorEnabled ? '🛡️ Enabled' : '⚠️ Disabled'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', mt: 0.25 }}>
-                App Authenticator (TOTP)
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Two-Factor Auth"
+              value={user.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+              icon={<SecurityRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="mountains"
+              subtitle="App Authenticator (TOTP)"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Active Sessions
-              </Typography>
-              <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: '#2563EB', mt: 0.5 }}>
-                {initialSessions.length} Devices
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', mt: 0.25 }}>
-                Current: macOS / Chrome
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Active Sessions"
+              value={`${initialSessions.length} Devices`}
+              icon={<DevicesRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="curves"
+              subtitle="Current: macOS / Chrome"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Tenant Scope
-              </Typography>
-              <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: '#0F172A', mt: 0.5 }}>
-                {initialMemberships.length} Orgs
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', mt: 0.25 }}>
-                Primary: {user.institutionName.split(' ')[0]}
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Tenant Scope"
+              value={`${initialMemberships.length} Orgs`}
+              icon={<BusinessRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="peaks"
+              subtitle={`Primary: ${user.institutionName.split(' ')[0]}`}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Security Risk Score
-              </Typography>
-              <Typography sx={{ fontSize: '1.4rem', fontWeight: 800, color: '#16A34A', mt: 0.5 }}>
-                Low (0 Flags)
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', mt: 0.25 }}>
-                Last IP: {user.lastLoginIp}
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Security Risk Score"
+              value="Low (0 Flags)"
+              icon={<VerifiedUserRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="waves"
+              subtitle={`Last IP: ${user.lastLoginIp}`}
+            />
           </Box>
 
           {/* Navigation Tabs */}

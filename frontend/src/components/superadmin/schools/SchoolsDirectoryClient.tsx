@@ -34,6 +34,8 @@ import Link from 'next/link';
 import SearchIcon from '@mui/icons-material/Search';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
+import PieChartRoundedIcon from '@mui/icons-material/PieChartRounded';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -61,6 +63,7 @@ import { isSchoolOrganization } from '@/utils/organization';
 
 const CreateSchoolModal = dynamic(() => import('@/components/superadmin/schools/CreateSchoolModal'), { loading: () => null });
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 
 export interface SchoolEntity {
   id: string;
@@ -498,60 +501,49 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
 
           {/* 3. Stats Metric Ribbon Cards */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Total Schools
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {schools.length}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#16A34A', fontWeight: 600, mt: 0.25 }}>
-                100% Verified Districts
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Total Schools"
+              value={schools.length}
+              icon={<AccountBalanceRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="mountains"
+              subtitle="100% Verified Districts"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                STEM Students
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#2563EB', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {schools.reduce((acc, c) => acc + c.studentsCount, 0).toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Active K-12 Learners
-              </Typography>
-            </Card>
+            <StatsCard
+              title="STEM Students"
+              value={schools.reduce((acc, c) => acc + c.studentsCount, 0).toLocaleString()}
+              icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="curves"
+              subtitle="Active K-12 Learners"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Coding Labs & Clubs
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#7C3AED', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {schools.reduce((acc, c) => acc + c.labsCount, 0)}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                AP / IB curriculum tracks
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Coding Labs & Clubs"
+              value={schools.reduce((acc, c) => acc + c.labsCount, 0)}
+              icon={<CodeRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="peaks"
+              subtitle="AP / IB curriculum tracks"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Quota Utilization
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#059669', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {schools.reduce((acc, c) => acc + c.maxQuota, 0) > 0
+            <StatsCard
+              title="Quota Utilization"
+              value={
+                schools.reduce((acc, c) => acc + c.maxQuota, 0) > 0
                   ? `${Math.round(
                       (schools.reduce((acc, c) => acc + c.studentsCount, 0) /
                         schools.reduce((acc, c) => acc + c.maxQuota, 0)) *
                         100
                     )}%`
-                  : '0%'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                {schools.reduce((acc, c) => acc + c.studentsCount, 0).toLocaleString()} /{' '}
-                {schools.reduce((acc, c) => acc + c.maxQuota, 0).toLocaleString()} seats
-              </Typography>
-            </Card>
+                  : '0%'
+              }
+              icon={<PieChartRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="waves"
+              subtitle={`${schools.reduce((acc, c) => acc + c.studentsCount, 0).toLocaleString()} / ${schools.reduce((acc, c) => acc + c.maxQuota, 0).toLocaleString()} seats`}
+            />
           </Box>
 
           {/* 4. Controls & Filters Toolbar */}
@@ -1255,15 +1247,6 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
               : statusOption === 'Provisioning'
               ? '#F0F9FF'
               : '#FEF2F2';
-
-          const statusBorder =
-            statusOption === 'Active'
-              ? '#A7F3D0'
-              : statusOption === 'Trial'
-              ? '#FDE68A'
-              : statusOption === 'Provisioning'
-              ? '#BAE6FD'
-              : '#FECACA';
 
           return (
             <MenuItem

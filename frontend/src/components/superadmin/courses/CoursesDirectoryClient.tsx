@@ -62,6 +62,7 @@ import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 import type { CourseDirectoryEntity, CourseCategory, CourseLevel, ModuleHighlight, NewCourseData } from '@/types/course';
 export type { CourseDirectoryEntity, CourseCategory, CourseLevel, ModuleHighlight, NewCourseData };
 
@@ -153,7 +154,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
   };
 
   // Delete Handlers
-  const handleRequestDeleteSingle = (course: CourseDirectoryEntity) => {
+  const _handleRequestDeleteSingle = (course: CourseDirectoryEntity) => {
     setDeleteTargetCourses([course]);
   };
 
@@ -544,53 +545,41 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
 
           {/* 4 Summary Metric Cards (Light Royal Blue Standard) */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Total Published Courses
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {totalCount}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#2563EB', fontWeight: 600, mt: 0.25 }}>
-                {dsaCount} DSA • {sysDesignCount} System Design
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Total Published Courses"
+              value={totalCount}
+              icon={<MenuBookRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="mountains"
+              subtitle={`${dsaCount} DSA • ${sysDesignCount} System Design`}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Active Student Enrollments
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#2563EB', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {totalEnrollments.toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Across college cohorts
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Active Student Enrollments"
+              value={totalEnrollments.toLocaleString()}
+              icon={<PeopleAltRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="curves"
+              subtitle="Across college cohorts"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Curriculum Lessons
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#7C3AED', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {totalLessons}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#7C3AED', fontWeight: 600, mt: 0.25 }}>
-                Interactive Code Labs
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Curriculum Lessons"
+              value={totalLessons}
+              icon={<LayersRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="peaks"
+              subtitle="Interactive Code Labs"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Avg. Completion Rate
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#059669', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {avgCompletion}%
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Passed evaluations
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Avg. Completion Rate"
+              value={`${avgCompletion}%`}
+              icon={<StarsRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="waves"
+              subtitle="Passed evaluations"
+            />
           </Box>
 
           {/* Filter Toolbar Card with MUI Tabs */}

@@ -36,6 +36,9 @@ import { useRouter } from 'next/navigation';
 import SearchIcon from '@mui/icons-material/Search';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import EventSeatRoundedIcon from '@mui/icons-material/EventSeatRounded';
+import SupervisorAccountRoundedIcon from '@mui/icons-material/SupervisorAccountRounded';
 import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -62,6 +65,7 @@ import { isCollegeOrganization } from '@/utils/organization';
 
 const CreateCollegeModal = dynamic(() => import('@/components/superadmin/colleges/CreateCollegeModal'), { loading: () => null });
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 
 export interface CollegeEntity {
   id: string;
@@ -513,89 +517,41 @@ export default function CollegesDirectoryClient({ initialColleges }: CollegesDir
 
           {/* 4 KPI Metric Strips */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card
-              elevation={0}
-              sx={{
-                p: 2.25,
-                borderRadius: '14px',
-                bgcolor: '#FFFFFF',
-                border: `1px solid ${borderColor}`,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-              }}
-            >
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>
-                Active Colleges
-              </Typography>
-              <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, color: '#0F172A', mt: 0.5 }}>
-                {colleges.length}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#059669', fontWeight: 600, mt: 0.25 }}>
-                +3 onboarded this month
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Active Colleges"
+              value={colleges.length}
+              icon={<AccountBalanceRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="mountains"
+              trendBadge={{ text: '+3 onboarded this month', type: 'positive' }}
+            />
 
-            <Card
-              elevation={0}
-              sx={{
-                p: 2.25,
-                borderRadius: '14px',
-                bgcolor: '#FFFFFF',
-                border: `1px solid ${borderColor}`,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-              }}
-            >
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>
-                Enrolled Students
-              </Typography>
-              <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, color: '#2563EB', mt: 0.5 }}>
-                {colleges.reduce((acc, curr) => acc + curr.studentsCount, 0).toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Across {colleges.reduce((acc, curr) => acc + curr.cohortsCount, 0)} cohorts
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Enrolled Students"
+              value={colleges.reduce((acc, curr) => acc + curr.studentsCount, 0).toLocaleString()}
+              icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="curves"
+              subtitle={`Across ${colleges.reduce((acc, curr) => acc + curr.cohortsCount, 0)} cohorts`}
+            />
 
-            <Card
-              elevation={0}
-              sx={{
-                p: 2.25,
-                borderRadius: '14px',
-                bgcolor: '#FFFFFF',
-                border: `1px solid ${borderColor}`,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-              }}
-            >
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>
-                Total Allocated Seats
-              </Typography>
-              <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, color: '#9333EA', mt: 0.5 }}>
-                {colleges.reduce((acc, curr) => acc + curr.maxQuota, 0).toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                78.4% capacity utilization
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Total Allocated Seats"
+              value={colleges.reduce((acc, curr) => acc + curr.maxQuota, 0).toLocaleString()}
+              icon={<EventSeatRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="peaks"
+              subtitle="78.4% capacity utilization"
+            />
 
-            <Card
-              elevation={0}
-              sx={{
-                p: 2.25,
-                borderRadius: '14px',
-                bgcolor: '#FFFFFF',
-                border: `1px solid ${borderColor}`,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-              }}
-            >
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600, textTransform: 'uppercase' }}>
-                Faculty Mentors
-              </Typography>
-              <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, color: '#D97706', mt: 0.5 }}>
-                {colleges.reduce((acc, curr) => acc + curr.facultyCount, 0)}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Department coordinators
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Faculty Mentors"
+              value={colleges.reduce((acc, curr) => acc + curr.facultyCount, 0)}
+              icon={<SupervisorAccountRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="waves"
+              subtitle="Department coordinators"
+            />
           </Box>
 
           {/* Filters Toolbar Card with MUI Tabs */}

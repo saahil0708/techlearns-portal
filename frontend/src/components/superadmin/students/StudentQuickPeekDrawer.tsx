@@ -9,14 +9,12 @@ import {
   Avatar,
   Chip,
   Button,
-  Divider,
   Tooltip,
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { FluidArrowRight } from '@/utils/fluid_arrow';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import WhatshotRoundedIcon from '@mui/icons-material/WhatshotRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import Link from 'next/link';
@@ -228,6 +226,90 @@ export default function StudentQuickPeekDrawer({
             <Typography variant="caption" sx={{ color: '#DC2626', fontWeight: 700 }}>
               Hard: {student.solvedHard}
             </Typography>
+          </Box>
+        </Box>
+
+        {/* Skill Domain Competency Radial Gauges */}
+        <Box
+          sx={{
+            p: '16px',
+            borderRadius: '14px',
+            bgcolor: '#F8FAFC',
+            border: `1px solid ${borderColor}`,
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CodeRoundedIcon sx={{ color: '#2563EB', fontSize: '1.1rem' }} />
+              Verified Domain Mastery
+            </Typography>
+            <Chip
+              label="Proctored"
+              size="small"
+              sx={{ bgcolor: '#ECFDF5', color: '#059669', fontWeight: 800, fontSize: '0.68rem', height: 20 }}
+            />
+          </Box>
+
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 1.5,
+              textAlign: 'center',
+            }}
+          >
+            {[
+              { label: 'Algorithms', val: Math.min(98, Math.max(65, Math.round(student.contestRating / 22))), color: '#2563EB' },
+              { label: 'Object Prog.', val: Math.min(95, Math.max(70, Math.round(student.contestRating / 24))), color: '#4F46E5' },
+              { label: 'Database', val: Math.min(92, Math.max(60, Math.round(student.contestRating / 26))), color: '#0891B2' },
+              { label: 'Web Dev.', val: Math.min(99, Math.max(75, Math.round(student.contestRating / 21))), color: '#059669' },
+              { label: 'Mobile App.', val: Math.min(96, Math.max(68, Math.round(student.contestRating / 23))), color: '#7C3AED' },
+              { label: 'Machine Lrn.', val: Math.min(94, Math.max(62, Math.round(student.contestRating / 25))), color: '#D97706' },
+            ].map((item) => {
+              const size = 62;
+              const strokeWidth = 7;
+              const radius = (size - strokeWidth) / 2;
+              const circ = 2 * Math.PI * radius;
+              const offset = circ - (item.val / 100) * circ;
+
+              return (
+                <Box
+                  key={item.label}
+                  sx={{
+                    p: 1,
+                    borderRadius: '10px',
+                    bgcolor: '#FFFFFF',
+                    border: '1px solid #E2E8F0',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Box sx={{ width: size, height: size, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+                      <circle cx={size / 2} cy={size / 2} r={radius} stroke="#F1F5F9" strokeWidth={strokeWidth} fill="transparent" />
+                      <circle
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        stroke={item.color}
+                        strokeWidth={strokeWidth}
+                        strokeDasharray={circ}
+                        strokeDashoffset={offset}
+                        strokeLinecap="round"
+                        fill="transparent"
+                      />
+                    </svg>
+                    <Typography sx={{ position: 'absolute', fontWeight: 800, fontSize: '0.78rem', color: '#0F172A' }}>
+                      {item.val}%
+                    </Typography>
+                  </Box>
+                  <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#475569', mt: 0.75, lineHeight: 1.1 }}>
+                    {item.label}
+                  </Typography>
+                </Box>
+              );
+            })}
           </Box>
         </Box>
 

@@ -74,7 +74,7 @@ export default function CurvedSidebar() {
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-start',
+        justifyContent: 'center',
         alignItems: 'center',
         gap: { xs: 2, md: 2.75 },
         zIndex: 1200,

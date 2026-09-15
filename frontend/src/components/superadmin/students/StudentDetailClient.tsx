@@ -63,6 +63,7 @@ import Navbar from '@/components/superadmin/layout/Navbar';
 import { StudentDirectoryEntity } from '@/components/superadmin/students/StudentsDirectoryClient';
 import { useToast } from '@/context/ToastContext';
 import { MuiCenterLoader } from '@/components/shared/MuiLoadingFallback';
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 
 // Sub-Interfaces
 export interface StudentSubmissionItem {
@@ -692,53 +693,55 @@ export default function StudentDetailClient({
 
           {/* 4 Summary Metric Cards */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Problems Solved
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {student.problemsSolved}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600, mt: 0.25 }}>
-                <span style={{ color: '#16A34A' }}>{student.solvedEasy}E</span> • <span style={{ color: '#0284C7' }}>{student.solvedMedium}M</span> • <span style={{ color: '#EF4444' }}>{student.solvedHard}H</span>
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Problems Solved"
+              value={student.problemsSolved}
+              icon={<CodeRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="mountains"
+              subtitle={
+                <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#4ADE80', fontWeight: 700 }}>
+                    {student.solvedEasy}E
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>•</Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#60A5FA', fontWeight: 700 }}>
+                    {student.solvedMedium}M
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>•</Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#F87171', fontWeight: 700 }}>
+                    {student.solvedHard}H
+                  </Typography>
+                </Box>
+              }
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Contest Rating
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#2563EB', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {student.contestRating}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#2563EB', fontWeight: 700, mt: 0.25 }}>
-                {student.ratingTier} • Rank #{student.globalRank}
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Contest Rating"
+              value={student.contestRating}
+              icon={<MilitaryTechRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="curves"
+              subtitle={`${student.ratingTier} • Rank #${student.globalRank}`}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Accuracy Rate
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#059669', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {student.accuracy}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                {submissions.length} Total Submissions
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Accuracy Rate"
+              value={student.accuracy}
+              icon={<CheckCircleRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="peaks"
+              subtitle={`${submissions.length} Total Submissions`}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Active Streak
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#D97706', mt: 0.5, letterSpacing: '-0.02em' }}>
-                🔥 {student.streakDays} Days
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Personal Best: 65 Days
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Active Streak"
+              value={`${student.streakDays} Days`}
+              icon={<WhatshotRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="waves"
+              subtitle="Personal Best: 65 Days"
+            />
           </Box>
 
           {/* 365-Day Activity Heatmap Matrix (GitHub / LeetCode Style) */}

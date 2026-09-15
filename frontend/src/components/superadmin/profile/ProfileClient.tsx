@@ -142,7 +142,7 @@ export default function ProfileClient({
         ]);
         if (metrics) setLiveMetrics(metrics);
         if (logs && logs.length > 0) setLiveAuditLogs(logs);
-      } catch {}
+      } catch { }
     }
     loadData();
   }, []);
@@ -757,11 +757,11 @@ export default function ProfileClient({
                   liveAuditLogs.map((item: any, idx) => {
                     const timeStr = item.createdAt
                       ? new Date(item.createdAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
                       : 'Recent';
                     const isSuccess =
                       item.status?.toUpperCase() === 'SUCCESS' ||

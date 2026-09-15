@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+import localFont from 'next/font/local';
+import { JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: '--font-plus-jakarta-sans',
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
+const gtFlexa = localFont({
+  src: '../../public/fonts/GT Flexa Lt.woff2',
+  variable: '--font-gt-flexa',
   display: 'swap',
+  fallback: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -28,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} ${plusJakartaSans.className}`} suppressHydrationWarning>
+    <html lang="en" className={`${gtFlexa.variable} ${jetbrainsMono.variable} ${gtFlexa.className}`} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <StoreProvider>{children}</StoreProvider>
       </body>

@@ -145,6 +145,8 @@ export default function StudentProfileClient({
     accuracyRate: initialProfile?.accuracyRate ?? '100%',
     currentStreakDays: initialProfile?.currentStreakDays ?? 1,
     maxStreakDays: initialProfile?.maxStreakDays ?? 1,
+    topicSkills: initialProfile?.topicSkills,
+    cohortResult: initialProfile?.cohortResult,
   });
 
   // Submissions state
@@ -194,14 +196,7 @@ export default function StudentProfileClient({
   ]);
 
   // Topic Skills
-  const [topics, setTopics] = useState<StudentTopicSkill[]>([
-    { name: 'Dynamic Programming & Memoization', solved: 142, total: 160, pct: 89 },
-    { name: 'Graph Theory & Shortest Path', solved: 118, total: 130, pct: 91 },
-    { name: 'Trees & Binary Search Trees', solved: 95, total: 110, pct: 86 },
-    { name: 'Arrays & Two Pointers', solved: 88, total: 95, pct: 93 },
-    { name: 'String Algorithms (KMP, Tries)', solved: 64, total: 80, pct: 80 },
-    { name: 'Math & Number Theory', solved: 58, total: 75, pct: 77 },
-  ]);
+  const [topics, setTopics] = useState<StudentTopicSkill[]>([]);
 
   // 1. Sync when Redux currentUser state arrives or updates
   useEffect(() => {
@@ -238,6 +233,20 @@ export default function StudentProfileClient({
             ...prev,
             ...liveData,
             role: liveData.role || prev.role,
+            topicSkills: liveData.topics && liveData.topics.length > 0
+              ? liveData.topics.map((t: any) => {
+                  const solved = t.solved ?? t.solvedCount ?? 0;
+                  const total = t.total ?? t.totalCount ?? 0;
+                  const pct = t.pct ?? t.percentage ?? (total > 0 ? Math.round((solved / total) * 100) : 0);
+                  return {
+                    name: t.name || t.topicName || t.title || '',
+                    solved,
+                    total,
+                    pct,
+                  };
+                })
+              : (liveData.topicSkills || prev.topicSkills),
+            cohortResult: liveData.cohortResult || prev.cohortResult,
           }));
           if (liveData.submissions && liveData.submissions.length > 0) {
             setSubmissions(liveData.submissions);

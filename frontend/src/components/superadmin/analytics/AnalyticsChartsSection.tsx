@@ -34,6 +34,7 @@ import {
 } from 'recharts';
 
 import { apiService } from '@/lib/api-service';
+import SkillDomainMasteryCard from '@/components/superadmin/shared/SkillDomainMasteryCard';
 
 interface TrendPoint {
   time: string;
@@ -482,7 +483,10 @@ export default function AnalyticsChartsSection() {
         </Box>
       </Card>
 
-      {/* 2. Row 2: DSA Topic Weakness Heatmap & Difficulty Donut */}
+      {/* 2. Global Skill Domain Proficiency (Circular Radial Progress Gauges) */}
+      <SkillDomainMasteryCard primaryBlue="#2563EB" />
+
+      {/* 3. Row 2: DSA Topic Weakness Heatmap & Difficulty Donut */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
         {/* Left: DSA Topic Pass Rate & Friction Matrix */}
         <Card

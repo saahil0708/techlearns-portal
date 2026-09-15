@@ -53,10 +53,11 @@ import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import { FluidArrowRight } from '@/utils/fluid_arrow';
 
-// Components
 import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import { SchoolEntity } from '@/components/superadmin/schools/SchoolsDirectoryClient';
+import SupervisorAccountRoundedIcon from '@mui/icons-material/SupervisorAccountRounded';
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 
 // Grade Section & Cohort Interface
 export interface GradeCohortItem {
@@ -737,53 +738,41 @@ export default function SchoolDetailClient({
 
           {/* 4 Summary Metric Cards */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Enrolled Students
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {school.studentsCount.toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#16A34A', fontWeight: 600, mt: 0.25 }}>
-                Max Quota: {school.maxQuota.toLocaleString()}
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Enrolled Students"
+              value={school.studentsCount.toLocaleString()}
+              icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="mountains"
+              subtitle={`Max Quota: ${school.maxQuota.toLocaleString()}`}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Active Sections & Clubs
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#2563EB', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {cohorts.length}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                {school.grades}
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Active Sections & Clubs"
+              value={cohorts.length}
+              icon={<PeopleAltRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="curves"
+              subtitle={school.grades}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Coding Labs & Tracks
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#7C3AED', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {labs.length}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                {school.curriculum}
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Coding Labs & Tracks"
+              value={labs.length}
+              icon={<CodeRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="peaks"
+              subtitle={school.curriculum}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                CS Instructors
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#D97706', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {teachers.length}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                STEM & Robotics Mentors
-              </Typography>
-            </Card>
+            <StatsCard
+              title="CS Instructors"
+              value={teachers.length}
+              icon={<SupervisorAccountRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="waves"
+              subtitle="STEM & Robotics Mentors"
+            />
           </Box>
 
           {/* Navigation Tabs */}

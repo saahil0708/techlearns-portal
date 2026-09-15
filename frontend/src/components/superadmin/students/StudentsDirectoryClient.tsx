@@ -66,6 +66,7 @@ import Navbar from '@/components/superadmin/layout/Navbar';
 import type { NewStudentData } from '@/components/superadmin/students/CreateStudentModal';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 
 const CreateStudentModal = dynamic(() => import('@/components/superadmin/students/CreateStudentModal'), { loading: () => null });
 const CompareStudentsModal = dynamic(() => import('@/components/superadmin/students/CompareStudentsModal'), { loading: () => null });
@@ -106,7 +107,7 @@ interface StudentsDirectoryClientProps {
 }
 
 export default function StudentsDirectoryClient({ initialStudents }: StudentsDirectoryClientProps) {
-  const router = useRouter();
+  const _router = useRouter();
   const toast = useToast();
   const [students, setStudents] = useState<StudentDirectoryEntity[]>(initialStudents || []);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -230,7 +231,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
   };
 
   // Delete Handlers
-  const handleRequestDeleteSingle = (stu: StudentDirectoryEntity) => {
+  const _handleRequestDeleteSingle = (stu: StudentDirectoryEntity) => {
     setDeleteTargetStudents([stu]);
   };
 
@@ -350,8 +351,8 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
 
   // Stats Counters
   const totalCount = students.length;
-  const activeSolvers = students.filter((s) => s.status === 'Active').length;
-  const masterCoders = students.filter((s) => s.ratingTier === 'Master').length;
+  const _activeSolvers = students.filter((s) => s.status === 'Active').length;
+  const _masterCoders = students.filter((s) => s.ratingTier === 'Master').length;
   const collegiateCount = students.filter((s) => s.institutionType === 'College').length;
   const schoolCount = students.filter((s) => s.institutionType === 'School').length;
   const indCount = students.filter((s) => s.institutionType === 'Independent').length;
@@ -643,58 +644,47 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
 
           {/* 4 Summary Metric Cards (Light Royal Blue Standard) */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Total Enrolled Coders
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {students.length.toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#2563EB', fontWeight: 600, mt: 0.25 }}>
-                {collegiateCount} College • {schoolCount} High School
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Total Enrolled Coders"
+              value={students.length.toLocaleString()}
+              icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="mountains"
+              subtitle={`${collegiateCount} College • ${schoolCount} High School`}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Active Solvers
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#16A34A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {students.filter((s) => s.status === 'Active' || s.problemsSolved > 0).length.toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                {students.length > 0 ? Math.round((students.filter((s) => s.status === 'Active' || s.problemsSolved > 0).length / students.length) * 100) : 0}% Weekly Participation
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Active Solvers"
+              value={students.filter((s) => s.status === 'Active' || s.problemsSolved > 0).length.toLocaleString()}
+              icon={<WhatshotRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="curves"
+              subtitle={`${students.length > 0 ? Math.round((students.filter((s) => s.status === 'Active' || s.problemsSolved > 0).length / students.length) * 100) : 0}% Weekly Participation`}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Total Problems Solved
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#2563EB', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {students.reduce((acc, s) => acc + s.problemsSolved, 0).toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#2563EB', fontWeight: 600, mt: 0.25 }}>
-                {students.reduce((acc, s) => acc + (s.solvedEasy || 0), 0)} Easy • {students.reduce((acc, s) => acc + (s.solvedMedium || 0), 0)} Med • {students.reduce((acc, s) => acc + (s.solvedHard || 0), 0)} Hard
-                {students.length > 0 && students.some((s) => !s.hasVerifiedDifficulty && s.problemsSolved > 0) && (
-                  <Typography component="span" sx={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 500, ml: 0.5 }}>
-                    (Est.)
+            <StatsCard
+              title="Total Problems Solved"
+              value={students.reduce((acc, s) => acc + s.problemsSolved, 0).toLocaleString()}
+              icon={<EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="peaks"
+              subtitle={
+                <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#60A5FA', fontWeight: 700 }}>
+                    {students.reduce((acc, s) => acc + (s.solvedEasy || 0), 0)} Easy • {students.reduce((acc, s) => acc + (s.solvedMedium || 0), 0)} Med • {students.reduce((acc, s) => acc + (s.solvedHard || 0), 0)} Hard
                   </Typography>
-                )}
-              </Typography>
-            </Card>
+                </Box>
+              }
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Avg Platform Accuracy
-              </Typography>
-              <Typography sx={{ fontSize: '1.7rem', fontWeight: 900, color: '#059669', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {students.length > 0 ? (students.reduce((acc, s) => acc + (parseFloat(s.accuracy) || 0), 0) / students.length).toFixed(1) + '%' : '0%'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Across {students.reduce((acc, s) => acc + s.problemsSolved, 0).toLocaleString()} test evaluations
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Avg Platform Accuracy"
+              value={students.length > 0 ? (students.reduce((acc, s) => acc + (parseFloat(s.accuracy) || 0), 0) / students.length).toFixed(1) + '%' : '0%'}
+              icon={<CheckCircleRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="waves"
+              subtitle={`Across ${students.reduce((acc, s) => acc + s.problemsSolved, 0).toLocaleString()} test evaluations`}
+            />
           </Box>
 
           {/* Filter Toolbar Card with MUI Tabs */}

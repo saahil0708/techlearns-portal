@@ -49,10 +49,19 @@ export interface StudentCertification {
   language: string;
   stars: number;
   issueDate: string;
+  validUntil?: string;
   issuer: string;
   credentialId: string;
   skills?: string[];
   certificateUrl?: string;
+  score?: string;
+  percentile?: string;
+  proctoredBy?: string;
+  assessmentDuration?: string;
+  problemsSolved?: string;
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert' | string;
+  verificationHash?: string;
+  grade?: string;
 }
 
 export interface StudentProfileData {
@@ -89,4 +98,6 @@ export interface StudentProfileData {
   maxStreakDays: number;
   profileCompletionPct?: number;
   certifications?: StudentCertification[];
+  topicSkills?: StudentTopicSkill[];
+  cohortResult?: string;
 }

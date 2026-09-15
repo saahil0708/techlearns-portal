@@ -43,6 +43,7 @@ import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlin
 
 import { StudentProfileData, StudentCertification } from '@/types/student-profile';
 import { useToast } from '@/context/ToastContext';
+import TopicMasteryRadialGrid from './TopicMasteryRadialGrid';
 
 const CERT_THEMES: Record<string, {
   tagBg: string;
@@ -661,7 +662,26 @@ export default function StudentOverviewTab({
           </Box>
         </Card>
 
-        {/* 2. Coding Activity & Problem Solving Performance Card (Replacing empty Orchestrate) */}
+        {/* 2. Topic & Skill Mastery Radial Graphs Card */}
+        {(() => {
+          const profileTopicSkills = profile.topicSkills?.map((skill, idx) => ({
+            id: `skill-${idx}-${skill.name}`,
+            name: skill.name,
+            percentage: skill.pct,
+            solvedCount: skill.solved,
+            totalCount: skill.total,
+            color: '#3B82F6',
+          }));
+
+          return (
+            <TopicMasteryRadialGrid
+              skills={profileTopicSkills}
+              cohortLabel={profile.cohortResult}
+            />
+          );
+        })()}
+
+        {/* 3. Coding Activity & Problem Solving Performance Card */}
         <Card
           elevation={0}
           sx={{
@@ -699,7 +719,7 @@ export default function StudentOverviewTab({
                   Problem Solves & Activity
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>
-                  {profile.totalSubmissions || 1840} Submissions • {profile.accuracyRate || '96.4%'} Accuracy Rate
+                  {profile.totalSubmissions ?? 1840} Submissions • {profile.accuracyRate ?? '96.4%'} Accuracy Rate
                 </Typography>
               </Box>
             </Box>
@@ -724,62 +744,127 @@ export default function StudentOverviewTab({
 
           {/* Metrics Grid */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1.15fr 1fr' }, gap: 2.5, alignItems: 'center' }}>
-            {/* Left: Total Solved & Breakdown Bars */}
-            <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 1.5 }}>
-                <Typography sx={{ fontSize: '1.65rem', fontWeight: 900, color: '#0F172A', lineHeight: 1 }}>
-                  {profile.solvedTotal || 680}
-                </Typography>
-                <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#64748B' }}>
-                  / 1,200 Solved
-                </Typography>
+            {/* Left: Concentric Multi-Ring Radial Gauge & Difficulty Pills */}
+            <Box
+              sx={{
+                p: 2.5,
+                bgcolor: '#F8FAFC',
+                borderRadius: '20px',
+                border: '1px solid #E2E8F0',
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                alignItems: 'center',
+                gap: 2.5,
+              }}
+            >
+              {/* Concentric 3-Ring SVG Gauge */}
+              <Box sx={{ position: 'relative', width: 120, height: 120, flexShrink: 0 }}>
+                <svg width={120} height={120} style={{ transform: 'rotate(-90deg)' }}>
+                  {/* Outer Ring: Easy (Radius: 50) */}
+                  <circle cx={60} cy={60} r={50} stroke="#EEF2F6" strokeWidth={6} fill="transparent" />
+                  <circle
+                    cx={60}
+                    cy={60}
+                    r={50}
+                    stroke="#10B981"
+                    strokeWidth={6}
+                    strokeDasharray={2 * Math.PI * 50}
+                    strokeDashoffset={2 * Math.PI * 50 - (((profile.solvedEasy ?? 240) / 380) * (2 * Math.PI * 50))}
+                    strokeLinecap="round"
+                    fill="transparent"
+                    style={{ transition: 'stroke-dashoffset 1s ease' }}
+                  />
+
+                  {/* Middle Ring: Medium (Radius: 40) */}
+                  <circle cx={60} cy={60} r={40} stroke="#EEF2F6" strokeWidth={6} fill="transparent" />
+                  <circle
+                    cx={60}
+                    cy={60}
+                    r={40}
+                    stroke="#F59E0B"
+                    strokeWidth={6}
+                    strokeDasharray={2 * Math.PI * 40}
+                    strokeDashoffset={2 * Math.PI * 40 - (((profile.solvedMedium ?? 310) / 540) * (2 * Math.PI * 40))}
+                    strokeLinecap="round"
+                    fill="transparent"
+                    style={{ transition: 'stroke-dashoffset 1s ease' }}
+                  />
+
+                  {/* Inner Ring: Hard (Radius: 30) */}
+                  <circle cx={60} cy={60} r={30} stroke="#EEF2F6" strokeWidth={6} fill="transparent" />
+                  <circle
+                    cx={60}
+                    cy={60}
+                    r={30}
+                    stroke="#F43F5E"
+                    strokeWidth={6}
+                    strokeDasharray={2 * Math.PI * 30}
+                    strokeDashoffset={2 * Math.PI * 30 - (((profile.solvedHard ?? 130) / 280) * (2 * Math.PI * 30))}
+                    strokeLinecap="round"
+                    fill="transparent"
+                    style={{ transition: 'stroke-dashoffset 1s ease' }}
+                  />
+                </svg>
+
+                {/* Centered Total Count */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.25rem', fontWeight: 900, color: '#0F172A', lineHeight: 1 }}>
+                    {profile.solvedTotal ?? 680}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', mt: 0.2 }}>
+                    Solved
+                  </Typography>
+                </Box>
               </Box>
 
-              {/* Difficulty Breakdown Bars */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-                {/* Easy */}
-                <Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
-                    <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#16A34A' }}>
+              {/* Difficulty Breakdown Pills */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
+                {/* Easy Pill */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#FFFFFF', p: '6px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10B981' }} />
+                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A' }}>
                       Easy
                     </Typography>
-                    <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#334155' }}>
-                      {profile.solvedEasy || 240} <span style={{ color: '#94A3B8', fontWeight: 500 }}>/ 380</span>
-                    </Typography>
                   </Box>
-                  <Box sx={{ height: 6, width: '100%', bgcolor: '#E2E8F0', borderRadius: 3, overflow: 'hidden' }}>
-                    <Box sx={{ height: '100%', width: `${Math.round(((profile.solvedEasy || 240) / 380) * 100)}%`, bgcolor: '#16A34A', borderRadius: 3 }} />
-                  </Box>
+                  <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A' }}>
+                    {profile.solvedEasy ?? 240} <span style={{ color: '#94A3B8', fontWeight: 500, fontSize: '0.72rem' }}>/ 380</span>
+                  </Typography>
                 </Box>
 
-                {/* Medium */}
-                <Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
-                    <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#D97706' }}>
+                {/* Medium Pill */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#FFFFFF', p: '6px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#F59E0B' }} />
+                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A' }}>
                       Medium
                     </Typography>
-                    <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#334155' }}>
-                      {profile.solvedMedium || 310} <span style={{ color: '#94A3B8', fontWeight: 500 }}>/ 540</span>
-                    </Typography>
                   </Box>
-                  <Box sx={{ height: 6, width: '100%', bgcolor: '#E2E8F0', borderRadius: 3, overflow: 'hidden' }}>
-                    <Box sx={{ height: '100%', width: `${Math.round(((profile.solvedMedium || 310) / 540) * 100)}%`, bgcolor: '#D97706', borderRadius: 3 }} />
-                  </Box>
+                  <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A' }}>
+                    {profile.solvedMedium ?? 310} <span style={{ color: '#94A3B8', fontWeight: 500, fontSize: '0.72rem' }}>/ 540</span>
+                  </Typography>
                 </Box>
 
-                {/* Hard */}
-                <Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
-                    <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#E11D48' }}>
+                {/* Hard Pill */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', bgcolor: '#FFFFFF', p: '6px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#F43F5E' }} />
+                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A' }}>
                       Hard
                     </Typography>
-                    <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#334155' }}>
-                      {profile.solvedHard || 130} <span style={{ color: '#94A3B8', fontWeight: 500 }}>/ 280</span>
-                    </Typography>
                   </Box>
-                  <Box sx={{ height: 6, width: '100%', bgcolor: '#E2E8F0', borderRadius: 3, overflow: 'hidden' }}>
-                    <Box sx={{ height: '100%', width: `${Math.round(((profile.solvedHard || 130) / 280) * 100)}%`, bgcolor: '#E11D48', borderRadius: 3 }} />
-                  </Box>
+                  <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A' }}>
+                    {profile.solvedHard ?? 130} <span style={{ color: '#94A3B8', fontWeight: 500, fontSize: '0.72rem' }}>/ 280</span>
+                  </Typography>
                 </Box>
               </Box>
             </Box>
@@ -795,10 +880,10 @@ export default function StudentOverviewTab({
                   </Typography>
                 </Box>
                 <Typography sx={{ fontSize: '1.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.1 }}>
-                  {profile.contestRating || 2380}
+                  {profile.contestRating ?? 2380}
                 </Typography>
                 <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#2563EB', mt: 0.25 }}>
-                  {profile.ratingTier || 'Master'} Tier
+                  {profile.ratingTier ?? 'Master'} Tier
                 </Typography>
               </Box>
 
@@ -811,10 +896,10 @@ export default function StudentOverviewTab({
                   </Typography>
                 </Box>
                 <Typography sx={{ fontSize: '1.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.1 }}>
-                  {profile.currentStreakDays || 48}d
+                  {profile.currentStreakDays ?? 48}d
                 </Typography>
                 <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#C2410C', mt: 0.25 }}>
-                  Max {profile.maxStreakDays || 65}d
+                  Max {profile.maxStreakDays ?? 65}d
                 </Typography>
               </Box>
 
@@ -827,7 +912,7 @@ export default function StudentOverviewTab({
                   </Typography>
                 </Box>
                 <Typography sx={{ fontSize: '1.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.1 }}>
-                  #{profile.globalRank || 1}
+                  #{profile.globalRank ?? 1}
                 </Typography>
                 <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#16A34A', mt: 0.25 }}>
                   Top 0.5%
@@ -843,7 +928,7 @@ export default function StudentOverviewTab({
                   </Typography>
                 </Box>
                 <Typography sx={{ fontSize: '1.2rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.1 }}>
-                  {profile.accuracyRate || '96.4%'}
+                  {profile.accuracyRate ?? '96.4%'}
                 </Typography>
                 <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#9333EA', mt: 0.25 }}>
                   Precision

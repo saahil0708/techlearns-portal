@@ -1,107 +1,156 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Box,
   Tooltip,
   Avatar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Typography,
   IconButton,
-  Chip,
-  Skeleton,
 } from '@mui/material';
 
 // Material Rounded Icons
-import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
-import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
+import TerminalRoundedIcon from '@mui/icons-material/TerminalRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded';
-import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import TerminalRoundedIcon from '@mui/icons-material/TerminalRounded';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
-import MilitaryTechRoundedIcon from '@mui/icons-material/MilitaryTechRounded';
-import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
+import WorkOutlineRoundedIcon from '@mui/icons-material/WorkOutlineRounded';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import LaptopMacOutlinedIcon from '@mui/icons-material/LaptopMacOutlined';
+import DomainOutlinedIcon from '@mui/icons-material/DomainOutlined';
+import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import KeyboardArrowUpRoundedIcon from '@mui/icons-material/KeyboardArrowUpRounded';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutUser } from '@/store/slices/authSlice';
-import { apiService } from '@/lib/api-service';
 import LogoutConfirmModal from '@/components/shared/LogoutConfirmModal';
 
-// Student / Coder Navigation Matrix
+// Complete Techlearns SkillOS Options
 const STUDENT_NAV_ITEMS = [
-  { label: 'My Profile & Workspace', icon: <PersonRoundedIcon sx={{ fontSize: 21 }} />, path: '/students' },
-  { label: 'Practice & Online Compilers', icon: <TerminalRoundedIcon sx={{ fontSize: 21 }} />, path: '/practice' },
-  { label: 'Problem Archive & Solves', icon: <CodeRoundedIcon sx={{ fontSize: 21 }} />, path: '/problems' },
-  { label: 'Enrolled Courses', icon: <MenuBookRoundedIcon sx={{ fontSize: 20 }} />, path: '/courses' },
-  { label: 'Competitive Contests', icon: <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />, path: '/contests' },
-  { label: 'Global Leaderboard', icon: <LeaderboardRoundedIcon sx={{ fontSize: 20 }} />, path: '/leaderboard' },
-  { label: 'My Submissions', icon: <HistoryRoundedIcon sx={{ fontSize: 21 }} />, path: '/students/submissions' },
-  { label: 'Account Settings', icon: <SettingsRoundedIcon sx={{ fontSize: 20 }} />, path: '/students/settings' },
+  // Capability
+  { label: 'Dashboard', icon: <GridViewRoundedIcon sx={{ fontSize: 20 }} />, path: '/students/profile' },
+  { label: 'Role Skill Graph', icon: <AccountTreeOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/skill-graph' },
+  { label: 'Learning Hub', icon: <MenuBookRoundedIcon sx={{ fontSize: 19 }} />, path: '/courses' },
+  { label: 'Practice Engine', icon: <TerminalRoundedIcon sx={{ fontSize: 20 }} />, path: '/practice' },
+
+  // Build & Prove
+  { label: 'Project Workspace', icon: <LaptopMacOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/projects' },
+  { label: 'Corporate Simulation', icon: <DomainOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/simulations' },
+  { label: 'Bootcamps', icon: <TimerOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/bootcamps' },
+  { label: 'Competitions', icon: <EmojiEventsRoundedIcon sx={{ fontSize: 19 }} />, path: '/contests' },
+  { label: 'Interview Prep', icon: <DescriptionOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/interview-prep' },
+
+  // Opportunity
+  { label: 'Career Hub', icon: <WorkOutlineRoundedIcon sx={{ fontSize: 19 }} />, path: '/students/career-hub' },
+  { label: 'Jobs / Placements', icon: <LocationOnOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/placements' },
+  { label: 'Certifications', icon: <WorkspacePremiumOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/certifications' },
+  { label: 'Skill Passport', icon: <BadgeOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/skill-passport' },
+
+  // Support
+  { label: 'AI Learning Coach', icon: <AutoAwesomeOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/ai-coach' },
+  { label: 'Blogs', icon: <ArticleOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/blogs' },
+  { label: 'Settings', icon: <SettingsRoundedIcon sx={{ fontSize: 19 }} />, path: '/students/settings' },
 ];
+
+// Module-level scroll cache to preserve scroll offset across client route transitions seamlessly
+let cachedSidebarScrollTop = 0;
 
 export default function StudentSidebar() {
   const router = useRouter();
   const pathname = usePathname();
-
   const dispatch = useAppDispatch();
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(false);
+  const [canScrollUp, setCanScrollUp] = useState(false);
 
   const user = useAppSelector((state) => state.auth.user);
-  const [activeUser, setActiveUser] = useState(user);
-  const [loading, setLoading] = useState<boolean>(!user?.name);
+  const displayName = user?.name || 'Student';
+  const initials = displayName
+    .split(' ')
+    .map((n: string) => n[0])
+    .filter(Boolean)
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) || 'ST';
 
-  useEffect(() => {
-    setActiveUser(user || null);
-    if (user?.name) {
-      setLoading(false);
+  const checkScroll = () => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      setCanScrollUp(el.scrollTop > 8);
+      setCanScrollDown(el.scrollHeight - el.scrollTop - el.clientHeight > 8);
     }
-  }, [user]);
+  };
 
-  useEffect(() => {
-    async function loadLiveUser() {
+  const handleContainerScroll = () => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      cachedSidebarScrollTop = el.scrollTop;
       try {
-        const res = await apiService.getProfile();
-        const liveUser = res?.data || res;
-        if (liveUser && liveUser.name) {
-          setActiveUser(liveUser);
-        }
-      } catch {
-      } finally {
-        setLoading(false);
-      }
+        sessionStorage.setItem('student_sidebar_scroll', String(el.scrollTop));
+      } catch {}
+      checkScroll();
     }
-    loadLiveUser();
+  };
+
+  // Restore scroll position on mount & when pathname changes, keeping active item in view
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (el) {
+      let restoredTop = cachedSidebarScrollTop;
+      try {
+        const saved = sessionStorage.getItem('student_sidebar_scroll');
+        if (saved !== null) {
+          const parsed = parseInt(saved, 10);
+          if (!isNaN(parsed) && parsed > 0) {
+            restoredTop = parsed;
+          }
+        }
+      } catch {}
+
+      if (restoredTop > 0) {
+        el.scrollTop = restoredTop;
+      }
+
+      // Ensure active item is always visible within the capsule viewport
+      const activeEl = el.querySelector('[data-active="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+
+      checkScroll();
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
   }, []);
 
-  const displayName = activeUser?.name || user?.name || '';
-  const displayEmail = activeUser?.email || user?.email || '';
-  const displayRole = activeUser?.globalRole ? activeUser.globalRole.replace('_', ' ') : user?.globalRole ? user.globalRole.replace('_', ' ') : 'STUDENT';
+  const handleScrollDown = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ top: 140, behavior: 'smooth' });
+    }
+  };
 
-  const initials = displayName
-    ? displayName
-        .split(' ')
-        .map((n: string) => n[0])
-        .filter(Boolean)
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : 'U';
-
-  const isProfileActive =
-    (pathname === '/students' || pathname === '/students/profile' || pathname.startsWith('/students/')) &&
-    pathname !== '/students/submissions' &&
-    pathname !== '/students/settings';
+  const handleScrollUp = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ top: -140, behavior: 'smooth' });
+    }
+  };
 
   const handleConfirmLogout = async () => {
     setLogoutDialogOpen(false);
@@ -110,57 +159,20 @@ export default function StudentSidebar() {
   };
 
   const isItemActive = (itemPath: string) => {
-    // 1. My Submissions / History
-    if (itemPath === '/students/submissions') {
-      return pathname === '/students/submissions';
+    if (itemPath === '/students/profile') {
+      return pathname === '/students' || pathname === '/students/profile' || pathname.startsWith('/students/profile');
     }
-
-    // 2. Account Settings
-    if (itemPath === '/students/settings') {
-      return pathname === '/students/settings';
-    }
-
-    // 3. My Profile & Workspace
-    if (itemPath === '/students' || itemPath === '/students/profile') {
-      return isProfileActive;
-    }
-
-    // 4. Practice & Compilers
-    if (itemPath === '/practice') {
-      return pathname === '/practice' || pathname.startsWith('/practice/');
-    }
-
-    // 5. Problem Archive
-    if (itemPath === '/problems') {
-      return pathname === '/problems' || pathname.startsWith('/problems/');
-    }
-
-    // 6. Enrolled Courses
-    if (itemPath === '/courses') {
-      return pathname === '/courses' || pathname.startsWith('/courses/');
-    }
-
-    // 7. Competitive Contests
-    if (itemPath === '/contests') {
-      return pathname === '/contests' || pathname.startsWith('/contests/');
-    }
-
-    // 8. Global Leaderboard
-    if (itemPath === '/leaderboard') {
-      return pathname === '/leaderboard' || pathname.startsWith('/leaderboard/');
-    }
-
-    return pathname === itemPath;
+    return pathname === itemPath || (itemPath !== '/' && pathname.startsWith(itemPath));
   };
 
   return (
     <>
       <Box
         component="aside"
-        aria-label="Student Navigation"
+        aria-label="Student Capsule Navigation"
         sx={{
           position: 'fixed',
-          left: { xs: 10, sm: 16, md: 22 },
+          left: { xs: 12, sm: 18, md: 24 },
           top: 0,
           height: '100vh',
           flexShrink: 0,
@@ -168,11 +180,10 @@ export default function StudentSidebar() {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: { xs: 1.75, md: 2.25 },
+          gap: { xs: 1.25, md: 1.75 },
           zIndex: 1200,
           width: 58,
-          py: 2,
-          pointerEvents: 'auto',
+          py: 1.5,
         }}
       >
         {/* 1. Dedicated Top Logo Capsule */}
@@ -196,9 +207,9 @@ export default function StudentSidebar() {
             },
           }}
         >
-          <Tooltip title="CodePlatform Student Arena" placement="right" arrow>
+          <Tooltip title="Techlearns SkillOS" placement="right" arrow>
             <Link
-              href="/students"
+              href="/students/profile"
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -225,72 +236,161 @@ export default function StudentSidebar() {
           </Tooltip>
         </Box>
 
-        {/* 2. Main Navigation Floating Pill Capsule */}
+        {/* 2. Expanded Middle Capsule - Clean, Hidden Scrollbar, More Icons Visible */}
         <Box
           sx={{
             bgcolor: '#FFFFFF',
             borderRadius: '9999px',
-            p: '6px',
+            p: '6px 5px',
             border: '1px solid #E2E8F0',
             boxShadow: '0 12px 32px rgba(0, 0, 0, 0.06)',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '3px',
             width: 58,
-            flexShrink: 0,
+            height: 'calc(100vh - 180px)',
+            maxHeight: '600px',
+            minHeight: '380px',
+            position: 'relative',
+            flexShrink: 1,
           }}
         >
-          {STUDENT_NAV_ITEMS.map((item) => {
-            const active = isItemActive(item.path);
+          {/* Top Scroll Indicator */}
+          {canScrollUp && (
+            <Box
+              onClick={handleScrollUp}
+              sx={{
+                position: 'absolute',
+                top: 3,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 10,
+                cursor: 'pointer',
+                bgcolor: '#FFFFFF',
+                borderRadius: '50%',
+                width: 22,
+                height: 22,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                color: '#2563EB',
+                border: '1px solid #DBEAFE',
+                animation: 'bounceUp 1.4s infinite',
+                '@keyframes bounceUp': {
+                  '0%, 100%': { transform: 'translateX(-50%) translateY(0)' },
+                  '50%': { transform: 'translateX(-50%) translateY(-2px)' },
+                },
+              }}
+            >
+              <KeyboardArrowUpRoundedIcon sx={{ fontSize: 16 }} />
+            </Box>
+          )}
 
-            return (
-              <Tooltip key={item.label} title={item.label} placement="right" arrow>
-                <Link
-                  href={item.path}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textDecoration: 'none',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      position: 'relative',
-                      width: 44,
-                      height: 44,
-                      borderRadius: '9999px',
+          {/* Scrollable Icon Track - Hidden Scrollbar */}
+          <Box
+            ref={scrollContainerRef}
+            onScroll={handleContainerScroll}
+            sx={{
+              width: '100%',
+              height: '100%',
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '3px',
+              py: canScrollUp ? 2 : 0.5,
+              pb: canScrollDown ? 2 : 0.5,
+              // Completely hide scrollbars across all browsers
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              '&::-webkit-scrollbar': {
+                display: 'none',
+                width: 0,
+                height: 0,
+              },
+            }}
+          >
+            {STUDENT_NAV_ITEMS.map((item) => {
+              const active = isItemActive(item.path);
+
+              return (
+                <Tooltip key={item.label} title={item.label} placement="right" arrow>
+                  <Link
+                    href={item.path}
+                    scroll={false}
+                    data-active={active ? 'true' : 'false'}
+                    style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      bgcolor: active ? '#2563EB' : 'transparent',
-                      background: active
-                        ? 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)'
-                        : 'transparent',
-                      color: active ? '#FFFFFF' : '#64748B',
-                      boxShadow: active ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none',
-                      transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        bgcolor: active ? '#1D4ED8' : 'rgba(37, 99, 235, 0.08)',
-                        color: active ? '#FFFFFF' : '#2563EB',
-                        transform: 'scale(1.06)',
-                      },
-                      '&:active': {
-                        transform: 'scale(0.96)',
-                      },
+                      textDecoration: 'none',
                     }}
                   >
-                    {item.icon}
-                  </Box>
-                </Link>
-              </Tooltip>
-            );
-          })}
+                    <Box
+                      sx={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: '9999px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        bgcolor: active ? '#2563EB' : 'transparent',
+                        color: active ? '#FFFFFF' : '#64748B',
+                        boxShadow: active ? '0 4px 14px rgba(37, 99, 235, 0.3)' : 'none',
+                        transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)',
+                        flexShrink: 0,
+                        '&:hover': {
+                          bgcolor: active ? '#2563EB' : '#F1F5F9',
+                          color: active ? '#FFFFFF' : '#0F172A',
+                          transform: 'scale(1.06)',
+                        },
+                      }}
+                    >
+                      {item.icon}
+                    </Box>
+                  </Link>
+                </Tooltip>
+              );
+            })}
+          </Box>
+
+          {/* Bottom Scroll Indicator */}
+          {canScrollDown && (
+            <Box
+              onClick={handleScrollDown}
+              sx={{
+                position: 'absolute',
+                bottom: 3,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 10,
+                cursor: 'pointer',
+                bgcolor: '#FFFFFF',
+                borderRadius: '50%',
+                width: 22,
+                height: 22,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                color: '#2563EB',
+                border: '1px solid #DBEAFE',
+                animation: 'bounceDown 1.4s infinite',
+                '@keyframes bounceDown': {
+                  '0%, 100%': { transform: 'translateX(-50%) translateY(0)' },
+                  '50%': { transform: 'translateX(-50%) translateY(2px)' },
+                },
+              }}
+            >
+              <KeyboardArrowDownRoundedIcon sx={{ fontSize: 16 }} />
+            </Box>
+          )}
         </Box>
 
-        {/* 3. Bottom User Avatar & Logout Capsule */}
+        {/* 3. Bottom Avatar & Logout Capsule */}
         <Box
           sx={{
             bgcolor: '#FFFFFF',
@@ -302,108 +402,45 @@ export default function StudentSidebar() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '6px',
+            gap: '4px',
             width: 58,
             flexShrink: 0,
           }}
         >
-          {/* Avatar Profile Quick Link */}
-          <Tooltip
-            title={
-              loading ? (
-                <Box sx={{ p: 0.5, textAlign: 'center' }}>
-                  <Typography sx={{ fontSize: '0.78rem', color: '#CBD5E1', fontWeight: 600 }}>
-                    Loading profile...
-                  </Typography>
-                </Box>
-              ) : (
-                <Box sx={{ p: 0.5, textAlign: 'center' }}>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF' }}>
-                    {displayName}
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.72rem', color: '#93C5FD', fontWeight: 600 }}>
-                    {displayRole} • View Profile
-                  </Typography>
-                </Box>
-              )
-            }
-            placement="right"
-            arrow
-          >
-            <Link
-              href="/students"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textDecoration: 'none',
-              }}
-            >
-              <Box
+          <Tooltip title={`${displayName} (My Profile)`} placement="right" arrow>
+            <Link href="/students/profile" style={{ textDecoration: 'none' }}>
+              <Avatar
+                src={(user as any)?.avatarUrl}
                 sx={{
-                  position: 'relative',
-                  width: 44,
-                  height: 44,
-                  borderRadius: '9999px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: isProfileActive ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
-                  border: isProfileActive ? '2px solid #2563EB' : '2px solid transparent',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    transform: 'scale(1.08)',
-                    borderColor: '#3B82F6',
-                  },
+                  width: 36,
+                  height: 36,
+                  bgcolor: '#3B82F6',
+                  fontSize: '0.8rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  border: '2px solid #DBEAFE',
+                  transition: 'transform 0.2s ease',
+                  '&:hover': { transform: 'scale(1.08)' },
                 }}
               >
-                {loading ? (
-                  <Skeleton
-                    variant="circular"
-                    width={36}
-                    height={36}
-                    animation="wave"
-                    sx={{ bgcolor: 'rgba(37, 99, 235, 0.15)' }}
-                  />
-                ) : (
-                  <Avatar
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      bgcolor: '#2563EB',
-                      color: '#FFFFFF',
-                      fontSize: '0.82rem',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      border: '1.5px solid #FFFFFF',
-                      boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
-                    }}
-                  >
-                    {initials}
-                  </Avatar>
-                )}
-              </Box>
+                {initials}
+              </Avatar>
             </Link>
           </Tooltip>
 
-          {/* Quick Logout Button */}
-          <Tooltip title="Log Out of Session" placement="right" arrow>
+          <Tooltip title="Sign Out" placement="right" arrow>
             <IconButton
+              size="small"
               onClick={() => setLogoutDialogOpen(true)}
-              aria-label="Log Out"
               sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '9999px',
-                color: '#94A3B8',
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                width: 36,
+                height: 36,
+                color: '#EF4444',
+                bgcolor: '#FEF2F2',
+                borderRadius: '50%',
                 '&:hover': {
                   bgcolor: '#FEE2E2',
-                  color: '#DC2626',
                   transform: 'scale(1.08)',
-                },
-                '&:active': {
-                  transform: 'scale(0.95)',
                 },
               }}
             >
@@ -413,7 +450,7 @@ export default function StudentSidebar() {
         </Box>
       </Box>
 
-      {/* Logout Confirmation Dialog */}
+      {/* Logout Confirmation Modal */}
       <LogoutConfirmModal
         open={logoutDialogOpen}
         onClose={() => setLogoutDialogOpen(false)}

@@ -48,6 +48,7 @@ import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import WhatshotRoundedIcon from '@mui/icons-material/WhatshotRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 
 import dynamic from 'next/dynamic';
 
@@ -58,7 +59,9 @@ import { useToast } from '@/context/ToastContext';
 
 const ProblemQuickPeekDrawer = dynamic(() => import('@/components/superadmin/problems/ProblemQuickPeekDrawer'), { loading: () => null });
 const CreateProblemModal = dynamic(() => import('@/components/superadmin/problems/CreateProblemModal'), { loading: () => null });
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
+import SkillDomainMasteryCard from '@/components/superadmin/shared/SkillDomainMasteryCard';
 import {
   ProblemEntity,
   ProblemCategory,
@@ -557,72 +560,79 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
 
           {/* 3. Stats Metric Ribbon Cards */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Total Problem Bank
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {totalCount}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-                <Typography sx={{ fontSize: '0.72rem', color: '#16A34A', fontWeight: 700 }}>
-                  {easyCount} Easy
-                </Typography>
-                <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8' }}>•</Typography>
-                <Typography sx={{ fontSize: '0.72rem', color: '#D97706', fontWeight: 700 }}>
-                  {mediumCount} Med
-                </Typography>
-                <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8' }}>•</Typography>
-                <Typography sx={{ fontSize: '0.72rem', color: '#DC2626', fontWeight: 700 }}>
-                  {hardCount} Hard
-                </Typography>
-              </Box>
-            </Card>
+            <StatsCard
+              title="Total Problem Bank"
+              value={totalCount}
+              icon={<CodeRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="mountains"
+              subtitle={
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#4ADE80', fontWeight: 700 }}>
+                    {easyCount} Easy
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>•</Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#FBBF24', fontWeight: 700 }}>
+                    {mediumCount} Med
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>•</Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#F87171', fontWeight: 700 }}>
+                    {hardCount} Hard
+                  </Typography>
+                </Box>
+              }
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Published & Active
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#16A34A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {publishedCount} <span style={{ fontSize: '1rem', fontWeight: 600, color: '#64748B' }}>/ {totalCount}</span>
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={Math.round((publishedCount / (totalCount || 1)) * 100)}
-                sx={{
-                  height: 5,
-                  borderRadius: 3,
-                  bgcolor: '#E2E8F0',
-                  mt: 0.75,
-                  '& .MuiLinearProgress-bar': { bgcolor: '#16A34A', borderRadius: 3 },
-                }}
-              />
-            </Card>
+            <StatsCard
+              title="Published & Active"
+              value={
+                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75 }}>
+                  <span>{publishedCount}</span>
+                  <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>
+                    / {totalCount}
+                  </span>
+                </Box>
+              }
+              icon={<CheckCircleRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="curves"
+              subtitle={
+                <Box sx={{ width: '100%', mt: 0.5 }}>
+                  <LinearProgress
+                    variant="determinate"
+                    value={Math.round((publishedCount / (totalCount || 1)) * 100)}
+                    sx={{
+                      height: 5,
+                      borderRadius: 3,
+                      bgcolor: 'rgba(255, 255, 255, 0.15)',
+                      '& .MuiLinearProgress-bar': { bgcolor: '#34D399', borderRadius: 3 },
+                    }}
+                  />
+                </Box>
+              }
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Evaluated Submissions
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#2563EB', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {totalPlatformSubmissions.toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Across all testbench runs
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Evaluated Submissions"
+              value={totalPlatformSubmissions.toLocaleString()}
+              icon={<BoltRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="peaks"
+              subtitle="Across all testbench runs"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Platform Avg Pass Rate
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#7C3AED', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {avgAcceptance}%
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                {underReviewCount} under review • {draftCount} drafts
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Platform Avg Pass Rate"
+              value={`${avgAcceptance}%`}
+              icon={<EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="waves"
+              subtitle={`${underReviewCount} under review • ${draftCount} drafts`}
+            />
           </Box>
+
+          {/* Domain Acceptance & Problem Solving Proficiency Rings */}
+          <SkillDomainMasteryCard primaryBlue="#2563EB" />
 
           {/* 4. Controls & Filters Toolbar with MUI Tabs */}
           <Card
