@@ -19,7 +19,7 @@ describe('ProblemsService', () => {
     difficulty: ProblemDifficulty.EASY,
     timeLimit: 1000,
     memoryLimit: 256,
-    collegeId: null,
+    institutionId: null,
     createdById: 'user-1',
     status: ProblemStatus.PUBLISHED,
     createdAt: new Date(),

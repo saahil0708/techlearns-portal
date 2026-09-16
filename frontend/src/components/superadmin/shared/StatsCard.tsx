@@ -4,7 +4,15 @@ import React, { useId } from 'react';
 import { Box, Typography, Card, SxProps, Theme } from '@mui/material';
 
 export type StatsCardVariant = 'blue' | 'black';
-export type StatsCardShape = 'mountains' | 'curves' | 'waves' | 'peaks';
+export type StatsCardShape =
+  | 'orbital'
+  | 'topography'
+  | 'hex-grid'
+  | 'aurora-waves'
+  | 'mountains'
+  | 'curves'
+  | 'waves'
+  | 'peaks';
 
 export interface StatsCardProps {
   title: string;
@@ -23,15 +31,20 @@ export interface StatsCardProps {
   };
 }
 
-// SVG Backgrounds: Mountains, Curves, Waves, Geometric Peaks
+// Background SVGs: Concentric Orbital Rings, Flowing Topographic Contours, Hexagonal Cyber Mesh, Fluid Aurora Waves
 const BackgroundShape: React.FC<{ shape: StatsCardShape; variant: StatsCardVariant }> = ({ shape, variant }) => {
   const uniqueId = useId().replace(/:/g, '_');
-  const fillColor = variant === 'blue' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(255, 255, 255, 0.08)';
-  const strokeColor = variant === 'blue' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.12)';
-  const glowColor = variant === 'blue' ? 'rgba(56, 189, 248, 0.15)' : 'rgba(148, 163, 184, 0.1)';
+  const isBlue = variant === 'blue';
+
+  const strokePrimary = isBlue ? 'rgba(147, 197, 253, 0.35)' : 'rgba(255, 255, 255, 0.18)';
+  const strokeSecondary = isBlue ? 'rgba(96, 165, 250, 0.2)' : 'rgba(255, 255, 255, 0.08)';
+  const fillGlow = isBlue ? 'rgba(59, 130, 246, 0.18)' : 'rgba(255, 255, 255, 0.06)';
+  const fillDeep = isBlue ? 'rgba(30, 58, 138, 0.35)' : 'rgba(255, 255, 255, 0.03)';
+  const accentDot = isBlue ? '#93C5FD' : '#FFFFFF';
 
   switch (shape) {
-    case 'mountains':
+    case 'orbital':
+    case 'peaks': // backward compatibility mapping
       return (
         <Box
           component="svg"
@@ -40,110 +53,150 @@ const BackgroundShape: React.FC<{ shape: StatsCardShape; variant: StatsCardVaria
           xmlns="http://www.w3.org/2000/svg"
           sx={{
             position: 'absolute',
-            right: -10,
-            bottom: -5,
-            width: '180px',
-            height: '95px',
-            pointerEvents: 'none',
-            zIndex: 0,
-            transition: 'transform 0.4s ease',
-          }}
-        >
-          <defs>
-            <linearGradient id={`grad_mtn_back_${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={fillColor} stopOpacity="0.8" />
-              <stop offset="100%" stopColor={glowColor} stopOpacity="0.1" />
-            </linearGradient>
-            <linearGradient id={`grad_mtn_front_${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={fillColor} stopOpacity="1" />
-              <stop offset="100%" stopColor={fillColor} stopOpacity="0.3" />
-            </linearGradient>
-          </defs>
-          {/* Distant Mountain Peak */}
-          <polygon points="70,120 140,25 210,120" fill={`url(#grad_mtn_back_${uniqueId})`} />
-          <path d="M140,25 L120,60 L140,75 L155,50 Z" fill="rgba(255,255,255,0.06)" />
-          {/* Foreground Mountain Peak */}
-          <polygon points="120,120 180,45 240,120" fill={`url(#grad_mtn_front_${uniqueId})`} />
-          <polygon points="10,120 75,55 140,120" fill={`url(#grad_mtn_back_${uniqueId})`} />
-          {/* Mountain Contour Ridge lines */}
-          <path d="M10,120 L75,55 L140,25 L180,45 L240,120" stroke={strokeColor} strokeWidth="1.5" strokeDasharray="3 3" />
-        </Box>
-      );
-
-    case 'curves':
-      return (
-        <Box
-          component="svg"
-          viewBox="0 0 240 120"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          sx={{
-            position: 'absolute',
-            right: 0,
-            bottom: 0,
-            width: '200px',
-            height: '100px',
-            pointerEvents: 'none',
-            zIndex: 0,
-            transition: 'transform 0.4s ease',
-          }}
-        >
-          <defs>
-            <linearGradient id={`grad_curve_${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={fillColor} stopOpacity="0.9" />
-              <stop offset="100%" stopColor={fillColor} stopOpacity="0.1" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M0,100 C60,40 140,110 240,30 L240,120 L0,120 Z"
-            fill={`url(#grad_curve_${uniqueId})`}
-          />
-          <path
-            d="M0,115 C80,70 160,105 240,55"
-            stroke={strokeColor}
-            strokeWidth="2"
-          />
-          <path
-            d="M20,120 C100,50 170,85 240,15"
-            stroke={strokeColor}
-            strokeWidth="1.5"
-            strokeDasharray="4 4"
-          />
-        </Box>
-      );
-
-    case 'waves':
-      return (
-        <Box
-          component="svg"
-          viewBox="0 0 240 120"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          sx={{
-            position: 'absolute',
-            right: 0,
-            bottom: 0,
+            right: -20,
+            bottom: -25,
             width: '210px',
-            height: '90px',
+            height: '115px',
             pointerEvents: 'none',
             zIndex: 0,
             transition: 'transform 0.4s ease',
           }}
         >
-          <path
-            d="M0,80 Q60,30 120,70 T240,40 L240,120 L0,120 Z"
-            fill={fillColor}
-          />
-          <path
-            d="M0,95 Q70,55 140,85 T240,65"
-            stroke={strokeColor}
-            strokeWidth="1.5"
-          />
-          <circle cx="190" cy="30" r="18" fill="rgba(255,255,255,0.04)" stroke={strokeColor} strokeWidth="1" />
+          <defs>
+            <radialGradient id={`orb_glow_${uniqueId}`} cx="85%" cy="85%" r="80%">
+              <stop offset="0%" stopColor={fillGlow} stopOpacity="1" />
+              <stop offset="60%" stopColor={fillDeep} stopOpacity="0.5" />
+              <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          {/* Ambient Radial Aura */}
+          <circle cx="210" cy="100" r="110" fill={`url(#orb_glow_${uniqueId})`} />
+
+          {/* Concentric Orbital Rings */}
+          <circle cx="210" cy="100" r="120" stroke={strokeSecondary} strokeWidth="1" strokeDasharray="5 5" />
+          <circle cx="210" cy="100" r="95" stroke={strokePrimary} strokeWidth="1.25" />
+          <circle cx="210" cy="100" r="70" stroke={strokeSecondary} strokeWidth="1" strokeDasharray="3 4" />
+          <circle cx="210" cy="100" r="45" stroke={strokePrimary} strokeWidth="1.5" />
+          <circle cx="210" cy="100" r="24" stroke={strokePrimary} strokeWidth="1.75" />
+
+          {/* Orbital Orbiters & Pulse Nodes */}
+          <circle cx="165" cy="55" r="3.5" fill={accentDot} opacity={0.85} />
+          <circle cx="165" cy="55" r="7" stroke={strokePrimary} strokeWidth="1" opacity={0.5} />
+          <circle cx="140" cy="100" r="2.5" fill={accentDot} opacity={0.7} />
+          <circle cx="185" cy="16" r="3" fill={accentDot} opacity={0.9} />
+          <path d="M210,100 L165,55" stroke={strokeSecondary} strokeWidth="1" strokeDasharray="2 2" />
         </Box>
       );
 
-    case 'peaks':
+    case 'topography':
+    case 'curves': // backward compatibility mapping
+      return (
+        <Box
+          component="svg"
+          viewBox="0 0 240 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          sx={{
+            position: 'absolute',
+            right: 0,
+            bottom: 0,
+            width: '220px',
+            height: '110px',
+            pointerEvents: 'none',
+            zIndex: 0,
+            transition: 'transform 0.4s ease',
+          }}
+        >
+          <defs>
+            <linearGradient id={`topo_grad_${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={fillGlow} stopOpacity="0.8" />
+              <stop offset="100%" stopColor="transparent" stopOpacity="0.05" />
+            </linearGradient>
+          </defs>
+          {/* Layered Smooth Isobar Curves */}
+          <path
+            d="M20,120 C70,60 140,110 240,40 L240,120 Z"
+            fill={`url(#topo_grad_${uniqueId})`}
+          />
+          <path
+            d="M0,110 C60,50 130,95 240,30"
+            stroke={strokePrimary}
+            strokeWidth="1.75"
+          />
+          <path
+            d="M15,120 C85,70 155,105 240,50"
+            stroke={strokeSecondary}
+            strokeWidth="1.25"
+            strokeDasharray="4 3"
+          />
+          <path
+            d="M40,120 C110,85 180,115 240,70"
+            stroke={strokePrimary}
+            strokeWidth="1.25"
+          />
+          <path
+            d="M0,80 C70,25 150,80 240,15"
+            stroke={strokeSecondary}
+            strokeWidth="1"
+            strokeDasharray="2 3"
+            opacity={0.6}
+          />
+          {/* Topographic elevation mark */}
+          <circle cx="180" cy="45" r="3" fill={accentDot} opacity={0.75} />
+        </Box>
+      );
+
+    case 'hex-grid':
+    case 'mountains': // backward compatibility mapping
+      return (
+        <Box
+          component="svg"
+          viewBox="0 0 240 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          sx={{
+            position: 'absolute',
+            right: -5,
+            bottom: -5,
+            width: '200px',
+            height: '105px',
+            pointerEvents: 'none',
+            zIndex: 0,
+            transition: 'transform 0.4s ease',
+          }}
+        >
+          {/* Futuristic Hexagonal Honeycomb & Isometric Wireframe Grid */}
+          <defs>
+            <linearGradient id={`hex_fill_${uniqueId}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={fillGlow} stopOpacity="0.9" />
+              <stop offset="100%" stopColor={fillDeep} stopOpacity="0.2" />
+            </linearGradient>
+          </defs>
+
+          {/* Hex 1 - Center Right */}
+          <polygon points="175,30 205,47 205,82 175,100 145,82 145,47" fill={`url(#hex_fill_${uniqueId})`} stroke={strokePrimary} strokeWidth="1.5" />
+          
+          {/* Hex 2 - Top Right Offset */}
+          <polygon points="215,5 240,20 240,50 215,65 190,50 190,20" fill="none" stroke={strokeSecondary} strokeWidth="1.25" strokeDasharray="3 3" />
+
+          {/* Hex 3 - Bottom Right */}
+          <polygon points="215,75 240,90 240,120 215,135 190,120 190,90" fill={fillDeep} stroke={strokeSecondary} strokeWidth="1" />
+
+          {/* Hex 4 - Left Middle */}
+          <polygon points="135,75 160,90 160,120 135,135 110,120 110,90" fill="none" stroke={strokePrimary} strokeWidth="1.25" />
+
+          {/* Hex 5 - Top Left Accent */}
+          <polygon points="135,5 160,20 160,50 135,65 110,50 110,20" fill="none" stroke={strokeSecondary} strokeWidth="1" strokeDasharray="2 2" opacity={0.6} />
+
+          {/* Glowing Vertex Nodes */}
+          <circle cx="175" cy="30" r="3" fill={accentDot} opacity={0.8} />
+          <circle cx="205" cy="82" r="3" fill={accentDot} opacity={0.8} />
+          <circle cx="145" cy="47" r="2.5" fill={accentDot} opacity={0.6} />
+        </Box>
+      );
+
+    case 'aurora-waves':
+    case 'waves':
     default:
       return (
         <Box
@@ -153,19 +206,50 @@ const BackgroundShape: React.FC<{ shape: StatsCardShape; variant: StatsCardVaria
           xmlns="http://www.w3.org/2000/svg"
           sx={{
             position: 'absolute',
-            right: -15,
-            bottom: -5,
-            width: '190px',
-            height: '95px',
+            right: 0,
+            bottom: 0,
+            width: '220px',
+            height: '105px',
             pointerEvents: 'none',
             zIndex: 0,
             transition: 'transform 0.4s ease',
           }}
         >
-          <polygon points="30,120 90,40 150,120" fill={fillColor} />
-          <polygon points="110,120 170,20 230,120" fill={fillColor} />
-          <path d="M90,40 L170,20" stroke={strokeColor} strokeWidth="1.5" strokeDasharray="3 3" />
-          <circle cx="170" cy="20" r="4" fill="rgba(255,255,255,0.4)" />
+          <defs>
+            <linearGradient id={`aurora_ribbon_${uniqueId}`} x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="transparent" stopOpacity="0" />
+              <stop offset="50%" stopColor={fillGlow} stopOpacity="1" />
+              <stop offset="100%" stopColor={fillDeep} stopOpacity="0.3" />
+            </linearGradient>
+          </defs>
+
+          {/* Ambient Wave Sweep 1 */}
+          <path
+            d="M0,100 Q60,35 130,75 T240,30 L240,120 L0,120 Z"
+            fill={`url(#aurora_ribbon_${uniqueId})`}
+          />
+
+          {/* Sine Wave Flow Lines */}
+          <path
+            d="M0,90 Q65,25 135,65 T240,20"
+            stroke={strokePrimary}
+            strokeWidth="1.75"
+          />
+          <path
+            d="M0,105 Q70,45 140,85 T240,40"
+            stroke={strokeSecondary}
+            strokeWidth="1.25"
+            strokeDasharray="4 3"
+          />
+          <path
+            d="M10,120 Q80,65 150,100 T240,65"
+            stroke={strokePrimary}
+            strokeWidth="1.25"
+          />
+
+          {/* Luminous Glow Points */}
+          <circle cx="135" cy="65" r="3.5" fill={accentDot} opacity={0.8} />
+          <circle cx="210" cy="25" r="2.5" fill={accentDot} opacity={0.6} />
         </Box>
       );
   }
@@ -188,8 +272,8 @@ export default function StatsCard({
   const effectiveVariant: StatsCardVariant =
     variant || (index % 2 === 0 ? 'blue' : 'black');
 
-  // Determine shape based on index if not set
-  const defaultShapes: StatsCardShape[] = ['mountains', 'curves', 'peaks', 'waves'];
+  // Default rotation across 4 modern tech shape styles
+  const defaultShapes: StatsCardShape[] = ['orbital', 'topography', 'hex-grid', 'aurora-waves'];
   const effectiveShape: StatsCardShape = shape || defaultShapes[index % defaultShapes.length];
 
   const isBlue = effectiveVariant === 'blue';
@@ -242,10 +326,10 @@ export default function StatsCard({
         ...sx,
       }}
     >
-      {/* Background Graphic: Mountains / Curves / Waves */}
+      {/* Background Graphic: Orbital Rings / Topography / Hex Grid / Aurora Waves */}
       <BackgroundShape shape={effectiveShape} variant={effectiveVariant} />
 
-      {/* Top Header: Title and Icon/Emoji badge */}
+      {/* Top Header: Title and Icon badge */}
       <Box
         sx={{
           display: 'flex',
@@ -269,7 +353,7 @@ export default function StatsCard({
           {title}
         </Typography>
 
-        {/* Icon / Emoji badge chip */}
+        {/* Icon badge chip */}
         {(icon || emoji) && (
           <Box
             sx={{

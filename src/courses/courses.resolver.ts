@@ -20,11 +20,12 @@ export class CoursesResolver {
   @Query(() => CoursesConnection, { name: 'courses' })
   async getCourses(
     @Args() paginationArgs: PaginationArgs,
+    @Args('institutionId', { type: () => String, nullable: true }) institutionId?: string,
     @Args('collegeId', { type: () => String, nullable: true }) collegeId?: string,
     @Args('status', { type: () => CourseStatus, nullable: true }) status?: CourseStatus,
     @GqlCurrentUser() currentUser?: CurrentUserPayload,
   ) {
-    return this.coursesService.findPaginated(paginationArgs, collegeId, status, currentUser);
+    return this.coursesService.findPaginated(paginationArgs, institutionId || collegeId, status, currentUser);
   }
 
   @Query(() => CourseType, { name: 'course', nullable: true })
@@ -37,7 +38,7 @@ export class CoursesResolver {
 
   @Mutation(() => CourseType, { name: 'createCourse' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async createCourse(
     @Args('input') input: CreateCourseInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
@@ -47,7 +48,7 @@ export class CoursesResolver {
 
   @Mutation(() => CourseType, { name: 'updateCourse' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async updateCourse(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: UpdateCourseInput,
@@ -58,7 +59,7 @@ export class CoursesResolver {
 
   @Mutation(() => Boolean, { name: 'deleteCourse' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async deleteCourse(
     @Args('id', { type: () => ID }) id: string,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
@@ -67,4 +68,3 @@ export class CoursesResolver {
     return true;
   }
 }
-

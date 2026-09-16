@@ -53,6 +53,7 @@ import dynamic from 'next/dynamic';
 
 import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 import { ContestEntity, NewContestData, ContestStatus, ContestScope, ScoringFormat } from '@/types/contest';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
@@ -565,53 +566,42 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
 
           {/* 3. Stats Metric Ribbon Cards */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Active Live Arenas
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: liveCount > 0 ? '#DC2626' : '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {liveCount}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: liveCount > 0 ? '#DC2626' : '#64748B', fontWeight: 700, mt: 0.25 }}>
-                {liveCount > 0 ? '● Ongoing Live Battles' : 'No active arenas right now'}
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Active Live Arenas"
+              value={liveCount}
+              icon={<RadioButtonCheckedRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="orbital"
+              subtitle={liveCount > 0 ? 'Ongoing live battles' : 'No active arenas right now'}
+              trendBadge={liveCount > 0 ? { text: '● LIVE NOW', type: 'positive' } : undefined}
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Upcoming Scheduled
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#2563EB', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {upcomingCount}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                Next round starting soon
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Upcoming Scheduled"
+              value={upcomingCount}
+              icon={<AccessTimeRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="topography"
+              subtitle="Next round starting soon"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Registered Coders
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#0F172A', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {totalRegistrations.toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#16A34A', fontWeight: 600, mt: 0.25 }}>
-                Across all active brackets
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Registered Coders"
+              value={totalRegistrations.toLocaleString()}
+              icon={<PeopleAltRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="hex-grid"
+              subtitle="Across all active brackets"
+            />
 
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Tournament Submissions
-              </Typography>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 900, color: '#7C3AED', mt: 0.5, letterSpacing: '-0.02em' }}>
-                {totalSubmissions.toLocaleString()}
-              </Typography>
-              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
-                {pastCount} archived tournaments
-              </Typography>
-            </Card>
+            <StatsCard
+              title="Tournament Submissions"
+              value={totalSubmissions.toLocaleString()}
+              icon={<EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="aurora-waves"
+              subtitle={`${pastCount} archived tournaments`}
+            />
           </Box>
 
           {/* 4. Controls & Filters Toolbar with MUI Tabs */}

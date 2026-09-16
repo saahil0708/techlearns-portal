@@ -2,22 +2,23 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-input AddCollegeMemberInput {
-  role: Role! = STUDENT
-  userId: String!
-}
-
 input AddContestProblemInput {
   order: Int = 0
   points: Int = 100
   problemId: ID!
 }
 
+input AddInstitutionMemberInput {
+  role: Role! = STUDENT
+  userId: String!
+}
+
 type AdminMetrics {
   adminsCount: Int!
-  collegesCount: Int!
+  collegesCount: Int
   contestsCount: Int!
   facultyCount: Int!
+  institutionsCount: Int
   problemsCount: Int!
   studentsCount: Int!
   submissionsCount: Int!
@@ -43,11 +44,12 @@ type AuditLogItem {
 
 type Batch {
   _count: BatchCounts
-  college: College
-  collegeId: String!
+  collegeId: String
   createdAt: DateTime!
   endDate: DateTime
   id: ID!
+  institution: Institution
+  institutionId: String!
   maxCapacity: Int!
   name: String!
   startDate: DateTime
@@ -88,6 +90,7 @@ input BulkInviteItemInput {
   batchId: String
   collegeId: String
   email: String!
+  institutionId: String
   name: String!
   role: Role! = STUDENT
   rollNo: String
@@ -103,38 +106,6 @@ input BulkInviteUsersInput {
   users: [BulkInviteItemInput!]!
 }
 
-type College {
-  _count: CollegeCounts
-  address: String
-  code: String!
-  createdAt: DateTime!
-  email: String
-  id: ID!
-  name: String!
-  phone: String
-  status: CollegeStatus!
-  updatedAt: DateTime!
-}
-
-type CollegeCounts {
-  batches: Int!
-  contests: Int
-  courses: Int!
-  memberships: Int!
-  problems: Int!
-}
-
-"""Higher-ed and school organization status"""
-enum CollegeStatus {
-  ACTIVE
-  INACTIVE
-}
-
-type CollegesConnection {
-  items: [College!]!
-  meta: PaginationMeta!
-}
-
 type Contest {
   _count: ContestCounts
   collegeId: String
@@ -143,6 +114,7 @@ type Contest {
   description: String
   endTime: DateTime!
   id: ID!
+  institutionId: String
   problems: [ContestProblem!]
   registrations: [ContestRegistration!]
   startTime: DateTime!
@@ -194,6 +166,7 @@ type Course {
   createdById: String!
   description: String
   id: ID!
+  institutionId: String
   modules: [Module!]
   status: CourseStatus!
   title: String!
@@ -218,27 +191,20 @@ type CoursesConnection {
 }
 
 input CreateBatchInput {
-  collegeId: String!
+  collegeId: String
   endDate: String
+  institutionId: String
   maxCapacity: Int = 100
   name: String!
   startDate: String
   status: String = "ACTIVE"
 }
 
-input CreateCollegeInput {
-  address: String
-  code: String!
-  email: String
-  name: String!
-  phone: String
-  status: CollegeStatus = ACTIVE
-}
-
 input CreateContestInput {
   collegeId: String
   description: String
   endTime: DateTime!
+  institutionId: String
   startTime: DateTime!
   status: ContestStatus = UPCOMING
   title: String!
@@ -247,8 +213,18 @@ input CreateContestInput {
 input CreateCourseInput {
   collegeId: String
   description: String
+  institutionId: String
   status: CourseStatus = DRAFT
   title: String!
+}
+
+input CreateInstitutionInput {
+  address: String
+  code: String!
+  email: String
+  name: String!
+  phone: String
+  status: InstitutionStatus = ACTIVE
 }
 
 input CreateProblemInput {
@@ -256,6 +232,7 @@ input CreateProblemInput {
   constraints: String! = ""
   difficulty: ProblemDifficulty! = MEDIUM
   inputFormat: String! = ""
+  institutionId: String
   memoryLimit: Int! = 256
   outputFormat: String! = ""
   slug: String
@@ -285,6 +262,7 @@ input CreateUserInput {
   collegeId: String
   email: String!
   globalRole: Role = STUDENT
+  institutionId: String
   name: String!
   password: String!
   status: UserStatus = ACTIVE
@@ -294,6 +272,53 @@ input CreateUserInput {
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
+
+type Institution {
+  _count: InstitutionCounts
+  address: String
+  code: String!
+  createdAt: DateTime!
+  email: String
+  id: ID!
+  memberships: [InstitutionMembership!]
+  name: String!
+  phone: String
+  status: InstitutionStatus!
+  updatedAt: DateTime!
+}
+
+type InstitutionCounts {
+  batches: Int!
+  contests: Int
+  courses: Int!
+  memberships: Int!
+  problems: Int!
+}
+
+type InstitutionMembership {
+  id: ID!
+  institutionId: String!
+  role: Role!
+  user: InstitutionMembershipUser
+}
+
+type InstitutionMembershipUser {
+  department: String
+  email: String!
+  id: ID!
+  name: String!
+}
+
+"""Higher-ed and school organization status"""
+enum InstitutionStatus {
+  ACTIVE
+  INACTIVE
+}
+
+type InstitutionsConnection {
+  items: [Institution!]!
+  meta: PaginationMeta!
+}
 
 type InvitationLinkItem {
   activationUrl: String!
@@ -322,31 +347,31 @@ type Module {
 }
 
 type Mutation {
-  addCollegeMember(collegeId: ID!, input: AddCollegeMemberInput!): Boolean!
   addContestProblem(contestId: ID!, input: AddContestProblemInput!): ContestProblem!
+  addInstitutionMember(input: AddInstitutionMemberInput!, institutionId: ID!): Boolean!
   addProblemTestCase(input: CreateTestCaseInput!, problemId: ID!): TestCase!
   assignStudentsToBatch(input: AssignStudentsInput!): [BatchStudent!]!
   bulkInviteUsers(input: BulkInviteUsersInput!): BulkInviteResult!
   createBatch(input: CreateBatchInput!): Batch!
-  createCollege(input: CreateCollegeInput!): College!
   createContest(input: CreateContestInput!): Contest!
   createCourse(input: CreateCourseInput!): Course!
+  createInstitution(input: CreateInstitutionInput!): Institution!
   createProblem(input: CreateProblemInput!): Problem!
   createUser(input: CreateUserInput!): User!
   deleteBatch(id: ID!): Batch!
-  deleteCollege(id: ID!): Boolean!
   deleteContest(id: ID!): Boolean!
   deleteCourse(id: ID!): Boolean!
+  deleteInstitution(id: ID!): Boolean!
   deleteProblem(id: ID!): Boolean!
   deleteUser(id: ID!): Boolean!
   registerForContest(contestId: ID!): ContestRegistration!
-  removeCollegeMember(collegeId: ID!, userId: ID!): Boolean!
+  removeInstitutionMember(institutionId: ID!, userId: ID!): Boolean!
   removeStudentFromBatch(batchId: ID!, userId: ID!): BatchStudent!
   submitCode(input: CreateSubmissionInput!): Submission!
   updateBatch(id: ID!, input: UpdateBatchInput!): Batch!
-  updateCollege(id: ID!, input: UpdateCollegeInput!): College!
   updateContest(id: ID!, input: UpdateContestInput!): Contest!
   updateCourse(id: ID!, input: UpdateCourseInput!): Course!
+  updateInstitution(id: ID!, input: UpdateInstitutionInput!): Institution!
   updateProblem(id: ID!, input: UpdateProblemInput!): Problem!
   updateUser(id: ID!, input: UpdateUserInput!): User!
 }
@@ -367,6 +392,7 @@ type Problem {
   difficulty: ProblemDifficulty!
   id: ID!
   inputFormat: String!
+  institutionId: String
   memoryLimit: Int!
   outputFormat: String!
   slug: String!
@@ -416,29 +442,29 @@ type Query {
   adminMetrics: AdminMetrics!
   batch(id: ID!): Batch!
   batchStudents(batchId: ID!, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc"): BatchStudentsConnection!
-  batches(collegeId: String, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc"): BatchesConnection!
-  college(id: ID!): College
-  colleges(limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: CollegeStatus): CollegesConnection!
+  batches(collegeId: String, institutionId: String, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc"): BatchesConnection!
   contest(id: ID!): Contest
-  contests(collegeId: String, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: ContestStatus): ContestsConnection!
+  contests(collegeId: String, institutionId: String, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: ContestStatus): ContestsConnection!
   course(id: ID!): Course
-  courses(collegeId: String, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: CourseStatus): CoursesConnection!
+  courses(collegeId: String, institutionId: String, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: CourseStatus): CoursesConnection!
+  institution(id: ID!): Institution
+  institutions(limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: InstitutionStatus): InstitutionsConnection!
   liveSubmissions(limit: Int = 20): [Submission!]!
   me: User!
   problem(idOrSlug: String!): Problem
   problemTestCases(problemId: ID!): [TestCase!]!
-  problems(collegeId: String, difficulty: ProblemDifficulty, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: ProblemStatus): ProblemsConnection!
+  problems(collegeId: String, difficulty: ProblemDifficulty, institutionId: String, limit: Int = 10, page: Int = 1, search: String, sortBy: String, sortOrder: String = "desc", status: ProblemStatus): ProblemsConnection!
   studentProfile(handleOrId: String!): StudentProfile!
   submission(id: ID!): Submission
   submissions(contestId: String, language: ProgrammingLanguage, limit: Int = 10, page: Int = 1, problemId: String, search: String, sortBy: String, sortOrder: String = "desc", userId: String, verdict: SubmissionVerdict): SubmissionsConnection!
   user(id: ID!): User
-  users(collegeId: String, limit: Int = 10, page: Int = 1, role: Role, search: String, sortBy: String, sortOrder: String = "desc", status: UserStatus): UsersConnection!
+  users(collegeId: String, institutionId: String, limit: Int = 10, page: Int = 1, role: Role, search: String, sortBy: String, sortOrder: String = "desc", status: UserStatus): UsersConnection!
 }
 
 """System-wide and institution user roles"""
 enum Role {
-  COLLEGE_ADMIN
   FACULTY
+  INSTITUTION_ADMIN
   PLATFORM_ADMIN
   STUDENT
   SUPER_ADMIN
@@ -588,15 +614,6 @@ input UpdateBatchInput {
   status: String
 }
 
-input UpdateCollegeInput {
-  address: String
-  code: String
-  email: String
-  name: String
-  phone: String
-  status: CollegeStatus
-}
-
 input UpdateContestInput {
   description: String
   endTime: DateTime
@@ -609,6 +626,15 @@ input UpdateCourseInput {
   description: String
   status: CourseStatus
   title: String
+}
+
+input UpdateInstitutionInput {
+  address: String
+  code: String
+  email: String
+  name: String
+  phone: String
+  status: InstitutionStatus
 }
 
 input UpdateProblemInput {
@@ -665,7 +691,7 @@ type User {
   institution: String
   linkedinUrl: String
   location: String
-  memberships: [UserCollegeMembership!]
+  memberships: [UserInstitutionMembership!]
   name: String!
   officeHours: String
   phone: String
@@ -692,14 +718,14 @@ type UserBatchEnrollmentBatch {
   name: String!
 }
 
-type UserCollegeMembership {
-  college: UserCollegeMembershipCollege
-  collegeId: String!
+type UserInstitutionMembership {
   id: ID!
+  institution: UserInstitutionMembershipInstitution
+  institutionId: String!
   role: Role!
 }
 
-type UserCollegeMembershipCollege {
+type UserInstitutionMembershipInstitution {
   code: String
   id: ID!
   name: String!

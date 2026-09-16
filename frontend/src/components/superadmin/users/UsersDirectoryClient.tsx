@@ -119,9 +119,9 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
             .filter((item: any) => item.globalRole && item.globalRole !== 'STUDENT')
             .map((item: any) => {
               const primaryMembership = Array.isArray(item.memberships)
-                ? item.memberships.find((m: any) => m?.college?.name)
+                ? item.memberships.find((m: any) => m?.institution?.name || m?.college?.name)
                 : null;
-              const collegeName = primaryMembership?.college?.name;
+              const collegeName = primaryMembership?.institution?.name || primaryMembership?.college?.name;
               const userInstitution = item.institution?.trim();
 
               const institutionType: 'College' | 'School' | 'Independent' = collegeName
@@ -644,7 +644,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
               value={totalCount}
               icon={<SupervisorAccountRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="mountains"
+              shape="orbital"
               subtitle={`${adminCount} Admins • ${facultyCount} Faculty • ${recruiterCount} Recruiters`}
             />
 
@@ -653,7 +653,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
               value={adminCount}
               icon={<AdminPanelSettingsRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="curves"
+              shape="topography"
               subtitle="Super & Tenant Admins"
             />
 
@@ -662,7 +662,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
               value={`${twoFaRate}%`}
               icon={<SecurityRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="peaks"
+              shape="hex-grid"
               subtitle="High Security Tier"
             />
 
@@ -671,7 +671,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
               value="99.8%"
               icon={<VerifiedUserRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="waves"
+              shape="aurora-waves"
               subtitle="Zero active lockouts"
             />
           </Box>

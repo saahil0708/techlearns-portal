@@ -743,7 +743,7 @@ export default function SchoolDetailClient({
               value={school.studentsCount.toLocaleString()}
               icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="mountains"
+              shape="orbital"
               subtitle={`Max Quota: ${school.maxQuota.toLocaleString()}`}
             />
 
@@ -752,7 +752,7 @@ export default function SchoolDetailClient({
               value={cohorts.length}
               icon={<PeopleAltRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="curves"
+              shape="topography"
               subtitle={school.grades}
             />
 
@@ -761,7 +761,7 @@ export default function SchoolDetailClient({
               value={labs.length}
               icon={<CodeRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="peaks"
+              shape="hex-grid"
               subtitle={school.curriculum}
             />
 
@@ -770,7 +770,7 @@ export default function SchoolDetailClient({
               value={teachers.length}
               icon={<SupervisorAccountRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="waves"
+              shape="aurora-waves"
               subtitle="STEM & Robotics Mentors"
             />
           </Box>

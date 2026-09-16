@@ -14,7 +14,7 @@ generator client {
 enum Role {
   SUPER_ADMIN
   PLATFORM_ADMIN
-  COLLEGE_ADMIN
+  INSTITUTION_ADMIN
   FACULTY
   STUDENT
 }
@@ -25,7 +25,7 @@ enum UserStatus {
   SUSPENDED
 }
 
-enum CollegeStatus {
+enum InstitutionStatus {
   ACTIVE
   INACTIVE
 }
@@ -121,7 +121,7 @@ model User {
   createdAt              DateTime   @default(now())
   updatedAt              DateTime   @updatedAt
 
-  memberships          CollegeMembership[]
+  memberships          InstitutionMembership[]
   batchEnrollments     BatchStudent[]
   createdCourses       Course[]              @relation("CourseCreator")
   enrollments          Enrollment[]
@@ -220,22 +220,22 @@ model RefreshToken {
 }
 
 model UserInvitation {
-  id          String   @id @default(uuid())
-  email       String
-  name        String
-  role        Role     @default(STUDENT)
-  collegeId   String?
-  batchId     String?
-  rollNo      String?
-  tokenHash   String   @unique
-  expiresAt   DateTime
-  acceptedAt  DateTime?
-  revokedAt   DateTime?
-  createdAt   DateTime @default(now())
-  delivery    InvitationDelivery?
+  id            String   @id @default(uuid())
+  email         String
+  name          String
+  role          Role     @default(STUDENT)
+  institutionId String?
+  batchId       String?
+  rollNo        String?
+  tokenHash     String   @unique
+  expiresAt     DateTime
+  acceptedAt    DateTime?
+  revokedAt     DateTime?
+  createdAt     DateTime @default(now())
+  delivery      InvitationDelivery?
 
   @@index([email, expiresAt])
-  @@index([collegeId, expiresAt])
+  @@index([institutionId, expiresAt])
   @@index([batchId, expiresAt])
   @@map("user_invitations")
 }
@@ -257,59 +257,59 @@ model InvitationDelivery {
   @@map("invitation_deliveries")
 }
 
-model College {
-  id        String        @id @default(uuid())
+model Institution {
+  id        String            @id @default(uuid())
   name      String
-  code      String        @unique
+  code      String            @unique
   email     String?
   phone     String?
   address   String?
-  status    CollegeStatus @default(ACTIVE)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  status    InstitutionStatus @default(ACTIVE)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
-  memberships CollegeMembership[]
+  memberships InstitutionMembership[]
   batches     Batch[]
   courses     Course[]
   problems    Problem[]
   contests    Contest[]
 
   @@index([status, createdAt])
-  @@map("colleges")
+  @@map("institutions")
 }
 
-model CollegeMembership {
-  id        String   @id @default(uuid())
-  userId    String
-  collegeId String
-  role      Role     @default(STUDENT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model InstitutionMembership {
+  id            String   @id @default(uuid())
+  userId        String
+  institutionId String
+  role          Role     @default(STUDENT)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  college College @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, collegeId])
-  @@index([collegeId, role])
+  @@unique([userId, institutionId])
+  @@index([institutionId, role])
   @@index([userId, role])
-  @@map("college_memberships")
+  @@map("institution_memberships")
 }
 
 model Batch {
-  id          String    @id @default(uuid())
-  name        String
-  collegeId   String
-  maxCapacity Int       @default(100)
-  startDate   DateTime?
-  endDate     DateTime?
-  status      String    @default("ACTIVE")
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(uuid())
+  name          String
+  institutionId String
+  maxCapacity   Int       @default(100)
+  startDate     DateTime?
+  endDate       DateTime?
+  status        String    @default("ACTIVE")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  college  College        @relation(fields: [collegeId], references: [id], onDelete: Cascade)
-  students BatchStudent[]
+  institution Institution    @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  students    BatchStudent[]
 
-  @@index([collegeId, status])
+  @@index([institutionId, status])
   @@map("batches")
 }
 
@@ -330,21 +330,21 @@ model BatchStudent {
 }
 
 model Course {
-  id          String       @id @default(uuid())
-  title       String
-  description String?      @db.Text
-  collegeId   String?
-  createdById String
-  status      CourseStatus @default(DRAFT)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id            String       @id @default(uuid())
+  title         String
+  description   String?      @db.Text
+  institutionId String?
+  createdById   String
+  status        CourseStatus @default(DRAFT)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
-  college     College?     @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  institution Institution? @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   createdBy   User         @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Restrict)
   modules     Module[]
   enrollments Enrollment[]
 
-  @@index([collegeId, status])
+  @@index([institutionId, status])
   @@index([createdById, status])
   @@index([status, createdAt])
   @@map("courses")
@@ -416,30 +416,30 @@ model LessonProgress {
 }
 
 model Problem {
-  id           String            @id @default(uuid())
-  title        String
-  slug         String            @unique
-  statement    String            @db.Text
-  inputFormat  String            @db.Text
-  outputFormat String            @db.Text
-  constraints  String            @db.Text
-  difficulty   ProblemDifficulty @default(MEDIUM)
-  timeLimit    Int               @default(1000) // ms
-  memoryLimit  Int               @default(256) // MB
-  collegeId    String?
-  createdById  String
-  status       ProblemStatus     @default(DRAFT)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id            String            @id @default(uuid())
+  title         String
+  slug          String            @unique
+  statement     String            @db.Text
+  inputFormat   String            @db.Text
+  outputFormat  String            @db.Text
+  constraints   String            @db.Text
+  difficulty    ProblemDifficulty @default(MEDIUM)
+  timeLimit     Int               @default(1000) // ms
+  memoryLimit   Int               @default(256) // MB
+  institutionId String?
+  createdById   String
+  status        ProblemStatus     @default(DRAFT)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
-  college         College?         @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  institution     Institution?     @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   createdBy       User             @relation("ProblemCreator", fields: [createdById], references: [id], onDelete: Restrict)
   testCases       TestCase[]
   submissions     Submission[]
   contestProblems ContestProblem[]
 
   @@index([difficulty, status])
-  @@index([collegeId, status])
+  @@index([institutionId, status])
   @@index([createdById, status])
   @@index([status, createdAt])
   @@map("problems")
@@ -491,18 +491,18 @@ model Submission {
 }
 
 model Contest {
-  id          String        @id @default(uuid())
-  title       String
-  description String?       @db.Text
-  startTime   DateTime
-  endTime     DateTime
-  collegeId   String?
-  createdById String
-  status      ContestStatus @default(UPCOMING)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(uuid())
+  title         String
+  description   String?       @db.Text
+  startTime     DateTime
+  endTime       DateTime
+  institutionId String?
+  createdById   String
+  status        ContestStatus @default(UPCOMING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  college            College?              @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  institution        Institution?          @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   createdBy          User                  @relation("ContestCreator", fields: [createdById], references: [id], onDelete: Restrict)
   problems           ContestProblem[]
   registrations      ContestRegistration[]
@@ -510,7 +510,7 @@ model Contest {
   leaderboardEntries LeaderboardEntry[]
 
   @@index([status, startTime, endTime])
-  @@index([collegeId, status])
+  @@index([institutionId, status])
   @@index([createdById, status])
   @@map("contests")
 }

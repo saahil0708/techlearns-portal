@@ -37,7 +37,7 @@ export class CoursesController {
   // ----------------------------------------------------
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Create a new course curriculum' })
   @ApiResponse({ status: 201, description: 'Course created successfully' })
   async create(
@@ -49,14 +49,16 @@ export class CoursesController {
 
   @Get()
   @ApiOperation({ summary: 'List all available courses with optional filters' })
+  @ApiQuery({ name: 'institutionId', required: false })
   @ApiQuery({ name: 'collegeId', required: false })
   @ApiQuery({ name: 'status', enum: CourseStatus, required: false })
   async findAll(
     @CurrentUser() user: CurrentUserPayload,
+    @Query('institutionId') institutionId?: string,
     @Query('collegeId') collegeId?: string,
     @Query('status') status?: CourseStatus,
   ) {
-    return this.coursesService.findAll(collegeId, status, user);
+    return this.coursesService.findAll(institutionId || collegeId, status, user);
   }
 
   @Get('enrolled')
@@ -75,7 +77,7 @@ export class CoursesController {
   }
 
   @Patch(':id')
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Update course details' })
   async update(
     @Param('id') id: string,
@@ -86,7 +88,7 @@ export class CoursesController {
   }
 
   @Delete(':id')
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Delete a course' })
   async delete(
     @Param('id') id: string,
@@ -100,7 +102,7 @@ export class CoursesController {
   // ----------------------------------------------------
 
   @Post(':id/modules')
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Add a new module to a course' })
   async createModule(
     @Param('id') courseId: string,
@@ -111,7 +113,7 @@ export class CoursesController {
   }
 
   @Patch('modules/:moduleId')
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Update module details' })
   async updateModule(
     @Param('moduleId') moduleId: string,
@@ -122,7 +124,7 @@ export class CoursesController {
   }
 
   @Delete('modules/:moduleId')
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Delete a module from a course' })
   async deleteModule(
     @Param('moduleId') moduleId: string,
@@ -136,7 +138,7 @@ export class CoursesController {
   // ----------------------------------------------------
 
   @Post('modules/:moduleId/lessons')
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Add a lesson to a module' })
   async createLesson(
     @Param('moduleId') moduleId: string,
@@ -156,7 +158,7 @@ export class CoursesController {
   }
 
   @Patch('lessons/:lessonId')
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Update lesson content or title' })
   async updateLesson(
     @Param('lessonId') lessonId: string,
@@ -167,7 +169,7 @@ export class CoursesController {
   }
 
   @Delete('lessons/:lessonId')
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Delete a lesson' })
   async deleteLesson(
     @Param('lessonId') lessonId: string,

@@ -1,9 +1,9 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { CollegeStatus } from '@prisma/client';
+import { InstitutionStatus } from '@prisma/client';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-@InputType('CreateCollegeInput')
-export class CreateCollegeInput {
+@InputType('CreateInstitutionInput')
+export class CreateInstitutionInput {
   @Field(() => String)
   @IsString()
   @IsNotEmpty()
@@ -29,8 +29,8 @@ export class CreateCollegeInput {
   @IsString()
   address?: string;
 
-  @Field(() => CollegeStatus, { defaultValue: CollegeStatus.ACTIVE, nullable: true })
+  @Field(() => InstitutionStatus, { defaultValue: InstitutionStatus.ACTIVE, nullable: true })
   @IsOptional()
-  @IsEnum(CollegeStatus)
-  status?: CollegeStatus = CollegeStatus.ACTIVE;
+  @IsEnum(InstitutionStatus)
+  status?: InstitutionStatus = InstitutionStatus.ACTIVE;
 }

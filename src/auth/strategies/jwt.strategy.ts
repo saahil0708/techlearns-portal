@@ -39,22 +39,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User account is invalid or inactive');
     }
 
-    if (payload.iat && user.updatedAt) {
-      const userUpdatedAtMs = new Date(user.updatedAt).getTime();
-      const tokenIatMs = payload.iat * 1000;
-      // If user security state was modified after JWT issuance, invalidate token
-      if (userUpdatedAtMs > tokenIatMs) {
-        throw new UnauthorizedException('Session has expired due to account security updates. Please sign in again.');
-      }
-    }
-
     return {
       id: user.id,
       email: user.email,
       name: user.name,
       globalRole: user.globalRole,
       memberships: user.memberships.map((m: any) => ({
-        collegeId: m.collegeId,
+        institutionId: m.institutionId || m.collegeId,
         role: m.role,
       })),
     };

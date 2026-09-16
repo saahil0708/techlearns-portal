@@ -13,7 +13,7 @@ describe('CoursesService', () => {
     id: 'course-1',
     title: 'DSA in C++',
     description: 'Master Data Structures',
-    collegeId: 'college-1',
+    institutionId: 'institution-1',
     createdById: 'user-faculty-1',
     status: CourseStatus.PUBLISHED,
     createdAt: new Date(),
@@ -28,7 +28,7 @@ describe('CoursesService', () => {
         {
           provide: PrismaService,
           useValue: {
-            college: { findUnique: vi.fn() },
+            institution: { findUnique: vi.fn() },
             course: {
               create: vi.fn(),
               findMany: vi.fn(),
@@ -72,17 +72,17 @@ describe('CoursesService', () => {
   });
 
   describe('createCourse', () => {
-    it('should create a course with collegeId', async () => {
-      vi.spyOn(prisma.college, 'findUnique').mockResolvedValue({ id: 'college-1' } as any);
+    it('should create a course with institutionId', async () => {
+      vi.spyOn(prisma.institution, 'findUnique').mockResolvedValue({ id: 'institution-1' } as any);
       vi.spyOn(prisma.course, 'create').mockResolvedValue(mockCourse as any);
 
       const result = await service.createCourse('user-faculty-1', {
         title: 'DSA in C++',
-        collegeId: 'college-1',
+        institutionId: 'institution-1',
       }, {
         id: 'user-faculty-1',
-        globalRole: 'FACULTY',
-        memberships: [{ collegeId: 'college-1', role: 'FACULTY' }],
+        globalRole: 'FACULTY' as any,
+        memberships: [{ institutionId: 'institution-1', role: 'FACULTY' as any }],
       } as any);
 
       expect(result).toEqual(mockCourse);
@@ -106,9 +106,9 @@ describe('CoursesService', () => {
 
   const mockUser: any = {
     id: 'student-1',
-    email: 'student@college.edu',
+    email: 'student@institution.edu',
     globalRole: 'STUDENT',
-    memberships: [{ collegeId: 'college-1', role: 'STUDENT' }],
+    memberships: [{ institutionId: 'institution-1', role: 'STUDENT' }],
   };
 
   describe('enrollStudent', () => {

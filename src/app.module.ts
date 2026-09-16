@@ -11,7 +11,7 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
 import { BatchesModule } from './batches/batches.module.js';
-import { CollegesModule } from './colleges/colleges.module.js';
+import { InstitutionsModule } from './institutions/institutions.module.js';
 import { registerGraphQLEnums } from './common/graphql/register-enums.js';
 import { GqlThrottlerGuard } from './common/guards/throttler.guard.js';
 import configuration from './config/configuration.js';
@@ -86,7 +86,7 @@ const dynamicObserveImports = hasValidObserveKeys
     MailModule,
     UsersModule,
     AuthModule,
-    CollegesModule,
+    InstitutionsModule,
     BatchesModule,
     CoursesModule,
     ProblemsModule,

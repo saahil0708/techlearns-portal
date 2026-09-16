@@ -1,8 +1,8 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Role, UserStatus } from '@prisma/client';
 
-@ObjectType('UserCollegeMembershipCollege')
-export class UserCollegeMembershipCollegeType {
+@ObjectType('UserInstitutionMembershipInstitution')
+export class UserInstitutionMembershipInstitutionType {
   @Field(() => ID)
   id: string;
 
@@ -13,19 +13,19 @@ export class UserCollegeMembershipCollegeType {
   code?: string;
 }
 
-@ObjectType('UserCollegeMembership')
-export class UserCollegeMembershipType {
+@ObjectType('UserInstitutionMembership')
+export class UserInstitutionMembershipType {
   @Field(() => ID)
   id: string;
 
   @Field(() => String)
-  collegeId: string;
+  institutionId: string;
 
   @Field(() => Role)
   role: Role;
 
-  @Field(() => UserCollegeMembershipCollegeType, { nullable: true })
-  college?: UserCollegeMembershipCollegeType;
+  @Field(() => UserInstitutionMembershipInstitutionType, { nullable: true })
+  institution?: UserInstitutionMembershipInstitutionType;
 }
 
 @ObjectType('UserBatchEnrollmentBatch')
@@ -126,8 +126,8 @@ export class UserType {
   @Field(() => String, { defaultValue: 'Novice' })
   ratingTier: string;
 
-  @Field(() => [UserCollegeMembershipType], { nullable: true })
-  memberships?: UserCollegeMembershipType[];
+  @Field(() => [UserInstitutionMembershipType], { nullable: true })
+  memberships?: UserInstitutionMembershipType[];
 
   @Field(() => [UserBatchEnrollmentType], { nullable: true })
   batchEnrollments?: UserBatchEnrollmentType[];

@@ -330,10 +330,10 @@ export default function PlatformDirectoryTable({
             ) : (
               paginatedEntries.map((item, idx) => {
                 const targetRoute =
-                  item.type === 'College'
-                    ? '/superadmin/colleges'
+                  item.type === 'Institution' || item.type === 'College'
+                    ? '/superadmin/institutions'
                     : item.type === 'School'
-                    ? '/superadmin/schools'
+                    ? '/superadmin/blogs'
                     : '/superadmin/students';
 
                 return (

@@ -49,6 +49,11 @@ export class CreateProblemInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
+  institutionId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
   collegeId?: string;
 
   @Field(() => ProblemStatus, { defaultValue: ProblemStatus.PUBLISHED, nullable: true })

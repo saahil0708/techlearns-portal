@@ -25,6 +25,11 @@ export class CreateContestInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
+  institutionId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
   collegeId?: string;
 
   @Field(() => ContestStatus, { defaultValue: ContestStatus.UPCOMING, nullable: true })

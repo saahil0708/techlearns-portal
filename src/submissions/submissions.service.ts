@@ -46,11 +46,11 @@ export class SubmissionsService {
       throw new ForbiddenException('You cannot submit to an unpublished problem');
     }
 
-    if (problem.collegeId) {
-      const canAccessCollege = user?.globalRole === 'SUPER_ADMIN' ||
+    if (problem.institutionId) {
+      const canAccessInstitution = user?.globalRole === 'SUPER_ADMIN' ||
         user?.globalRole === 'PLATFORM_ADMIN' ||
-        user?.memberships?.some((membership) => membership.collegeId === problem.collegeId);
-      if (!canAccessCollege) {
+        user?.memberships?.some((membership) => membership.institutionId === problem.institutionId);
+      if (!canAccessInstitution) {
         throw new ForbiddenException('You do not have access to this problem');
       }
     }
@@ -66,7 +66,7 @@ export class SubmissionsService {
       if (contest.status !== ContestStatus.ONGOING) {
         throw new ForbiddenException('Submissions are accepted only during an ongoing contest');
       }
-      if (contest.collegeId && !user?.memberships?.some((membership) => membership.collegeId === contest.collegeId) && user?.globalRole !== 'SUPER_ADMIN' && user?.globalRole !== 'PLATFORM_ADMIN') {
+      if (contest.institutionId && !user?.memberships?.some((membership) => membership.institutionId === contest.institutionId) && user?.globalRole !== 'SUPER_ADMIN' && user?.globalRole !== 'PLATFORM_ADMIN') {
         throw new ForbiddenException('You do not have access to this contest');
       }
       const registration = await this.prisma.contestRegistration.findUnique({

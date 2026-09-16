@@ -14,7 +14,7 @@ describe('ContestsService', () => {
     description: 'Algorithmic contest',
     startTime: new Date(),
     endTime: new Date(Date.now() + 7200000),
-    collegeId: null,
+    institutionId: null,
     createdById: 'user-1',
     status: ContestStatus.UPCOMING,
     createdAt: new Date(),
@@ -87,11 +87,11 @@ describe('ContestsService', () => {
   });
 
   describe('addProblem', () => {
-    it('rejects a college problem on a global contest', async () => {
+    it('rejects an institution problem on a global contest', async () => {
       vi.mocked(prisma.contest.findUnique).mockResolvedValue(mockContest as any);
       vi.mocked(prisma.problem.findUnique).mockResolvedValue({
         id: 'problem-1',
-        collegeId: 'college-1',
+        institutionId: 'institution-1',
         createdById: 'faculty-1',
         status: ProblemStatus.PUBLISHED,
       } as any);
@@ -105,7 +105,7 @@ describe('ContestsService', () => {
             email: 'faculty@example.com',
             name: 'Faculty',
             globalRole: Role.FACULTY,
-            memberships: [{ collegeId: 'college-1', role: Role.FACULTY }],
+            memberships: [{ institutionId: 'institution-1', role: Role.FACULTY }],
           },
         ),
       ).rejects.toThrow(ForbiddenException);
@@ -114,11 +114,11 @@ describe('ContestsService', () => {
     it('rejects an unpublished problem', async () => {
       vi.mocked(prisma.contest.findUnique).mockResolvedValue({
         ...mockContest,
-        collegeId: 'college-1',
+        institutionId: 'institution-1',
       } as any);
       vi.mocked(prisma.problem.findUnique).mockResolvedValue({
         id: 'problem-1',
-        collegeId: 'college-1',
+        institutionId: 'institution-1',
         createdById: 'faculty-1',
         status: ProblemStatus.DRAFT,
       } as any);
@@ -132,7 +132,7 @@ describe('ContestsService', () => {
             email: 'faculty@example.com',
             name: 'Faculty',
             globalRole: Role.FACULTY,
-            memberships: [{ collegeId: 'college-1', role: Role.FACULTY }],
+            memberships: [{ institutionId: 'institution-1', role: Role.FACULTY }],
           },
         ),
       ).rejects.toThrow(ForbiddenException);

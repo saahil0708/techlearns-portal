@@ -140,7 +140,7 @@ describe('UsersService', () => {
             return { id: 'del-1', ...data };
           }),
         },
-        college: { findUnique: vi.fn().mockResolvedValue({ id: 'col-1' }) },
+        institution: { findUnique: vi.fn().mockResolvedValue({ id: 'col-1' }) },
       };
 
       prisma.$transaction = vi.fn().mockImplementation(async (cb: any) => cb(txMock)) as any;
@@ -168,7 +168,7 @@ describe('UsersService', () => {
             email: 'student@example.com',
             name: 'Student 1',
             role: Role.STUDENT,
-            collegeId: null,
+            institutionId: null,
             expiresAt: new Date(Date.now() + 100000),
             acceptedAt: null,
             revokedAt: null,
@@ -205,7 +205,7 @@ describe('UsersService', () => {
             email: 'batchstudent@example.com',
             name: 'Batch Student',
             role: Role.STUDENT,
-            collegeId: 'college-1',
+            institutionId: 'institution-1',
             batchId: 'batch-alpha-1',
             expiresAt: new Date(Date.now() + 100000),
             acceptedAt: null,
@@ -217,7 +217,7 @@ describe('UsersService', () => {
           findUnique: vi.fn().mockResolvedValue(null),
           create: vi.fn().mockResolvedValue(mockSanitizedUser),
         },
-        collegeMembership: {
+        institutionMembership: {
           create: vi.fn().mockResolvedValue({ id: 'cm-1' }),
         },
         batchStudent: {

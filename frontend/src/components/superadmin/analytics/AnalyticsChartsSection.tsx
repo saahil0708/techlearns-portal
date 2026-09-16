@@ -34,7 +34,7 @@ import {
 } from 'recharts';
 
 import { apiService } from '@/lib/api-service';
-import SkillDomainMasteryCard from '@/components/superadmin/shared/SkillDomainMasteryCard';
+import RadialDonutGauge from '@/components/superadmin/shared/RadialDonutGauge';
 
 interface TrendPoint {
   time: string;
@@ -63,6 +63,16 @@ interface CollegeComparisonItem {
   placementReady: number;
   avgSolves: number;
   students: number;
+}
+
+interface OperationalMetricsState {
+  submissionsAvailable: boolean;
+  collegesAvailable: boolean;
+  firstPassRate: number | null;
+  totalFirstAttempts: number;
+  quotaUsage: number | null;
+  totalSeats: number;
+  usedSeats: number;
 }
 
 interface CustomTooltipProps {
@@ -159,16 +169,26 @@ export default function AnalyticsChartsSection() {
   const [collegeComparisonData, setCollegeComparisonData] = useState<CollegeComparisonItem[]>([]);
   const [totalLiveSolves, setTotalLiveSolves] = useState<number>(0);
   const [totalLiveProblems, setTotalLiveProblems] = useState<number>(0);
+  const [operationalMetrics, setOperationalMetrics] = useState<OperationalMetricsState>({
+    submissionsAvailable: false,
+    collegesAvailable: false,
+    firstPassRate: null,
+    totalFirstAttempts: 0,
+    quotaUsage: null,
+    totalSeats: 0,
+    usedSeats: 0,
+  });
+  const [isMetricsLoading, setIsMetricsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     let isMounted = true;
     async function loadLiveChartData() {
       try {
         const [subs, problemsData, collegesData, usersData] = await Promise.all([
-          apiService.getLiveSubmissions(100).catch(() => null),
-          apiService.getProblems({ limit: 100 }).catch(() => null),
-          apiService.getColleges({ limit: 50 }).catch(() => null),
-          apiService.getUsers({ limit: 50 }).catch(() => null),
+          apiService.getLiveSubmissions(1000).catch(() => null),
+          apiService.getProblems({ limit: 1000 }).catch(() => null),
+          apiService.getColleges({ limit: 1000 }).catch(() => null),
+          apiService.getUsers({ limit: 1000 }).catch(() => null),
         ]);
 
         if (!isMounted) return;
@@ -317,8 +337,86 @@ export default function AnalyticsChartsSection() {
         } else {
           setCollegeComparisonData([]);
         }
+
+        // 7. Operational & Submissions Metric Aggregation
+        let firstPassAC: number | null = null;
+        let totalAttemptsCount = 0;
+        const subsAvailable = subs !== null && Array.isArray(subs);
+
+        if (subsAvailable) {
+          // Group submissions by student & problem, selecting earliest attempt
+          const firstAttempts = new Map<string, any>();
+          const sortedSubs = [...subs].sort((a: any, b: any) => {
+            const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+            const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+            return timeA - timeB;
+          });
+
+          sortedSubs.forEach((s: any) => {
+            const uId = s.userId || s.user?.id || s.studentId || s.id;
+            const pId = s.problemId || s.problem?.id || s.problem?.slug || 'unknown';
+            const key = `${uId}_${pId}`;
+            if (!firstAttempts.has(key)) {
+              firstAttempts.set(key, s);
+            }
+          });
+
+          const firstAttemptList = Array.from(firstAttempts.values());
+          totalAttemptsCount = firstAttemptList.length;
+          const acceptedFirstAttempts = firstAttemptList.filter(
+            (s: any) => (s.verdict || s.status || '').toUpperCase() === 'ACCEPTED'
+          ).length;
+
+          firstPassAC = totalAttemptsCount > 0
+            ? Math.round((acceptedFirstAttempts / totalAttemptsCount) * 100)
+            : 0;
+        }
+
+        let quotaUsagePct: number | null = null;
+        let totalCollegeStudents = 0;
+        let totalCollegeQuota = 0;
+        const collegesAvailable = collegesData !== null;
+
+        if (collegesAvailable && Array.isArray(collegesList) && collegesList.length > 0) {
+          totalCollegeStudents = collegesList.reduce(
+            (acc: number, c: any) => acc + (c.studentsCount || c._count?.memberships || 0),
+            0
+          );
+          totalCollegeQuota = collegesList.reduce(
+            (acc: number, c: any) => acc + (c.maxQuota || 500),
+            0
+          );
+          quotaUsagePct = totalCollegeQuota > 0
+            ? Math.min(100, Math.round((totalCollegeStudents / totalCollegeQuota) * 100))
+            : 0;
+        } else if (collegesAvailable) {
+          quotaUsagePct = 0;
+        }
+
+        setOperationalMetrics({
+          submissionsAvailable: subsAvailable,
+          collegesAvailable: collegesAvailable,
+          firstPassRate: firstPassAC,
+          totalFirstAttempts: totalAttemptsCount,
+          quotaUsage: quotaUsagePct,
+          totalSeats: totalCollegeQuota,
+          usedSeats: totalCollegeStudents,
+        });
+        setIsMetricsLoading(false);
       } catch (err) {
         console.warn('Live analytics chart aggregation error:', err);
+        if (isMounted) {
+          setOperationalMetrics({
+            submissionsAvailable: false,
+            collegesAvailable: false,
+            firstPassRate: null,
+            totalFirstAttempts: 0,
+            quotaUsage: null,
+            totalSeats: 0,
+            usedSeats: 0,
+          });
+          setIsMetricsLoading(false);
+        }
       }
     }
 
@@ -483,8 +581,152 @@ export default function AnalyticsChartsSection() {
         </Box>
       </Card>
 
-      {/* 2. Global Skill Domain Proficiency (Circular Radial Progress Gauges) */}
-      <SkillDomainMasteryCard primaryBlue="#2563EB" />
+      {/* 2. Platform Infrastructure & Execution Health Radial Donut Gauges */}
+      <Card
+        elevation={0}
+        sx={{
+          p: 2.5,
+          borderRadius: '16px',
+          bgcolor: '#FFFFFF',
+          border: `1px solid ${borderColor}`,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+            <Box
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: '10px',
+                bgcolor: '#EFF6FF',
+                color: '#2563EB',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <PieChartRoundedIcon sx={{ fontSize: 20 }} />
+            </Box>
+            <Box>
+              <Typography sx={{ fontSize: '0.96rem', fontWeight: 800, color: '#0F172A' }}>
+                Platform Operations & Execution Efficiency
+              </Typography>
+              <Typography sx={{ fontSize: '0.74rem', color: '#64748B' }}>
+                Real-time sandbox load, multi-tenant quota usage, and testbench pass efficiency
+              </Typography>
+            </Box>
+          </Box>
+          {isMetricsLoading ? (
+            <Chip
+              size="small"
+              label="Loading Metrics..."
+              sx={{
+                height: 22,
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                bgcolor: '#F1F5F9',
+                color: '#64748B',
+                border: '1px solid #E2E8F0',
+                borderRadius: '6px',
+              }}
+            />
+          ) : operationalMetrics.submissionsAvailable || operationalMetrics.collegesAvailable ? (
+            <Chip
+              size="small"
+              label="Operational Telemetry"
+              sx={{
+                height: 22,
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                bgcolor: '#EFF6FF',
+                color: '#2563EB',
+                border: '1px solid #BFDBFE',
+                borderRadius: '6px',
+              }}
+            />
+          ) : (
+            <Chip
+              size="small"
+              label="Telemetry Unavailable"
+              sx={{
+                height: 22,
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                bgcolor: '#FEF2F2',
+                color: '#DC2626',
+                border: '1px solid #FECACA',
+                borderRadius: '6px',
+              }}
+            />
+          )}
+        </Box>
+
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+          {/* Gauge 1: Judge Queue Load (Unavailable as no queue telemetry source exists) */}
+          <RadialDonutGauge
+            percentage={0}
+            color="#94A3B8"
+            label="Judge Queue Load"
+            sublabel="Telemetry source offline"
+            badge="Unavailable"
+          />
+
+          {/* Gauge 2: First-Pass Pass Rate (Derived from earliest submissions per student & problem) */}
+          {operationalMetrics.submissionsAvailable && operationalMetrics.firstPassRate !== null ? (
+            <RadialDonutGauge
+              percentage={operationalMetrics.firstPassRate}
+              color="#059669"
+              label="First-Pass Pass Rate"
+              sublabel={`${operationalMetrics.totalFirstAttempts} student first attempts`}
+              badge={operationalMetrics.firstPassRate >= 70 ? 'Benchmark Met' : 'Active Testing'}
+            />
+          ) : (
+            <RadialDonutGauge
+              percentage={0}
+              color="#94A3B8"
+              label="First-Pass Pass Rate"
+              sublabel="Submissions data offline"
+              badge="Unavailable"
+            />
+          )}
+
+          {/* Gauge 3: University Quotas (Derived from college seat allocations) */}
+          {operationalMetrics.collegesAvailable && operationalMetrics.quotaUsage !== null ? (
+            <RadialDonutGauge
+              percentage={operationalMetrics.quotaUsage}
+              color="#7C3AED"
+              label="University Quotas"
+              sublabel={
+                operationalMetrics.totalSeats > 0
+                  ? `${operationalMetrics.usedSeats.toLocaleString()} of ${operationalMetrics.totalSeats.toLocaleString()} seats`
+                  : 'No colleges enrolled'
+              }
+              badge={operationalMetrics.totalSeats > 0 ? `${operationalMetrics.quotaUsage}% Capacity` : 'No Colleges'}
+            />
+          ) : (
+            <RadialDonutGauge
+              percentage={0}
+              color="#94A3B8"
+              label="University Quotas"
+              sublabel="Colleges data offline"
+              badge="Unavailable"
+            />
+          )}
+
+          {/* Gauge 4: Docker Uptime (Unavailable as no container telemetry source exists) */}
+          <RadialDonutGauge
+            percentage={0}
+            color="#94A3B8"
+            label="Docker Uptime"
+            sublabel="Telemetry source offline"
+            badge="Unavailable"
+          />
+        </Box>
+      </Card>
 
       {/* 3. Row 2: DSA Topic Weakness Heatmap & Difficulty Donut */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>

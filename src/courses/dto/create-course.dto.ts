@@ -20,8 +20,16 @@ export class CreateCourseDto {
   description?: string;
 
   @ApiPropertyOptional({
+    example: 'institution-uuid-12345',
+    description: 'ID of the institution (leave empty for platform-wide course)',
+  })
+  @IsOptional()
+  @IsString()
+  institutionId?: string;
+
+  @ApiPropertyOptional({
     example: 'college-uuid-12345',
-    description: 'ID of the college (leave empty for platform-wide course)',
+    description: 'ID of the college (legacy alias)',
   })
   @IsOptional()
   @IsString()

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Box } from '@mui/material';
 import {
@@ -17,6 +17,7 @@ import { useAppSelector } from '@/store/hooks';
 import { useToast } from '@/context/ToastContext';
 import { MuiCenterLoader, MuiPageLoader } from '@/components/shared/MuiLoadingFallback';
 import { apiService } from '@/lib/api-service';
+import { usePolling } from '@/utils/usePolling';
 
 // Layout & Modular Child Components
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
@@ -222,53 +223,57 @@ export default function StudentProfileClient({
     }
   }, [currentUser, isOwner]);
 
-  // 2. Query live comprehensive profile statistics from backend
-  useEffect(() => {
-    async function fetchLiveProfile() {
-      try {
-        const handleOrId = initialProfile?.handle || initialProfile?.id || (currentUser?.email ? currentUser.email.split('@')[0] : 'me');
-        const liveData = await apiService.getStudentProfile(handleOrId);
-        if (liveData && liveData.name) {
-          setProfile((prev) => ({
-            ...prev,
-            ...liveData,
-            role: liveData.role || prev.role,
-            topicSkills: liveData.topics && liveData.topics.length > 0
-              ? liveData.topics.map((t: any) => {
-                  const solved = t.solved ?? t.solvedCount ?? 0;
-                  const total = t.total ?? t.totalCount ?? 0;
-                  const pct = t.pct ?? t.percentage ?? (total > 0 ? Math.round((solved / total) * 100) : 0);
-                  return {
-                    name: t.name || t.topicName || t.title || '',
-                    solved,
-                    total,
-                    pct,
-                  };
-                })
-              : (liveData.topicSkills || prev.topicSkills),
-            cohortResult: liveData.cohortResult || prev.cohortResult,
-          }));
-          if (liveData.submissions && liveData.submissions.length > 0) {
-            setSubmissions(liveData.submissions);
-          }
-          if (liveData.contests && liveData.contests.length > 0) {
-            setContests(liveData.contests);
-          }
-          if (liveData.courses && liveData.courses.length > 0) {
-            setCourses(liveData.courses);
-          }
-          if (liveData.topics && liveData.topics.length > 0) {
-            setTopics(liveData.topics);
-          }
+  // 2. Auto-polling: Query live comprehensive profile statistics from backend with tab visibility awareness
+  const fetchLiveProfile = useCallback(async () => {
+    try {
+      const handleOrId = initialProfile?.handle || initialProfile?.id || (currentUser?.email ? currentUser.email.split('@')[0] : 'me');
+      const liveData = await apiService.getStudentProfile(handleOrId);
+      if (liveData && liveData.name) {
+        setProfile((prev) => ({
+          ...prev,
+          ...liveData,
+          role: liveData.role || prev.role,
+          topicSkills: Array.isArray(liveData.topics)
+            ? liveData.topics.map((t: any) => {
+                const solved = t.solved ?? t.solvedCount ?? 0;
+                const total = t.total ?? t.totalCount ?? 0;
+                const pct = t.pct ?? t.percentage ?? (total > 0 ? Math.round((solved / total) * 100) : 0);
+                return {
+                  name: t.name || t.topicName || t.title || '',
+                  solved,
+                  total,
+                  pct,
+                };
+              })
+            : (Array.isArray(liveData.topicSkills) ? liveData.topicSkills : prev.topicSkills),
+          cohortResult: liveData.cohortResult || prev.cohortResult,
+        }));
+        if (Array.isArray(liveData.submissions)) {
+          setSubmissions(liveData.submissions);
         }
-      } catch (err) {
-        console.warn('Student profile live query failed:', err);
-      } finally {
-        setIsPageLoading(false);
+        if (Array.isArray(liveData.contests)) {
+          setContests(liveData.contests);
+        }
+        if (Array.isArray(liveData.courses)) {
+          setCourses(liveData.courses);
+        }
+        if (Array.isArray(liveData.topics)) {
+          setTopics(liveData.topics);
+        }
       }
+      return liveData;
+    } catch (err) {
+      console.warn('Student profile live query failed:', err);
+      return null;
+    } finally {
+      setIsPageLoading(false);
     }
-    fetchLiveProfile();
-  }, [isOwner, currentUser, initialProfile]);
+  }, [initialProfile, currentUser]);
+
+  const { refetch: refetchProfile, isRefreshing: isRefreshingProfile } = usePolling(
+    fetchLiveProfile,
+    { intervalMs: 20000, pauseOnHidden: true, revalidateOnFocus: true }
+  );
 
   // Modal states
   const [editModalOpen, setEditModalOpen] = useState(false);

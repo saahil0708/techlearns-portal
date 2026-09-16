@@ -147,9 +147,9 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                   : 'Newbie';
 
               const primaryMembership = Array.isArray(u.memberships)
-                ? u.memberships.find((m: any) => m?.college?.name)
+                ? u.memberships.find((m: any) => m?.institution?.name || m?.college?.name)
                 : null;
-              const collegeName = primaryMembership?.college?.name;
+              const collegeName = primaryMembership?.institution?.name || primaryMembership?.college?.name;
               const userInstitution = u.institution?.trim();
 
               const primaryBatch = Array.isArray(u.batchEnrollments)
@@ -649,7 +649,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
               value={students.length.toLocaleString()}
               icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="mountains"
+              shape="orbital"
               subtitle={`${collegiateCount} College • ${schoolCount} High School`}
             />
 
@@ -658,7 +658,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
               value={students.filter((s) => s.status === 'Active' || s.problemsSolved > 0).length.toLocaleString()}
               icon={<WhatshotRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="curves"
+              shape="topography"
               subtitle={`${students.length > 0 ? Math.round((students.filter((s) => s.status === 'Active' || s.problemsSolved > 0).length / students.length) * 100) : 0}% Weekly Participation`}
             />
 
@@ -667,7 +667,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
               value={students.reduce((acc, s) => acc + s.problemsSolved, 0).toLocaleString()}
               icon={<EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="peaks"
+              shape="hex-grid"
               subtitle={
                 <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center', flexWrap: 'wrap' }}>
                   <Typography sx={{ fontSize: '0.72rem', color: '#60A5FA', fontWeight: 700 }}>
@@ -682,7 +682,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
               value={students.length > 0 ? (students.reduce((acc, s) => acc + (parseFloat(s.accuracy) || 0), 0) / students.length).toFixed(1) + '%' : '0%'}
               icon={<CheckCircleRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="waves"
+              shape="aurora-waves"
               subtitle={`Across ${students.reduce((acc, s) => acc + s.problemsSolved, 0).toLocaleString()} test evaluations`}
             />
           </Box>

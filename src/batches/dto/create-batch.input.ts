@@ -8,10 +8,15 @@ export class CreateBatchInput {
   @IsNotEmpty({ message: 'Batch name is required' })
   name: string;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: 'College ID is required' })
-  collegeId: string;
+  institutionId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  collegeId?: string;
 
   @Field(() => Int, { nullable: true, defaultValue: 100 })
   @IsOptional()

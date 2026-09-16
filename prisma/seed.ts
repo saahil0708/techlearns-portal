@@ -2,7 +2,7 @@ import {
   PrismaClient,
   Role,
   UserStatus,
-  CollegeStatus,
+  InstitutionStatus,
   ProblemDifficulty,
   ProblemStatus,
   ContestStatus,
@@ -51,15 +51,15 @@ async function main() {
     },
   });
 
-  // 2. Create Colleges
-  const collegesData = [
+  // 2. Create Institutions
+  const institutionsData = [
     {
       name: 'Stanford University - Dept of CS',
       code: 'STAN-CS',
       email: 'cs-dept@stanford.edu',
       phone: '+1-650-723-2300',
       address: 'Gates Computer Science Building, 353 Jane Stanford Way, Stanford, CA',
-      status: CollegeStatus.ACTIVE,
+      status: InstitutionStatus.ACTIVE,
     },
     {
       name: 'Massachusetts Inst of Technology (MIT)',
@@ -67,7 +67,7 @@ async function main() {
       email: 'eecs-admin@mit.edu',
       phone: '+1-617-253-1000',
       address: '77 Massachusetts Avenue, Cambridge, MA',
-      status: CollegeStatus.ACTIVE,
+      status: InstitutionStatus.ACTIVE,
     },
     {
       name: 'IIT Delhi - Dept of Comp Science',
@@ -75,7 +75,7 @@ async function main() {
       email: 'office@cse.iitd.ac.in',
       phone: '+91-11-2659-1000',
       address: 'Hauz Khas, New Delhi, Delhi 110016',
-      status: CollegeStatus.ACTIVE,
+      status: InstitutionStatus.ACTIVE,
     },
     {
       name: 'Oxford Computing Faculty',
@@ -83,7 +83,7 @@ async function main() {
       email: 'admin@cs.ox.ac.uk',
       phone: '+44-1865-273838',
       address: 'Wolfson Building, Parks Road, Oxford OX1 3QD',
-      status: CollegeStatus.ACTIVE,
+      status: InstitutionStatus.ACTIVE,
     },
     {
       name: 'Carnegie Mellon University - SCS',
@@ -91,20 +91,20 @@ async function main() {
       email: 'scs-dean@cmu.edu',
       phone: '+1-412-268-2000',
       address: '5000 Forbes Avenue, Pittsburgh, PA',
-      status: CollegeStatus.ACTIVE,
+      status: InstitutionStatus.ACTIVE,
     },
   ];
 
-  const colleges: Record<string, any> = {};
-  for (const c of collegesData) {
-    colleges[c.code] = await prisma.college.upsert({
+  const institutions: Record<string, any> = {};
+  for (const c of institutionsData) {
+    institutions[c.code] = await prisma.institution.upsert({
       where: { code: c.code },
       update: {},
       create: c,
     });
   }
 
-  // 3. Create Faculty & College Admins
+  // 3. Create Faculty & Institution Admins
   const facultyTuring = await prisma.user.upsert({
     where: { email: 'turing@stanford.edu' },
     update: { passwordHash, status: UserStatus.ACTIVE },
@@ -116,7 +116,7 @@ async function main() {
       status: UserStatus.ACTIVE,
       memberships: {
         create: {
-          collegeId: colleges['STAN-CS'].id,
+          institutionId: institutions['STAN-CS'].id,
           role: Role.FACULTY,
         },
       },
@@ -130,12 +130,12 @@ async function main() {
       email: 't.cormen@mit.edu',
       name: 'Prof. Thomas Cormen',
       passwordHash,
-      globalRole: Role.COLLEGE_ADMIN,
+      globalRole: Role.INSTITUTION_ADMIN,
       status: UserStatus.ACTIVE,
       memberships: {
         create: {
-          collegeId: colleges['MIT-EECS'].id,
-          role: Role.COLLEGE_ADMIN,
+          institutionId: institutions['MIT-EECS'].id,
+          role: Role.INSTITUTION_ADMIN,
         },
       },
     },
@@ -143,11 +143,11 @@ async function main() {
 
   // 4. Create Students
   const studentsData = [
-    { email: 'liam.vance@stanford.edu', name: 'Liam Vance', collegeCode: 'STAN-CS' },
-    { email: 'maya.lin@mit.edu', name: 'Maya Lin', collegeCode: 'MIT-EECS' },
-    { email: 'priya.sharma@iitd.ac.in', name: 'Priya Sharma', collegeCode: 'IITD-CS' },
-    { email: 'aarav.patel@iitd.ac.in', name: 'Aarav Patel', collegeCode: 'IITD-CS' },
-    { email: 'alex.rivera@cmu.edu', name: 'Alex Rivera', collegeCode: 'CMU-SCS' },
+    { email: 'liam.vance@stanford.edu', name: 'Liam Vance', institutionCode: 'STAN-CS' },
+    { email: 'maya.lin@mit.edu', name: 'Maya Lin', institutionCode: 'MIT-EECS' },
+    { email: 'priya.sharma@iitd.ac.in', name: 'Priya Sharma', institutionCode: 'IITD-CS' },
+    { email: 'aarav.patel@iitd.ac.in', name: 'Aarav Patel', institutionCode: 'IITD-CS' },
+    { email: 'alex.rivera@cmu.edu', name: 'Alex Rivera', institutionCode: 'CMU-SCS' },
   ];
 
   const students: any[] = [];
@@ -163,7 +163,7 @@ async function main() {
         status: UserStatus.ACTIVE,
         memberships: {
           create: {
-            collegeId: colleges[s.collegeCode].id,
+            institutionId: institutions[s.institutionCode].id,
             role: Role.STUDENT,
           },
         },
@@ -186,7 +186,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 128,
       createdById: facultyTuring.id,
-      collegeId: colleges['STAN-CS'].id,
+      institutionId: institutions['STAN-CS'].id,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '4 9\n2 7 11 15', expectedOutput: '0 1', isHidden: false, explanation: 'nums[0] + nums[1] == 9 (2 + 7 = 9)', order: 1 },
@@ -206,7 +206,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 256,
       createdById: facultyCormen.id,
-      collegeId: colleges['MIT-EECS'].id,
+      institutionId: institutions['MIT-EECS'].id,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: 'abcabcbb', expectedOutput: '3', isHidden: false, explanation: 'The answer is "abc", with the length of 3.', order: 1 },
@@ -226,7 +226,7 @@ async function main() {
       timeLimit: 1500,
       memoryLimit: 256,
       createdById: facultyTuring.id,
-      collegeId: colleges['STAN-CS'].id,
+      institutionId: institutions['STAN-CS'].id,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '2 1\n1 3\n2', expectedOutput: '2.00000', isHidden: false, explanation: 'merged array = [1,2,3] and median is 2.', order: 1 },
@@ -245,7 +245,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 256,
       createdById: facultyCormen.id,
-      collegeId: colleges['MIT-EECS'].id,
+      institutionId: institutions['MIT-EECS'].id,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '2\nput 1 1\nput 2 2\nget 1\nput 3 3\nget 2\nput 4 4\nget 1\nget 3\nget 4', expectedOutput: '1 -1 -1 3 4', isHidden: false, explanation: 'LRU Cache operations simulation.', order: 1 },
@@ -263,7 +263,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 256,
       createdById: facultyTuring.id,
-      collegeId: colleges['STAN-CS'].id,
+      institutionId: institutions['STAN-CS'].id,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '12\n0 1 0 2 1 0 1 3 2 1 2 1', expectedOutput: '6', isHidden: false, explanation: '6 units of rain water are being trapped.', order: 1 },
@@ -282,7 +282,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 128,
       createdById: facultyTuring.id,
-      collegeId: colleges['STAN-CS'].id,
+      institutionId: institutions['STAN-CS'].id,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '()[]{}', expectedOutput: 'true', isHidden: false, explanation: '', order: 1 },
@@ -319,11 +319,11 @@ async function main() {
       endTime: new Date(Date.now() + 7200000), // 2h from now
       status: ContestStatus.ONGOING,
       createdById: superAdmin.id,
-      collegeId: colleges['STAN-CS'].id,
+      institutionId: institutions['STAN-CS'].id,
       problems: {
         create: [
           { problemId: createdProblems[0].id, order: 1, points: 100 },
-          { problemId: createdProblems[1].id, order: 2, points: 200 },
+          { problemId: createdProblems[2].id, order: 2, points: 200 },
           { problemId: createdProblems[4].id, order: 3, points: 300 },
         ],
       },
@@ -341,12 +341,11 @@ async function main() {
       endTime: new Date(Date.now() + 86400000 * 3 + 18000000),
       status: ContestStatus.UPCOMING,
       createdById: superAdmin.id,
-      collegeId: colleges['MIT-EECS'].id,
+      institutionId: institutions['MIT-EECS'].id,
       problems: {
         create: [
           { problemId: createdProblems[1].id, order: 1, points: 100 },
-          { problemId: createdProblems[2].id, order: 2, points: 250 },
-          { problemId: createdProblems[3].id, order: 3, points: 300 },
+          { problemId: createdProblems[3].id, order: 2, points: 300 },
         ],
       },
     },
@@ -399,7 +398,7 @@ async function main() {
 
   console.log('✅ Database seeded successfully with real-world entities:');
   console.log(` - Super Admin: ${superAdmin.email}`);
-  console.log(` - Colleges: ${Object.keys(colleges).join(', ')}`);
+  console.log(` - Institutions: ${Object.keys(institutions).join(', ')}`);
   console.log(` - Problems: ${createdProblems.map((p) => p.title).join(', ')}`);
   console.log(` - Contests: ${contest1.title}, ${contest2.title}`);
 }

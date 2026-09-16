@@ -25,11 +25,13 @@ export class ContestsResolver {
     @Args() paginationArgs: PaginationArgs,
     @Args('status', { type: () => ContestStatus, nullable: true })
     status?: ContestStatus,
+    @Args('institutionId', { type: () => String, nullable: true })
+    institutionId?: string,
     @Args('collegeId', { type: () => String, nullable: true })
     collegeId?: string,
     @GqlCurrentUser() currentUser?: CurrentUserPayload,
   ) {
-    return this.contestsService.findPaginated(paginationArgs, status, collegeId, currentUser);
+    return this.contestsService.findPaginated(paginationArgs, status, institutionId || collegeId, currentUser);
   }
 
   @Query(() => ContestType, { name: 'contest', nullable: true })
@@ -42,7 +44,7 @@ export class ContestsResolver {
 
   @Mutation(() => ContestType, { name: 'createContest' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async createContest(
     @Args('input') input: CreateContestInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
@@ -52,7 +54,7 @@ export class ContestsResolver {
 
   @Mutation(() => ContestType, { name: 'updateContest' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async updateContest(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: UpdateContestInput,
@@ -63,7 +65,7 @@ export class ContestsResolver {
 
   @Mutation(() => Boolean, { name: 'deleteContest' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async deleteContest(
     @Args('id', { type: () => ID }) id: string,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
@@ -82,7 +84,7 @@ export class ContestsResolver {
 
   @Mutation(() => ContestProblemType, { name: 'addContestProblem' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async addContestProblem(
     @Args('contestId', { type: () => ID }) contestId: string,
     @Args('input') input: AddContestProblemInput,
@@ -91,4 +93,3 @@ export class ContestsResolver {
     return this.contestsService.addProblem(contestId, input, currentUser);
   }
 }
-

@@ -33,6 +33,9 @@ export class ContestType {
   endTime: Date;
 
   @Field(() => String, { nullable: true })
+  institutionId?: string;
+
+  @Field(() => String, { nullable: true })
   collegeId?: string;
 
   @Field(() => String)

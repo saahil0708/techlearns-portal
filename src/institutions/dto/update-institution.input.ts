@@ -1,9 +1,9 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { CollegeStatus } from '@prisma/client';
+import { InstitutionStatus } from '@prisma/client';
 import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 
-@InputType('UpdateCollegeInput')
-export class UpdateCollegeInput {
+@InputType('UpdateInstitutionInput')
+export class UpdateInstitutionInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
@@ -29,8 +29,8 @@ export class UpdateCollegeInput {
   @IsString()
   address?: string;
 
-  @Field(() => CollegeStatus, { nullable: true })
+  @Field(() => InstitutionStatus, { nullable: true })
   @IsOptional()
-  @IsEnum(CollegeStatus)
-  status?: CollegeStatus;
+  @IsEnum(InstitutionStatus)
+  status?: InstitutionStatus;
 }

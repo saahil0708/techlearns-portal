@@ -16,25 +16,30 @@ export class BatchesService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateBatchDto) {
-    const college = await this.prisma.college.findUnique({
-      where: { id: dto.collegeId },
+    const institutionId = dto.institutionId || dto.collegeId;
+    if (!institutionId) {
+      throw new NotFoundException('Institution ID is required');
+    }
+
+    const institution = await this.prisma.institution.findUnique({
+      where: { id: institutionId },
     });
 
-    if (!college) {
-      throw new NotFoundException(`College with ID ${dto.collegeId} not found`);
+    if (!institution) {
+      throw new NotFoundException(`Institution with ID ${institutionId} not found`);
     }
 
     return this.prisma.batch.create({
       data: {
         name: dto.name,
-        collegeId: dto.collegeId,
+        institutionId,
         maxCapacity: dto.maxCapacity !== undefined ? Number(dto.maxCapacity) : 100,
         status: dto.status || 'ACTIVE',
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         endDate: dto.endDate ? new Date(dto.endDate) : null,
       },
       include: {
-        college: {
+        institution: {
           select: { id: true, name: true, code: true },
         },
         _count: {
@@ -44,11 +49,11 @@ export class BatchesService {
     });
   }
 
-  async findByCollege(collegeId: string) {
+  async findByInstitution(institutionId: string) {
     return this.prisma.batch.findMany({
-      where: { collegeId },
+      where: { institutionId },
       include: {
-        college: {
+        institution: {
           select: { id: true, name: true, code: true },
         },
         _count: {
@@ -59,14 +64,18 @@ export class BatchesService {
     });
   }
 
-  async findPaginated(args: PaginationArgs, collegeId?: string) {
+  async findByCollege(collegeId: string) {
+    return this.findByInstitution(collegeId);
+  }
+
+  async findPaginated(args: PaginationArgs, institutionId?: string) {
     const page = Math.max(1, args.page || 1);
     const limit = Math.min(100, Math.max(1, args.limit || 10));
     const skip = (page - 1) * limit;
 
     const where: Prisma.BatchWhereInput = {};
-    if (collegeId) {
-      where.collegeId = collegeId;
+    if (institutionId) {
+      where.institutionId = institutionId;
     }
 
     if (args.search?.trim()) {
@@ -83,7 +92,7 @@ export class BatchesService {
           ? { [args.sortBy]: (args.sortOrder?.toLowerCase() as 'asc' | 'desc') || 'desc' }
           : { createdAt: 'desc' },
         include: {
-          college: {
+          institution: {
             select: { id: true, name: true, code: true },
           },
           _count: {
@@ -112,7 +121,7 @@ export class BatchesService {
     const batch = await this.prisma.batch.findUnique({
       where: { id },
       include: {
-        college: {
+        institution: {
           select: { id: true, name: true, code: true },
         },
         _count: {
@@ -141,7 +150,7 @@ export class BatchesService {
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
       },
       include: {
-        college: {
+        institution: {
           select: { id: true, name: true, code: true },
         },
         _count: {
@@ -186,12 +195,12 @@ export class BatchesService {
       where: { id: { in: uniqueUserIds } },
       select: {
         id: true,
-        memberships: { where: { collegeId: batch.collegeId }, select: { id: true } },
+        memberships: { where: { institutionId: batch.institutionId }, select: { id: true } },
       },
     });
 
     if (users.length !== uniqueUserIds.length || users.some((user) => user.memberships.length === 0)) {
-      throw new ForbiddenException('All assigned students must belong to the batch college');
+      throw new ForbiddenException('All assigned students must belong to the batch institution');
     }
 
     const operations = uniqueUserIds.map((userId) => {

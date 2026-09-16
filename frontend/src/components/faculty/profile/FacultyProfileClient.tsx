@@ -25,6 +25,7 @@ import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/lib/api-service';
 import { useAppSelector } from '@/store/hooks';
 import { generateBatchCode } from '@/utils/batch-code';
+import { usePolling } from '@/utils/usePolling';
 import type { FacultyProfileEntity, FacultyBatchItem, FacultyCourseItem } from '@/data';
 
 export type { FacultyProfileEntity };
@@ -145,52 +146,60 @@ export default function FacultyProfileClient({
     }
   }, []);
 
-  // Hydrate with live profile and backend endpoints
-  useEffect(() => {
-    async function loadLiveProfile() {
-      try {
-        const res = await apiService.getProfile();
-        const liveUser = res?.data || res;
-        if (liveUser && liveUser.id) {
-          const authMembership = liveUser.memberships?.find(
-            (m: any) => m.role === 'FACULTY' || m.role === 'COLLEGE_ADMIN'
-          );
-          const cId = authMembership?.collegeId || authMembership?.college?.id || liveUser.memberships?.[0]?.collegeId;
+  // Auto-polling: Refresh live profile, batches, courses, and problem banks with zero CPU/tab overhead
+  const fetchLiveFacultyData = useCallback(async () => {
+    try {
+      const res = await apiService.getProfile();
+      const liveUser = res?.data || res;
+      if (liveUser && liveUser.id) {
+        const authMembership = liveUser.memberships?.find(
+          (m: any) => m.role === 'FACULTY' || m.role === 'COLLEGE_ADMIN'
+        );
+        const cId = authMembership?.collegeId || authMembership?.college?.id || liveUser.memberships?.[0]?.collegeId;
 
-          setProfile((prev) => ({
-            ...prev,
-            id: liveUser.id,
-            name: liveUser.name || prev.name,
-            email: liveUser.email || prev.email,
-            department: liveUser.department !== undefined && liveUser.department !== null ? liveUser.department : prev.department,
-            specialization: liveUser.specialization !== undefined && liveUser.specialization !== null ? liveUser.specialization : prev.specialization,
-            officeHours: liveUser.officeHours !== undefined && liveUser.officeHours !== null ? liveUser.officeHours : prev.officeHours,
-            location: liveUser.location !== undefined && liveUser.location !== null ? liveUser.location : prev.location,
-            phone: liveUser.phone !== undefined && liveUser.phone !== null ? liveUser.phone : prev.phone,
-            bio: liveUser.bio !== undefined && liveUser.bio !== null ? liveUser.bio : prev.bio,
-            githubUrl: liveUser.githubUrl !== undefined && liveUser.githubUrl !== null ? liveUser.githubUrl : prev.githubUrl,
-            linkedinUrl: liveUser.linkedinUrl !== undefined && liveUser.linkedinUrl !== null ? liveUser.linkedinUrl : prev.linkedinUrl,
-            websiteUrl: liveUser.websiteUrl !== undefined && liveUser.websiteUrl !== null ? liveUser.websiteUrl : prev.websiteUrl,
-            collegeName: authMembership?.college?.name || prev.collegeName,
-            collegeCode: authMembership?.college?.code || prev.collegeCode,
-            collegeDomain: authMembership?.college?.email?.split('@')[1] || prev.collegeDomain,
-            twoFactorEnabled: Boolean(liveUser.twoFactorEnabled),
-          }));
+        setProfile((prev) => ({
+          ...prev,
+          id: liveUser.id,
+          name: liveUser.name || prev.name,
+          email: liveUser.email || prev.email,
+          department: liveUser.department !== undefined && liveUser.department !== null ? liveUser.department : prev.department,
+          specialization: liveUser.specialization !== undefined && liveUser.specialization !== null ? liveUser.specialization : prev.specialization,
+          officeHours: liveUser.officeHours !== undefined && liveUser.officeHours !== null ? liveUser.officeHours : prev.officeHours,
+          location: liveUser.location !== undefined && liveUser.location !== null ? liveUser.location : prev.location,
+          phone: liveUser.phone !== undefined && liveUser.phone !== null ? liveUser.phone : prev.phone,
+          bio: liveUser.bio !== undefined && liveUser.bio !== null ? liveUser.bio : prev.bio,
+          githubUrl: liveUser.githubUrl !== undefined && liveUser.githubUrl !== null ? liveUser.githubUrl : prev.githubUrl,
+          linkedinUrl: liveUser.linkedinUrl !== undefined && liveUser.linkedinUrl !== null ? liveUser.linkedinUrl : prev.linkedinUrl,
+          websiteUrl: liveUser.websiteUrl !== undefined && liveUser.websiteUrl !== null ? liveUser.websiteUrl : prev.websiteUrl,
+          collegeName: authMembership?.college?.name || prev.collegeName,
+          collegeCode: authMembership?.college?.code || prev.collegeCode,
+          collegeDomain: authMembership?.college?.email?.split('@')[1] || prev.collegeDomain,
+          twoFactorEnabled: Boolean(liveUser.twoFactorEnabled),
+        }));
 
-          if (cId) {
-            setActiveCollegeId(cId);
-            loadBatches(cId);
-          }
+        if (cId) {
+          setActiveCollegeId(cId);
         }
-      } catch {
-        // Fallback to initial props or store user
+        await Promise.allSettled([
+          cId ? loadBatches(cId) : Promise.resolve(),
+          loadCourses(),
+          loadProblems(),
+        ]);
+      } else {
+        await Promise.allSettled([loadCourses(), loadProblems()]);
       }
+      return liveUser;
+    } catch {
+      // Fallback
+      return null;
     }
-
-    loadLiveProfile();
-    loadCourses();
-    loadProblems();
   }, [loadBatches, loadCourses, loadProblems]);
+
+  usePolling(fetchLiveFacultyData, {
+    intervalMs: 25000,
+    pauseOnHidden: true,
+    revalidateOnFocus: true,
+  });
 
   const queryLower = searchQuery.trim().toLowerCase();
   const visibleBatches = useMemo(() => {

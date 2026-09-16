@@ -38,9 +38,9 @@ export default async function StudentsPage() {
               : 'Newbie';
 
           const primaryMembership = Array.isArray(u.memberships)
-            ? u.memberships.find((m: any) => m?.college?.name)
+            ? u.memberships.find((m: any) => m?.institution?.name || m?.college?.name)
             : null;
-          const collegeName = primaryMembership?.college?.name;
+          const collegeName = primaryMembership?.institution?.name || primaryMembership?.college?.name;
           const userInstitution = u.institution?.trim();
 
           const primaryBatch = Array.isArray(u.batchEnrollments)

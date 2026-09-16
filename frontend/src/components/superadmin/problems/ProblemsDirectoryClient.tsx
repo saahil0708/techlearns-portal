@@ -61,7 +61,6 @@ const ProblemQuickPeekDrawer = dynamic(() => import('@/components/superadmin/pro
 const CreateProblemModal = dynamic(() => import('@/components/superadmin/problems/CreateProblemModal'), { loading: () => null });
 import StatsCard from '@/components/superadmin/shared/StatsCard';
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
-import SkillDomainMasteryCard from '@/components/superadmin/shared/SkillDomainMasteryCard';
 import {
   ProblemEntity,
   ProblemCategory,
@@ -565,7 +564,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
               value={totalCount}
               icon={<CodeRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="mountains"
+              shape="orbital"
               subtitle={
                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                   <Typography sx={{ fontSize: '0.72rem', color: '#4ADE80', fontWeight: 700 }}>
@@ -595,7 +594,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
               }
               icon={<CheckCircleRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="curves"
+              shape="topography"
               subtitle={
                 <Box sx={{ width: '100%', mt: 0.5 }}>
                   <LinearProgress
@@ -617,7 +616,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
               value={totalPlatformSubmissions.toLocaleString()}
               icon={<BoltRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="peaks"
+              shape="hex-grid"
               subtitle="Across all testbench runs"
             />
 
@@ -626,13 +625,10 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
               value={`${avgAcceptance}%`}
               icon={<EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="waves"
+              shape="aurora-waves"
               subtitle={`${underReviewCount} under review • ${draftCount} drafts`}
             />
           </Box>
-
-          {/* Domain Acceptance & Problem Solving Proficiency Rings */}
-          <SkillDomainMasteryCard primaryBlue="#2563EB" />
 
           {/* 4. Controls & Filters Toolbar with MUI Tabs */}
           <Card

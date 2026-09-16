@@ -1,9 +1,9 @@
 import { registerEnumType } from '@nestjs/graphql';
 import {
-  CollegeStatus,
   ContestStatus,
   CourseStatus,
   EnrollmentStatus,
+  InstitutionStatus,
   ProblemDifficulty,
   ProblemStatus,
   ProgrammingLanguage,
@@ -24,8 +24,8 @@ export function registerGraphQLEnums() {
     description: 'Account activation status',
   });
 
-  registerEnumType(CollegeStatus, {
-    name: 'CollegeStatus',
+  registerEnumType(InstitutionStatus, {
+    name: 'InstitutionStatus',
     description: 'Higher-ed and school organization status',
   });
 

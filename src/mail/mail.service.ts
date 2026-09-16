@@ -6,6 +6,7 @@ export interface SendInvitationEmailOptions {
   to: string;
   name: string;
   activationUrl: string;
+  institutionName?: string;
   collegeName?: string;
   batchName?: string;
   expiresInHours?: number;
@@ -76,7 +77,7 @@ export class MailService implements OnModuleInit {
 
   async sendInvitationEmail(options: SendInvitationEmailOptions): Promise<{ success: boolean; messageId?: string }> {
     const from = this.configService.get<string>('mail.from') || '"CodePlatform" <no-reply@codeplatform.local>';
-    const college = options.collegeName || 'Your Academic Department';
+    const college = options.institutionName || options.collegeName || 'Your Academic Department';
     const batch = options.batchName ? `Batch ${options.batchName}` : 'Student Cohort';
     const hours = options.expiresInHours || 72;
     const subject = `Welcome to CodePlatform - You've been invited to ${batch}`;

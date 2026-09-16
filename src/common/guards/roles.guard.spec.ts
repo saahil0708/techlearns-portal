@@ -54,12 +54,12 @@ describe('RolesGuard', () => {
     expect(guard.canActivate(context)).toBe(true);
   });
 
-  it('should allow user if college membership role matches required role', () => {
-    vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.COLLEGE_ADMIN]);
+  it('should allow user if institution membership role matches required role', () => {
+    vi.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.INSTITUTION_ADMIN]);
     const context = createMockContext({
       id: '3',
       globalRole: Role.STUDENT,
-      memberships: [{ collegeId: 'college-1', role: Role.COLLEGE_ADMIN }],
+      memberships: [{ institutionId: 'institution-1', role: Role.INSTITUTION_ADMIN }],
     });
     expect(guard.canActivate(context)).toBe(true);
   });
@@ -69,7 +69,7 @@ describe('RolesGuard', () => {
     const context = createMockContext({
       id: '4',
       globalRole: Role.STUDENT,
-      memberships: [{ collegeId: 'college-1', role: Role.STUDENT }],
+      memberships: [{ institutionId: 'institution-1', role: Role.STUDENT }],
     });
     expect(guard.canActivate(context)).toBe(false);
   });

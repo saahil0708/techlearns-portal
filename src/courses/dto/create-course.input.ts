@@ -17,6 +17,11 @@ export class CreateCourseInput {
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
+  institutionId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
   collegeId?: string;
 
   @Field(() => CourseStatus, { defaultValue: CourseStatus.DRAFT, nullable: true })

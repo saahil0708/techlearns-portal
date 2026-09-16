@@ -23,13 +23,14 @@ export class CoursesService {
   // ----------------------------------------------------
 
   async createCourse(userId: string, dto: CreateCourseDto, user?: CurrentUserPayload) {
-    this.assertCollegeAssignment(dto.collegeId, user);
-    if (dto.collegeId) {
-      const college = await this.prisma.college.findUnique({
-        where: { id: dto.collegeId },
+    const institutionId = dto.institutionId || dto.collegeId;
+    this.assertInstitutionAssignment(institutionId, user);
+    if (institutionId) {
+      const institution = await this.prisma.institution.findUnique({
+        where: { id: institutionId },
       });
-      if (!college) {
-        throw new NotFoundException(`College with ID ${dto.collegeId} not found`);
+      if (!institution) {
+        throw new NotFoundException(`Institution with ID ${institutionId} not found`);
       }
     }
 
@@ -37,7 +38,7 @@ export class CoursesService {
       data: {
         title: dto.title,
         description: dto.description,
-        collegeId: dto.collegeId || null,
+        institutionId: institutionId || null,
         createdById: userId,
         status: dto.status || CourseStatus.DRAFT,
       },
@@ -49,28 +50,30 @@ export class CoursesService {
     });
   }
 
-  async findAll(collegeId?: string, status?: CourseStatus, user?: CurrentUserPayload) {
+  async findAll(institutionId?: string, status?: CourseStatus, user?: CurrentUserPayload) {
     const isSuperAdmin =
       user?.globalRole === Role.SUPER_ADMIN ||
       user?.globalRole === Role.PLATFORM_ADMIN;
 
+    const targetInstId = institutionId;
+
     const where: any = {};
     if (isSuperAdmin) {
-      if (collegeId) where.collegeId = collegeId;
+      if (targetInstId) where.institutionId = targetInstId;
       if (status) where.status = status;
     } else {
       where.status = CourseStatus.PUBLISHED;
-      const userCollegeIds = user?.memberships?.map((m) => m.collegeId) || [];
-      if (collegeId) {
-        if (!userCollegeIds.includes(collegeId)) {
-          where.collegeId = '__unauthorized__';
+      const userInstitutionIds = user?.memberships?.map((m) => m.institutionId) || [];
+      if (targetInstId) {
+        if (!userInstitutionIds.includes(targetInstId)) {
+          where.institutionId = '__unauthorized__';
         } else {
-          where.collegeId = collegeId;
+          where.institutionId = targetInstId;
         }
       } else {
         where.OR = [
-          { collegeId: null },
-          ...(userCollegeIds.length > 0 ? [{ collegeId: { in: userCollegeIds } }] : []),
+          { institutionId: null },
+          ...(userInstitutionIds.length > 0 ? [{ institutionId: { in: userInstitutionIds } }] : []),
         ];
       }
     }
@@ -94,13 +97,15 @@ export class CoursesService {
 
   async findPaginated(
     args: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string },
-    collegeId?: string,
+    institutionId?: string,
     status?: CourseStatus,
     user?: CurrentUserPayload,
   ) {
     const page = args.page || 1;
     const limit = args.limit || 10;
     const skip = (page - 1) * limit;
+
+    const targetInstId = institutionId;
 
     const where: any = {};
 
@@ -116,21 +121,21 @@ export class CoursesService {
       user?.globalRole === Role.PLATFORM_ADMIN;
 
     if (isSuperAdmin) {
-      if (collegeId) where.collegeId = collegeId;
+      if (targetInstId) where.institutionId = targetInstId;
       if (status) where.status = status;
     } else {
       where.status = CourseStatus.PUBLISHED;
-      const userCollegeIds = user?.memberships?.map((m) => m.collegeId) || [];
-      if (collegeId) {
-        if (!userCollegeIds.includes(collegeId)) {
-          where.collegeId = '__unauthorized__';
+      const userInstitutionIds = user?.memberships?.map((m) => m.institutionId) || [];
+      if (targetInstId) {
+        if (!userInstitutionIds.includes(targetInstId)) {
+          where.institutionId = '__unauthorized__';
         } else {
-          where.collegeId = collegeId;
+          where.institutionId = targetInstId;
         }
       } else {
         const visibilityConditions = [
-          { collegeId: null },
-          ...(userCollegeIds.length > 0 ? [{ collegeId: { in: userCollegeIds } }] : []),
+          { institutionId: null },
+          ...(userInstitutionIds.length > 0 ? [{ institutionId: { in: userInstitutionIds } }] : []),
         ];
         if (where.OR) {
           where.AND = [{ OR: where.OR }, { OR: visibilityConditions }];
@@ -192,7 +197,7 @@ export class CoursesService {
         createdBy: {
           select: userSanitizedSelect,
         },
-        college: {
+        institution: {
           select: { id: true, name: true, code: true },
         },
         modules: {
@@ -224,11 +229,11 @@ export class CoursesService {
       user?.globalRole === Role.PLATFORM_ADMIN ||
       course.createdById === user?.id ||
       Boolean(
-        course.collegeId &&
+        course.institutionId &&
           user?.memberships?.some(
             (membership) =>
-              membership.collegeId === course.collegeId &&
-              (membership.role === Role.FACULTY || membership.role === Role.COLLEGE_ADMIN),
+              membership.institutionId === course.institutionId &&
+              (membership.role === Role.FACULTY || membership.role === Role.INSTITUTION_ADMIN),
           ),
       );
 
@@ -237,8 +242,8 @@ export class CoursesService {
         throw new NotFoundException(`Course with ID ${id} not found`);
       }
       if (
-        course.collegeId &&
-        !user?.memberships?.some((membership) => membership.collegeId === course.collegeId)
+        course.institutionId &&
+        !user?.memberships?.some((membership) => membership.institutionId === course.institutionId)
       ) {
         throw new NotFoundException(`Course with ID ${id} not found`);
       }
@@ -274,12 +279,23 @@ export class CoursesService {
     const course = await this.findCourseById(courseId, user);
     this.assertCourseAuthorOrAdmin(course, user);
 
+    const highestOrderModule = await this.prisma.module.findFirst({
+      where: { courseId },
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    });
+
+    const nextOrder = dto.order ?? (highestOrderModule ? highestOrderModule.order + 1 : 0);
+
     return this.prisma.module.create({
       data: {
-        courseId,
         title: dto.title,
         description: dto.description,
-        order: dto.order ?? 0,
+        order: nextOrder,
+        courseId,
+      },
+      include: {
+        lessons: true,
       },
     });
   }
@@ -335,12 +351,20 @@ export class CoursesService {
 
     this.assertCourseAuthorOrAdmin(moduleItem.course, user);
 
+    const highestOrderLesson = await this.prisma.lesson.findFirst({
+      where: { moduleId },
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    });
+
+    const nextOrder = dto.order ?? (highestOrderLesson ? highestOrderLesson.order + 1 : 0);
+
     return this.prisma.lesson.create({
       data: {
-        moduleId,
         title: dto.title,
         content: dto.content,
-        order: dto.order ?? 0,
+        order: nextOrder,
+        moduleId,
       },
     });
   }
@@ -348,11 +372,7 @@ export class CoursesService {
   async updateLesson(lessonId: string, dto: UpdateLessonDto, user: CurrentUserPayload) {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
-      include: {
-        module: {
-          include: { course: true },
-        },
-      },
+      include: { module: { include: { course: true } } },
     });
 
     if (!lesson) {
@@ -370,11 +390,7 @@ export class CoursesService {
   async deleteLesson(lessonId: string, user: CurrentUserPayload) {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
-      include: {
-        module: {
-          include: { course: true },
-        },
-      },
+      include: { module: { include: { course: true } } },
     });
 
     if (!lesson) {
@@ -395,7 +411,7 @@ export class CoursesService {
         module: {
           include: {
             course: {
-              select: { id: true, title: true, status: true, createdById: true, collegeId: true },
+              select: { id: true, title: true, status: true, createdById: true, institutionId: true },
             },
           },
         },
@@ -411,15 +427,15 @@ export class CoursesService {
       user.globalRole === Role.SUPER_ADMIN ||
       user.globalRole === Role.PLATFORM_ADMIN;
     const isAuthor = course.createdById === user.id;
-    const isCollegeStaff =
-      course.collegeId &&
+    const isInstitutionStaff =
+      course.institutionId &&
       user.memberships?.some(
         (m) =>
-          m.collegeId === course.collegeId &&
-          (m.role === Role.FACULTY || m.role === Role.COLLEGE_ADMIN),
+          m.institutionId === course.institutionId &&
+          (m.role === Role.FACULTY || m.role === Role.INSTITUTION_ADMIN),
       );
 
-    if (!isSuperAdmin && !isAuthor && !isCollegeStaff) {
+    if (!isSuperAdmin && !isAuthor && !isInstitutionStaff) {
       if (course.status !== CourseStatus.PUBLISHED) {
         throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
       }
@@ -467,10 +483,10 @@ export class CoursesService {
       if (course.status !== CourseStatus.PUBLISHED) {
         throw new ForbiddenException('You cannot enroll in an unpublished course');
       }
-      if (course.collegeId) {
-        const isMember = user.memberships?.some((m) => m.collegeId === course.collegeId);
+      if (course.institutionId) {
+        const isMember = user.memberships?.some((m) => m.institutionId === course.institutionId);
         if (!isMember) {
-          throw new ForbiddenException('You can only enroll in courses offered by your college');
+          throw new ForbiddenException('You can only enroll in courses offered by your institution');
         }
       }
     }
@@ -602,19 +618,19 @@ export class CoursesService {
       return;
     }
 
-    const isCollegeAdmin = user.memberships?.some(
-      (m) => m.collegeId === course.collegeId && m.role === Role.COLLEGE_ADMIN,
+    const isInstitutionAdmin = user.memberships?.some(
+      (m) => m.institutionId === course.institutionId && m.role === Role.INSTITUTION_ADMIN,
     );
 
-    if (isCollegeAdmin) {
+    if (isInstitutionAdmin) {
       return;
     }
 
     throw new ForbiddenException('You do not have permission to modify this course');
   }
 
-  private assertCollegeAssignment(collegeId: string | undefined, user?: CurrentUserPayload) {
-    if (!collegeId) {
+  private assertInstitutionAssignment(institutionId: string | undefined, user?: CurrentUserPayload) {
+    if (!institutionId) {
       return;
     }
     if (!user) {
@@ -623,13 +639,13 @@ export class CoursesService {
     if (user.globalRole === Role.SUPER_ADMIN || user.globalRole === Role.PLATFORM_ADMIN) {
       return;
     }
-    const canManageCollege = user.memberships?.some(
+    const canManageInstitution = user.memberships?.some(
       (membership) =>
-        membership.collegeId === collegeId &&
-        (membership.role === Role.COLLEGE_ADMIN || membership.role === Role.FACULTY),
+        membership.institutionId === institutionId &&
+        (membership.role === Role.INSTITUTION_ADMIN || membership.role === Role.FACULTY),
     );
-    if (!canManageCollege) {
-      throw new ForbiddenException('You can only create courses in your assigned college');
+    if (!canManageInstitution) {
+      throw new ForbiddenException('You can only create courses in your assigned institution');
     }
   }
 }

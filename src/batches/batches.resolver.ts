@@ -20,17 +20,17 @@ import { BatchesConnection } from './types/batches-connection.type.js';
 export class BatchesResolver {
   constructor(private batchesService: BatchesService) {}
 
-  private checkCollegeBatchAccess(user: CurrentUserPayload, targetCollegeId: string): void {
+  private checkInstitutionBatchAccess(user: CurrentUserPayload, targetInstitutionId: string): void {
     if (user.globalRole === Role.SUPER_ADMIN || user.globalRole === Role.PLATFORM_ADMIN) {
       return;
     }
     const hasAccess = user.memberships?.some(
       (m) =>
-        m.collegeId === targetCollegeId &&
-        (m.role === Role.COLLEGE_ADMIN || m.role === Role.FACULTY),
+        m.institutionId === targetInstitutionId &&
+        (m.role === Role.INSTITUTION_ADMIN || m.role === Role.FACULTY),
     );
     if (!hasAccess) {
-      throw new ForbiddenException('You do not have administrative or faculty access to this college');
+      throw new ForbiddenException('You do not have administrative or faculty access to this institution');
     }
   }
 
@@ -41,8 +41,8 @@ export class BatchesResolver {
     const batch = await this.batchesService.findOne(batchId);
     const hasAccess = user.memberships?.some(
       (m) =>
-        m.collegeId === batch.collegeId &&
-        (m.role === Role.COLLEGE_ADMIN || m.role === Role.FACULTY),
+        m.institutionId === batch.institutionId &&
+        (m.role === Role.INSTITUTION_ADMIN || m.role === Role.FACULTY),
     );
     if (!hasAccess) {
       throw new ForbiddenException('You do not have access to manage this batch');
@@ -51,29 +51,31 @@ export class BatchesResolver {
 
   @Query(() => BatchesConnection, { name: 'batches' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   async getBatches(
     @GqlCurrentUser() user: CurrentUserPayload,
     @Args({ type: () => PaginationArgs }) pagination: PaginationArgs,
+    @Args('institutionId', { type: () => String, nullable: true }) institutionId?: string,
     @Args('collegeId', { type: () => String, nullable: true }) collegeId?: string,
   ) {
-    if (collegeId) {
-      this.checkCollegeBatchAccess(user, collegeId);
+    let targetInstId = institutionId || collegeId;
+    if (targetInstId) {
+      this.checkInstitutionBatchAccess(user, targetInstId);
     } else if (
       user.globalRole !== Role.SUPER_ADMIN &&
       user.globalRole !== Role.PLATFORM_ADMIN
     ) {
-      // If no collegeId specified and not super admin, use user's first admin/faculty college
+      // If no institutionId specified and not super admin, use user's first admin/faculty institution
       const primaryMembership = user.memberships?.find(
-        (m) => m.role === Role.COLLEGE_ADMIN || m.role === Role.FACULTY,
+        (m) => m.role === Role.INSTITUTION_ADMIN || m.role === Role.FACULTY,
       );
       if (!primaryMembership) {
-        throw new ForbiddenException('No college membership found with batch management rights');
+        throw new ForbiddenException('No institution membership found with batch management rights');
       }
-      collegeId = primaryMembership.collegeId;
+      targetInstId = primaryMembership.institutionId;
     }
 
-    return this.batchesService.findPaginated(pagination, collegeId);
+    return this.batchesService.findPaginated(pagination, targetInstId);
   }
 
   @Query(() => BatchType, { name: 'batch' })
@@ -87,7 +89,7 @@ export class BatchesResolver {
       user.globalRole !== Role.SUPER_ADMIN &&
       user.globalRole !== Role.PLATFORM_ADMIN
     ) {
-      const hasMembership = user.memberships?.some((m) => m.collegeId === batch.collegeId);
+      const hasMembership = user.memberships?.some((m) => m.institutionId === batch.institutionId);
       if (!hasMembership) {
         throw new ForbiddenException('You do not have access to this batch');
       }
@@ -97,7 +99,7 @@ export class BatchesResolver {
 
   @Query(() => BatchStudentsConnection, { name: 'batchStudents' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   async getBatchStudents(
     @GqlCurrentUser() user: CurrentUserPayload,
     @Args('batchId', { type: () => ID }) batchId: string,
@@ -109,18 +111,22 @@ export class BatchesResolver {
 
   @Mutation(() => BatchType)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   async createBatch(
     @GqlCurrentUser() user: CurrentUserPayload,
     @Args('input') input: CreateBatchInput,
   ) {
-    this.checkCollegeBatchAccess(user, input.collegeId);
+    const targetInstId = input.institutionId || input.collegeId;
+    if (!targetInstId) {
+      throw new ForbiddenException('Institution ID is required');
+    }
+    this.checkInstitutionBatchAccess(user, targetInstId);
     return this.batchesService.create(input);
   }
 
   @Mutation(() => BatchType)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   async updateBatch(
     @GqlCurrentUser() user: CurrentUserPayload,
     @Args('id', { type: () => ID }) id: string,
@@ -132,7 +138,7 @@ export class BatchesResolver {
 
   @Mutation(() => BatchType)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN)
   async deleteBatch(
     @GqlCurrentUser() user: CurrentUserPayload,
     @Args('id', { type: () => ID }) id: string,
@@ -143,7 +149,7 @@ export class BatchesResolver {
 
   @Mutation(() => [BatchStudentType])
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   async assignStudentsToBatch(
     @GqlCurrentUser() user: CurrentUserPayload,
     @Args('input') input: AssignStudentsInput,
@@ -158,7 +164,7 @@ export class BatchesResolver {
 
   @Mutation(() => BatchStudentType)
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   async removeStudentFromBatch(
     @GqlCurrentUser() user: CurrentUserPayload,
     @Args('batchId', { type: () => ID }) batchId: string,

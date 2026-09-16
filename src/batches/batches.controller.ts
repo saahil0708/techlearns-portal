@@ -11,7 +11,7 @@ import {
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { Roles } from '../common/decorators/roles.decorator.js';
-import { CollegeAccessGuard } from '../common/guards/college-access.guard.js';
+import { InstitutionAccessGuard } from '../common/guards/institution-access.guard.js';
 import { BatchAccessGuard } from '../common/guards/batch-access.guard.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
@@ -28,21 +28,30 @@ export class BatchesController {
   constructor(private batchesService: BatchesService) {}
 
   @Post()
-  @UseGuards(CollegeAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @UseGuards(InstitutionAccessGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Create a new student batch/cohort' })
   @ApiResponse({ status: 201, description: 'Batch created successfully' })
   async create(@Body() dto: CreateBatchDto) {
     return this.batchesService.create(dto);
   }
 
+  @Get('institution/:institutionId')
+  @UseGuards(InstitutionAccessGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiOperation({ summary: 'List all batches in a specific institution' })
+  @ApiResponse({ status: 200, description: 'List of batches' })
+  async findByInstitution(@Param('institutionId') institutionId: string) {
+    return this.batchesService.findByInstitution(institutionId);
+  }
+
   @Get('college/:collegeId')
-  @UseGuards(CollegeAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
-  @ApiOperation({ summary: 'List all batches in a specific college' })
+  @UseGuards(InstitutionAccessGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiOperation({ summary: 'List all batches in a specific institution (legacy route)' })
   @ApiResponse({ status: 200, description: 'List of batches' })
   async findByCollege(@Param('collegeId') collegeId: string) {
-    return this.batchesService.findByCollege(collegeId);
+    return this.batchesService.findByInstitution(collegeId);
   }
 
   @Get(':id')
@@ -55,7 +64,7 @@ export class BatchesController {
 
   @Patch(':id')
   @UseGuards(BatchAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Update batch details' })
   @ApiResponse({ status: 200, description: 'Batch updated successfully' })
   async update(@Param('id') id: string, @Body() dto: UpdateBatchDto) {
@@ -64,7 +73,7 @@ export class BatchesController {
 
   @Delete(':id')
   @UseGuards(BatchAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Delete a batch' })
   @ApiResponse({ status: 200, description: 'Batch deleted successfully' })
   async delete(@Param('id') id: string) {
@@ -73,7 +82,7 @@ export class BatchesController {
 
   @Post(':id/students')
   @UseGuards(BatchAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Assign students to a batch' })
   @ApiResponse({ status: 201, description: 'Students assigned successfully' })
   async assignStudents(@Param('id') id: string, @Body() dto: AssignStudentsDto) {
@@ -86,7 +95,7 @@ export class BatchesController {
 
   @Get(':id/students')
   @UseGuards(BatchAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'List all students assigned to a batch' })
   @ApiResponse({ status: 200, description: 'List of enrolled students' })
   async getStudents(@Param('id') id: string) {
@@ -95,7 +104,7 @@ export class BatchesController {
 
   @Delete(':id/students/:userId')
   @UseGuards(BatchAccessGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN, Role.FACULTY)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
   @ApiOperation({ summary: 'Remove a student from a batch' })
   @ApiResponse({ status: 200, description: 'Student removed from batch successfully' })
   async removeStudent(@Param('id') id: string, @Param('userId') userId: string) {

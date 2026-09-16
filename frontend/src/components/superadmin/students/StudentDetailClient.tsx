@@ -64,6 +64,8 @@ import { StudentDirectoryEntity } from '@/components/superadmin/students/Student
 import { useToast } from '@/context/ToastContext';
 import { MuiCenterLoader } from '@/components/shared/MuiLoadingFallback';
 import StatsCard from '@/components/superadmin/shared/StatsCard';
+import PieChartRoundedIcon from '@mui/icons-material/PieChartRounded';
+import RadialDonutGauge from '@/components/superadmin/shared/RadialDonutGauge';
 
 // Sub-Interfaces
 export interface StudentSubmissionItem {
@@ -576,6 +578,72 @@ export default function StudentDetailClient({
 
   const borderColor = '#E2E8F0';
 
+  // Derived Student Gauge Metrics
+  const parsedAccuracy = parseInt((student.accuracy || '').replace('%', ''), 10);
+  const accuracyPercentage = Number.isFinite(parsedAccuracy) ? parsedAccuracy : 84;
+  const accuracyBadge = !Number.isFinite(parsedAccuracy)
+    ? 'Sample Data'
+    : accuracyPercentage >= 80
+      ? 'High Precision'
+      : accuracyPercentage >= 60
+        ? 'Moderate'
+        : 'Developing';
+
+  // Course completion derived from courses
+  const hasCourses = courses && courses.length > 0;
+  const completedCoursesCount = hasCourses ? courses.filter((c) => c.status === 'Completed').length : 0;
+  const avgCourseProgress = hasCourses
+    ? Math.round(courses.reduce((acc, c) => acc + (c.progressPct || 0), 0) / courses.length)
+    : 0;
+  const courseCompletionPct = hasCourses ? avgCourseProgress : 88;
+  const courseBadge = hasCourses
+    ? courseCompletionPct >= 80
+      ? 'Ahead of Pace'
+      : courseCompletionPct >= 50
+        ? 'On Track'
+        : 'In Progress'
+    : 'Sample Data';
+  const courseSublabel = hasCourses
+    ? `${completedCoursesCount} of ${courses.length} courses completed`
+    : 'Sample: No assigned courses';
+
+  // Practice consistency derived from streak & activity
+  const hasStreakData = typeof student.streakDays === 'number' && Number.isFinite(student.streakDays);
+  const streakDays = hasStreakData ? student.streakDays : 0;
+  const practiceConsistencyPct = hasStreakData
+    ? Math.min(100, Math.round((streakDays / 14) * 100))
+    : 92;
+  const consistencyBadge = hasStreakData
+    ? streakDays >= 14
+      ? 'Dedicated'
+      : streakDays >= 5
+        ? 'Active Streak'
+        : streakDays > 0
+          ? 'Building Habit'
+          : 'Zero Streak'
+    : 'Sample Data';
+  const consistencySublabel = hasStreakData
+    ? `${streakDays} day active streak`
+    : 'Sample: 0 day streak recorded';
+
+  // Contest benchmark derived from contest rating / contests
+  const latestContestWithRating = contests?.find((c) => typeof c.newRating === 'number' && c.newRating > 0);
+  const derivedRating = (typeof student.contestRating === 'number' && student.contestRating > 0)
+    ? student.contestRating
+    : latestContestWithRating?.newRating;
+
+  const hasValidRating = typeof derivedRating === 'number' && derivedRating > 0;
+
+  const contestBenchmarkPct = hasValidRating
+    ? Math.min(100, Math.max(0, Math.round((derivedRating / 2400) * 100)))
+    : 0;
+  const contestBadge = hasValidRating
+    ? student.ratingTier || (contestBenchmarkPct >= 80 ? 'Top 15%' : 'Ranked')
+    : 'Unrated';
+  const contestSublabel = hasValidRating
+    ? `Rating: ${derivedRating} (${student.ratingTier || 'Ranked'})`
+    : 'Unrated: No valid contest rating.';
+
   return (
     <Box
       sx={{
@@ -698,7 +766,7 @@ export default function StudentDetailClient({
               value={student.problemsSolved}
               icon={<CodeRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="mountains"
+              shape="orbital"
               subtitle={
                 <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
                   <Typography sx={{ fontSize: '0.72rem', color: '#4ADE80', fontWeight: 700 }}>
@@ -721,7 +789,7 @@ export default function StudentDetailClient({
               value={student.contestRating}
               icon={<MilitaryTechRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="curves"
+              shape="topography"
               subtitle={`${student.ratingTier} • Rank #${student.globalRank}`}
             />
 
@@ -730,7 +798,7 @@ export default function StudentDetailClient({
               value={student.accuracy}
               icon={<CheckCircleRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="peaks"
+              shape="hex-grid"
               subtitle={`${submissions.length} Total Submissions`}
             />
 
@@ -739,10 +807,96 @@ export default function StudentDetailClient({
               value={`${student.streakDays} Days`}
               icon={<WhatshotRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="waves"
+              shape="aurora-waves"
               subtitle="Personal Best: 65 Days"
             />
           </Box>
+
+          {/* Student Competency & Execution Radial Donut Gauges */}
+          <Card
+            elevation={0}
+            sx={{
+              p: 2.5,
+              borderRadius: '16px',
+              bgcolor: '#FFFFFF',
+              border: `1px solid ${borderColor}`,
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '10px',
+                    bgcolor: '#EFF6FF',
+                    color: '#2563EB',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <PieChartRoundedIcon sx={{ fontSize: 20 }} />
+                </Box>
+                <Box>
+                  <Typography sx={{ fontSize: '0.96rem', fontWeight: 800, color: '#0F172A' }}>
+                    Student Mastery & Execution Health
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.74rem', color: '#64748B' }}>
+                    First-pass testbench accuracy, syllabus adherence, and contest readiness
+                  </Typography>
+                </Box>
+              </Box>
+              <Chip
+                size="small"
+                label={student.ratingTier || 'Candidate Master'}
+                sx={{
+                  height: 22,
+                  fontSize: '0.68rem',
+                  fontWeight: 700,
+                  bgcolor: '#EFF6FF',
+                  color: '#2563EB',
+                  border: '1px solid #BFDBFE',
+                  borderRadius: '6px',
+                }}
+              />
+            </Box>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+              <RadialDonutGauge
+                percentage={accuracyPercentage}
+                color="#2563EB"
+                label="First-Pass Accuracy"
+                sublabel={Number.isFinite(parsedAccuracy) ? 'Accepted on first run' : 'Sample: No submissions yet'}
+                badge={accuracyBadge}
+              />
+              <RadialDonutGauge
+                percentage={courseCompletionPct}
+                color="#059669"
+                label="Course Completion"
+                sublabel={courseSublabel}
+                badge={courseBadge}
+              />
+              <RadialDonutGauge
+                percentage={practiceConsistencyPct}
+                color="#7C3AED"
+                label="Practice Consistency"
+                sublabel={consistencySublabel}
+                badge={consistencyBadge}
+              />
+              <RadialDonutGauge
+                percentage={contestBenchmarkPct}
+                color="#D97706"
+                label="Contest Benchmark"
+                sublabel={contestSublabel}
+                badge={contestBadge}
+              />
+            </Box>
+          </Card>
 
           {/* 365-Day Activity Heatmap Matrix (GitHub / LeetCode Style) */}
           <Card

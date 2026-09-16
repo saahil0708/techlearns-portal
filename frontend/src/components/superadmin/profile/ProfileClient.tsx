@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { usePolling } from '@/utils/usePolling';
 import {
   Box,
   Typography,
@@ -133,19 +134,36 @@ export default function ProfileClient({
   const [liveAuditLogs, setLiveAuditLogs] = useState<any[]>([]);
   const [liveMetrics, setLiveMetrics] = useState<any>(null);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [metrics, logs] = await Promise.all([
-          apiService.getAdminMetrics(),
-          apiService.getAdminAuditLogs(),
-        ]);
-        if (metrics) setLiveMetrics(metrics);
-        if (logs && logs.length > 0) setLiveAuditLogs(logs);
-      } catch { }
+  const fetchAdminLiveData = useCallback(async () => {
+    const [metricsResult, logsResult] = await Promise.allSettled([
+      apiService.getAdminMetrics(),
+      apiService.getAdminAuditLogs(),
+    ]);
+
+    let metrics = null;
+    if (metricsResult.status === 'fulfilled' && metricsResult.value) {
+      metrics = metricsResult.value;
+      setLiveMetrics(metrics);
+    } else if (metricsResult.status === 'rejected') {
+      console.warn('Failed to fetch admin metrics:', metricsResult.reason);
     }
-    loadData();
+
+    let logs = null;
+    if (logsResult.status === 'fulfilled' && Array.isArray(logsResult.value)) {
+      logs = logsResult.value;
+      setLiveAuditLogs(logs);
+    } else if (logsResult.status === 'rejected') {
+      console.warn('Failed to fetch admin audit logs:', logsResult.reason);
+    }
+
+    return { metrics, logs };
   }, []);
+
+  usePolling(fetchAdminLiveData, {
+    intervalMs: 20000,
+    pauseOnHidden: true,
+    revalidateOnFocus: true,
+  });
 
   // Edit Profile Dialog State
   const [editDialogOpen, setEditDialogOpen] = useState(false);

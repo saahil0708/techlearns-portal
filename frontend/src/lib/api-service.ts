@@ -1,5 +1,6 @@
 import {
   ADD_COLLEGE_MEMBER_MUTATION,
+  ADD_INSTITUTION_MEMBER_MUTATION,
   ADD_CONTEST_PROBLEM_MUTATION,
   ADD_PROBLEM_TEST_CASE_MUTATION,
   ADMIN_AUDIT_LOGS_QUERY,
@@ -7,16 +8,20 @@ import {
   BULK_INVITE_USERS_MUTATION,
   COLLEGE_BY_ID_QUERY,
   COLLEGES_QUERY,
+  INSTITUTION_BY_ID_QUERY,
+  INSTITUTIONS_QUERY,
   CONTEST_BY_ID_QUERY,
   CONTESTS_QUERY,
   COURSE_BY_ID_QUERY,
   COURSES_QUERY,
   CREATE_COLLEGE_MUTATION,
+  CREATE_INSTITUTION_MUTATION,
   CREATE_CONTEST_MUTATION,
   CREATE_COURSE_MUTATION,
   CREATE_PROBLEM_MUTATION,
   CREATE_USER_MUTATION,
   DELETE_COLLEGE_MUTATION,
+  DELETE_INSTITUTION_MUTATION,
   DELETE_CONTEST_MUTATION,
   DELETE_COURSE_MUTATION,
   DELETE_PROBLEM_MUTATION,
@@ -28,11 +33,13 @@ import {
   PROBLEMS_QUERY,
   REGISTER_FOR_CONTEST_MUTATION,
   REMOVE_COLLEGE_MEMBER_MUTATION,
+  REMOVE_INSTITUTION_MEMBER_MUTATION,
   STUDENT_PROFILE_QUERY,
   SUBMISSION_BY_ID_QUERY,
   SUBMISSIONS_LIST_QUERY,
   SUBMIT_CODE_MUTATION,
   UPDATE_COLLEGE_MUTATION,
+  UPDATE_INSTITUTION_MUTATION,
   UPDATE_CONTEST_MUTATION,
   UPDATE_COURSE_MUTATION,
   UPDATE_PROBLEM_MUTATION,
@@ -40,6 +47,8 @@ import {
   USER_BY_ID_QUERY,
   USERS_QUERY,
 } from './graphql';
+import type { BlogPost } from '@/types/blog';
+import { INITIAL_BLOG_POSTS } from '@/types/blog';
 
 // In-flight request deduplication map
 const inFlightRequests = new Map<string, Promise<any>>();
@@ -236,9 +245,9 @@ export const apiService = {
   },
 
   // ----------------------------------------------------
-  // COLLEGES & TENANTS
+  // INSTITUTIONS & TENANTS
   // ----------------------------------------------------
-  async getColleges(params?: { page?: number; limit?: number; search?: string; status?: string }) {
+  async getInstitutions(params?: { page?: number; limit?: number; search?: string; status?: string }) {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.set('page', params.page.toString());
     if (params?.limit) queryParams.set('limit', params.limit.toString());
@@ -248,7 +257,7 @@ export const apiService = {
 
     try {
       const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/colleges${queryString}`, {
+      const res = await fetch(`${API_URL}/institutions${queryString}`, {
         method: 'GET',
         headers,
         credentials: 'include',
@@ -273,21 +282,25 @@ export const apiService = {
       if (params?.search?.trim()) cleanParams.search = params.search.trim();
       if (params?.status && params.status !== 'ALL') cleanParams.status = params.status.toUpperCase();
 
-      const data = await deduplicatedQuery<{ colleges: { items: any[]; meta: any } }>(
-        COLLEGES_QUERY,
+      const data = await deduplicatedQuery<{ institutions: { items: any[]; meta: any } }>(
+        INSTITUTIONS_QUERY,
         cleanParams,
       );
-      return data.colleges;
+      return data.institutions;
     } catch (err) {
-      console.warn('API getColleges fallback:', err);
+      console.warn('API getInstitutions fallback:', err);
       return null;
     }
   },
 
-  async getCollegeById(id: string) {
+  async getColleges(params?: { page?: number; limit?: number; search?: string; status?: string }) {
+    return this.getInstitutions(params);
+  },
+
+  async getInstitutionById(id: string) {
     try {
       const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/colleges/${id}`, {
+      const res = await fetch(`${API_URL}/institutions/${id}`, {
         method: 'GET',
         headers,
         credentials: 'include',
@@ -300,11 +313,51 @@ export const apiService = {
       // Fallback to GraphQL
     }
     try {
-      const data = await fetchGraphQL<{ college: any }>(COLLEGE_BY_ID_QUERY, { id });
-      return data.college;
+      const data = await fetchGraphQL<{ institution: any }>(INSTITUTION_BY_ID_QUERY, { id });
+      return data.institution;
     } catch (err) {
-      console.warn(`API getCollegeById fallback failed for ${id}:`, err);
+      console.warn(`API getInstitutionById fallback failed for ${id}:`, err);
       return null;
+    }
+  },
+
+  async getCollegeById(id: string) {
+    return this.getInstitutionById(id);
+  },
+
+  async createInstitution(input: {
+    name: string;
+    code: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    status?: string;
+  }) {
+    let isNetworkError = false;
+    try {
+      const headers = await getAuthHeaders();
+      const res = await fetch(`${API_URL}/institutions`, {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(input),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.data ?? json;
+      }
+      const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
+      throw new Error(err.message || 'Failed to create institution');
+    } catch (err: any) {
+      if (err?.message && !err.message.includes('Failed to create institution') && !err.message.includes('HTTP')) {
+        isNetworkError = true;
+      } else {
+        throw err;
+      }
+    }
+    if (isNetworkError) {
+      const data = await fetchGraphQL<{ createInstitution: any }>(CREATE_INSTITUTION_MUTATION, { input });
+      return data.createInstitution;
     }
   },
 
@@ -316,11 +369,21 @@ export const apiService = {
     address?: string;
     status?: string;
   }) {
-    let isNetworkError = false;
+    return this.createInstitution(input);
+  },
+
+  async updateInstitution(id: string, input: {
+    name?: string;
+    code?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    status?: string;
+  }) {
     try {
       const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/colleges`, {
-        method: 'POST',
+      const res = await fetch(`${API_URL}/institutions/${id}`, {
+        method: 'PATCH',
         headers,
         credentials: 'include',
         body: JSON.stringify(input),
@@ -330,17 +393,14 @@ export const apiService = {
         return json.data ?? json;
       }
       const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
-      throw new Error(err.message || 'Failed to create college');
+      throw new Error(err.message || 'Failed to update institution');
     } catch (err: any) {
-      if (err?.message && !err.message.includes('Failed to create college') && !err.message.includes('HTTP')) {
-        isNetworkError = true;
-      } else {
-        throw err;
+      if (err?.message && !err.message.includes('HTTP') && !err.message.includes('Failed to update institution')) {
+        // Fallback to GraphQL
+        const data = await fetchGraphQL<{ updateInstitution: any }>(UPDATE_INSTITUTION_MUTATION, { id, input });
+        return data.updateInstitution;
       }
-    }
-    if (isNetworkError) {
-      const data = await fetchGraphQL<{ createCollege: any }>(CREATE_COLLEGE_MUTATION, { input });
-      return data.createCollege;
+      throw err;
     }
   },
 
@@ -352,80 +412,75 @@ export const apiService = {
     address?: string;
     status?: string;
   }) {
-    try {
-      const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/colleges/${id}`, {
-        method: 'PATCH',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify(input),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        return json.data ?? json;
-      }
-      const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
-      throw new Error(err.message || 'Failed to update college');
-    } catch (err: any) {
-      if (err?.message && !err.message.includes('HTTP') && !err.message.includes('Failed to update college')) {
-        // Fallback to GraphQL
-        const data = await fetchGraphQL<{ updateCollege: any }>(UPDATE_COLLEGE_MUTATION, { id, input });
-        return data.updateCollege;
-      }
-      throw err;
-    }
+    return this.updateInstitution(id, input);
   },
 
-  async deleteCollege(id: string) {
+  async deleteInstitution(id: string) {
     try {
       const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/colleges/${id}`, {
+      const res = await fetch(`${API_URL}/institutions/${id}`, {
         method: 'DELETE',
         headers,
         credentials: 'include',
       });
       if (res.ok) return true;
       const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
-      throw new Error(err.message || 'Failed to delete college');
+      throw new Error(err.message || 'Failed to delete institution');
     } catch (err: any) {
-      if (err?.message && !err.message.includes('HTTP') && !err.message.includes('Failed to delete college')) {
-        const data = await fetchGraphQL<{ deleteCollege: boolean }>(DELETE_COLLEGE_MUTATION, { id });
-        return data.deleteCollege;
+      if (err?.message && !err.message.includes('HTTP') && !err.message.includes('Failed to delete institution')) {
+        const data = await fetchGraphQL<{ deleteInstitution: boolean }>(DELETE_INSTITUTION_MUTATION, { id });
+        return data.deleteInstitution;
       }
       throw err;
     }
   },
 
+  async deleteCollege(id: string) {
+    return this.deleteInstitution(id);
+  },
+
+  async addInstitutionMember(institutionId: string, input: { userId: string; role?: string }) {
+    const data = await fetchGraphQL<{ addInstitutionMember: boolean }>(ADD_INSTITUTION_MEMBER_MUTATION, { institutionId, input });
+    return data.addInstitutionMember;
+  },
+
   async addCollegeMember(collegeId: string, input: { userId: string; role?: string }) {
-    const data = await fetchGraphQL<{ addCollegeMember: boolean }>(ADD_COLLEGE_MEMBER_MUTATION, { collegeId, input });
-    return data.addCollegeMember;
+    return this.addInstitutionMember(collegeId, input);
+  },
+
+  async removeInstitutionMember(institutionId: string, userId: string) {
+    const data = await fetchGraphQL<{ removeInstitutionMember: boolean }>(REMOVE_INSTITUTION_MEMBER_MUTATION, { institutionId, userId });
+    return data.removeInstitutionMember;
   },
 
   async removeCollegeMember(collegeId: string, userId: string) {
-    const data = await fetchGraphQL<{ removeCollegeMember: boolean }>(REMOVE_COLLEGE_MEMBER_MUTATION, { collegeId, userId });
-    return data.removeCollegeMember;
+    return this.removeInstitutionMember(collegeId, userId);
   },
 
-  async getCollegeMembers(collegeId: string) {
+  async getInstitutionMembers(institutionId: string) {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/colleges/${collegeId}/members`, {
+    const res = await fetch(`${API_URL}/institutions/${institutionId}/members`, {
       method: 'GET',
       headers,
       credentials: 'include',
     });
     if (!res.ok) {
-      throw new Error(`Failed to fetch college members: HTTP ${res.status}`);
+      throw new Error(`Failed to fetch institution members: HTTP ${res.status}`);
     }
     const json = await res.json();
     return json.data ?? json ?? [];
   },
 
+  async getCollegeMembers(collegeId: string) {
+    return this.getInstitutionMembers(collegeId);
+  },
+
   // ----------------------------------------------------
   // BATCHES & COHORTS (REST)
   // ----------------------------------------------------
-  async getBatchesByCollege(collegeId: string) {
+  async getBatchesByInstitution(institutionId: string) {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/batches/college/${collegeId}`, {
+    const res = await fetch(`${API_URL}/batches/institution/${institutionId}`, {
       method: 'GET',
       headers,
       credentials: 'include',
@@ -435,6 +490,10 @@ export const apiService = {
     }
     const json = await res.json();
     return json.data ?? json;
+  },
+
+  async getBatchesByCollege(collegeId: string) {
+    return this.getBatchesByInstitution(collegeId);
   },
 
   async getBatchById(id: string) {
@@ -453,12 +512,14 @@ export const apiService = {
 
   async createBatch(input: {
     name: string;
-    collegeId: string;
+    institutionId?: string;
+    collegeId?: string;
     maxCapacity?: number;
     code?: string;
     startDate?: string;
     endDate?: string;
   }) {
+    const institutionId = input.institutionId || input.collegeId;
     const headers = await getAuthHeaders();
     const res = await fetch(`${API_URL}/batches`, {
       method: 'POST',
@@ -466,7 +527,8 @@ export const apiService = {
       credentials: 'include',
       body: JSON.stringify({
         name: input.name,
-        collegeId: input.collegeId,
+        institutionId,
+        collegeId: institutionId,
         maxCapacity: input.maxCapacity,
         startDate: input.startDate,
         endDate: input.endDate,
@@ -596,10 +658,16 @@ export const apiService = {
     password: string;
     globalRole?: string;
     status?: string;
+    institutionId?: string;
     collegeId?: string;
   }) {
+    const institutionId = input.institutionId || input.collegeId;
     const data = await fetchGraphQL<{ createUser: any }>(CREATE_USER_MUTATION, {
-      input,
+      input: {
+        ...input,
+        institutionId,
+        collegeId: institutionId,
+      },
     });
     return data.createUser;
   },
@@ -676,8 +744,15 @@ export const apiService = {
     return data.deleteUser;
   },
 
-  async bulkInviteUsers(input: { users: Array<{ name: string; email: string; role?: string; collegeId?: string; batchId?: string; rollNo?: string }> }) {
-    const data = await fetchGraphQL<{ bulkInviteUsers: { invited: number; expiresInHours: number; invitationLinks?: Array<{ email: string; activationUrl: string }> } }>(BULK_INVITE_USERS_MUTATION, { input });
+  async bulkInviteUsers(input: { users: Array<{ name: string; email: string; role?: string; institutionId?: string; collegeId?: string; batchId?: string; rollNo?: string }> }) {
+    const normalizedInput = {
+      users: input.users.map((u) => ({
+        ...u,
+        institutionId: u.institutionId || u.collegeId,
+        collegeId: u.institutionId || u.collegeId,
+      })),
+    };
+    const data = await fetchGraphQL<{ bulkInviteUsers: { invited: number; expiresInHours: number; invitationLinks?: Array<{ email: string; activationUrl: string }> } }>(BULK_INVITE_USERS_MUTATION, { input: normalizedInput });
     return data.bulkInviteUsers;
   },
 
@@ -717,9 +792,17 @@ export const apiService = {
     timeLimit?: number;
     memoryLimit?: number;
     status?: string;
+    institutionId?: string;
     collegeId?: string;
   }) {
-    const data = await fetchGraphQL<{ createProblem: any }>(CREATE_PROBLEM_MUTATION, { input });
+    const institutionId = input.institutionId || input.collegeId;
+    const data = await fetchGraphQL<{ createProblem: any }>(CREATE_PROBLEM_MUTATION, {
+      input: {
+        ...input,
+        institutionId,
+        collegeId: institutionId,
+      },
+    });
     return data.createProblem;
   },
 
@@ -944,5 +1027,45 @@ export const apiService = {
     });
     if (!res.ok) throw new Error('Failed to update lesson progress');
     return res.json();
+  },
+
+  async getBlogs(): Promise<BlogPost[]> {
+    const res = await fetch(`${API_URL}/blogs`, {
+      headers: getClientAuthHeaders(),
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => 'Failed to fetch blogs');
+      throw new Error(errText || 'Failed to fetch blogs');
+    }
+    const data = await res.json();
+    return Array.isArray(data) ? data : (data.items || []);
+  },
+
+  async createBlog(blogData: Partial<BlogPost>): Promise<BlogPost> {
+    const res = await fetch(`${API_URL}/blogs`, {
+      method: 'POST',
+      headers: getClientAuthHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(blogData),
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => 'Failed to create blog');
+      throw new Error(errText || 'Failed to create blog');
+    }
+    return res.json();
+  },
+
+  async deleteBlog(id: string): Promise<boolean> {
+    const res = await fetch(`${API_URL}/blogs/${id}`, {
+      method: 'DELETE',
+      headers: getClientAuthHeaders(),
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => 'Failed to delete blog');
+      throw new Error(errText || 'Failed to delete blog');
+    }
+    return true;
   },
 };

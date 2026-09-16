@@ -630,7 +630,7 @@ export default function UserDetailClient({
               value={user.twoFactorEnabled ? 'Enabled' : 'Disabled'}
               icon={<SecurityRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="mountains"
+              shape="orbital"
               subtitle="App Authenticator (TOTP)"
             />
 
@@ -639,7 +639,7 @@ export default function UserDetailClient({
               value={`${initialSessions.length} Devices`}
               icon={<DevicesRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="curves"
+              shape="topography"
               subtitle="Current: macOS / Chrome"
             />
 
@@ -648,7 +648,7 @@ export default function UserDetailClient({
               value={`${initialMemberships.length} Orgs`}
               icon={<BusinessRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="peaks"
+              shape="hex-grid"
               subtitle={`Primary: ${user.institutionName.split(' ')[0]}`}
             />
 
@@ -657,7 +657,7 @@ export default function UserDetailClient({
               value="Low (0 Flags)"
               icon={<VerifiedUserRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="waves"
+              shape="aurora-waves"
               subtitle={`Last IP: ${user.lastLoginIp}`}
             />
           </Box>

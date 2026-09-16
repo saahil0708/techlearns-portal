@@ -11,7 +11,7 @@ describe('BatchesService', () => {
   const mockBatch = {
     id: 'batch-1',
     name: 'CS 2026 Batch A',
-    collegeId: 'college-1',
+    institutionId: 'institution-1',
     status: 'ACTIVE',
     startDate: null,
     endDate: null,
@@ -26,7 +26,7 @@ describe('BatchesService', () => {
         {
           provide: PrismaService,
           useValue: {
-            college: {
+            institution: {
               findUnique: vi.fn(),
             },
             batch: {
@@ -62,25 +62,25 @@ describe('BatchesService', () => {
   });
 
   describe('create', () => {
-    it('should create a batch under a college', async () => {
-      vi.spyOn(prisma.college, 'findUnique').mockResolvedValue({ id: 'college-1' } as any);
+    it('should create a batch under an institution', async () => {
+      vi.spyOn(prisma.institution, 'findUnique').mockResolvedValue({ id: 'institution-1' } as any);
       vi.spyOn(prisma.batch, 'create').mockResolvedValue(mockBatch as any);
 
       const result = await service.create({
         name: 'CS 2026 Batch A',
-        collegeId: 'college-1',
+        institutionId: 'institution-1',
       });
 
       expect(result).toEqual(mockBatch);
     });
 
-    it('should throw NotFoundException if college does not exist', async () => {
-      vi.spyOn(prisma.college, 'findUnique').mockResolvedValue(null);
+    it('should throw NotFoundException if institution does not exist', async () => {
+      vi.spyOn(prisma.institution, 'findUnique').mockResolvedValue(null);
 
       await expect(
         service.create({
           name: 'CS 2026 Batch A',
-          collegeId: 'invalid-college',
+          institutionId: 'invalid-institution',
         }),
       ).rejects.toThrow(NotFoundException);
     });
@@ -106,7 +106,7 @@ describe('BatchesService', () => {
       vi.spyOn(prisma.batch, 'count').mockResolvedValue(1);
       vi.spyOn(prisma.batch, 'findMany').mockResolvedValue([mockBatch] as any);
 
-      const result = await service.findPaginated({ page: 1, limit: 10, search: 'CS' }, 'college-1');
+      const result = await service.findPaginated({ page: 1, limit: 10, search: 'CS' }, 'institution-1');
 
       expect(result.items).toHaveLength(1);
       expect(result.meta.total).toBe(1);
@@ -134,7 +134,7 @@ describe('BatchesService', () => {
       expect(prisma.$transaction).toHaveBeenCalled();
     });
 
-    it('should reject assigning students who do not belong to the college', async () => {
+    it('should reject assigning students who do not belong to the institution', async () => {
       vi.spyOn(prisma.batch, 'findUnique').mockResolvedValue(mockBatch as any);
       vi.spyOn(prisma.user, 'findMany').mockResolvedValue([
         { id: 'user-foreign', memberships: [] },

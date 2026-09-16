@@ -50,9 +50,9 @@ export const userSanitizedSelect: Prisma.UserSelect = {
   memberships: {
     select: {
       id: true,
-      collegeId: true,
+      institutionId: true,
       role: true,
-      college: {
+      institution: {
         select: {
           id: true,
           name: true,
@@ -415,16 +415,16 @@ export class UsersService {
     };
   }
 
-  async getSuperAdminMetrics(user?: { globalRole: Role; memberships?: { collegeId: string }[] }) {
+  async getSuperAdminMetrics(user?: { globalRole: Role; memberships?: { institutionId?: string; collegeId?: string }[] }) {
     const isPlatformAdmin =
       user?.globalRole === Role.SUPER_ADMIN || user?.globalRole === Role.PLATFORM_ADMIN;
-    const collegeIds = user?.memberships?.map((membership) => membership.collegeId) || [];
-    const scopedCollege = isPlatformAdmin ? undefined : { in: collegeIds };
+    const institutionIds = user?.memberships?.map((membership) => membership.institutionId || membership.collegeId).filter(Boolean) as string[] || [];
+    const scopedInstitution = isPlatformAdmin ? undefined : { in: institutionIds };
     const scopedMembership = isPlatformAdmin
       ? undefined
-      : { some: { collegeId: { in: collegeIds } } };
+      : { some: { institutionId: { in: institutionIds } } };
     const [
-      collegesCount,
+      institutionsCount,
       studentsCount,
       facultyCount,
       adminsCount,
@@ -433,25 +433,26 @@ export class UsersService {
       contestsCount,
       submissionsCount,
     ] = await Promise.all([
-      this.prisma.college.count({ where: scopedCollege ? { id: scopedCollege } : undefined }),
+      this.prisma.institution.count({ where: scopedInstitution ? { id: scopedInstitution } : undefined }),
       this.prisma.user.count({ where: { globalRole: Role.STUDENT, memberships: scopedMembership } }),
       this.prisma.user.count({ where: { globalRole: Role.FACULTY, memberships: scopedMembership } }),
       this.prisma.user.count({
         where: {
-          globalRole: { in: [Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.COLLEGE_ADMIN] },
+          globalRole: { in: [Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN] },
           memberships: scopedMembership,
         },
       }),
       this.prisma.user.count({ where: { memberships: scopedMembership } }),
-      this.prisma.problem.count({ where: scopedCollege ? { collegeId: scopedCollege } : undefined }),
-      this.prisma.contest.count({ where: scopedCollege ? { collegeId: scopedCollege } : undefined }),
+      this.prisma.problem.count({ where: scopedInstitution ? { institutionId: scopedInstitution } : undefined }),
+      this.prisma.contest.count({ where: scopedInstitution ? { institutionId: scopedInstitution } : undefined }),
       this.prisma.submission.count({
-        where: scopedCollege ? { problem: { collegeId: scopedCollege } } : undefined,
+        where: scopedInstitution ? { problem: { institutionId: scopedInstitution } } : undefined,
       }),
     ]);
 
     return {
-      collegesCount,
+      institutionsCount,
+      collegesCount: institutionsCount,
       studentsCount,
       facultyCount,
       adminsCount,
@@ -498,7 +499,7 @@ export class UsersService {
     args: PaginationArgs,
     role?: Role,
     status?: UserStatus,
-    collegeId?: string,
+    institutionId?: string,
   ) {
     const page = args.page || 1;
     const limit = args.limit || 10;
@@ -521,10 +522,10 @@ export class UsersService {
       where.status = status;
     }
 
-    if (collegeId) {
+    if (institutionId) {
       where.memberships = {
         some: {
-          collegeId,
+          institutionId,
         },
       };
     }
@@ -600,11 +601,12 @@ export class UsersService {
       status: input.status,
     });
 
-    if (input.collegeId) {
-      await this.prisma.collegeMembership.create({
+    const targetInstitutionId = input.institutionId || input.collegeId;
+    if (targetInstitutionId) {
+      await this.prisma.institutionMembership.create({
         data: {
           userId: user.id,
-          collegeId: input.collegeId,
+          institutionId: targetInstitutionId,
           role: input.globalRole || Role.STUDENT,
         },
       });
@@ -712,30 +714,33 @@ export class UsersService {
           throw new ConflictException(`An active invitation already exists for ${item.email}`);
         }
         if (item.batchId) {
-          const batch = await tx.batch.findUnique({ where: { id: item.batchId }, select: { id: true, collegeId: true } });
+          const batch = await tx.batch.findUnique({ where: { id: item.batchId }, select: { id: true, institutionId: true } });
           if (!batch) throw new BadRequestException(`Batch ${item.batchId} does not exist`);
-          if (item.collegeId && batch.collegeId !== item.collegeId) {
-            throw new BadRequestException(`Batch ${item.batchId} does not belong to college ${item.collegeId}`);
+          const targetInstId = item.institutionId || item.collegeId;
+          if (targetInstId && batch.institutionId !== targetInstId) {
+            throw new BadRequestException(`Batch ${item.batchId} does not belong to institution ${targetInstId}`);
           }
-          if (!item.collegeId) {
-            item.collegeId = batch.collegeId;
+          if (!targetInstId) {
+            item.institutionId = batch.institutionId;
           }
         }
-        if (item.collegeId) {
-          const college = await tx.college.findUnique({ where: { id: item.collegeId }, select: { id: true } });
-          if (!college) throw new BadRequestException(`College ${item.collegeId} does not exist`);
+        const effectiveInstId = item.institutionId || item.collegeId;
+        if (effectiveInstId) {
+          const inst = await tx.institution.findUnique({ where: { id: effectiveInstId }, select: { id: true } });
+          if (!inst) throw new BadRequestException(`Institution ${effectiveInstId} does not exist`);
         }
       }
 
       for (const item of input.users) {
         const email = item.email.toLowerCase();
         const rawToken = randomBytes(32).toString('base64url');
+        const effectiveInstId = item.institutionId || item.collegeId;
         const invitation = await tx.userInvitation.create({
           data: {
             email,
             name: item.name,
             role: item.role,
-            collegeId: item.collegeId,
+            institutionId: effectiveInstId,
             batchId: item.batchId,
             rollNo: item.rollNo,
             tokenHash: this.hashInvitationToken(rawToken),
@@ -764,21 +769,22 @@ export class UsersService {
     if (this.mailService) {
       const mailService = this.mailService;
       const batchIds = [...new Set(input.users.map((u) => u.batchId).filter(Boolean))] as string[];
-      const collegeIds = [...new Set(input.users.map((u) => u.collegeId).filter(Boolean))] as string[];
+      const institutionIds = [...new Set(input.users.map((u) => u.institutionId || u.collegeId).filter(Boolean))] as string[];
 
-      const [batches, colleges] = await Promise.all([
+      const [batches, institutions] = await Promise.all([
         batchIds.length > 0 ? this.prisma.batch.findMany({ where: { id: { in: batchIds } }, select: { id: true, name: true } }) : [],
-        collegeIds.length > 0 ? this.prisma.college.findMany({ where: { id: { in: collegeIds } }, select: { id: true, name: true } }) : [],
+        institutionIds.length > 0 ? this.prisma.institution.findMany({ where: { id: { in: institutionIds } }, select: { id: true, name: true } }) : [],
       ]);
 
       const batchMap = new Map(batches.map((b) => [b.id, b.name]));
-      const collegeMap = new Map(colleges.map((c) => [c.id, c.name]));
+      const institutionMap = new Map(institutions.map((c) => [c.id, c.name]));
 
       for (const item of input.users) {
         const delivery = deliveries.find((d) => d.email.toLowerCase() === item.email.toLowerCase());
         if (delivery) {
           const batchName = item.batchId ? batchMap.get(item.batchId) : undefined;
-          const collegeName = item.collegeId ? collegeMap.get(item.collegeId) : undefined;
+          const instId = item.institutionId || item.collegeId;
+          const institutionName = instId ? institutionMap.get(instId) : undefined;
           this.prisma.invitationDelivery
             .updateMany({
               where: { invitationId: delivery.invitationId, status: 'PENDING' },
@@ -793,7 +799,8 @@ export class UsersService {
                   name: item.name,
                   activationUrl: delivery.activationUrl,
                   batchName,
-                  collegeName,
+                  institutionName,
+                  collegeName: institutionName,
                   expiresInHours: 72,
                 });
                 sendSucceeded = Boolean(res?.success);
@@ -858,9 +865,9 @@ export class UsersService {
         },
         select: userSanitizedSelect,
       });
-      if (invitation.collegeId) {
-        await tx.collegeMembership.create({
-          data: { userId: user.id, collegeId: invitation.collegeId, role: invitation.role },
+      if (invitation.institutionId) {
+        await tx.institutionMembership.create({
+          data: { userId: user.id, institutionId: invitation.institutionId, role: invitation.role },
         });
       }
       if (invitation.batchId) {

@@ -20,7 +20,7 @@ export default function KpiMetricsGrid({ primaryBlue = '#2563eb' }: KpiMetricsGr
         value="32"
         icon={<AccountBalanceRoundedIcon sx={{ fontSize: 20 }} />}
         variant="blue"
-        shape="mountains"
+        shape="orbital"
         trendBadge={{ text: '+12.5%', type: 'positive' }}
         subtitle="14,200 Undergrads"
       />
@@ -31,7 +31,7 @@ export default function KpiMetricsGrid({ primaryBlue = '#2563eb' }: KpiMetricsGr
         value="26"
         icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
         variant="black"
-        shape="curves"
+        shape="topography"
         trendBadge={{ text: '+18.0%', type: 'positive' }}
         subtitle="6,450 High Schoolers"
       />
@@ -42,7 +42,7 @@ export default function KpiMetricsGrid({ primaryBlue = '#2563eb' }: KpiMetricsGr
         value="8,940"
         icon={<PersonRoundedIcon sx={{ fontSize: 20 }} />}
         variant="blue"
-        shape="peaks"
+        shape="hex-grid"
         trendBadge={{ text: '+24.2%', type: 'positive' }}
         subtitle="Self-Paced Learners"
       />
@@ -53,7 +53,7 @@ export default function KpiMetricsGrid({ primaryBlue = '#2563eb' }: KpiMetricsGr
         value="4,120"
         icon={<CodeRoundedIcon sx={{ fontSize: 20 }} />}
         variant="black"
-        shape="waves"
+        shape="aurora-waves"
         trendBadge={{ text: '69.2% Acc.', type: 'speed' }}
         subtitle="38ms avg judge speed"
       />

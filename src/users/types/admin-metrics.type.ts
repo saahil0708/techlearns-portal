@@ -2,8 +2,11 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType('AdminMetrics')
 export class AdminMetricsType {
-  @Field(() => Int)
-  collegesCount: number;
+  @Field(() => Int, { nullable: true })
+  institutionsCount?: number;
+
+  @Field(() => Int, { nullable: true })
+  collegesCount?: number;
 
   @Field(() => Int)
   studentsCount: number;

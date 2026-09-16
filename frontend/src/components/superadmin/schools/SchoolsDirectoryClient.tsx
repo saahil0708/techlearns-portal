@@ -506,7 +506,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
               value={schools.length}
               icon={<AccountBalanceRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="mountains"
+              shape="orbital"
               subtitle="100% Verified Districts"
             />
 
@@ -515,7 +515,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
               value={schools.reduce((acc, c) => acc + c.studentsCount, 0).toLocaleString()}
               icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="curves"
+              shape="topography"
               subtitle="Active K-12 Learners"
             />
 
@@ -524,7 +524,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
               value={schools.reduce((acc, c) => acc + c.labsCount, 0)}
               icon={<CodeRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="peaks"
+              shape="hex-grid"
               subtitle="AP / IB curriculum tracks"
             />
 
@@ -541,8 +541,8 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
               }
               icon={<PieChartRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="waves"
-              subtitle={`${schools.reduce((acc, c) => acc + c.studentsCount, 0).toLocaleString()} / ${schools.reduce((acc, c) => acc + c.maxQuota, 0).toLocaleString()} seats`}
+              shape="aurora-waves"
+              subtitle={`Allocated: ${schools.reduce((acc, c) => acc + c.maxQuota, 0).toLocaleString()}`}
             />
           </Box>
 
@@ -732,10 +732,10 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
             }}
           >
             <TableContainer>
-              <Table size="small">
-                <TableHead sx={{ bgcolor: '#F8FAFC' }}>
+              <Table size="small" sx={{ minWidth: 1060 }}>
+                <TableHead sx={{ bgcolor: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
                   <TableRow>
-                    <TableCell padding="checkbox" sx={{ pl: 2.5, borderColor: '#E2E8F0' }}>
+                    <TableCell padding="checkbox" sx={{ pl: 2.5, width: 48, borderColor: '#E2E8F0' }}>
                       <Checkbox
                         indeterminate={selectedIds.length > 0 && selectedIds.length < filteredSchools.length}
                         checked={filteredSchools.length > 0 && selectedIds.length === filteredSchools.length}
@@ -746,25 +746,25 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                         }}
                       />
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '28%', minWidth: 260 }}>
                       SCHOOL / ACADEMY
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '18%', minWidth: 160 }}>
                       DISTRICT & GRADES
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '14%', minWidth: 140 }}>
                       CURRICULUM TRACK
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, minWidth: 190 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '16%', minWidth: 160 }}>
                       SEAT UTILIZATION
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '14%', minWidth: 150 }}>
                       LABS & FACULTY
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '10%', minWidth: 90 }}>
                       STATUS
                     </TableCell>
-                    <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5 }}>
+                    <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5, letterSpacing: '0.04em', width: '10%', minWidth: 110 }}>
                       ACTIONS
                     </TableCell>
                   </TableRow>
@@ -795,7 +795,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                             }}
                           />
                         </TableCell>
-                        <TableCell sx={{ py: 1.85 }}>
+                        <TableCell sx={{ py: 1.5 }}>
                           <Box
                             component={Link}
                             href={`/superadmin/schools/${school.id}`}
@@ -812,29 +812,31 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                               sx={{
                                 width: 38,
                                 height: 38,
+                                flexShrink: 0,
                                 bgcolor: school.logoColor,
                                 fontSize: '0.8rem',
                                 fontWeight: 800,
                                 color: '#FFFFFF',
-                                borderRadius: '20px',
+                                borderRadius: '12px',
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                               }}
                             >
                               {school.code.split('-')[0].substring(0, 3)}
                             </Avatar>
-                            <Box>
+                            <Box sx={{ minWidth: 0 }}>
                               <Typography
                                 className="school-name"
                                 sx={{
                                   fontSize: '0.88rem',
                                   fontWeight: 700,
                                   color: '#0F172A',
+                                  lineHeight: 1.35,
                                   transition: 'color 0.15s ease',
                                 }}
                               >
                                 {school.name}
                               </Typography>
-                              <Typography sx={{ fontSize: '0.74rem', color: '#64748B' }}>
+                              <Typography noWrap sx={{ fontSize: '0.74rem', color: '#64748B' }}>
                                 <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{school.code}</span>
                                 {' • '}
                                 <span>@{school.domain}</span>
@@ -843,16 +845,16 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                           </Box>
                         </TableCell>
 
-                        <TableCell sx={{ py: 1.85 }}>
-                          <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
+                        <TableCell sx={{ py: 1.5 }}>
+                          <Typography noWrap sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
                             {school.district}
                           </Typography>
-                          <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>
+                          <Typography noWrap sx={{ fontSize: '0.72rem', color: '#64748B', mt: 0.25 }}>
                             {school.grades}
                           </Typography>
                         </TableCell>
 
-                        <TableCell sx={{ py: 1.85 }}>
+                        <TableCell sx={{ py: 1.5 }}>
                           <Chip
                             label={school.curriculum}
                             size="small"
@@ -864,17 +866,18 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                               color: '#2563EB',
                               border: '1px solid #DBEAFE',
                               borderRadius: '6px',
+                              whiteSpace: 'nowrap',
                             }}
                           />
                         </TableCell>
 
-                        <TableCell sx={{ py: 1.85 }}>
-                          <Box sx={{ maxWidth: 170 }}>
+                        <TableCell sx={{ py: 1.5 }}>
+                          <Box sx={{ minWidth: 130, maxWidth: 180 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                              <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A' }}>
+                              <Typography noWrap sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A' }}>
                                 {school.studentsCount.toLocaleString()} / {school.maxQuota.toLocaleString()}
                               </Typography>
-                              <Typography sx={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700 }}>
+                              <Typography sx={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700, ml: 1 }}>
                                 {quotaPercent}%
                               </Typography>
                             </Box>
@@ -894,24 +897,25 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                           </Box>
                         </TableCell>
 
-                        <TableCell sx={{ py: 1.85 }}>
-                          <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
+                        <TableCell sx={{ py: 1.5 }}>
+                          <Typography noWrap sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
                             {school.labsCount} Labs • {school.gradeCohortsCount} Sections
                           </Typography>
-                          <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>
+                          <Typography noWrap sx={{ fontSize: '0.72rem', color: '#64748B', mt: 0.25 }}>
                             {school.teachersCount} CS Instructors
                           </Typography>
                         </TableCell>
 
-                        <TableCell sx={{ py: 1.85 }}>
+                        <TableCell sx={{ py: 1.5 }}>
                           <Chip
                             label={school.status}
                             size="small"
                             sx={{
-                              height: 22,
+                              height: 24,
                               fontSize: '0.7rem',
                               fontWeight: 700,
                               borderRadius: '6px',
+                              whiteSpace: 'nowrap',
                               bgcolor:
                                 school.status === 'Active'
                                   ? '#ECFDF5'
@@ -924,34 +928,36 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                                   : school.status === 'Provisioning'
                                   ? '#2563EB'
                                   : '#D97706',
-                              border:
+                              border: '1px solid',
+                              borderColor:
                                 school.status === 'Active'
-                                  ? '1px solid #A7F3D0'
+                                  ? '#A7F3D0'
                                   : school.status === 'Provisioning'
-                                  ? '1px solid #BFDBFE'
-                                  : '1px solid #FDE68A',
+                                  ? '#BFDBFE'
+                                  : '#FEF3C7',
                             }}
                           />
                         </TableCell>
 
-                        <TableCell align="right" sx={{ pr: 3, py: 1.85 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                        <TableCell align="right" sx={{ pr: 3, py: 1.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                             <Button
                               component={Link}
                               href={`/superadmin/schools/${school.id}`}
                               size="small"
                               variant="outlined"
-                              endIcon={<FluidArrowRight size={14} />}
+                              endIcon={<FluidArrowRight size={13} />}
                               sx={{
                                 textTransform: 'none',
                                 fontWeight: 700,
-                                fontSize: '0.76rem',
+                                fontSize: '0.75rem',
                                 color: '#2563EB',
                                 borderColor: '#DBEAFE',
                                 bgcolor: '#EFF6FF',
                                 borderRadius: '6px',
-                                px: 1.5,
-                                py: 0.4,
+                                px: 1.35,
+                                py: 0.35,
+                                whiteSpace: 'nowrap',
                                 '&:hover': {
                                   bgcolor: '#DBEAFE',
                                   borderColor: '#93C5FD',
@@ -960,23 +966,6 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                             >
                               Manage
                             </Button>
-                            <Tooltip title="Delete School">
-                              <IconButton
-                                size="small"
-                                onClick={() => handleDeleteSingleSchool(school.id)}
-                                sx={{
-                                  color: '#EF4444',
-                                  width: 32,
-                                  height: 32,
-                                  borderRadius: '6px',
-                                  border: '1px solid #FEE2E2',
-                                  bgcolor: '#FEF2F2',
-                                  '&:hover': { color: '#DC2626', bgcolor: '#FEE2E2', borderColor: '#FECACA' },
-                                }}
-                              >
-                                <DeleteOutlineRoundedIcon sx={{ fontSize: 18 }} />
-                              </IconButton>
-                            </Tooltip>
                           </Box>
                         </TableCell>
                       </TableRow>

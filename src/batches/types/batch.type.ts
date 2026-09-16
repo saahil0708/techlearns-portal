@@ -1,5 +1,5 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
-import { CollegeType } from '../../colleges/types/college.type.js';
+import { InstitutionType } from '../../institutions/types/institution.type.js';
 import { BatchCountsType } from './batch-counts.type.js';
 import { BatchStudentType } from './batch-student.type.js';
 
@@ -12,7 +12,10 @@ export class BatchType {
   name: string;
 
   @Field(() => String)
-  collegeId: string;
+  institutionId: string;
+
+  @Field(() => String, { nullable: true })
+  collegeId?: string;
 
   @Field(() => Int)
   maxCapacity: number;
@@ -32,8 +35,8 @@ export class BatchType {
   @Field(() => Date)
   updatedAt: Date;
 
-  @Field(() => CollegeType, { nullable: true })
-  college?: CollegeType;
+  @Field(() => InstitutionType, { nullable: true })
+  institution?: InstitutionType;
 
   @Field(() => [BatchStudentType], { nullable: true })
   students?: BatchStudentType[];

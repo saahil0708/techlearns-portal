@@ -52,6 +52,7 @@ import dynamic from 'next/dynamic';
 import CurvedSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import BulkActionBar from '@/components/superadmin/shared/BulkActionBar';
+import StatsCard from '@/components/superadmin/shared/StatsCard';
 import { MuiChartLoader, MuiCenterLoader } from '@/components/shared/MuiLoadingFallback';
 
 const AnalyticsChartsSection = dynamic(
@@ -382,80 +383,50 @@ export default function AnalyticsClient({
 
           {/* 4 Academic KPI Top Cards */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2.25 }}>
-            {/* 1. Active Coders Today */}
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Active Coders Today
-                </Typography>
-                <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <TrendingUpRoundedIcon sx={{ fontSize: 18 }} />
-                </Box>
-              </Box>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.1 }}>
-                {stats.activeCodersToday.toLocaleString()}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <Chip size="small" label={stats.activeCodersGrowth} sx={{ height: 20, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', borderRadius: '5px' }} />
-                <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>across 32 universities</Typography>
-              </Box>
-            </Card>
+            <StatsCard
+              title="Active Coders Today"
+              value={stats.activeCodersToday.toLocaleString()}
+              icon={<TrendingUpRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="orbital"
+              trendBadge={{ text: stats.activeCodersGrowth, type: 'positive' }}
+              subtitle="across 32 universities"
+            />
 
-            {/* 2. Total Problems Solved */}
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Total Problems Solved
-                </Typography>
-                <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#ECFDF5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <CheckCircleRoundedIcon sx={{ fontSize: 18 }} />
-                </Box>
-              </Box>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.1 }}>
-                {stats.totalProblemsSolved.toLocaleString()}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <Chip size="small" label={stats.solvedGrowth} sx={{ height: 20, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', borderRadius: '5px' }} />
-                <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>avg 32.5 solves/student</Typography>
-              </Box>
-            </Card>
+            <StatsCard
+              title="Total Problems Solved"
+              value={stats.totalProblemsSolved.toLocaleString()}
+              icon={<CheckCircleRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="topography"
+              trendBadge={{ text: stats.solvedGrowth, type: 'speed' }}
+              subtitle="avg 32.5 solves/student"
+            />
 
-            {/* 3. Placement Readiness Rate */}
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Placement Ready Coders
-                </Typography>
-                <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#FAF5FF', color: '#9333EA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <SchoolRoundedIcon sx={{ fontSize: 18 }} />
-                </Box>
-              </Box>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.1 }}>
-                {stats.placementReadinessRate}%
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <Chip size="small" label={stats.placementReadinessGrowth} sx={{ height: 20, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#FAF5FF', color: '#9333EA', border: '1px solid #F3E8FF', borderRadius: '5px' }} />
-                <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>100+ problem milestone</Typography>
-              </Box>
-            </Card>
+            <StatsCard
+              title="Placement Ready Coders"
+              value={`${stats.placementReadinessRate}%`}
+              icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="blue"
+              shape="hex-grid"
+              trendBadge={{ text: stats.placementReadinessGrowth, type: 'positive' }}
+              subtitle="100+ problem milestone"
+            />
 
-            {/* 4. Avg Contest Score */}
-            <Card elevation={0} sx={{ p: 2.5, borderRadius: '16px', bgcolor: '#FFFFFF', border: `1px solid ${borderColor}`, boxShadow: '0 4px 20px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Avg Contest Score
-                </Typography>
-                <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#FFFBEB', color: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <EmojiEventsRoundedIcon sx={{ fontSize: 18 }} />
-                </Box>
-              </Box>
-              <Typography sx={{ fontSize: '1.75rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.1 }}>
-                {stats.avgContestScore} <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#64748B' }}>/ 500</span>
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <Chip size="small" label={`Top: ${stats.topPerformingCollege}`} sx={{ height: 20, fontSize: '0.68rem', fontWeight: 700, bgcolor: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', borderRadius: '5px' }} />
-              </Box>
-            </Card>
+            <StatsCard
+              title="Avg Contest Score"
+              value={
+                <>
+                  {stats.avgContestScore}{' '}
+                  <span style={{ fontSize: '1rem', fontWeight: 600, opacity: 0.75 }}>/ 500</span>
+                </>
+              }
+              icon={<EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />}
+              variant="black"
+              shape="aurora-waves"
+              trendBadge={{ text: `Top: ${stats.topPerformingCollege}`, type: 'neutral' }}
+              subtitle="Collegiate benchmark"
+            />
           </Box>
 
           {/* Visual Analytics Graphs Section */}

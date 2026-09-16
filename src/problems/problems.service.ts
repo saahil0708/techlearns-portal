@@ -21,7 +21,8 @@ export class ProblemsService {
   }
 
   async create(input: CreateProblemInput, creatorId: string, user?: CurrentUserPayload) {
-    this.assertCollegeAssignment(input.collegeId, user);
+    const institutionId = input.institutionId || input.collegeId;
+    this.assertInstitutionAssignment(institutionId, user);
     const slug = input.slug || this.slugify(input.title);
 
     const existing = await this.prisma.problem.findUnique({
@@ -43,7 +44,7 @@ export class ProblemsService {
         difficulty: input.difficulty,
         timeLimit: input.timeLimit,
         memoryLimit: input.memoryLimit,
-        collegeId: input.collegeId,
+        institutionId,
         createdById: creatorId,
         status: input.status || ProblemStatus.PUBLISHED,
         testCases: input.testCases
@@ -74,13 +75,14 @@ export class ProblemsService {
     args: PaginationArgs,
     difficulty?: ProblemDifficulty,
     status?: ProblemStatus,
-    collegeId?: string,
+    institutionId?: string,
     user?: CurrentUserPayload,
   ) {
     const page = args.page || 1;
     const limit = args.limit || 10;
     const skip = (page - 1) * limit;
 
+    const targetInstId = institutionId;
     const where: Prisma.ProblemWhereInput = {};
 
     if (args.search) {
@@ -103,18 +105,18 @@ export class ProblemsService {
       // Non-admins can only see PUBLISHED problems
       where.status = ProblemStatus.PUBLISHED;
 
-      // Restrict college problems to user's colleges or public (null)
-      const userCollegeIds = user?.memberships?.map((m) => m.collegeId) || [];
-      if (collegeId) {
-        if (!userCollegeIds.includes(collegeId)) {
-          where.collegeId = '__unauthorized_college__';
+      // Restrict institution problems to user's institutions or public (null)
+      const userInstitutionIds = user?.memberships?.map((m) => m.institutionId) || [];
+      if (targetInstId) {
+        if (!userInstitutionIds.includes(targetInstId)) {
+          where.institutionId = '__unauthorized_institution__';
         } else {
-          where.collegeId = collegeId;
+          where.institutionId = targetInstId;
         }
       } else {
         const visibilityConditions = [
-          { collegeId: null },
-          ...(userCollegeIds.length > 0 ? [{ collegeId: { in: userCollegeIds } }] : []),
+          { institutionId: null },
+          ...(userInstitutionIds.length > 0 ? [{ institutionId: { in: userInstitutionIds } }] : []),
         ];
         if (where.OR) {
           where.AND = [{ OR: where.OR }, { OR: visibilityConditions }];
@@ -127,8 +129,8 @@ export class ProblemsService {
       if (status) {
         where.status = status;
       }
-      if (collegeId) {
-        where.collegeId = collegeId;
+      if (targetInstId) {
+        where.institutionId = targetInstId;
       }
     }
 
@@ -148,7 +150,8 @@ export class ProblemsService {
         orderBy,
         include: {
           testCases: {
-            where: { isHidden: false },
+            where: isSuperAdmin ? {} : { isHidden: false },
+            orderBy: { order: 'asc' },
           },
           _count: {
             select: {
@@ -175,6 +178,10 @@ export class ProblemsService {
   }
 
   async findByIdOrSlug(idOrSlug: string, user?: CurrentUserPayload) {
+    const isSuperAdmin =
+      user?.globalRole === Role.SUPER_ADMIN ||
+      user?.globalRole === Role.PLATFORM_ADMIN;
+
     const problem = await this.prisma.problem.findFirst({
       where: {
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
@@ -193,30 +200,25 @@ export class ProblemsService {
       throw new NotFoundException(`Problem ${idOrSlug} not found`);
     }
 
-    const isSuperAdmin =
-      user &&
-      (user.globalRole === Role.SUPER_ADMIN ||
-        user.globalRole === Role.PLATFORM_ADMIN);
-
     const isOwner = user && problem.createdById === user.id;
-    const isCollegeStaff =
+    const isInstitutionStaff =
       user &&
-      problem.collegeId &&
+      problem.institutionId &&
       user.memberships?.some(
         (m) =>
-          m.collegeId === problem.collegeId &&
-          (m.role === Role.FACULTY || m.role === Role.COLLEGE_ADMIN),
+          m.institutionId === problem.institutionId &&
+          (m.role === Role.FACULTY || m.role === Role.INSTITUTION_ADMIN),
       );
 
-    const hasPrivilegedAccess = isSuperAdmin || isOwner || isCollegeStaff;
+    const hasPrivilegedAccess = isSuperAdmin || isOwner || isInstitutionStaff;
 
     if (!hasPrivilegedAccess) {
       if (problem.status !== ProblemStatus.PUBLISHED) {
         throw new NotFoundException(`Problem ${idOrSlug} not found`);
       }
-      if (problem.collegeId) {
+      if (problem.institutionId) {
         const isMember = user?.memberships?.some(
-          (m) => m.collegeId === problem.collegeId,
+          (m) => m.institutionId === problem.institutionId,
         );
         if (!isMember) {
           throw new NotFoundException(`Problem ${idOrSlug} not found`);
@@ -320,25 +322,25 @@ export class ProblemsService {
           user.globalRole === Role.PLATFORM_ADMIN),
     );
     const isOwner = Boolean(user && problem.createdById === user.id);
-    const isCollegeStaff = Boolean(
+    const isInstitutionStaff = Boolean(
       user &&
-        problem.collegeId &&
+        problem.institutionId &&
         user.memberships?.some(
           (m) =>
-            m.collegeId === problem.collegeId &&
-            (m.role === Role.FACULTY || m.role === Role.COLLEGE_ADMIN),
+            m.institutionId === problem.institutionId &&
+            (m.role === Role.FACULTY || m.role === Role.INSTITUTION_ADMIN),
         ),
     );
 
-    const hasPrivilegedAccess = isSuperAdmin || isOwner || isCollegeStaff;
+    const hasPrivilegedAccess = isSuperAdmin || isOwner || isInstitutionStaff;
 
     if (!hasPrivilegedAccess) {
       if (problem.status !== ProblemStatus.PUBLISHED) {
         throw new NotFoundException(`Problem with ID ${problemId} not found`);
       }
       if (
-        problem.collegeId &&
-        !user?.memberships?.some((membership) => membership.collegeId === problem.collegeId)
+        problem.institutionId &&
+        !user?.memberships?.some((membership) => membership.institutionId === problem.institutionId)
       ) {
         throw new NotFoundException(`Problem with ID ${problemId} not found`);
       }
@@ -353,7 +355,7 @@ export class ProblemsService {
     });
   }
 
-  private assertProblemAuthorOrAdmin(problem: { createdById: string; collegeId: string | null }, user?: CurrentUserPayload) {
+  private assertProblemAuthorOrAdmin(problem: { createdById: string; institutionId: string | null }, user?: CurrentUserPayload) {
     if (!user) {
       throw new ForbiddenException('Authentication required');
     }
@@ -363,19 +365,19 @@ export class ProblemsService {
     if (problem.createdById === user.id) {
       return;
     }
-    if (problem.collegeId) {
-      const isCollegeAdmin = user.memberships?.some(
-        (m) => m.collegeId === problem.collegeId && m.role === Role.COLLEGE_ADMIN,
+    if (problem.institutionId) {
+      const isInstitutionAdmin = user.memberships?.some(
+        (m) => m.institutionId === problem.institutionId && m.role === Role.INSTITUTION_ADMIN,
       );
-      if (isCollegeAdmin) {
+      if (isInstitutionAdmin) {
         return;
       }
     }
     throw new ForbiddenException('You do not have permission to modify this problem');
   }
 
-  private assertCollegeAssignment(collegeId: string | undefined, user?: CurrentUserPayload) {
-    if (!collegeId) {
+  private assertInstitutionAssignment(institutionId: string | undefined, user?: CurrentUserPayload) {
+    if (!institutionId) {
       return;
     }
     if (!user) {
@@ -384,13 +386,13 @@ export class ProblemsService {
     if (user.globalRole === Role.SUPER_ADMIN || user.globalRole === Role.PLATFORM_ADMIN) {
       return;
     }
-    const canManageCollege = user.memberships?.some(
+    const canManageInstitution = user.memberships?.some(
       (membership) =>
-        membership.collegeId === collegeId &&
-        (membership.role === Role.COLLEGE_ADMIN || membership.role === Role.FACULTY),
+        membership.institutionId === institutionId &&
+        (membership.role === Role.INSTITUTION_ADMIN || membership.role === Role.FACULTY),
     );
-    if (!canManageCollege) {
-      throw new ForbiddenException('You can only create problems in your assigned college');
+    if (!canManageInstitution) {
+      throw new ForbiddenException('You can only create problems in your assigned institution');
     }
   }
 }

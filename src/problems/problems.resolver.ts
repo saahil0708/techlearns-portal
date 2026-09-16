@@ -2,7 +2,7 @@ import { UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { ProblemDifficulty, ProblemStatus, Role } from '@prisma/client';
 import { GqlCurrentUser } from '../common/decorators/gql-user.decorator.js';
-import { Roles } from '../common/decorators/roles.decorator.js';
+import { Public, Roles } from '../common/decorators/roles.decorator.js';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import { GqlAuthGuard } from '../common/guards/gql-auth.guard.js';
 import { GqlRolesGuard } from '../common/guards/gql-roles.guard.js';
@@ -20,12 +20,16 @@ export class ProblemsResolver {
   constructor(private problemsService: ProblemsService) {}
 
   @Query(() => ProblemsConnection, { name: 'problems' })
+  @UseGuards(GqlAuthGuard)
+  @Public()
   async getProblems(
     @Args() paginationArgs: PaginationArgs,
     @Args('difficulty', { type: () => ProblemDifficulty, nullable: true })
     difficulty?: ProblemDifficulty,
     @Args('status', { type: () => ProblemStatus, nullable: true })
     status?: ProblemStatus,
+    @Args('institutionId', { type: () => String, nullable: true })
+    institutionId?: string,
     @Args('collegeId', { type: () => String, nullable: true })
     collegeId?: string,
     @GqlCurrentUser() currentUser?: CurrentUserPayload,
@@ -34,12 +38,14 @@ export class ProblemsResolver {
       paginationArgs,
       difficulty,
       status,
-      collegeId,
+      institutionId || collegeId,
       currentUser,
     );
   }
 
   @Query(() => ProblemType, { name: 'problem', nullable: true })
+  @UseGuards(GqlAuthGuard)
+  @Public()
   async getProblem(
     @Args('idOrSlug', { type: () => String }) idOrSlug: string,
     @GqlCurrentUser() currentUser?: CurrentUserPayload,
@@ -58,7 +64,7 @@ export class ProblemsResolver {
 
   @Mutation(() => ProblemType, { name: 'createProblem' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async createProblem(
     @Args('input') input: CreateProblemInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
@@ -68,7 +74,7 @@ export class ProblemsResolver {
 
   @Mutation(() => ProblemType, { name: 'updateProblem' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async updateProblem(
     @Args('id', { type: () => ID }) id: string,
     @Args('input') input: UpdateProblemInput,
@@ -79,7 +85,7 @@ export class ProblemsResolver {
 
   @Mutation(() => Boolean, { name: 'deleteProblem' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async deleteProblem(
     @Args('id', { type: () => ID }) id: string,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
@@ -89,7 +95,7 @@ export class ProblemsResolver {
 
   @Mutation(() => TestCaseType, { name: 'addProblemTestCase' })
   @UseGuards(GqlAuthGuard, GqlRolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.COLLEGE_ADMIN)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.FACULTY, Role.INSTITUTION_ADMIN)
   async addProblemTestCase(
     @Args('problemId', { type: () => ID }) problemId: string,
     @Args('input') input: CreateTestCaseInput,
@@ -98,4 +104,3 @@ export class ProblemsResolver {
     return this.problemsService.addTestCase(problemId, input, currentUser);
   }
 }
-

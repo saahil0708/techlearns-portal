@@ -1,26 +1,26 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { CollegeStatus, Prisma, Role } from '@prisma/client';
+import { InstitutionStatus, Prisma, Role } from '@prisma/client';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { userSanitizedSelect } from '../users/users.service.js';
 import { AddMemberDto } from './dto/add-member.dto.js';
-import { CreateCollegeDto } from './dto/create-college.dto.js';
-import { UpdateCollegeDto } from './dto/update-college.dto.js';
+import { CreateInstitutionDto } from './dto/create-institution.dto.js';
+import { UpdateInstitutionDto } from './dto/update-institution.dto.js';
 
 @Injectable()
-export class CollegesService {
+export class InstitutionsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateCollegeDto) {
-    const existing = await this.prisma.college.findUnique({
+  async create(dto: CreateInstitutionDto) {
+    const existing = await this.prisma.institution.findUnique({
       where: { code: dto.code.toUpperCase() },
     });
 
     if (existing) {
-      throw new ConflictException(`College with code ${dto.code} already exists`);
+      throw new ConflictException(`Institution with code ${dto.code} already exists`);
     }
 
-    return this.prisma.college.create({
+    return this.prisma.institution.create({
       data: {
         name: dto.name,
         code: dto.code.toUpperCase(),
@@ -46,7 +46,7 @@ export class CollegesService {
   }
 
   async findAll() {
-    return this.prisma.college.findMany({
+    return this.prisma.institution.findMany({
       include: {
         memberships: {
           select: { role: true },
@@ -64,12 +64,12 @@ export class CollegesService {
     });
   }
 
-  async findPaginated(args: PaginationArgs, status?: CollegeStatus) {
+  async findPaginated(args: PaginationArgs, status?: InstitutionStatus) {
     const page = args.page || 1;
     const limit = args.limit || 10;
     const skip = (page - 1) * limit;
 
-    const where: Prisma.CollegeWhereInput = {};
+    const where: Prisma.InstitutionWhereInput = {};
 
     if (args.search) {
       where.OR = [
@@ -83,16 +83,16 @@ export class CollegesService {
       where.status = status;
     }
 
-    const orderBy: Prisma.CollegeOrderByWithRelationInput = {};
+    const orderBy: Prisma.InstitutionOrderByWithRelationInput = {};
     if (args.sortBy && ['name', 'code', 'status', 'createdAt', 'updatedAt'].includes(args.sortBy)) {
-      orderBy[args.sortBy as keyof Prisma.CollegeOrderByWithRelationInput] =
+      orderBy[args.sortBy as keyof Prisma.InstitutionOrderByWithRelationInput] =
         args.sortOrder?.toLowerCase() === 'asc' ? 'asc' : 'desc';
     } else {
       orderBy.createdAt = 'desc';
     }
 
     const [items, total] = await Promise.all([
-      this.prisma.college.findMany({
+      this.prisma.institution.findMany({
         where,
         skip,
         take: limit,
@@ -111,7 +111,7 @@ export class CollegesService {
           },
         },
       }),
-      this.prisma.college.count({ where }),
+      this.prisma.institution.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit) || 1;
@@ -128,7 +128,7 @@ export class CollegesService {
   }
 
   async findOne(id: string) {
-    const college = await this.prisma.college.findUnique({
+    const institution = await this.prisma.institution.findUnique({
       where: { id },
       include: {
         memberships: {
@@ -150,17 +150,17 @@ export class CollegesService {
       },
     });
 
-    if (!college) {
-      throw new NotFoundException(`College with ID ${id} not found`);
+    if (!institution) {
+      throw new NotFoundException(`Institution with ID ${id} not found`);
     }
 
-    return college;
+    return institution;
   }
 
-  async update(id: string, dto: UpdateCollegeDto) {
+  async update(id: string, dto: UpdateInstitutionDto) {
     await this.findOne(id);
 
-    return this.prisma.college.update({
+    return this.prisma.institution.update({
       where: { id },
       data: dto,
       include: {
@@ -179,15 +179,15 @@ export class CollegesService {
   async delete(id: string) {
     await this.findOne(id);
 
-    await this.prisma.college.delete({
+    await this.prisma.institution.delete({
       where: { id },
     });
 
     return true;
   }
 
-  async addMember(collegeId: string, dto: AddMemberDto, allowedTargetRole?: Role) {
-    await this.findOne(collegeId);
+  async addMember(institutionId: string, dto: AddMemberDto, allowedTargetRole?: Role) {
+    await this.findOne(institutionId);
 
     const user = await this.prisma.user.findUnique({
       where: { id: dto.userId },
@@ -202,11 +202,11 @@ export class CollegesService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const existingMembership = await tx.collegeMembership.findUnique({
+      const existingMembership = await tx.institutionMembership.findUnique({
         where: {
-          userId_collegeId: {
+          userId_institutionId: {
             userId: dto.userId,
-            collegeId,
+            institutionId,
           },
         },
       });
@@ -215,11 +215,11 @@ export class CollegesService {
         throw new ForbiddenException('Faculty can only manage student memberships');
       }
 
-      return tx.collegeMembership.upsert({
+      return tx.institutionMembership.upsert({
         where: {
-          userId_collegeId: {
+          userId_institutionId: {
             userId: dto.userId,
-            collegeId,
+            institutionId,
           },
         },
         update: {
@@ -227,7 +227,7 @@ export class CollegesService {
         },
         create: {
           userId: dto.userId,
-          collegeId,
+          institutionId,
           role: dto.role,
         },
         include: {
@@ -239,20 +239,20 @@ export class CollegesService {
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 
-  async removeMember(collegeId: string, userId: string, allowedRole?: Role) {
-    await this.findOne(collegeId);
+  async removeMember(institutionId: string, userId: string, allowedRole?: Role) {
+    await this.findOne(institutionId);
 
-    const membership = await this.prisma.collegeMembership.findUnique({
+    const membership = await this.prisma.institutionMembership.findUnique({
       where: {
-        userId_collegeId: {
+        userId_institutionId: {
           userId,
-          collegeId,
+          institutionId,
         },
       },
     });
 
     if (!membership) {
-      throw new NotFoundException('User is not a member of this college');
+      throw new NotFoundException('User is not a member of this institution');
     }
 
     if (allowedRole && membership.role !== allowedRole) {
@@ -260,11 +260,11 @@ export class CollegesService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const collegeBatches = await tx.batch.findMany({
-        where: { collegeId },
+      const institutionBatches = await tx.batch.findMany({
+        where: { institutionId },
         select: { id: true },
       });
-      const batchIds = collegeBatches.map((b) => b.id);
+      const batchIds = institutionBatches.map((b) => b.id);
 
       if (batchIds.length > 0) {
         await tx.batchStudent.deleteMany({
@@ -275,10 +275,10 @@ export class CollegesService {
         });
       }
 
-      const deleted = await tx.collegeMembership.deleteMany({
+      const deleted = await tx.institutionMembership.deleteMany({
         where: {
           userId,
-          collegeId,
+          institutionId,
           ...(allowedRole ? { role: allowedRole } : {}),
         },
       });
@@ -291,11 +291,11 @@ export class CollegesService {
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   }
 
-  async getMembers(collegeId: string) {
-    await this.findOne(collegeId);
+  async getMembers(institutionId: string) {
+    await this.findOne(institutionId);
 
-    return this.prisma.collegeMembership.findMany({
-      where: { collegeId },
+    return this.prisma.institutionMembership.findMany({
+      where: { institutionId },
       include: {
         user: {
           select: userSanitizedSelect,
@@ -305,12 +305,12 @@ export class CollegesService {
     });
   }
 
-  async getMember(collegeId: string, userId: string) {
-    return this.prisma.collegeMembership.findUnique({
+  async getMember(institutionId: string, userId: string) {
+    return this.prisma.institutionMembership.findUnique({
       where: {
-        userId_collegeId: {
+        userId_institutionId: {
           userId,
-          collegeId,
+          institutionId,
         },
       },
     });

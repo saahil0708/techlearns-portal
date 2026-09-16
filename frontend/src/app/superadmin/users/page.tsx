@@ -23,9 +23,9 @@ export default async function UsersDirectoryPage() {
         .filter((item: any) => item.globalRole && item.globalRole !== 'STUDENT')
         .map((item: any) => {
           const primaryMembership = Array.isArray(item.memberships)
-            ? item.memberships.find((m: any) => m?.college?.name)
+            ? item.memberships.find((m: any) => m?.institution?.name || m?.college?.name)
             : null;
-          const collegeName = primaryMembership?.college?.name;
+          const collegeName = primaryMembership?.institution?.name || primaryMembership?.college?.name;
           const userInstitution = item.institution?.trim();
 
           const rawInstType = item.institutionType === 'College' || item.institutionType === 'School' || item.institutionType === 'Independent'

@@ -1,8 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { CollegeStatus } from '@prisma/client';
+import { InstitutionStatus } from '@prisma/client';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 
-export class UpdateCollegeDto {
+export class UpdateInstitutionDto {
   @ApiPropertyOptional({
     example: 'MIT School of Engineering',
   })
@@ -32,9 +32,9 @@ export class UpdateCollegeDto {
   address?: string;
 
   @ApiPropertyOptional({
-    enum: CollegeStatus,
+    enum: InstitutionStatus,
   })
   @IsOptional()
-  @IsEnum(CollegeStatus)
-  status?: CollegeStatus;
+  @IsEnum(InstitutionStatus)
+  status?: InstitutionStatus;
 }

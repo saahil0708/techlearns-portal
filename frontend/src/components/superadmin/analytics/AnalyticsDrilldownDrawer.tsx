@@ -367,7 +367,7 @@ export default function AnalyticsDrilldownDrawer({
           {row.rowType === 'college' && (
             <Button
               component={Link}
-              href={`/superadmin/colleges/${row.id}`}
+              href={`/superadmin/institutions/${row.id}`}
               variant="contained"
               endIcon={<FluidArrowRight size={16} />}
               sx={{

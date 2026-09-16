@@ -1,22 +1,22 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { CollegeStatus } from '@prisma/client';
+import { InstitutionStatus } from '@prisma/client';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class CreateCollegeDto {
+export class CreateInstitutionDto {
   @ApiProperty({
     example: 'Massachusetts Institute of Technology',
-    description: 'Name of the college or university',
+    description: 'Name of the institution or university',
   })
   @IsString()
-  @IsNotEmpty({ message: 'College name is required' })
+  @IsNotEmpty({ message: 'Institution name is required' })
   name: string;
 
   @ApiProperty({
     example: 'MIT',
-    description: 'Unique uppercase college identifier code',
+    description: 'Unique uppercase institution identifier code',
   })
   @IsString()
-  @IsNotEmpty({ message: 'College code is required' })
+  @IsNotEmpty({ message: 'Institution code is required' })
   code: string;
 
   @ApiPropertyOptional({
@@ -44,10 +44,10 @@ export class CreateCollegeDto {
   address?: string;
 
   @ApiPropertyOptional({
-    enum: CollegeStatus,
-    default: CollegeStatus.ACTIVE,
+    enum: InstitutionStatus,
+    default: InstitutionStatus.ACTIVE,
   })
   @IsOptional()
-  @IsEnum(CollegeStatus)
-  status?: CollegeStatus;
+  @IsEnum(InstitutionStatus)
+  status?: InstitutionStatus;
 }

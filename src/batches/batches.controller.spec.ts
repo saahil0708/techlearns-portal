@@ -11,7 +11,8 @@ describe('BatchesController', () => {
   const mockBatch = {
     id: 'batch-1',
     name: 'CS 2026 Batch A',
-    collegeId: 'college-1',
+    institutionId: 'institution-1',
+    collegeId: 'institution-1',
   };
 
   beforeEach(async () => {
@@ -22,6 +23,7 @@ describe('BatchesController', () => {
           provide: BatchesService,
           useValue: {
             create: vi.fn().mockResolvedValue(mockBatch),
+            findByInstitution: vi.fn().mockResolvedValue([mockBatch]),
             findByCollege: vi.fn().mockResolvedValue([mockBatch]),
             findOne: vi.fn().mockResolvedValue(mockBatch),
             update: vi.fn().mockResolvedValue(mockBatch),
@@ -51,16 +53,22 @@ describe('BatchesController', () => {
   });
 
   it('should create a batch', async () => {
-    const dto = { name: 'CS 2026 Batch A', collegeId: 'college-1' };
+    const dto = { name: 'CS 2026 Batch A', institutionId: 'institution-1', collegeId: 'institution-1' };
     const result = await controller.create(dto);
     expect(result).toEqual(mockBatch);
     expect(service.create).toHaveBeenCalledWith(dto);
   });
 
-  it('should find batches by college', async () => {
-    const result = await controller.findByCollege('college-1');
+  it('should find batches by institution', async () => {
+    const result = await controller.findByInstitution('institution-1');
     expect(result).toEqual([mockBatch]);
-    expect(service.findByCollege).toHaveBeenCalledWith('college-1');
+    expect(service.findByInstitution).toHaveBeenCalledWith('institution-1');
+  });
+
+  it('should find batches by college', async () => {
+    const result = await controller.findByCollege('institution-1');
+    expect(result).toEqual([mockBatch]);
+    expect(service.findByInstitution).toHaveBeenCalledWith('institution-1');
   });
 
   it('should find one batch by id', async () => {
@@ -75,10 +83,10 @@ describe('BatchesController', () => {
         students: [{ userId: 'user-1', rollNo: 'CS001' }],
         userIds: ['user-2'],
       };
+
       await controller.assignStudents('batch-1', dto);
-      expect(service.assignStudents).toHaveBeenCalledWith('batch-1', [
-        { userId: 'user-1', rollNo: 'CS001' },
-      ]);
+
+      expect(service.assignStudents).toHaveBeenCalledWith('batch-1', dto.students);
     });
 
     it('should fallback to userIds when students array is empty', async () => {
@@ -86,16 +94,17 @@ describe('BatchesController', () => {
         students: [],
         userIds: ['user-1', 'user-2'],
       };
+
       await controller.assignStudents('batch-1', dto);
-      expect(service.assignStudents).toHaveBeenCalledWith('batch-1', [
-        'user-1',
-        'user-2',
-      ]);
+
+      expect(service.assignStudents).toHaveBeenCalledWith('batch-1', ['user-1', 'user-2']);
     });
 
     it('should fallback to empty array when neither students nor userIds provided', async () => {
       const dto = {};
-      await controller.assignStudents('batch-1', dto);
+
+      await controller.assignStudents('batch-1', dto as any);
+
       expect(service.assignStudents).toHaveBeenCalledWith('batch-1', []);
     });
   });

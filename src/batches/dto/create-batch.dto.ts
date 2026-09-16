@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsOptional, IsString } from 'class-validator';
 
 export class CreateBatchDto {
   @ApiProperty({
@@ -7,16 +7,23 @@ export class CreateBatchDto {
     description: 'Name of the cohort or batch',
   })
   @IsString()
-  @IsNotEmpty({ message: 'Batch name is required' })
   name: string;
 
-  @ApiProperty({
-    example: 'college-uuid-12345',
-    description: 'ID of the college this batch belongs to',
+  @ApiPropertyOptional({
+    example: 'inst-uuid-12345',
+    description: 'ID of the institution this batch belongs to',
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: 'College ID is required' })
-  collegeId: string;
+  institutionId?: string;
+
+  @ApiPropertyOptional({
+    example: 'college-uuid-12345',
+    description: 'ID of the institution this batch belongs to (legacy alias)',
+  })
+  @IsOptional()
+  @IsString()
+  collegeId?: string;
 
   @ApiPropertyOptional({
     example: 30,

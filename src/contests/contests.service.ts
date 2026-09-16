@@ -13,7 +13,8 @@ export class ContestsService {
   constructor(private prisma: PrismaService) {}
 
   async create(input: CreateContestInput, creatorId: string, user?: CurrentUserPayload) {
-    this.assertCollegeAssignment(input.collegeId, user);
+    const institutionId = input.institutionId || input.collegeId;
+    this.assertInstitutionAssignment(institutionId, user);
     if (input.endTime <= input.startTime) {
       throw new BadRequestException('Contest end time must be after its start time');
     }
@@ -23,7 +24,7 @@ export class ContestsService {
         description: input.description,
         startTime: input.startTime,
         endTime: input.endTime,
-        collegeId: input.collegeId,
+        institutionId,
         createdById: creatorId,
         status: input.status || ContestStatus.UPCOMING,
       },
@@ -42,13 +43,14 @@ export class ContestsService {
   async findPaginated(
     args: PaginationArgs,
     status?: ContestStatus,
-    collegeId?: string,
+    institutionId?: string,
     user?: CurrentUserPayload,
   ) {
     const page = args.page || 1;
     const limit = args.limit || 10;
     const skip = (page - 1) * limit;
 
+    const targetInstId = institutionId;
     const where: Prisma.ContestWhereInput = {};
 
     if (args.search) {
@@ -67,17 +69,17 @@ export class ContestsService {
       user?.globalRole === Role.PLATFORM_ADMIN;
 
     if (!isSuperAdmin) {
-      const userCollegeIds = user?.memberships?.map((m) => m.collegeId) || [];
-      if (collegeId) {
-        if (!userCollegeIds.includes(collegeId)) {
-          where.collegeId = '__unauthorized_college__';
+      const userInstitutionIds = user?.memberships?.map((m) => m.institutionId) || [];
+      if (targetInstId) {
+        if (!userInstitutionIds.includes(targetInstId)) {
+          where.institutionId = '__unauthorized_institution__';
         } else {
-          where.collegeId = collegeId;
+          where.institutionId = targetInstId;
         }
       } else {
         const visibilityConditions = [
-          { collegeId: null },
-          ...(userCollegeIds.length > 0 ? [{ collegeId: { in: userCollegeIds } }] : []),
+          { institutionId: null },
+          ...(userInstitutionIds.length > 0 ? [{ institutionId: { in: userInstitutionIds } }] : []),
         ];
         if (where.OR) {
           where.AND = [{ OR: where.OR }, { OR: visibilityConditions }];
@@ -87,8 +89,8 @@ export class ContestsService {
         }
       }
     } else {
-      if (collegeId) {
-        where.collegeId = collegeId;
+      if (targetInstId) {
+        where.institutionId = targetInstId;
       }
     }
 
@@ -173,9 +175,9 @@ export class ContestsService {
       user?.globalRole === Role.SUPER_ADMIN ||
       user?.globalRole === Role.PLATFORM_ADMIN;
 
-    if (!isSuperAdmin && contest.collegeId) {
+    if (!isSuperAdmin && contest.institutionId) {
       const isMember = user?.memberships?.some(
-        (m) => m.collegeId === contest.collegeId,
+        (m) => m.institutionId === contest.institutionId,
       );
       if (!isMember) {
         throw new NotFoundException(`Contest with ID ${id} not found`);
@@ -188,11 +190,11 @@ export class ContestsService {
       isSuperAdmin ||
       contest.createdById === user?.id ||
       Boolean(
-        contest.collegeId &&
+        contest.institutionId &&
           user?.memberships?.some(
             (membership) =>
-              membership.collegeId === contest.collegeId &&
-              membership.role === Role.COLLEGE_ADMIN,
+              membership.institutionId === contest.institutionId &&
+              membership.role === Role.INSTITUTION_ADMIN,
           ),
       );
     if (!canViewRegistrations) {
@@ -256,10 +258,10 @@ export class ContestsService {
       throw new ForbiddenException('Registration is outside the contest time window');
     }
 
-    if (contest.collegeId && user) {
-      const isMember = user.memberships?.some((m) => m.collegeId === contest.collegeId);
+    if (contest.institutionId && user) {
+      const isMember = user.memberships?.some((m) => m.institutionId === contest.institutionId);
       if (!isMember && user.globalRole !== Role.SUPER_ADMIN && user.globalRole !== Role.PLATFORM_ADMIN) {
-        throw new ForbiddenException('You can only register for contests hosted by your college');
+        throw new ForbiddenException('You can only register for contests hosted by your institution');
       }
     }
 
@@ -305,9 +307,9 @@ export class ContestsService {
       throw new ForbiddenException('Only published problems can be added to a contest');
     }
 
-    if (problem.collegeId) {
-      if (contest.collegeId !== problem.collegeId) {
-        throw new ForbiddenException('College problems can only be added to contests from the same college');
+    if (problem.institutionId) {
+      if (contest.institutionId !== problem.institutionId) {
+        throw new ForbiddenException('Institution problems can only be added to contests from the same institution');
       }
 
       const canAccessProblem =
@@ -316,8 +318,8 @@ export class ContestsService {
         problem.createdById === user?.id ||
         user?.memberships?.some(
           (membership) =>
-            membership.collegeId === problem.collegeId &&
-            (membership.role === Role.FACULTY || membership.role === Role.COLLEGE_ADMIN),
+            membership.institutionId === problem.institutionId &&
+            (membership.role === Role.FACULTY || membership.role === Role.INSTITUTION_ADMIN),
         );
       if (!canAccessProblem) {
         throw new ForbiddenException('You do not have access to this problem');
@@ -348,7 +350,7 @@ export class ContestsService {
   }
 
   private assertContestAuthorOrAdmin(
-    contest: { createdById: string; collegeId: string | null },
+    contest: { createdById: string; institutionId: string | null },
     user?: CurrentUserPayload,
   ) {
     if (!user) {
@@ -360,19 +362,19 @@ export class ContestsService {
     if (contest.createdById === user.id) {
       return;
     }
-    if (contest.collegeId) {
-      const isCollegeAdmin = user.memberships?.some(
-        (m) => m.collegeId === contest.collegeId && m.role === Role.COLLEGE_ADMIN,
+    if (contest.institutionId) {
+      const isInstitutionAdmin = user.memberships?.some(
+        (m) => m.institutionId === contest.institutionId && m.role === Role.INSTITUTION_ADMIN,
       );
-      if (isCollegeAdmin) {
+      if (isInstitutionAdmin) {
         return;
       }
     }
     throw new ForbiddenException('You do not have permission to modify this contest');
   }
 
-  private assertCollegeAssignment(collegeId: string | undefined, user?: CurrentUserPayload) {
-    if (!collegeId) {
+  private assertInstitutionAssignment(institutionId: string | undefined, user?: CurrentUserPayload) {
+    if (!institutionId) {
       return;
     }
     if (!user) {
@@ -381,13 +383,13 @@ export class ContestsService {
     if (user.globalRole === Role.SUPER_ADMIN || user.globalRole === Role.PLATFORM_ADMIN) {
       return;
     }
-    const canManageCollege = user.memberships?.some(
+    const canManageInstitution = user.memberships?.some(
       (membership) =>
-        membership.collegeId === collegeId &&
-        (membership.role === Role.COLLEGE_ADMIN || membership.role === Role.FACULTY),
+        membership.institutionId === institutionId &&
+        (membership.role === Role.INSTITUTION_ADMIN || membership.role === Role.FACULTY),
     );
-    if (!canManageCollege) {
-      throw new ForbiddenException('You can only create contests in your assigned college');
+    if (!canManageInstitution) {
+      throw new ForbiddenException('You can only create contests in your assigned institution');
     }
   }
 }

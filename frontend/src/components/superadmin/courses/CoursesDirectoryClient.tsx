@@ -550,7 +550,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
               value={totalCount}
               icon={<MenuBookRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="mountains"
+              shape="orbital"
               subtitle={`${dsaCount} DSA • ${sysDesignCount} System Design`}
             />
 
@@ -559,7 +559,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
               value={totalEnrollments.toLocaleString()}
               icon={<PeopleAltRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="curves"
+              shape="topography"
               subtitle="Across college cohorts"
             />
 
@@ -568,7 +568,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
               value={totalLessons}
               icon={<LayersRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
-              shape="peaks"
+              shape="hex-grid"
               subtitle="Interactive Code Labs"
             />
 
@@ -577,7 +577,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
               value={`${avgCompletion}%`}
               icon={<StarsRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
-              shape="waves"
+              shape="aurora-waves"
               subtitle="Passed evaluations"
             />
           </Box>

@@ -7,7 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 // Rounded Material Icons matching the design
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
-import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
@@ -23,8 +23,8 @@ import { FluidArrowRight } from '@/utils/fluid_arrow';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: <GridViewRoundedIcon sx={{ fontSize: 21 }} />, path: '/superadmin' },
-  { label: 'Colleges', icon: <AccountBalanceRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/colleges' },
-  { label: 'Schools', icon: <SchoolRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/schools' },
+  { label: 'Institutions', icon: <AccountBalanceRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/institutions' },
+  { label: 'Blogs', icon: <ArticleRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/blogs' },
   { label: 'Students', icon: <PersonRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/students' },
   { label: 'Users', icon: <PeopleAltRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/users' },
   { label: 'Courses', icon: <MenuBookRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/courses' },
@@ -149,7 +149,9 @@ export default function CurvedSidebar() {
         }}
       >
         {NAV_ITEMS.map((item) => {
-          const isActive = item.path === '/superadmin' ? pathname === '/superadmin' : pathname.startsWith(item.path);
+          const isActive = item.path === '/superadmin'
+            ? pathname === '/superadmin'
+            : pathname.startsWith(item.path) || (item.path === '/superadmin/institutions' && pathname.startsWith('/superadmin/colleges'));
 
           return (
             <Tooltip key={item.label} title={item.label} placement="right" arrow>

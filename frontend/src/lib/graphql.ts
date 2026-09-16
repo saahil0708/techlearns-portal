@@ -95,11 +95,13 @@ export const USERS_QUERY = `
         institution
         department
         rollNo
+        contestRating
+        ratingTier
         memberships {
           id
-          collegeId
+          institutionId
           role
-          college {
+          institution {
             id
             name
             code
@@ -169,9 +171,37 @@ export const UPDATE_USER_MUTATION = `
   }
 `;
 
+export const INSTITUTIONS_QUERY = `
+  query GetInstitutions($page: Int, $limit: Int, $search: String, $status: InstitutionStatus) {
+    institutions(page: $page, limit: $limit, search: $search, status: $status) {
+      items {
+        id
+        name
+        code
+        email
+        phone
+        address
+        status
+        createdAt
+        _count {
+          memberships
+          batches
+          courses
+          problems
+        }
+      }
+      meta {
+        total
+        page
+        limit
+        totalPages
+      }
+    }
+  }
+`;
 export const COLLEGES_QUERY = `
-  query GetColleges($page: Int, $limit: Int, $search: String, $status: CollegeStatus) {
-    colleges(page: $page, limit: $limit, search: $search, status: $status) {
+  query GetColleges($page: Int, $limit: Int, $search: String, $status: InstitutionStatus) {
+    colleges: institutions(page: $page, limit: $limit, search: $search, status: $status) {
       items {
         id
         name
@@ -198,9 +228,19 @@ export const COLLEGES_QUERY = `
   }
 `;
 
+export const CREATE_INSTITUTION_MUTATION = `
+  mutation CreateInstitution($input: CreateInstitutionInput!) {
+    createInstitution(input: $input) {
+      id
+      name
+      code
+      status
+    }
+  }
+`;
 export const CREATE_COLLEGE_MUTATION = `
-  mutation CreateCollege($input: CreateCollegeInput!) {
-    createCollege(input: $input) {
+  mutation CreateCollege($input: CreateInstitutionInput!) {
+    createCollege: createInstitution(input: $input) {
       id
       name
       code
@@ -331,12 +371,9 @@ export const COURSES_QUERY = `
         description
         status
         createdAt
-        college {
-          name
-        }
-        createdBy {
-          name
-        }
+        institutionId
+        collegeId
+        createdById
         modules {
           id
           title
@@ -380,9 +417,14 @@ export const DELETE_PROBLEM_MUTATION = `
   }
 `;
 
+export const DELETE_INSTITUTION_MUTATION = `
+  mutation DeleteInstitution($id: ID!) {
+    deleteInstitution(id: $id)
+  }
+`;
 export const DELETE_COLLEGE_MUTATION = `
   mutation DeleteCollege($id: ID!) {
-    deleteCollege(id: $id)
+    deleteCollege: deleteInstitution(id: $id)
   }
 `;
 
@@ -408,9 +450,23 @@ export const DELETE_CONTEST_MUTATION = `
 // UPDATE MUTATIONS
 // ----------------------------------------------------
 
+export const UPDATE_INSTITUTION_MUTATION = `
+  mutation UpdateInstitution($id: ID!, $input: UpdateInstitutionInput!) {
+    updateInstitution(id: $id, input: $input) {
+      id
+      name
+      code
+      email
+      phone
+      address
+      status
+      updatedAt
+    }
+  }
+`;
 export const UPDATE_COLLEGE_MUTATION = `
-  mutation UpdateCollege($id: ID!, $input: UpdateCollegeInput!) {
-    updateCollege(id: $id, input: $input) {
+  mutation UpdateCollege($id: ID!, $input: UpdateInstitutionInput!) {
+    updateCollege: updateInstitution(id: $id, input: $input) {
       id
       name
       code
@@ -485,15 +541,25 @@ export const BULK_INVITE_USERS_MUTATION = `
   }
 `;
 
+export const ADD_INSTITUTION_MEMBER_MUTATION = `
+  mutation AddInstitutionMember($institutionId: ID!, $input: AddInstitutionMemberInput!) {
+    addInstitutionMember(institutionId: $institutionId, input: $input)
+  }
+`;
 export const ADD_COLLEGE_MEMBER_MUTATION = `
-  mutation AddCollegeMember($collegeId: ID!, $input: AddCollegeMemberInput!) {
-    addCollegeMember(collegeId: $collegeId, input: $input)
+  mutation AddCollegeMember($collegeId: ID!, $input: AddInstitutionMemberInput!) {
+    addCollegeMember: addInstitutionMember(institutionId: $collegeId, input: $input)
   }
 `;
 
+export const REMOVE_INSTITUTION_MEMBER_MUTATION = `
+  mutation RemoveInstitutionMember($institutionId: ID!, $userId: ID!) {
+    removeInstitutionMember(institutionId: $institutionId, userId: $userId)
+  }
+`;
 export const REMOVE_COLLEGE_MEMBER_MUTATION = `
   mutation RemoveCollegeMember($collegeId: ID!, $userId: ID!) {
-    removeCollegeMember(collegeId: $collegeId, userId: $userId)
+    removeCollegeMember: removeInstitutionMember(institutionId: $collegeId, userId: $userId)
   }
 `;
 
@@ -544,15 +610,53 @@ export const USER_BY_ID_QUERY = `
       email
       globalRole
       status
+      avatarUrl
+      bannerUrl
+      bio
+      phone
+      institution
+      department
+      specialization
+      officeHours
+      location
+      birthDate
+      githubUrl
+      linkedinUrl
+      websiteUrl
+      resumeUrl
+      resumeFileName
+      rollNo
+      contestRating
+      ratingTier
+      memberships {
+        id
+        institutionId
+        role
+        institution {
+          id
+          name
+          code
+        }
+      }
+      batchEnrollments {
+        id
+        batchId
+        rollNo
+        batch {
+          id
+          name
+          code
+        }
+      }
       createdAt
       updatedAt
     }
   }
 `;
 
-export const COLLEGE_BY_ID_QUERY = `
-  query GetCollegeById($id: ID!) {
-    college(id: $id) {
+export const INSTITUTION_BY_ID_QUERY = `
+  query GetInstitutionById($id: ID!) {
+    institution(id: $id) {
       id
       name
       code
@@ -562,6 +666,47 @@ export const COLLEGE_BY_ID_QUERY = `
       status
       createdAt
       updatedAt
+      memberships {
+        id
+        role
+        user {
+          id
+          name
+          email
+          department
+        }
+      }
+      _count {
+        memberships
+        batches
+        courses
+        problems
+      }
+    }
+  }
+`;
+export const COLLEGE_BY_ID_QUERY = `
+  query GetCollegeById($id: ID!) {
+    college: institution(id: $id) {
+      id
+      name
+      code
+      email
+      phone
+      address
+      status
+      createdAt
+      updatedAt
+      memberships {
+        id
+        role
+        user {
+          id
+          name
+          email
+          department
+        }
+      }
       _count {
         memberships
         batches
@@ -841,6 +986,7 @@ export const STUDENT_PROFILE_QUERY = `
 export const ADMIN_METRICS_QUERY = `
   query GetAdminMetrics {
     adminMetrics {
+      institutionsCount
       collegesCount
       studentsCount
       facultyCount
@@ -867,6 +1013,3 @@ export const ADMIN_AUDIT_LOGS_QUERY = `
     }
   }
 `;
-
-
-

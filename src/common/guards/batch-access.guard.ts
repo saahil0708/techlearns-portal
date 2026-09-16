@@ -15,7 +15,7 @@ export class BatchAccessGuard implements CanActivate {
       return false;
     }
 
-    // Global Super Admin & Platform Admin have access across all colleges
+    // Global Super Admin & Platform Admin have access across all institutions
     if (user.globalRole === Role.SUPER_ADMIN || user.globalRole === Role.PLATFORM_ADMIN) {
       return true;
     }
@@ -28,7 +28,7 @@ export class BatchAccessGuard implements CanActivate {
 
     const batch = await this.prisma.batch.findUnique({
       where: { id: batchId },
-      select: { collegeId: true },
+      select: { institutionId: true },
     });
 
     if (!batch) {
@@ -36,7 +36,7 @@ export class BatchAccessGuard implements CanActivate {
     }
 
     const hasMembership = user.memberships?.some(
-      (m) => m.collegeId === batch.collegeId,
+      (m) => m.institutionId === batch.institutionId || (m as any).collegeId === batch.institutionId,
     );
 
     if (!hasMembership) {

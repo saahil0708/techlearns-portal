@@ -44,6 +44,9 @@ export class ProblemType {
   memoryLimit: number;
 
   @Field(() => String, { nullable: true })
+  institutionId?: string;
+
+  @Field(() => String, { nullable: true })
   collegeId?: string;
 
   @Field(() => String)

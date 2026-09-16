@@ -22,7 +22,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneRounded';
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
-import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import ArticleRoundedIcon from '@mui/icons-material/ArticleRounded';
 import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
 import GroupAddRoundedIcon from '@mui/icons-material/GroupAddRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
@@ -396,23 +396,23 @@ export default function Navbar({
             },
           }}
         >
-          <MenuItem onClick={() => handleCreateSelect('/superadmin/colleges')} sx={{ borderRadius: '10px', py: 1 }}>
+          <MenuItem onClick={() => handleCreateSelect('/superadmin/institutions')} sx={{ borderRadius: '10px', py: 1 }}>
             <ListItemIcon sx={{ color: '#2563EB', minWidth: 32 }}>
               <AccountBalanceRoundedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText
               slotProps={{ primary: { sx: { fontSize: '0.84rem', fontWeight: 600 } } }}
-              primary="New College / Campus"
+              primary="New Institution"
             />
           </MenuItem>
 
-          <MenuItem onClick={() => handleCreateSelect('/superadmin/schools')} sx={{ borderRadius: '10px', py: 1 }}>
+          <MenuItem onClick={() => handleCreateSelect('/superadmin/blogs')} sx={{ borderRadius: '10px', py: 1 }}>
             <ListItemIcon sx={{ color: '#0284C7', minWidth: 32 }}>
-              <SchoolRoundedIcon sx={{ fontSize: 18 }} />
+              <ArticleRoundedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText
               slotProps={{ primary: { sx: { fontSize: '0.84rem', fontWeight: 600 } } }}
-              primary="New School / Faculty"
+              primary="New Technical Blog / Article"
             />
           </MenuItem>
 

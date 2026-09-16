@@ -64,7 +64,7 @@ export default function DashboardKpiRow({
       trendType: 'positive',
       sparkHeights: [35, 55, 45, 75, 60, 90, 80],
       variant: 'blue',
-      shape: 'mountains',
+      shape: 'orbital',
       icon: <TrendingUpRoundedIcon sx={{ fontSize: 20 }} />,
     },
     {
@@ -76,7 +76,7 @@ export default function DashboardKpiRow({
       trendType: 'positive',
       sparkHeights: [60, 70, 65, 80, 75, 85, 92],
       variant: 'black',
-      shape: 'curves',
+      shape: 'topography',
       icon: <CheckCircleRoundedIcon sx={{ fontSize: 20 }} />,
     },
     {
@@ -88,7 +88,7 @@ export default function DashboardKpiRow({
       trendType: 'positive',
       sparkHeights: [40, 50, 70, 60, 85, 95, 100],
       variant: 'blue',
-      shape: 'peaks',
+      shape: 'hex-grid',
       icon: <PeopleAltRoundedIcon sx={{ fontSize: 20 }} />,
     },
     {
@@ -100,7 +100,7 @@ export default function DashboardKpiRow({
       trendType: 'speed',
       sparkHeights: [80, 65, 70, 50, 45, 38, 30],
       variant: 'black',
-      shape: 'waves',
+      shape: 'aurora-waves',
       icon: <BoltRoundedIcon sx={{ fontSize: 20 }} />,
     },
   ];

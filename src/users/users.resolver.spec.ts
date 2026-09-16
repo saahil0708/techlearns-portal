@@ -4,20 +4,20 @@ import { describe, expect, it, vi } from 'vitest';
 import { UsersResolver } from './users.resolver.js';
 
 describe('UsersResolver tenant access', () => {
-  it('does not let a college admin use a non-admin membership to view another college tenant', async () => {
+  it('does not let an institution admin use a non-admin membership to view another institution tenant', async () => {
     const usersService = {
       findById: vi.fn().mockResolvedValue({
         id: 'student-b',
-        memberships: [{ collegeId: 'college-b', role: Role.STUDENT }],
+        memberships: [{ institutionId: 'institution-b', role: Role.STUDENT }],
       }),
     } as any;
     const resolver = new UsersResolver(usersService);
     const currentUser = {
       id: 'admin-a',
-      globalRole: Role.COLLEGE_ADMIN,
+      globalRole: Role.INSTITUTION_ADMIN,
       memberships: [
-        { collegeId: 'college-a', role: Role.COLLEGE_ADMIN },
-        { collegeId: 'college-b', role: Role.FACULTY },
+        { institutionId: 'institution-a', role: Role.INSTITUTION_ADMIN },
+        { institutionId: 'institution-b', role: Role.FACULTY },
       ],
     } as any;
 
@@ -25,7 +25,7 @@ describe('UsersResolver tenant access', () => {
   });
 
   describe('Faculty student invitation permissions', () => {
-    it('allows faculty to invite students to their assigned college', async () => {
+    it('allows faculty to invite students to their assigned institution', async () => {
       const usersService = {
         bulkInvite: vi.fn().mockResolvedValue({ invited: 1, expiresInHours: 72 }),
       } as any;
@@ -33,13 +33,13 @@ describe('UsersResolver tenant access', () => {
       const facultyUser = {
         id: 'faculty-1',
         globalRole: Role.FACULTY,
-        memberships: [{ collegeId: 'college-a', role: Role.FACULTY }],
+        memberships: [{ institutionId: 'institution-a', role: Role.FACULTY }],
       } as any;
 
       const result = await resolver.bulkInviteUsers(
         {
           users: [
-            { name: 'Student One', email: 'stu1@college.edu', role: Role.STUDENT, collegeId: 'college-a' },
+            { name: 'Student One', email: 'stu1@institution.edu', role: Role.STUDENT, institutionId: 'institution-a' },
           ],
         },
         facultyUser,
@@ -49,7 +49,7 @@ describe('UsersResolver tenant access', () => {
       expect(result.invited).toBe(1);
     });
 
-    it('rejects faculty inviting students to an unassigned college', async () => {
+    it('rejects faculty inviting students to an unassigned institution', async () => {
       const usersService = {
         bulkInvite: vi.fn(),
       } as any;
@@ -57,14 +57,14 @@ describe('UsersResolver tenant access', () => {
       const facultyUser = {
         id: 'faculty-1',
         globalRole: Role.FACULTY,
-        memberships: [{ collegeId: 'college-a', role: Role.FACULTY }],
+        memberships: [{ institutionId: 'institution-a', role: Role.FACULTY }],
       } as any;
 
       await expect(
         resolver.bulkInviteUsers(
           {
             users: [
-              { name: 'Student Two', email: 'stu2@college.edu', role: Role.STUDENT, collegeId: 'college-b' },
+              { name: 'Student Two', email: 'stu2@institution.edu', role: Role.STUDENT, institutionId: 'institution-b' },
             ],
           },
           facultyUser,
@@ -80,14 +80,14 @@ describe('UsersResolver tenant access', () => {
       const facultyUser = {
         id: 'faculty-1',
         globalRole: Role.FACULTY,
-        memberships: [{ collegeId: 'college-a', role: Role.FACULTY }],
+        memberships: [{ institutionId: 'institution-a', role: Role.FACULTY }],
       } as any;
 
       await expect(
         resolver.bulkInviteUsers(
           {
             users: [
-              { name: 'Prof Two', email: 'prof2@college.edu', role: Role.FACULTY, collegeId: 'college-a' },
+              { name: 'Prof Two', email: 'prof2@institution.edu', role: Role.FACULTY, institutionId: 'institution-a' },
             ],
           },
           facultyUser,
