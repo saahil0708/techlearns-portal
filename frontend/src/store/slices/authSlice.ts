@@ -18,7 +18,27 @@ export interface UserProfile {
   globalRole: string;
   status: string;
   twoFactorEnabled?: boolean;
+  rollNo?: string;
+  handle?: string;
+  avatarUrl?: string;
+  bannerUrl?: string;
+  bio?: string;
+  phone?: string;
+  institution?: string;
+  department?: string;
+  specialization?: string;
+  officeHours?: string;
+  location?: string;
+  birthDate?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
+  resumeUrl?: string;
+  resumeFileName?: string;
+  contestRating?: number;
+  ratingTier?: string;
   memberships: UserMembership[];
+  batchEnrollments?: any[];
   createdAt?: string;
   updatedAt?: string;
 }

@@ -331,6 +331,8 @@ export const apiService = {
     email?: string;
     phone?: string;
     address?: string;
+    tier?: string;
+    quota?: number;
     status?: string;
   }) {
     let isNetworkError = false;
@@ -367,6 +369,8 @@ export const apiService = {
     email?: string;
     phone?: string;
     address?: string;
+    tier?: string;
+    quota?: number;
     status?: string;
   }) {
     return this.createInstitution(input);
@@ -378,6 +382,8 @@ export const apiService = {
     email?: string;
     phone?: string;
     address?: string;
+    tier?: string;
+    quota?: number;
     status?: string;
   }) {
     try {
@@ -410,6 +416,8 @@ export const apiService = {
     email?: string;
     phone?: string;
     address?: string;
+    tier?: string;
+    quota?: number;
     status?: string;
   }) {
     return this.updateInstitution(id, input);
@@ -660,11 +668,16 @@ export const apiService = {
     status?: string;
     institutionId?: string;
     collegeId?: string;
+    rollNo?: string;
+    handle?: string;
+    username?: string;
   }) {
     const institutionId = input.institutionId || input.collegeId;
+    const rollNo = input.rollNo || input.handle || input.username;
     const data = await fetchGraphQL<{ createUser: any }>(CREATE_USER_MUTATION, {
       input: {
         ...input,
+        rollNo,
         institutionId,
         collegeId: institutionId,
       },
@@ -693,10 +706,18 @@ export const apiService = {
     websiteUrl?: string;
     resumeUrl?: string;
     resumeFileName?: string;
+    rollNo?: string;
+    handle?: string;
+    username?: string;
     contestRating?: number;
     ratingTier?: string;
   }) {
-    const data = await fetchGraphQL<{ updateUser: any }>(UPDATE_USER_MUTATION, { id, input });
+    const rollNo = input.rollNo !== undefined ? input.rollNo : (input.handle !== undefined ? input.handle : input.username);
+    const payload = {
+      ...input,
+      ...(rollNo !== undefined ? { rollNo } : {}),
+    };
+    const data = await fetchGraphQL<{ updateUser: any }>(UPDATE_USER_MUTATION, { id, input: payload });
     return data.updateUser;
   },
 

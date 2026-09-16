@@ -22,6 +22,7 @@ import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import { UserRole } from '@/components/superadmin/users/CreateUserModal';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import { useAppSelector } from '@/store/hooks';
 
 interface BulkInviteUsersModalProps {
   open: boolean;
@@ -35,13 +36,38 @@ export default function BulkInviteUsersModal({
   onImportSuccess,
 }: BulkInviteUsersModalProps) {
   const toast = useToast();
-  const [defaultRole, setDefaultRole] = useState<UserRole>('FACULTY');
+  const currentUser = useAppSelector((state) => state.auth.user);
+  const callerRole = (currentUser?.globalRole || (currentUser as any)?.role || '').toUpperCase();
+
+  const allowedRoles: UserRole[] = React.useMemo(() => {
+    if (callerRole === 'SUPER_ADMIN') {
+      return ['SUPER_ADMIN', 'COLLEGE_ADMIN', 'SCHOOL_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
+    }
+    if (callerRole === 'PLATFORM_ADMIN') {
+      return ['COLLEGE_ADMIN', 'SCHOOL_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
+    }
+    if (callerRole === 'COLLEGE_ADMIN' || callerRole === 'SCHOOL_ADMIN' || callerRole === 'INSTITUTION_ADMIN') {
+      return ['FACULTY', 'STUDENT', 'RECRUITER'];
+    }
+    if (callerRole === 'FACULTY') {
+      return ['STUDENT'];
+    }
+    return ['STUDENT'];
+  }, [callerRole]);
+
+  const [defaultRole, setDefaultRole] = useState<UserRole>(() => allowedRoles[0] || 'FACULTY');
   const [selectedInstitution, setSelectedInstitution] = useState('Stanford University - Dept of CS');
   const [fileName, setFileName] = useState<string | null>(null);
   const [rowCount, setRowCount] = useState<number>(0);
   const [parsedUsers, setParsedUsers] = useState<Array<{ name: string; email: string; role?: string }>>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const borderColor = '#E2E8F0';
+
+  React.useEffect(() => {
+    if (!allowedRoles.includes(defaultRole) && allowedRoles.length > 0) {
+      setDefaultRole(allowedRoles[0]);
+    }
+  }, [allowedRoles, defaultRole]);
 
   const handleSimulateFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -197,35 +223,71 @@ export default function BulkInviteUsersModal({
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
               }}
             >
-              <MenuItem value="FACULTY">Faculty / Instructor</MenuItem>
-              <MenuItem value="COLLEGE_ADMIN">College Admin</MenuItem>
-              <MenuItem value="SCHOOL_ADMIN">School Admin</MenuItem>
-              <MenuItem value="STUDENT">Student Coder</MenuItem>
-              <MenuItem value="RECRUITER">Recruiter</MenuItem>
+              {allowedRoles.includes('SUPER_ADMIN') && (
+                <MenuItem value="SUPER_ADMIN">Super Administrator</MenuItem>
+              )}
+              {allowedRoles.includes('COLLEGE_ADMIN') && (
+                <MenuItem value="COLLEGE_ADMIN">College Admin</MenuItem>
+              )}
+              {allowedRoles.includes('SCHOOL_ADMIN') && (
+                <MenuItem value="SCHOOL_ADMIN">School Admin</MenuItem>
+              )}
+              {allowedRoles.includes('FACULTY') && (
+                <MenuItem value="FACULTY">Faculty / Instructor</MenuItem>
+              )}
+              {allowedRoles.includes('STUDENT') && (
+                <MenuItem value="STUDENT">Student Coder</MenuItem>
+              )}
+              {allowedRoles.includes('RECRUITER') && (
+                <MenuItem value="RECRUITER">Recruiter</MenuItem>
+              )}
             </Select>
           </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
-              ASSIGNED TENANT
-            </Typography>
-            <Select
-              size="small"
-              value={selectedInstitution}
-              onChange={(e) => setSelectedInstitution(e.target.value)}
-              sx={{
-                bgcolor: '#F8FAFC',
-                borderRadius: '9999px',
-                fontSize: '0.85rem',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-              }}
-            >
-              <MenuItem value="Stanford University - Dept of CS">Stanford University</MenuItem>
-              <MenuItem value="Massachusetts Inst of Technology (MIT)">MIT EECS</MenuItem>
-              <MenuItem value="Stuyvesant High School of Science">Stuyvesant High</MenuItem>
-              <MenuItem value="Global CodePlatform Platform">Global Admin Cluster</MenuItem>
-            </Select>
-          </Box>
+          {defaultRole === 'SUPER_ADMIN' ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
+                ASSIGNED TENANT
+              </Typography>
+              <Box
+                sx={{
+                  bgcolor: '#F5F3FF',
+                  border: '1px solid #DDD6FE',
+                  borderRadius: '9999px',
+                  py: '7px',
+                  px: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
+                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#6D28D9' }}>
+                  Global Platform Organization
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
+                ASSIGNED TENANT
+              </Typography>
+              <Select
+                size="small"
+                value={selectedInstitution}
+                onChange={(e) => setSelectedInstitution(e.target.value)}
+                sx={{
+                  bgcolor: '#F8FAFC',
+                  borderRadius: '9999px',
+                  fontSize: '0.85rem',
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                }}
+              >
+                <MenuItem value="Stanford University - Dept of CS">Stanford University</MenuItem>
+                <MenuItem value="Massachusetts Inst of Technology (MIT)">MIT EECS</MenuItem>
+                <MenuItem value="Stuyvesant High School of Science">Stuyvesant High</MenuItem>
+                <MenuItem value="Global CodePlatform Platform">Global Admin Cluster</MenuItem>
+              </Select>
+            </Box>
+          )}
         </Box>
 
         {/* Upload Dropzone */}

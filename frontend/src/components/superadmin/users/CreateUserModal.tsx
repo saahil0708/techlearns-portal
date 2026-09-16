@@ -26,6 +26,12 @@ import LockRoundedIcon from '@mui/icons-material/LockRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
+import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded';
+import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import PsychologyRoundedIcon from '@mui/icons-material/PsychologyRounded';
+import BusinessCenterRoundedIcon from '@mui/icons-material/BusinessCenterRounded';
+import { useAppSelector } from '@/store/hooks';
 
 export type UserRole =
   | 'SUPER_ADMIN'
@@ -53,14 +59,39 @@ interface CreateUserModalProps {
 }
 
 export default function CreateUserModal({ open, onClose, onCreate }: CreateUserModalProps) {
+  const currentUser = useAppSelector((state) => state.auth.user);
+  const callerRole = (currentUser?.globalRole || (currentUser as any)?.role || '').toUpperCase();
+
+  const allowedRoles: UserRole[] = React.useMemo(() => {
+    if (callerRole === 'SUPER_ADMIN') {
+      return ['SUPER_ADMIN', 'COLLEGE_ADMIN', 'SCHOOL_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
+    }
+    if (callerRole === 'PLATFORM_ADMIN') {
+      return ['COLLEGE_ADMIN', 'SCHOOL_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
+    }
+    if (callerRole === 'COLLEGE_ADMIN' || callerRole === 'SCHOOL_ADMIN' || callerRole === 'INSTITUTION_ADMIN') {
+      return ['FACULTY', 'STUDENT', 'RECRUITER'];
+    }
+    if (callerRole === 'FACULTY') {
+      return ['STUDENT'];
+    }
+    return ['STUDENT'];
+  }, [callerRole]);
+
   const [name, setName] = useState('');
   const [handle, setHandle] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('TemporaryPass123!');
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<UserRole>('FACULTY');
+  const [role, setRole] = useState<UserRole>(() => allowedRoles[0] || 'FACULTY');
   const [institutionType, setInstitutionType] = useState<'College' | 'School' | 'Independent'>('College');
   const [institutionName, setInstitutionName] = useState('Stanford University - Dept of CS');
+
+  React.useEffect(() => {
+    if (!allowedRoles.includes(role) && allowedRoles.length > 0) {
+      setRole(allowedRoles[0]);
+    }
+  }, [allowedRoles, role]);
 
   const borderColor = '#E2E8F0';
 
@@ -83,8 +114,8 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
       email,
       password: password.trim() || 'TemporaryPass123!',
       role,
-      institutionType,
-      institutionName,
+      institutionType: role === 'SUPER_ADMIN' ? 'Independent' : institutionType,
+      institutionName: role === 'SUPER_ADMIN' ? 'CodePlatform Global Organization' : institutionName,
       sendInviteEmail: true,
     });
 
@@ -349,6 +380,44 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
               size="small"
               value={role}
               onChange={(e) => setRole(e.target.value as UserRole)}
+              renderValue={(selected) => {
+                const map: Record<string, { label: string; icon: React.ReactNode }> = {
+                  SUPER_ADMIN: {
+                    label: 'Super Administrator (Full Cluster Control)',
+                    icon: <AdminPanelSettingsRoundedIcon sx={{ fontSize: 18, color: '#7C3AED' }} />,
+                  },
+                  COLLEGE_ADMIN: {
+                    label: 'College Administrator (Tenant Admin)',
+                    icon: <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />,
+                  },
+                  SCHOOL_ADMIN: {
+                    label: 'School Administrator (STEM Admin)',
+                    icon: <SchoolRoundedIcon sx={{ fontSize: 18, color: '#059669' }} />,
+                  },
+                  FACULTY: {
+                    label: 'Faculty / Instructor (Course & Problem Creator)',
+                    icon: <PsychologyRoundedIcon sx={{ fontSize: 18, color: '#D97706' }} />,
+                  },
+                  STUDENT: {
+                    label: 'Student Coder (Learner & Contest Participant)',
+                    icon: <BadgeRoundedIcon sx={{ fontSize: 18, color: '#0284C7' }} />,
+                  },
+                  RECRUITER: {
+                    label: 'Recruiter / Talent Scout',
+                    icon: <BusinessCenterRoundedIcon sx={{ fontSize: 18, color: '#64748B' }} />,
+                  },
+                };
+                const item = map[selected as string];
+                if (!item) return selected;
+                return (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                    {item.icon}
+                    <Typography component="span" sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 600 }}>
+                      {item.label}
+                    </Typography>
+                  </Box>
+                );
+              }}
               sx={{
                 bgcolor: '#F8FAFC',
                 color: '#0F172A',
@@ -357,64 +426,143 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
               }}
             >
-              <MenuItem value="SUPER_ADMIN">👑 Super Administrator (Full Cluster Control)</MenuItem>
-              <MenuItem value="COLLEGE_ADMIN">🏛️ College Administrator (Tenant Admin)</MenuItem>
-              <MenuItem value="SCHOOL_ADMIN">🏫 School Administrator (STEM Admin)</MenuItem>
-              <MenuItem value="FACULTY">👨‍🏫 Faculty / Instructor (Course & Problem Creator)</MenuItem>
-              <MenuItem value="RECRUITER">💼 Recruiter / Talent Scout</MenuItem>
+              {allowedRoles.includes('SUPER_ADMIN') && (
+                <MenuItem value="SUPER_ADMIN" sx={{ py: 1, px: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                    <AdminPanelSettingsRoundedIcon sx={{ fontSize: 18, color: '#7C3AED' }} />
+                    <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>
+                      Super Administrator (Full Cluster Control)
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              )}
+              {allowedRoles.includes('COLLEGE_ADMIN') && (
+                <MenuItem value="COLLEGE_ADMIN" sx={{ py: 1, px: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                    <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                    <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>
+                      College Administrator (Tenant Admin)
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              )}
+              {allowedRoles.includes('SCHOOL_ADMIN') && (
+                <MenuItem value="SCHOOL_ADMIN" sx={{ py: 1, px: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                    <SchoolRoundedIcon sx={{ fontSize: 18, color: '#059669' }} />
+                    <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>
+                      School Administrator (STEM Admin)
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              )}
+              {allowedRoles.includes('FACULTY') && (
+                <MenuItem value="FACULTY" sx={{ py: 1, px: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                    <PsychologyRoundedIcon sx={{ fontSize: 18, color: '#D97706' }} />
+                    <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>
+                      Faculty / Instructor (Course & Problem Creator)
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              )}
+              {allowedRoles.includes('STUDENT') && (
+                <MenuItem value="STUDENT" sx={{ py: 1, px: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                    <BadgeRoundedIcon sx={{ fontSize: 18, color: '#0284C7' }} />
+                    <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>
+                      Student Coder (Learner & Contest Participant)
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              )}
+              {allowedRoles.includes('RECRUITER') && (
+                <MenuItem value="RECRUITER" sx={{ py: 1, px: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                    <BusinessCenterRoundedIcon sx={{ fontSize: 18, color: '#64748B' }} />
+                    <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>
+                      Recruiter / Talent Scout
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              )}
             </Select>
           </Box>
 
-          {/* Institution Affiliation */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1.5fr' }, gap: 2 }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
-                INSTITUTION TYPE
-              </Typography>
-              <Select
-                size="small"
-                value={institutionType}
-                onChange={(e) => setInstitutionType(e.target.value as any)}
-                sx={{
-                  bgcolor: '#F8FAFC',
-                  borderRadius: '9999px',
-                  fontSize: '0.85rem',
-                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-                }}
-              >
-                <MenuItem value="College">University / College</MenuItem>
-                <MenuItem value="School">K-12 / High School</MenuItem>
-                <MenuItem value="Independent">Independent Organization</MenuItem>
-              </Select>
+          {/* Institution Affiliation (Not needed for Super Admin as it belongs to the platform organization) */}
+          {role === 'SUPER_ADMIN' ? (
+            <Box
+              sx={{
+                p: 2,
+                bgcolor: '#F5F3FF',
+                borderRadius: '14px',
+                border: '1px solid #DDD6FE',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+              }}
+            >
+              <AdminPanelSettingsRoundedIcon sx={{ color: '#7C3AED', fontSize: 24 }} />
+              <Box>
+                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#5B21B6' }}>
+                  Platform Organization (Global Super Admin)
+                </Typography>
+                <Typography sx={{ fontSize: '0.75rem', color: '#6D28D9' }}>
+                  Super Administrators belong directly to the platform organization and have global authority across all institutions.
+                </Typography>
+              </Box>
             </Box>
-
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
-                ASSIGNED INSTITUTION
-              </Typography>
-              <TextField
-                size="small"
-                value={institutionName}
-                onChange={(e) => setInstitutionName(e.target.value)}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <BusinessRoundedIcon sx={{ color: '#94A3B8', fontSize: 18 }} />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '9999px',
+          ) : (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1.5fr' }, gap: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
+                  INSTITUTION TYPE
+                </Typography>
+                <Select
+                  size="small"
+                  value={institutionType}
+                  onChange={(e) => setInstitutionType(e.target.value as any)}
+                  sx={{
                     bgcolor: '#F8FAFC',
+                    borderRadius: '9999px',
                     fontSize: '0.85rem',
-                  },
-                }}
-              />
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                  }}
+                >
+                  <MenuItem value="College">University / College</MenuItem>
+                  <MenuItem value="School">K-12 / High School</MenuItem>
+                  <MenuItem value="Independent">Independent Organization</MenuItem>
+                </Select>
+              </Box>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
+                  ASSIGNED INSTITUTION
+                </Typography>
+                <TextField
+                  size="small"
+                  value={institutionName}
+                  onChange={(e) => setInstitutionName(e.target.value)}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <BusinessRoundedIcon sx={{ color: '#94A3B8', fontSize: 18 }} />
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '9999px',
+                      bgcolor: '#F8FAFC',
+                      fontSize: '0.85rem',
+                    },
+                  }}
+                />
+              </Box>
             </Box>
-          </Box>
+          )}
         </DialogContent>
 
         <DialogActions

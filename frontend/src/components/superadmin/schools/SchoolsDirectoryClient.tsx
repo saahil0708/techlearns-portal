@@ -240,6 +240,8 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
         name: data.name,
         code: data.code,
         address: data.district,
+        tier: data.curriculum,
+        quota: data.quota,
       });
       if (created?.id) {
         setSchools((prev) =>

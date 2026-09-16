@@ -25,8 +25,9 @@ import CurvedSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/lib/api-service';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store';
+import { setUser } from '@/store/slices/authSlice';
 import {
   FaInstagram,
   FaFacebookF,
@@ -95,6 +96,7 @@ export default function ProfileClient({
 }: ProfileProps) {
   const router = useRouter();
   const toast = useToast();
+  const dispatch = useDispatch();
   const authUser = useSelector((state: RootState) => state.auth.user);
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -102,22 +104,22 @@ export default function ProfileClient({
 
   const getDerivedProfile = (user: any) => ({
     name: user?.name || propName || 'System Administrator',
-    username: user?.email ? user.email.split('@')[0] : (propUsername || 'admin'),
+    username: user?.rollNo || user?.handle || (user?.email ? user.email.split('@')[0] : (propUsername || 'admin')),
     role: user?.globalRole === 'SUPER_ADMIN' ? 'Super Admin' : (user?.globalRole || propRole || 'Super Admin'),
     email: user?.email || propEmail || 'admin@codeplatform.io',
-    school: propSchool || 'CodePlatform Global Command',
-    phone: propPhone || '+1 (555) 019-2834',
-    birthDate: propBirthDate || '—',
+    school: user?.institution || propSchool || 'CodePlatform Global Command',
+    phone: user?.phone ?? propPhone ?? '+1 (555) 019-2834',
+    birthDate: user?.birthDate || propBirthDate || '—',
     registrationDate: user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : (propRegistrationDate || 'Active Session'),
-    location: propLocation || 'Global Operations',
+    location: user?.location || propLocation || 'Global Operations',
     adminId: user?.id ? `ADM-${user.id.slice(0, 8).toUpperCase()}` : (propAdminId || 'ADM-ROOT-01'),
-    department: propDepartment || 'Platform Operations & Infrastructure',
+    department: user?.department || propDepartment || 'Platform Operations & Infrastructure',
     accessLevel: user?.globalRole === 'SUPER_ADMIN' ? 'Tier 0 Root Admin (Global)' : (propAccessLevel || 'Platform Admin'),
-    twoFactorStatus: propTwoFactorStatus || 'TOTP Enabled',
+    twoFactorStatus: user?.twoFactorEnabled !== undefined ? (user.twoFactorEnabled ? 'TOTP Enabled' : 'Disabled') : (propTwoFactorStatus ?? 'TOTP Enabled'),
     timezone: propTimezone || (typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : 'UTC'),
     systemStatus: propSystemStatus || 'Active • Production Cluster',
-    avatarUrl: propAvatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
-    bannerUrl: propBannerUrl || 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1600&auto=format&fit=crop&q=80',
+    avatarUrl: user?.avatarUrl || propAvatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80',
+    bannerUrl: user?.bannerUrl || propBannerUrl || 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1600&auto=format&fit=crop&q=80',
   });
 
   // Interactive Profile State
@@ -182,7 +184,7 @@ export default function ProfileClient({
     setIsSavingProfile(true);
     try {
       if (authUser?.id) {
-        await apiService.updateUser(authUser.id, {
+        const updated = await apiService.updateUser(authUser.id, {
           name: editForm.name,
           email: editForm.email,
           phone: editForm.phone,
@@ -190,7 +192,25 @@ export default function ProfileClient({
           institution: editForm.school,
           department: editForm.department,
           avatarUrl: editForm.avatarUrl,
+          birthDate: editForm.birthDate,
+          rollNo: editForm.username,
         });
+        if (updated) {
+          dispatch(setUser({
+            ...authUser,
+            ...updated,
+            name: editForm.name,
+            email: editForm.email,
+            phone: editForm.phone,
+            location: editForm.location,
+            institution: editForm.school,
+            department: editForm.department,
+            avatarUrl: editForm.avatarUrl,
+            birthDate: editForm.birthDate,
+            rollNo: editForm.username,
+            handle: editForm.username,
+          }));
+        }
       }
       setProfile({ ...editForm });
       setEditDialogOpen(false);

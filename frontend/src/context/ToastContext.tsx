@@ -2,10 +2,11 @@
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Box, Typography, IconButton, Slide, SlideProps } from '@mui/material';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import ErrorRoundedIcon from '@mui/icons-material/ErrorRounded';
 import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
+import PriorityHighRoundedIcon from '@mui/icons-material/PriorityHighRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 
 export type ToastSeverity = 'success' | 'error' | 'info' | 'warning';
@@ -102,40 +103,40 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     switch (severity) {
       case 'success':
         return {
-          borderColor: 'rgba(34, 197, 94, 0.5)',
-          iconColor: '#22C55E',
-          bgGradient: 'linear-gradient(135deg, rgba(6, 78, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
-          accentColor: '#4ADE80',
-          icon: <CheckCircleRoundedIcon sx={{ color: '#22C55E', fontSize: '1.4rem' }} />,
+          ringColor: '#10B981',
+          ringBg: 'rgba(16, 185, 129, 0.16)',
+          ringBorder: 'rgba(16, 185, 129, 0.4)',
+          glowColor: 'rgba(16, 185, 129, 0.35)',
+          icon: <CheckRoundedIcon sx={{ color: '#10B981', fontSize: '1rem', fontWeight: 800 }} />,
           defaultTitle: 'Success',
         };
       case 'error':
         return {
-          borderColor: 'rgba(239, 68, 68, 0.5)',
-          iconColor: '#EF4444',
-          bgGradient: 'linear-gradient(135deg, rgba(127, 29, 29, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
-          accentColor: '#F87171',
-          icon: <ErrorRoundedIcon sx={{ color: '#EF4444', fontSize: '1.4rem' }} />,
+          ringColor: '#EF4444',
+          ringBg: 'rgba(239, 68, 68, 0.16)',
+          ringBorder: 'rgba(239, 68, 68, 0.4)',
+          glowColor: 'rgba(239, 68, 68, 0.35)',
+          icon: <CloseRoundedIcon sx={{ color: '#EF4444', fontSize: '1rem', fontWeight: 800 }} />,
           defaultTitle: 'Error',
         };
       case 'warning':
         return {
-          borderColor: 'rgba(245, 158, 11, 0.5)',
-          iconColor: '#F59E0B',
-          bgGradient: 'linear-gradient(135deg, rgba(120, 53, 15, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
-          accentColor: '#FBBF24',
-          icon: <WarningRoundedIcon sx={{ color: '#F59E0B', fontSize: '1.4rem' }} />,
+          ringColor: '#F59E0B',
+          ringBg: 'rgba(245, 158, 11, 0.16)',
+          ringBorder: 'rgba(245, 158, 11, 0.4)',
+          glowColor: 'rgba(245, 158, 11, 0.35)',
+          icon: <PriorityHighRoundedIcon sx={{ color: '#F59E0B', fontSize: '0.95rem', fontWeight: 800 }} />,
           defaultTitle: 'Warning',
         };
       case 'info':
       default:
         return {
-          borderColor: 'rgba(59, 130, 246, 0.5)',
-          iconColor: '#3B82F6',
-          bgGradient: 'linear-gradient(135deg, rgba(30, 58, 138, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%)',
-          accentColor: '#60A5FA',
-          icon: <InfoRoundedIcon sx={{ color: '#3B82F6', fontSize: '1.4rem' }} />,
-          defaultTitle: 'Information',
+          ringColor: '#3B82F6',
+          ringBg: 'rgba(59, 130, 246, 0.16)',
+          ringBorder: 'rgba(59, 130, 246, 0.4)',
+          glowColor: 'rgba(59, 130, 246, 0.35)',
+          icon: <InfoRoundedIcon sx={{ color: '#3B82F6', fontSize: '1rem', fontWeight: 800 }} />,
+          defaultTitle: 'Notice',
         };
     }
   };
@@ -144,20 +145,22 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={{ showToast, success, error, info, warning }}>
       {children}
 
-      {/* Floating Toast Notification Container */}
+      {/* Apple Dynamic Island Floating Notification Container */}
       <Box
         aria-live="polite"
         sx={{
           position: 'fixed',
-          top: 24,
-          right: 24,
-          zIndex: 999999,
+          top: 20,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 9999999,
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.5,
+          alignItems: 'center',
+          gap: 1.25,
           pointerEvents: 'none',
-          maxWidth: '440px',
-          width: 'calc(100vw - 48px)',
+          maxWidth: '560px',
+          width: 'calc(100vw - 32px)',
         }}
       >
         {toasts.map((item) => {
@@ -167,61 +170,116 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               key={item.id}
               sx={{
                 pointerEvents: 'auto',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 1.75,
-                p: '16px 20px',
-                borderRadius: '16px',
-                background: style.bgGradient,
-                border: `1px solid ${style.borderColor}`,
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(255, 255, 255, 0.15) inset',
-                backdropFilter: 'blur(24px)',
-                color: '#F8FAFC',
-                animation: 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                '@keyframes slideInRight': {
-                  '0%': { transform: 'translateX(40px) scale(0.95)', opacity: 0 },
-                  '100%': { transform: 'translateX(0) scale(1)', opacity: 1 },
+                position: 'relative',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 1.5,
+                px: 2.25,
+                py: 1.2,
+                borderRadius: '9999px',
+                bgcolor: '#090D14',
+                background: 'linear-gradient(180deg, #111827 0%, #030712 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                boxShadow: `0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06), 0 0 24px -4px ${style.glowColor}, inset 0 1px 0 rgba(255, 255, 255, 0.2)`,
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                color: '#FFFFFF',
+                maxWidth: '100%',
+                animation: 'dynamicIslandDrop 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                '@keyframes dynamicIslandDrop': {
+                  '0%': { transform: 'scale(0.65) translateY(-24px)', opacity: 0 },
+                  '60%': { transform: 'scale(1.03) translateY(3px)', opacity: 1 },
+                  '100%': { transform: 'scale(1) translateY(0)', opacity: 1 },
+                },
+                '@media (prefers-reduced-motion: reduce)': {
+                  animation: 'none',
+                  transition: 'none',
+                },
+                transition: 'all 0.25s ease',
+                '&:hover': {
+                  boxShadow: `0 24px 48px -10px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.14), 0 0 30px -2px ${style.glowColor}, inset 0 1px 0 rgba(255, 255, 255, 0.3)`,
                 },
               }}
             >
-              <Box sx={{ mt: '2px', display: 'flex', alignItems: 'center' }}>
+              {/* Glowing Dynamic Ring Icon */}
+              <Box
+                sx={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: '50%',
+                  bgcolor: style.ringBg,
+                  border: `1.5px solid ${style.ringBorder}`,
+                  boxShadow: `0 0 12px ${style.glowColor}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  animation: 'islandPulse 2s infinite ease-in-out',
+                  '@keyframes islandPulse': {
+                    '0%, 100%': { transform: 'scale(1)', opacity: 1 },
+                    '50%': { transform: 'scale(1.08)', opacity: 0.85 },
+                  },
+                  '@media (prefers-reduced-motion: reduce)': {
+                    animation: 'none',
+                  },
+                }}
+              >
                 {style.icon}
               </Box>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
+
+              {/* Text content in sleek inline layout */}
+              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, minWidth: 0 }}>
                 <Typography
+                  component="span"
                   sx={{
                     fontWeight: 700,
-                    fontSize: '0.88rem',
-                    color: style.accentColor,
-                    lineHeight: 1.3,
-                    mb: '2px',
+                    fontSize: '0.85rem',
+                    color: '#FFFFFF',
+                    letterSpacing: '-0.01em',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: { xs: '180px', sm: '260px' },
                   }}
                 >
                   {item.title || style.defaultTitle}
                 </Typography>
-                <Typography
-                  sx={{
-                    fontSize: '0.84rem',
-                    color: '#E2E8F0',
-                    lineHeight: 1.45,
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {item.message}
-                </Typography>
+
+                {item.message && (
+                  <Typography
+                    component="span"
+                    sx={{
+                      fontSize: '0.8rem',
+                      color: '#94A3B8',
+                      fontWeight: 450,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: { xs: '200px', sm: '320px' },
+                    }}
+                  >
+                    {item.message}
+                  </Typography>
+                )}
               </Box>
+
+              {/* Subtle Dismiss Button */}
               <IconButton
                 size="small"
                 onClick={() => removeToast(item.id)}
                 sx={{
-                  color: '#94A3B8',
-                  p: 0.5,
-                  mt: '-2px',
-                  mr: '-4px',
-                  '&:hover': { color: '#FFFFFF', bgcolor: 'rgba(255, 255, 255, 0.1)' },
+                  color: 'rgba(255, 255, 255, 0.4)',
+                  p: 0.35,
+                  ml: 0.5,
+                  borderRadius: '50%',
+                  transition: 'all 0.15s ease',
+                  '&:hover': {
+                    color: '#FFFFFF',
+                    bgcolor: 'rgba(255, 255, 255, 0.12)',
+                  },
                 }}
               >
-                <CloseRoundedIcon sx={{ fontSize: '1.1rem' }} />
+                <CloseRoundedIcon sx={{ fontSize: '0.9rem' }} />
               </IconButton>
             </Box>
           );

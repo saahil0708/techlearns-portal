@@ -27,6 +27,8 @@ export class InstitutionsService {
         email: dto.email,
         phone: dto.phone,
         address: dto.address,
+        tier: dto.tier,
+        quota: dto.quota,
         status: dto.status,
       },
       include: {

@@ -136,6 +136,7 @@ export const CREATE_USER_MUTATION = `
       email
       globalRole
       status
+      rollNo
     }
   }
 `;
@@ -163,6 +164,7 @@ export const UPDATE_USER_MUTATION = `
       websiteUrl
       resumeUrl
       resumeFileName
+      rollNo
       contestRating
       ratingTier
       createdAt
@@ -181,6 +183,8 @@ export const INSTITUTIONS_QUERY = `
         email
         phone
         address
+        tier
+        quota
         status
         createdAt
         _count {
@@ -209,6 +213,8 @@ export const COLLEGES_QUERY = `
         email
         phone
         address
+        tier
+        quota
         status
         createdAt
         _count {
@@ -234,6 +240,8 @@ export const CREATE_INSTITUTION_MUTATION = `
       id
       name
       code
+      tier
+      quota
       status
     }
   }
@@ -244,6 +252,8 @@ export const CREATE_COLLEGE_MUTATION = `
       id
       name
       code
+      tier
+      quota
       status
     }
   }
@@ -459,6 +469,8 @@ export const UPDATE_INSTITUTION_MUTATION = `
       email
       phone
       address
+      tier
+      quota
       status
       updatedAt
     }
@@ -473,6 +485,8 @@ export const UPDATE_COLLEGE_MUTATION = `
       email
       phone
       address
+      tier
+      quota
       status
       updatedAt
     }
@@ -663,6 +677,8 @@ export const INSTITUTION_BY_ID_QUERY = `
       email
       phone
       address
+      tier
+      quota
       status
       createdAt
       updatedAt
@@ -694,6 +710,8 @@ export const COLLEGE_BY_ID_QUERY = `
       email
       phone
       address
+      tier
+      quota
       status
       createdAt
       updatedAt

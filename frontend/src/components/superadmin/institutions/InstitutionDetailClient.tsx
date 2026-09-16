@@ -374,6 +374,8 @@ export default function InstitutionDetailClient({
   const [settingsEmail, setSettingsEmail] = useState('');
   const [settingsPhone, setSettingsPhone] = useState('');
   const [settingsAddress, setSettingsAddress] = useState(institution.region || '');
+  const [settingsTier, setSettingsTier] = useState(institution.tier || 'Standard Academic');
+  const [settingsQuota, setSettingsQuota] = useState<number>(institution.maxQuota || 100);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Add Faculty Modal State
@@ -482,6 +484,8 @@ export default function InstitutionDetailClient({
           });
           setSettingsName(live.name);
           setSettingsAddress(live.address || '');
+          setSettingsTier(live.tier || 'Standard Academic');
+          setSettingsQuota(live.quota || live.maxQuota || 100);
           if (live.email) setSettingsEmail(live.email);
           if (live.phone) setSettingsPhone(live.phone);
 
@@ -2206,11 +2210,17 @@ export default function InstitutionDetailClient({
                         email: settingsEmail || undefined,
                         phone: settingsPhone || undefined,
                         address: settingsAddress || undefined,
+                        tier: settingsTier || undefined,
+                        quota: Number(settingsQuota),
                       });
-                      if (updated?.name) {
-                        setLiveInstitution((prev) => ({ ...prev, name: updated.name, region: updated.address || prev.region }));
-                      }
-                      toast.success('institution settings saved.', 'Settings Saved');
+                      setLiveInstitution((prev) => ({
+                        ...prev,
+                        name: updated?.name || settingsName,
+                        region: updated?.address || settingsAddress || prev.region,
+                        tier: updated?.tier || settingsTier || prev.tier,
+                        maxQuota: updated?.quota !== undefined ? updated.quota : Number(settingsQuota),
+                      }));
+                      toast.success('Institution settings and quota saved successfully.', 'Settings Saved');
                     } catch (err: any) {
                       toast.error(err?.message || 'Failed to save settings.', 'Save Error');
                     } finally {
@@ -2262,6 +2272,27 @@ export default function InstitutionDetailClient({
                   fullWidth
                   value={settingsAddress}
                   onChange={(e) => setSettingsAddress(e.target.value)}
+                />
+                <FormControl size="small" fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
+                  <InputLabel id="settings-tier-label">Subscription Tier</InputLabel>
+                  <Select
+                    labelId="settings-tier-label"
+                    label="Subscription Tier"
+                    value={settingsTier}
+                    onChange={(e) => setSettingsTier(e.target.value)}
+                  >
+                    <MenuItem value="Enterprise Tier">Enterprise Tier</MenuItem>
+                    <MenuItem value="Pro Academic">Pro Academic</MenuItem>
+                    <MenuItem value="Standard Academic">Standard Academic</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  label="Student Seat Quota"
+                  size="small"
+                  fullWidth
+                  type="number"
+                  value={settingsQuota}
+                  onChange={(e) => setSettingsQuota(Number(e.target.value))}
                 />
               </Box>
 

@@ -110,6 +110,16 @@ export class UpdateUserInput {
   @IsString()
   rollNo?: string;
 
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  handle?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  username?: string;
+
   @Field(() => Int, { nullable: true })
   @IsOptional()
   @IsInt()

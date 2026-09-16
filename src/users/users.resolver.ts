@@ -10,6 +10,7 @@ import type { CurrentUserPayload } from '../common/types/current-user.interface.
 import { BulkInviteUsersInput } from './dto/bulk-invite.input.js';
 import { CreateUserInput } from './dto/create-user.input.js';
 import { UpdateUserInput } from './dto/update-user.input.js';
+import { validateUserCreationRBAC } from './utils/user-rbac.util.js';
 import { AdminMetricsType } from './types/admin-metrics.type.js';
 import { AuditLogItemType } from './types/audit-log.type.js';
 import { StudentProfileType } from './types/student-stats.type.js';
@@ -152,28 +153,10 @@ export class UsersResolver {
     @Args('input') input: CreateUserInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
-    const isSuperAdmin =
-      currentUser.globalRole === Role.SUPER_ADMIN ||
-      currentUser.globalRole === Role.PLATFORM_ADMIN;
-
     const targetInstitutionId = input.institutionId || input.collegeId;
+    const targetRole = (input.globalRole as Role) || Role.STUDENT;
 
-    if (!isSuperAdmin) {
-      if (!targetInstitutionId) {
-        throw new ForbiddenException('Institution admin or faculty must specify an institutionId');
-      }
-      const membership = currentUser.memberships?.find((m) => m.institutionId === targetInstitutionId);
-      if (!membership || (membership.role !== Role.INSTITUTION_ADMIN && membership.role !== Role.FACULTY)) {
-        throw new ForbiddenException('You can only create users within your assigned institution');
-      }
-      if ((input.globalRole as Role) === Role.SUPER_ADMIN || (input.globalRole as Role) === Role.PLATFORM_ADMIN) {
-        throw new ForbiddenException('Cannot assign platform administrator roles');
-      }
-      const isFacultyInInstitution = membership.role === Role.FACULTY || currentUser.globalRole === Role.FACULTY;
-      if (isFacultyInInstitution && (input.globalRole as Role) !== Role.STUDENT) {
-        throw new ForbiddenException('Faculty members can only create student accounts');
-      }
-    }
+    validateUserCreationRBAC(currentUser, targetRole, targetInstitutionId);
 
     return this.usersService.createWithInput(input);
   }
@@ -223,35 +206,10 @@ export class UsersResolver {
     @Args('input') input: BulkInviteUsersInput,
     @GqlCurrentUser() currentUser: CurrentUserPayload,
   ) {
-    const isSuperAdmin =
-      currentUser.globalRole === Role.SUPER_ADMIN ||
-      currentUser.globalRole === Role.PLATFORM_ADMIN;
-
-    if (!isSuperAdmin) {
-      const allowedInstitutionIds =
-        currentUser.memberships
-          ?.filter((m) => m.role === Role.INSTITUTION_ADMIN || m.role === Role.FACULTY)
-          .map((m) => m.institutionId) || [];
-
-      for (const item of input.users) {
-        const instId = item.institutionId || item.collegeId;
-        if (!instId) {
-          throw new ForbiddenException('Each invited user must specify an institutionId');
-        }
-        const membership = currentUser.memberships?.find((m) => m.institutionId === instId);
-        if (!membership || (membership.role !== Role.INSTITUTION_ADMIN && membership.role !== Role.FACULTY)) {
-          throw new ForbiddenException(
-            `You can only invite users to your assigned institution (${allowedInstitutionIds.join(', ')})`,
-          );
-        }
-        if ((item.role as Role) === Role.SUPER_ADMIN || (item.role as Role) === Role.PLATFORM_ADMIN) {
-          throw new ForbiddenException('Cannot assign platform administrator roles');
-        }
-        const isFacultyInInstitution = membership.role === Role.FACULTY || currentUser.globalRole === Role.FACULTY;
-        if (isFacultyInInstitution && (item.role as Role) !== Role.STUDENT) {
-          throw new ForbiddenException('Faculty members can only invite student accounts');
-        }
-      }
+    for (const item of input.users) {
+      const instId = item.institutionId || item.collegeId;
+      const targetRole = (item.role as Role) || Role.STUDENT;
+      validateUserCreationRBAC(currentUser, targetRole, instId);
     }
 
     return this.usersService.bulkInvite(input);

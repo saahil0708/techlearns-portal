@@ -19,10 +19,13 @@ import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import Link from 'next/link';
-
+import { useAppSelector } from '@/store/hooks';
+import YouBadge from '@/components/common/YouBadge';
 import { apiService } from '@/lib/api-service';
 
 export interface LiveLeaderboardUser {
+  id?: string;
+  email?: string;
   rank: number | string;
   name: string;
   subDate: string;
@@ -47,6 +50,7 @@ interface LeaderboardWidgetCardProps {
 export default function LeaderboardWidgetCard({
   primaryBlue = '#2563eb',
 }: LeaderboardWidgetCardProps) {
+  const currentUser = useAppSelector((state) => state.auth.user);
   const [downloadAnchorEl, setDownloadAnchorEl] = useState<null | HTMLElement>(null);
   const [leaderboardUsers, setLeaderboardUsers] = useState<LiveLeaderboardUser[]>([]);
 
@@ -65,6 +69,8 @@ export default function LeaderboardWidgetCard({
                 : (u.trendDirection === 'UP' ? 'up' : u.trendDirection === 'DOWN' ? 'down' : null);
 
               return {
+                id: u.id,
+                email: u.email,
                 rank: idx + 1,
                 name: u.name || 'Student Developer',
                 subDate: u.createdAt ? `Joined: ${new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}` : 'Active Competitor',
@@ -368,6 +374,12 @@ export default function LeaderboardWidgetCard({
                   trendUpColor: '#D4FF00',
                 };
 
+          const isCurrentUser = Boolean(
+            currentUser &&
+              ((user.id && currentUser.id === user.id) ||
+                (currentUser.email && user.email && currentUser.email.toLowerCase() === user.email.toLowerCase()))
+          );
+
           return (
             <Box
               key={user.name}
@@ -422,19 +434,31 @@ export default function LeaderboardWidgetCard({
 
                 {/* User Info */}
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography
-                    sx={{
-                      fontSize: '0.88rem',
-                      fontWeight: 800,
-                      color: '#FFFFFF',
-                      lineHeight: 1.25,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {user.name}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.7, flexWrap: 'nowrap' }}>
+                    <Typography
+                      sx={{
+                        fontSize: '0.88rem',
+                        fontWeight: 800,
+                        color: '#FFFFFF',
+                        lineHeight: 1.25,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {user.name}
+                    </Typography>
+                    {isCurrentUser && (
+                      <YouBadge
+                        sx={{
+                          bgcolor: 'rgba(255, 255, 255, 0.25)',
+                          color: '#FFFFFF',
+                          borderColor: 'rgba(255, 255, 255, 0.4)',
+                          boxShadow: 'none',
+                        }}
+                      />
+                    )}
+                  </Box>
                   <Typography
                     sx={{
                       fontSize: '0.68rem',

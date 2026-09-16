@@ -13,7 +13,8 @@ import {
 } from '@/types/student-profile';
 
 export type { StudentProfileData };
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { setUser } from '@/store/slices/authSlice';
 import { useToast } from '@/context/ToastContext';
 import { MuiCenterLoader, MuiPageLoader } from '@/components/shared/MuiLoadingFallback';
 import { apiService } from '@/lib/api-service';
@@ -50,7 +51,7 @@ const getInitialOwnerProfile = (): Partial<StudentProfileData> => {
           return {
             id: u.id,
             name: u.name,
-            handle: u.email ? u.email.split('@')[0] : 'coder',
+            handle: u.rollNo || u.handle || (u.email ? u.email.split('@')[0] : 'coder'),
             email: u.email,
             role: u.globalRole ?? 'STUDENT',
             bio: u.bio ?? '',
@@ -79,6 +80,7 @@ export default function StudentProfileClient({
 }: StudentProfileClientProps) {
   const router = useRouter();
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const currentUser = useAppSelector((state) => state.auth.user);
 
@@ -122,7 +124,7 @@ export default function StudentProfileClient({
   const [profile, setProfile] = useState<StudentProfileData>({
     id: initialProfile?.id ?? currentUser?.id ?? initialOwner.id ?? 'stu-default',
     name: initialProfile?.name ?? currentUser?.name ?? initialOwner.name ?? '',
-    handle: initialProfile?.handle ?? (currentUser?.email ? currentUser.email.split('@')[0] : initialOwner.handle ?? 'student_coder'),
+    handle: initialProfile?.handle ?? currentUser?.rollNo ?? currentUser?.handle ?? (currentUser?.email ? currentUser.email.split('@')[0] : initialOwner.handle ?? 'student_coder'),
     email: initialProfile?.email ?? currentUser?.email ?? initialOwner.email ?? '',
     role: initialProfile?.role ?? currentUser?.globalRole ?? initialOwner.role ?? 'STUDENT',
     avatarUrl: initialProfile?.avatarUrl ?? (currentUser as any)?.avatarUrl,
@@ -206,7 +208,7 @@ export default function StudentProfileClient({
         ...prev,
         id: currentUser.id || prev.id,
         name: currentUser.name,
-        handle: currentUser.email ? currentUser.email.split('@')[0] : prev.handle,
+        handle: currentUser.rollNo || currentUser.handle || (currentUser.email ? currentUser.email.split('@')[0] : prev.handle),
         email: currentUser.email || prev.email,
         role: currentUser.globalRole || prev.role,
         bio: (currentUser as any).bio !== undefined && (currentUser as any).bio !== null ? (currentUser as any).bio : prev.bio,
@@ -300,14 +302,27 @@ export default function StudentProfileClient({
 
   const handleSaveProfile = async (updated: Partial<StudentProfileData>) => {
     try {
+      let serverUpdated: any = null;
       if (profile.id) {
-        await apiService.updateUser(profile.id, {
+        serverUpdated = await apiService.updateUser(profile.id, {
           name: updated.name,
           phone: updated.phone,
           bio: updated.bio,
+          institution: updated.institution,
+          location: updated.location,
+          githubUrl: updated.githubUrl,
+          linkedinUrl: updated.linkedinUrl,
+          websiteUrl: updated.websiteUrl,
         });
       }
       setProfile((prev) => ({ ...prev, ...updated }));
+      if (currentUser) {
+        dispatch(setUser({
+          ...currentUser,
+          ...updated,
+          ...(serverUpdated || {}),
+        } as any));
+      }
       toast.success('Your profile changes were saved successfully.', 'Profile Updated');
       setEditModalOpen(false);
     } catch (err: any) {

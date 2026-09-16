@@ -190,9 +190,16 @@ export default function UserQuickPeekDrawer({
             <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 600 }}>
               Two-Factor Auth (2FA)
             </Typography>
-            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: user.twoFactorEnabled ? '#16A34A' : '#D97706', my: 0.3 }}>
-              {user.twoFactorEnabled ? '🛡️ Enabled' : '⚠️ Disabled'}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, my: 0.3 }}>
+              {user.twoFactorEnabled ? (
+                <SecurityRoundedIcon sx={{ fontSize: '1.1rem', color: '#16A34A' }} />
+              ) : (
+                <SecurityRoundedIcon sx={{ fontSize: '1.1rem', color: '#D97706' }} />
+              )}
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: user.twoFactorEnabled ? '#16A34A' : '#D97706' }}>
+                {user.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+              </Typography>
+            </Box>
             <Typography variant="caption" sx={{ color: '#64748B' }}>
               Authenticator App
             </Typography>

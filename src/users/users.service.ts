@@ -188,6 +188,7 @@ export class UsersService {
         OR: [
           { id: handleOrId },
           { email: handleOrId.toLowerCase() },
+          { rollNo: handleOrId },
         ],
       },
       select: { id: true },
@@ -381,7 +382,7 @@ export class UsersService {
     return {
       id: user.id,
       name: user.name,
-      handle: user.email.split('@')[0],
+      handle: user.rollNo || user.email.split('@')[0],
       email: user.email as string | undefined,
       role: user.globalRole,
       avatarUrl: user.avatarUrl,
@@ -568,6 +569,7 @@ export class UsersService {
     passwordHash: string;
     globalRole?: Role;
     status?: UserStatus;
+    rollNo?: string;
   }): Promise<SanitizedUser> {
     const existing = await this.prisma.user.findUnique({
       where: { email: data.email.toLowerCase() },
@@ -584,6 +586,7 @@ export class UsersService {
         passwordHash: data.passwordHash,
         globalRole: data.globalRole || Role.STUDENT,
         status: data.status || UserStatus.ACTIVE,
+        rollNo: data.rollNo,
       },
       select: userSanitizedSelect,
     });
@@ -593,12 +596,14 @@ export class UsersService {
 
   async createWithInput(input: CreateUserInput): Promise<SanitizedUser> {
     const passwordHash = await bcrypt.hash(input.password, 10);
+    const rollNo = input.rollNo || input.handle || input.username;
     const user = await this.createUser({
       email: input.email,
       name: input.name,
       passwordHash,
       globalRole: input.globalRole,
       status: input.status,
+      rollNo,
     });
 
     const targetInstitutionId = input.institutionId || input.collegeId;
@@ -638,7 +643,8 @@ export class UsersService {
     if (input.websiteUrl !== undefined) data.websiteUrl = input.websiteUrl;
     if (input.resumeUrl !== undefined) data.resumeUrl = input.resumeUrl;
     if (input.resumeFileName !== undefined) data.resumeFileName = input.resumeFileName;
-    if (input.rollNo !== undefined) data.rollNo = input.rollNo;
+    const customHandle = input.rollNo !== undefined ? input.rollNo : (input.handle !== undefined ? input.handle : input.username);
+    if (customHandle !== undefined) data.rollNo = customHandle;
     if (input.contestRating !== undefined) data.contestRating = input.contestRating;
     if (input.ratingTier !== undefined) data.ratingTier = input.ratingTier;
 

@@ -65,6 +65,8 @@ import Navbar from '@/components/superadmin/layout/Navbar';
 import type { NewUserData, UserRole } from '@/components/superadmin/users/CreateUserModal';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import { useAppSelector } from '@/store/hooks';
+import YouBadge from '@/components/common/YouBadge';
 import StatsCard from '@/components/superadmin/shared/StatsCard';
 
 const CreateUserModal = dynamic(() => import('@/components/superadmin/users/CreateUserModal'), { loading: () => null });
@@ -101,6 +103,7 @@ interface UsersDirectoryClientProps {
 
 export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryClientProps) {
   const toast = useToast();
+  const currentUser = useAppSelector((state) => state.auth.user);
   const [users, setUsers] = useState<UserDirectoryEntity[]>(() =>
     (initialUsers || []).filter((u) => u.role !== 'STUDENT'),
   );
@@ -149,7 +152,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
               return {
                 id: item.id,
                 name: item.name,
-                handle: item.email ? item.email.split('@')[0] : 'user',
+                handle: item.rollNo || (item.email ? item.email.split('@')[0] : 'user'),
                 email: item.email,
                 role: item.globalRole || 'FACULTY',
                 institutionType,
@@ -365,6 +368,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
         name: newData.name,
         email: newData.email,
         password: assignedPassword,
+        rollNo: newData.handle,
         globalRole:
           newData.role === 'SUPER_ADMIN'
             ? 'SUPER_ADMIN'
@@ -830,8 +834,18 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                   }}
                 >
                   <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>All 2FA States</MenuItem>
-                  <MenuItem value="ENABLED" sx={{ fontSize: '0.8rem' }}>🛡️ 2FA Enabled</MenuItem>
-                  <MenuItem value="DISABLED" sx={{ fontSize: '0.8rem' }}>⚠️ 2FA Disabled</MenuItem>
+                  <MenuItem value="ENABLED" sx={{ fontSize: '0.8rem' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <VerifiedUserRoundedIcon sx={{ fontSize: 15, color: '#16A34A' }} />
+                      2FA Enabled
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="DISABLED" sx={{ fontSize: '0.8rem' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                      <GppBadRoundedIcon sx={{ fontSize: 15, color: '#D97706' }} />
+                      2FA Disabled
+                    </Box>
+                  </MenuItem>
                 </Select>
 
                 {/* Status */}
@@ -1108,6 +1122,11 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                     paginatedUsers.map((user) => {
                       const isSelected = selectedIds.includes(user.id);
                       const roleStyle = getRoleBadgeStyle(user.role);
+                      const isCurrentUser = Boolean(
+                        currentUser &&
+                          (currentUser.id === user.id ||
+                            (currentUser.email && user.email && currentUser.email.toLowerCase() === user.email.toLowerCase()))
+                      );
 
                       return (
                         <TableRow
@@ -1116,7 +1135,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                           sx={{
                             transition: 'all 0.15s ease',
                             borderColor: '#E2E8F0',
-                            bgcolor: isSelected ? '#EFF6FF' : '#FFFFFF',
+                            bgcolor: isSelected ? '#EFF6FF' : isCurrentUser ? '#F8FAFC' : '#FFFFFF',
                             '&:hover': {
                               bgcolor: isSelected ? '#DBEAFE' : '#F8FAFC',
                             },
@@ -1151,7 +1170,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                                 {user.name.charAt(0)}
                               </Avatar>
                               <Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, flexWrap: 'wrap' }}>
                                   <Typography
                                     onClick={() => setPeekUser(user)}
                                     sx={{
@@ -1164,6 +1183,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                                   >
                                     {user.name}
                                   </Typography>
+                                  {isCurrentUser && <YouBadge />}
                                   <Typography
                                     sx={{
                                       color: '#2563EB',

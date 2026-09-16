@@ -224,7 +224,9 @@ input CreateInstitutionInput {
   email: String
   name: String!
   phone: String
+  quota: Int
   status: InstitutionStatus = ACTIVE
+  tier: String
 }
 
 input CreateProblemInput {
@@ -262,10 +264,13 @@ input CreateUserInput {
   collegeId: String
   email: String!
   globalRole: Role = STUDENT
+  handle: String
   institutionId: String
   name: String!
   password: String!
+  rollNo: String
   status: UserStatus = ACTIVE
+  username: String
 }
 
 """
@@ -283,7 +288,9 @@ type Institution {
   memberships: [InstitutionMembership!]
   name: String!
   phone: String
+  quota: Int
   status: InstitutionStatus!
+  tier: String
   updatedAt: DateTime!
 }
 
@@ -634,7 +641,9 @@ input UpdateInstitutionInput {
   email: String
   name: String
   phone: String
+  quota: Int
   status: InstitutionStatus
+  tier: String
 }
 
 input UpdateProblemInput {
@@ -659,6 +668,7 @@ input UpdateUserInput {
   email: String
   githubUrl: String
   globalRole: Role
+  handle: String
   institution: String
   linkedinUrl: String
   location: String
@@ -672,6 +682,7 @@ input UpdateUserInput {
   rollNo: String
   specialization: String
   status: UserStatus
+  username: String
   websiteUrl: String
 }
 

@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { InstitutionStatus } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateInstitutionDto {
   @ApiProperty({
@@ -42,6 +43,24 @@ export class CreateInstitutionDto {
   @IsOptional()
   @IsString()
   address?: string;
+
+  @ApiPropertyOptional({
+    example: 'Enterprise Tier',
+    description: 'Subscription tier of the institution',
+  })
+  @IsOptional()
+  @IsString()
+  tier?: string;
+
+  @ApiPropertyOptional({
+    example: 1000,
+    description: 'Maximum student seat quota',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  quota?: number;
 
   @ApiPropertyOptional({
     enum: InstitutionStatus,

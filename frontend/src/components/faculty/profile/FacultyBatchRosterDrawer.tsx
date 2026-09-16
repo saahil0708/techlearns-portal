@@ -37,6 +37,8 @@ import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
 
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import { useAppSelector } from '@/store/hooks';
+import YouBadge from '@/components/common/YouBadge';
 import { generateSafeCsv, downloadCsvBlob } from '@/utils/csv';
 import type { FacultyBatchItem } from '@/data';
 
@@ -60,6 +62,7 @@ export default function FacultyBatchRosterDrawer({
   onRosterUpdated,
 }: FacultyBatchRosterDrawerProps) {
   const toast = useToast();
+  const currentUser = useAppSelector((state) => state.auth.user);
   const [students, setStudents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
@@ -426,8 +429,14 @@ export default function FacultyBatchRosterDrawer({
                           })
                         : 'Active';
 
+                      const isCurrentUser = Boolean(
+                        currentUser &&
+                          (currentUser.id === user.id ||
+                            (currentUser.email && user.email && currentUser.email.toLowerCase() === user.email.toLowerCase()))
+                      );
+
                       return (
-                        <TableRow key={item.id || user.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
+                        <TableRow key={item.id || user.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, bgcolor: isCurrentUser ? '#F8FAFC' : 'inherit' }}>
                           <TableCell sx={{ pl: 2.5, py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
                               <Avatar
@@ -443,9 +452,12 @@ export default function FacultyBatchRosterDrawer({
                                 {initials}
                               </Avatar>
                               <Box sx={{ minWidth: 0 }}>
-                                <Typography noWrap sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>
-                                  {user.name}
-                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, flexWrap: 'wrap' }}>
+                                  <Typography noWrap sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>
+                                    {user.name}
+                                  </Typography>
+                                  {isCurrentUser && <YouBadge />}
+                                </Box>
                                 <Typography noWrap sx={{ fontSize: '0.72rem', color: '#64748B' }}>
                                   {user.email}
                                 </Typography>

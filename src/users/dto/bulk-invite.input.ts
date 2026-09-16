@@ -2,7 +2,13 @@ import { Field, InputType } from '@nestjs/graphql';
 import { Role } from '@prisma/client';
 import { IsArray, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-const USER_GLOBAL_ROLES = [Role.STUDENT, Role.FACULTY, Role.INSTITUTION_ADMIN] as const;
+const USER_GLOBAL_ROLES = [
+  Role.SUPER_ADMIN,
+  Role.PLATFORM_ADMIN,
+  Role.INSTITUTION_ADMIN,
+  Role.FACULTY,
+  Role.STUDENT,
+] as const;
 
 @InputType('BulkInviteItemInput')
 export class BulkInviteItemInput {

@@ -50,6 +50,8 @@ import CurvedSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import { ContestEntity } from '@/types/contest';
 import { useToast } from '@/context/ToastContext';
+import { useAppSelector } from '@/store/hooks';
+import YouBadge from '@/components/common/YouBadge';
 import { MuiCenterLoader } from '@/components/shared/MuiLoadingFallback';
 import { apiService } from '@/lib/api-service';
 
@@ -101,6 +103,7 @@ export default function ContestDetailClient({
 }: ContestDetailClientProps) {
   const router = useRouter();
   const toast = useToast();
+  const currentUser = useAppSelector((state) => state.auth.user);
 
   const [currentTab, setCurrentTab] = useState<'leaderboard' | 'problems' | 'participants' | 'settings'>('leaderboard');
   const [isTabLoading, setIsTabLoading] = useState(false);
@@ -636,25 +639,48 @@ export default function ContestDetailClient({
                     <TableBody>
                       {filteredLeaderboard.map((entry) => {
                         const isTop3 = entry.rank <= 3;
+                        const isCurrentUser = Boolean(
+                          currentUser &&
+                            (currentUser.id === entry.studentId ||
+                              (currentUser.email && entry.email && currentUser.email.toLowerCase() === entry.email.toLowerCase()))
+                        );
                         return (
-                          <TableRow key={entry.studentId} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
+                          <TableRow key={entry.studentId} hover sx={{ '&:last-child td': { borderBottom: 0 }, bgcolor: isCurrentUser ? '#F8FAFC' : 'inherit' }}>
                             <TableCell>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 {entry.rank === 1 ? (
-                                  <Chip label="🥇 #1" size="small" sx={{ bgcolor: '#FEF3C7', color: '#D97706', fontWeight: 800, border: '1px solid #FDE68A' }} />
+                                  <Chip
+                                    icon={<EmojiEventsRoundedIcon sx={{ fontSize: '15px !important', color: '#D97706 !important' }} />}
+                                    label="#1"
+                                    size="small"
+                                    sx={{ bgcolor: '#FEF3C7', color: '#D97706', fontWeight: 800, border: '1px solid #FDE68A' }}
+                                  />
                                 ) : entry.rank === 2 ? (
-                                  <Chip label="🥈 #2" size="small" sx={{ bgcolor: '#F1F5F9', color: '#475569', fontWeight: 800, border: '1px solid #CBD5E1' }} />
+                                  <Chip
+                                    icon={<EmojiEventsRoundedIcon sx={{ fontSize: '15px !important', color: '#475569 !important' }} />}
+                                    label="#2"
+                                    size="small"
+                                    sx={{ bgcolor: '#F1F5F9', color: '#475569', fontWeight: 800, border: '1px solid #CBD5E1' }}
+                                  />
                                 ) : entry.rank === 3 ? (
-                                  <Chip label="🥉 #3" size="small" sx={{ bgcolor: '#FFEDD5', color: '#C2410C', fontWeight: 800, border: '1px solid #FED7AA' }} />
+                                  <Chip
+                                    icon={<EmojiEventsRoundedIcon sx={{ fontSize: '15px !important', color: '#C2410C !important' }} />}
+                                    label="#3"
+                                    size="small"
+                                    sx={{ bgcolor: '#FFEDD5', color: '#C2410C', fontWeight: 800, border: '1px solid #FED7AA' }}
+                                  />
                                 ) : (
                                   <Typography sx={{ fontWeight: 700, color: '#64748B', pl: 1 }}>#{entry.rank}</Typography>
                                 )}
                               </Box>
                             </TableCell>
                             <TableCell>
-                              <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.88rem' }}>
-                                {entry.name}
-                              </Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, flexWrap: 'wrap' }}>
+                                <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.88rem' }}>
+                                  {entry.name}
+                                </Typography>
+                                {isCurrentUser && <YouBadge />}
+                              </Box>
                               <Typography sx={{ fontSize: '0.76rem', color: '#64748B' }}>
                                 {entry.institution} • {entry.email}
                               </Typography>
@@ -824,28 +850,40 @@ export default function ContestDetailClient({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {filteredParticipants.map((p) => (
-                        <TableRow key={p.id} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                          <TableCell sx={{ fontWeight: 700, color: '#0F172A' }}>{p.name}</TableCell>
-                          <TableCell sx={{ color: '#475569', fontSize: '0.86rem' }}>{p.email}</TableCell>
-                          <TableCell sx={{ color: '#475569', fontSize: '0.86rem' }}>{p.institution}</TableCell>
-                          <TableCell sx={{ color: '#64748B', fontSize: '0.84rem' }}>{p.registeredAt}</TableCell>
-                          <TableCell>
-                            <Chip
-                              label={p.status}
-                              size="small"
-                              sx={{
-                                bgcolor: p.status === 'Checked In' ? '#F0FDF4' : '#EFF6FF',
-                                color: p.status === 'Checked In' ? '#16A34A' : '#2563EB',
-                                border: `1px solid ${p.status === 'Checked In' ? '#BBF7D0' : '#DBEAFE'}`,
-                                fontWeight: 700,
-                                fontSize: '0.74rem',
-                                borderRadius: '6px',
-                              }}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {filteredParticipants.map((p) => {
+                        const isCurrentUser = Boolean(
+                          currentUser &&
+                            (currentUser.id === p.id ||
+                              (currentUser.email && p.email && currentUser.email.toLowerCase() === p.email.toLowerCase()))
+                        );
+                        return (
+                          <TableRow key={p.id} hover sx={{ '&:last-child td': { borderBottom: 0 }, bgcolor: isCurrentUser ? '#F8FAFC' : 'inherit' }}>
+                            <TableCell sx={{ fontWeight: 700, color: '#0F172A' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, flexWrap: 'wrap' }}>
+                                {p.name}
+                                {isCurrentUser && <YouBadge />}
+                              </Box>
+                            </TableCell>
+                            <TableCell sx={{ color: '#475569', fontSize: '0.86rem' }}>{p.email}</TableCell>
+                            <TableCell sx={{ color: '#475569', fontSize: '0.86rem' }}>{p.institution}</TableCell>
+                            <TableCell sx={{ color: '#64748B', fontSize: '0.84rem' }}>{p.registeredAt}</TableCell>
+                            <TableCell>
+                              <Chip
+                                label={p.status}
+                                size="small"
+                                sx={{
+                                  bgcolor: p.status === 'Checked In' ? '#F0FDF4' : '#EFF6FF',
+                                  color: p.status === 'Checked In' ? '#16A34A' : '#2563EB',
+                                  border: `1px solid ${p.status === 'Checked In' ? '#BBF7D0' : '#DBEAFE'}`,
+                                  fontWeight: 700,
+                                  fontSize: '0.74rem',
+                                  borderRadius: '6px',
+                                }}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </TableContainer>

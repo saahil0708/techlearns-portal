@@ -2,7 +2,13 @@ import { Field, InputType } from '@nestjs/graphql';
 import { Role, UserStatus } from '@prisma/client';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
-const USER_GLOBAL_ROLES = [Role.STUDENT, Role.FACULTY, Role.INSTITUTION_ADMIN] as const;
+const USER_GLOBAL_ROLES = [
+  Role.SUPER_ADMIN,
+  Role.PLATFORM_ADMIN,
+  Role.INSTITUTION_ADMIN,
+  Role.FACULTY,
+  Role.STUDENT,
+] as const;
 
 @InputType('CreateUserInput')
 export class CreateUserInput {
@@ -39,4 +45,19 @@ export class CreateUserInput {
   @IsOptional()
   @IsString()
   collegeId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  rollNo?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  handle?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  username?: string;
 }

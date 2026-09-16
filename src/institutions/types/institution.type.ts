@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { InstitutionStatus } from '@prisma/client';
 import { InstitutionCountsType } from './institution-counts.type.js';
 import { InstitutionMembershipType } from './institution-membership.type.js';
@@ -22,6 +22,12 @@ export class InstitutionType {
 
   @Field(() => String, { nullable: true })
   address?: string;
+
+  @Field(() => String, { nullable: true })
+  tier?: string;
+
+  @Field(() => Int, { nullable: true })
+  quota?: number;
 
   @Field(() => InstitutionStatus)
   status: InstitutionStatus;

@@ -66,6 +66,8 @@ import Navbar from '@/components/superadmin/layout/Navbar';
 import type { NewStudentData } from '@/components/superadmin/students/CreateStudentModal';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import { useAppSelector } from '@/store/hooks';
+import YouBadge from '@/components/common/YouBadge';
 import StatsCard from '@/components/superadmin/shared/StatsCard';
 
 const CreateStudentModal = dynamic(() => import('@/components/superadmin/students/CreateStudentModal'), { loading: () => null });
@@ -109,6 +111,7 @@ interface StudentsDirectoryClientProps {
 export default function StudentsDirectoryClient({ initialStudents }: StudentsDirectoryClientProps) {
   const _router = useRouter();
   const toast = useToast();
+  const currentUser = useAppSelector((state) => state.auth.user);
   const [students, setStudents] = useState<StudentDirectoryEntity[]>(initialStudents || []);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('ALL');
@@ -1154,6 +1157,12 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                   ) : (
                     paginatedStudents.map((stu) => {
                       const isSelected = selectedIds.includes(stu.id);
+                      const isCurrentUser = Boolean(
+                        currentUser &&
+                          (currentUser.id === stu.id ||
+                            (currentUser.email && stu.email && currentUser.email.toLowerCase() === stu.email.toLowerCase()) ||
+                            ((currentUser as any)?.handle && stu.handle && (currentUser as any).handle.toLowerCase() === stu.handle.toLowerCase()))
+                      );
                       return (
                         <TableRow
                           key={stu.id}
@@ -1161,7 +1170,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                           sx={{
                             transition: 'all 0.15s ease',
                             borderColor: '#E2E8F0',
-                            bgcolor: isSelected ? '#EFF6FF' : '#FFFFFF',
+                            bgcolor: isSelected ? '#EFF6FF' : isCurrentUser ? '#F8FAFC' : '#FFFFFF',
                             '&:hover': {
                               bgcolor: isSelected ? '#DBEAFE' : '#F8FAFC',
                             },
@@ -1225,7 +1234,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                                 {stu.name.charAt(0)}
                               </Avatar>
                               <Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, flexWrap: 'wrap' }}>
                                   <Typography
                                     onClick={() => setPeekStudent(stu)}
                                     sx={{
@@ -1238,6 +1247,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                                   >
                                     {stu.name}
                                   </Typography>
+                                  {isCurrentUser && <YouBadge />}
                                   <Typography
                                     sx={{
                                       color: '#2563EB',

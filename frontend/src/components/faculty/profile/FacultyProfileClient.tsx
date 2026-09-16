@@ -23,7 +23,8 @@ import EditFacultyBioModal from '@/components/faculty/profile/EditFacultyBioModa
 
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/lib/api-service';
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import { setUser } from '@/store/slices/authSlice';
 import { generateBatchCode } from '@/utils/batch-code';
 import { usePolling } from '@/utils/usePolling';
 import type { FacultyProfileEntity, FacultyBatchItem, FacultyCourseItem } from '@/data';
@@ -42,6 +43,7 @@ export default function FacultyProfileClient({
   initialCourses = [],
 }: FacultyProfileClientProps) {
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const { user } = useAppSelector((state) => state.auth);
   const facultyMembership = user?.memberships?.find(
@@ -263,7 +265,7 @@ export default function FacultyProfileClient({
     websiteUrl: string;
   }) => {
     try {
-      await apiService.updateUser(profile.id, {
+      const updated = await apiService.updateUser(profile.id, {
         bio: data.bio,
         department: data.department,
         specialization: data.specialization,
@@ -279,6 +281,14 @@ export default function FacultyProfileClient({
         ...prev,
         ...data,
       }));
+
+      if (user) {
+        dispatch(setUser({
+          ...user,
+          ...data,
+          ...(updated || {}),
+        } as any));
+      }
 
       toast.success('Academic bio and credentials updated successfully.', 'Profile Updated');
     } catch (err: any) {

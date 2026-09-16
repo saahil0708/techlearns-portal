@@ -122,9 +122,9 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
               code: item.code,
               domain: item.email && item.email.includes('@') ? item.email.split('@')[1] : `${item.code.toLowerCase()}.edu`,
               region: item.address || item.region || 'Asia-Pacific',
-              tier: item.tier || 'Standard Academic',
+              tier: item.tier ?? 'Standard Academic',
               studentsCount: students,
-              maxQuota: item.quota || item.maxQuota || 100,
+              maxQuota: item.quota ?? item.maxQuota ?? 100,
               coursesCount: item._count?.courses || 0,
               cohortsCount: item._count?.batches || 0,
               facultyCount: faculty,
@@ -194,6 +194,8 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
               name: data.name || c.name,
               code: data.code || c.code,
               region: data.region || c.region,
+              tier: data.tier || c.tier,
+              maxQuota: data.quota !== undefined ? data.quota : c.maxQuota,
               status: data.status === 'ACTIVE' ? 'Active' : data.status === 'SUSPENDED' ? 'Suspended' : c.status,
             }
           : c
@@ -206,6 +208,8 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
         email: data.email,
         phone: data.phone,
         address: data.region,
+        tier: data.tier,
+        quota: data.quota,
         status: data.status,
       });
       toast.success(`"${data.name}" updated successfully.`, 'Institution Updated');
@@ -274,6 +278,8 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
         code: data.code,
         email: data.adminEmail,
         address: data.region,
+        tier: data.tier,
+        quota: data.quota,
       });
       if (created?.id) {
         setInstitutions((prev) =>
