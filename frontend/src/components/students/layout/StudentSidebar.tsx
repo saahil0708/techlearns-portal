@@ -408,7 +408,7 @@ export default function StudentSidebar() {
           }}
         >
           <Tooltip title={`${displayName} (My Profile)`} placement="right" arrow>
-            <Link href="/students/profile" style={{ textDecoration: 'none' }}>
+            <Link href="/students/profile" style={{ textDecoration: 'none' }} aria-label="My Profile">
               <Avatar
                 src={(user as any)?.avatarUrl}
                 sx={{
@@ -423,7 +423,7 @@ export default function StudentSidebar() {
                   '&:hover': { transform: 'scale(1.08)' },
                 }}
               >
-                {initials}
+                <span suppressHydrationWarning>{initials}</span>
               </Avatar>
             </Link>
           </Tooltip>

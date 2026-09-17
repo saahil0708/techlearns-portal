@@ -68,22 +68,35 @@ export default async function ProblemDetailPage({ params }: PageProps) {
   const { slug } = await params;
   let problem: ProblemEntity | undefined = undefined;
 
+  let initialTestCases: any[] = [];
   try {
     const liveProblem = await apiService.getProblemByIdOrSlug(slug);
     if (liveProblem?.id) {
+      if (liveProblem.testCases && Array.isArray(liveProblem.testCases) && liveProblem.testCases.length > 0) {
+        initialTestCases = liveProblem.testCases.map((tc: any, idx: number) => ({
+          id: tc.id || `tc-${idx + 1}`,
+          order: tc.order || idx + 1,
+          input: tc.input,
+          expectedOutput: tc.expectedOutput || tc.output || '',
+          explanation: tc.explanation || `Test case #${idx + 1}`,
+          isHidden: tc.isHidden ?? false,
+          points: tc.points || 20,
+        }));
+      }
+
       problem = {
         id: liveProblem.id,
         code: `PROB-${liveProblem.slug?.slice(0, 4).toUpperCase() || '001'}`,
         slug: liveProblem.slug,
         title: liveProblem.title,
-        category: 'Arrays & Two Pointers',
+        category: (liveProblem.category || (liveProblem.tags?.includes('Math') ? 'Math & Number Theory' : 'Arrays & Two Pointers')) as any,
         difficulty: liveProblem.difficulty === 'HARD' ? 'Hard' : liveProblem.difficulty === 'MEDIUM' ? 'Medium' : 'Easy',
         acceptanceRate: 68.5,
         totalSubmissions: liveProblem._count?.submissions || 0,
         acceptedSubmissions: Math.floor((liveProblem._count?.submissions || 0) * 0.68),
         testCasesCount: liveProblem._count?.testCases || liveProblem.testCases?.length || 4,
         authorName: 'Academic Faculty',
-        tags: ['Algorithms', 'Data Structures'],
+        tags: Array.isArray(liveProblem.tags) && liveProblem.tags.length > 0 ? liveProblem.tags : ['Algorithms', 'Data Structures'],
         status: liveProblem.status === 'PUBLISHED' ? 'Published' : 'Draft',
         points: liveProblem.difficulty === 'HARD' ? 200 : liveProblem.difficulty === 'MEDIUM' ? 120 : 80,
         timeLimitMs: liveProblem.timeLimit || 1000,
@@ -93,6 +106,9 @@ export default async function ProblemDetailPage({ params }: PageProps) {
         premium: false,
         companies: [],
         statementMarkdown: liveProblem.statement || '',
+        constraints: liveProblem.constraints || '',
+        editorialMarkdown: liveProblem.editorial || liveProblem.editorialMarkdown,
+        referenceSolution: liveProblem.referenceSolution,
         sampleTestCases: liveProblem.testCases?.filter((tc: any) => !tc.isHidden).map((tc: any) => ({
           input: tc.input,
           output: tc.expectedOutput || tc.output || '',
@@ -131,5 +147,5 @@ export default async function ProblemDetailPage({ params }: PageProps) {
     };
   }
 
-  return <ProblemDetailClient problem={problem} />;
+  return <ProblemDetailClient problem={problem} initialTestCases={initialTestCases} />;
 }

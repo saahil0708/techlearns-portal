@@ -59,6 +59,8 @@ import { useToast } from '@/context/ToastContext';
 
 const ProblemQuickPeekDrawer = dynamic(() => import('@/components/superadmin/problems/ProblemQuickPeekDrawer'), { loading: () => null });
 const CreateProblemModal = dynamic(() => import('@/components/superadmin/problems/CreateProblemModal'), { loading: () => null });
+const BulkImportProblemsModal = dynamic(() => import('@/components/superadmin/problems/BulkImportProblemsModal'), { loading: () => null });
+import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded';
 import StatsCard from '@/components/superadmin/shared/StatsCard';
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
 import {
@@ -93,30 +95,56 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
       try {
         const liveData = await apiService.getProblems({ limit: 50 });
         if (liveData?.items && liveData.items.length > 0) {
-          const mapped: ProblemEntity[] = liveData.items.map((item: any) => ({
-            id: item.id,
-            code: item.code || `PROB-${String(item.id).slice(-3).padStart(3, '0')}`,
-            slug: item.slug,
-            title: item.title,
-            category: item.category || 'Arrays & Two Pointers',
-            difficulty: item.difficulty === 'HARD' ? 'Hard' : item.difficulty === 'MEDIUM' ? 'Medium' : 'Easy',
-            acceptanceRate: item.acceptanceRate ?? 65.0,
-            totalSubmissions: item._count?.submissions || item.totalSubmissions || 0,
-            acceptedSubmissions: item.acceptedSubmissions ?? Math.floor((item._count?.submissions || item.totalSubmissions || 0) * 0.65),
-            testCasesCount: item._count?.testCases || item.testCasesCount || 0,
-            authorName: item.authorName || 'Faculty',
-            tags: item.tags && item.tags.length > 0 ? item.tags : ['Algorithms', 'Data Structures'],
-            status: item.status === 'PUBLISHED' ? 'Published' : 'Draft',
-            points: item.points || (item.difficulty === 'HARD' ? 200 : item.difficulty === 'MEDIUM' ? 120 : 70),
-            timeLimitMs: item.timeLimit || item.timeLimitMs || 1000,
-            memoryLimitMb: item.memoryLimit || item.memoryLimitMb || 256,
-            likes: item.likes || 0,
-            dislikes: item.dislikes || 0,
-            premium: item.premium || false,
-            companies: item.companies || [],
-            statementMarkdown: item.statement || item.statementMarkdown || '',
-            sampleTestCases: item.sampleTestCases || [],
-          }));
+          const mapped: ProblemEntity[] = liveData.items.map((item: any, idx: number) => {
+            const titleLower = String(item.title || '').toLowerCase();
+            const rawTags: string[] = Array.isArray(item.tags) ? item.tags : [];
+            let category: ProblemCategory = (item.category as ProblemCategory) || 'Arrays & Two Pointers';
+            let tags = rawTags.length > 0 ? rawTags : ['Algorithms', 'Data Structures'];
+
+            if (!item.category) {
+              if (titleLower.includes('even') || titleLower.includes('odd') || titleLower.includes('math') || titleLower.includes('prime')) {
+                category = 'Math & Number Theory';
+                tags = rawTags.length > 0 ? rawTags : ['Math', 'Number Theory', 'Conditionals'];
+              } else if (titleLower.includes('coin') || titleLower.includes('knapsack') || titleLower.includes('subsequence')) {
+                category = 'Dynamic Programming';
+                tags = rawTags.length > 0 ? rawTags : ['Dynamic Programming', 'Optimization'];
+              } else if (titleLower.includes('tree') || titleLower.includes('bst')) {
+                category = 'Trees & Binary Search Trees';
+                tags = rawTags.length > 0 ? rawTags : ['Trees', 'Binary Search Tree'];
+              } else if (titleLower.includes('graph') || titleLower.includes('bfs') || titleLower.includes('dfs')) {
+                category = 'Graph Theory & BFS/DFS';
+                tags = rawTags.length > 0 ? rawTags : ['Graph Theory', 'BFS/DFS'];
+              } else if (titleLower.includes('string') || titleLower.includes('palindrome') || titleLower.includes('anagram')) {
+                category = 'Strings & Tries';
+                tags = rawTags.length > 0 ? rawTags : ['Strings', 'Parsing'];
+              }
+            }
+
+            return {
+              id: item.id,
+              code: item.code || `PROB-${String(idx + 1).padStart(3, '0')}`,
+              slug: item.slug,
+              title: item.title,
+              category,
+              difficulty: item.difficulty === 'HARD' ? 'Hard' : item.difficulty === 'MEDIUM' ? 'Medium' : 'Easy',
+              acceptanceRate: item.acceptanceRate ?? 65.0,
+              totalSubmissions: item._count?.submissions || item.totalSubmissions || 0,
+              acceptedSubmissions: item.acceptedSubmissions ?? Math.floor((item._count?.submissions || item.totalSubmissions || 0) * 0.65),
+              testCasesCount: item._count?.testCases || item.testCasesCount || 0,
+              authorName: item.authorName || 'Faculty',
+              tags,
+              status: item.status === 'PUBLISHED' ? 'Published' : 'Draft',
+              points: item.points || (item.difficulty === 'HARD' ? 200 : item.difficulty === 'MEDIUM' ? 120 : 70),
+              timeLimitMs: item.timeLimit || item.timeLimitMs || 1000,
+              memoryLimitMb: item.memoryLimit || item.memoryLimitMb || 256,
+              likes: item.likes || 0,
+              dislikes: item.dislikes || 0,
+              premium: item.premium || false,
+              companies: item.companies || [],
+              statementMarkdown: item.statement || item.statementMarkdown || '',
+              sampleTestCases: item.sampleTestCases || [],
+            };
+          });
           setProblems(mapped);
         }
       } catch (err) {
@@ -128,6 +156,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
 
   // Modals & Drawers
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
   const [peekProblem, setPeekProblem] = useState<ProblemEntity | null>(null);
   const [downloadAnchorEl, setDownloadAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -534,6 +563,25 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
                   </Typography>
                 </MenuItem>
               </Menu>
+
+              <Button
+                variant="outlined"
+                startIcon={<CloudUploadRoundedIcon sx={{ fontSize: 18 }} />}
+                onClick={() => setIsBulkImportModalOpen(true)}
+                sx={{
+                  borderColor: '#CBD5E1',
+                  color: '#334155',
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  px: 2,
+                  py: 0.75,
+                  '&:hover': { bgcolor: '#F1F5F9', borderColor: '#94A3B8' },
+                }}
+              >
+                Bulk Import CSV
+              </Button>
 
               <Button
                 variant="contained"
@@ -1519,6 +1567,15 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
         open={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateProblem}
+      />
+
+      {/* 9. Bulk Import Problems Modal */}
+      <BulkImportProblemsModal
+        open={isBulkImportModalOpen}
+        onClose={() => setIsBulkImportModalOpen(false)}
+        onImportSuccess={(importedList) => {
+          setProblems((prev) => [...importedList, ...prev]);
+        }}
       />
     </Box>
   );

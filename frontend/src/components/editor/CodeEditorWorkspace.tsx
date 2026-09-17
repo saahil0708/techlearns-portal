@@ -36,6 +36,8 @@ import MemoryOutlinedIcon from '@mui/icons-material/MemoryOutlined';
 import TerminalRoundedIcon from '@mui/icons-material/TerminalRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import KeyboardArrowUpRoundedIcon from '@mui/icons-material/KeyboardArrowUpRounded';
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 
 import type { OnMount, BeforeMount } from '@monaco-editor/react';
@@ -49,7 +51,7 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
     <Box
       sx={{
         height: '100%',
-        minHeight: 520,
+        minHeight: 480,
         bgcolor: '#0B0F19',
         display: 'flex',
         flexDirection: 'column',
@@ -151,7 +153,6 @@ console.log("Hello World");`,
     version: 'Go 1.22.4',
     monacoLang: 'go',
     defaultCode: `package main
-
 import "fmt"
 
 func main() {
@@ -175,6 +176,12 @@ export interface CodeEditorWorkspaceProps {
   initialCode?: string;
   initialLanguage?: SupportedLanguage;
   problemTitle?: string;
+  initialCustomInput?: string;
+  sampleTestCases?: Array<{
+    input: string;
+    output?: string;
+    explanation?: string;
+  }>;
   onCodeChange?: (code: string) => void;
   onLanguageChange?: (lang: SupportedLanguage) => void;
   onSubmit?: (code: string, lang: SupportedLanguage) => Promise<void> | void;
@@ -184,6 +191,8 @@ export default function CodeEditorWorkspace({
   initialCode,
   initialLanguage = 'python',
   problemTitle = 'Online Compiler & Execution Arena',
+  initialCustomInput,
+  sampleTestCases,
   onCodeChange,
   onLanguageChange,
   onSubmit,
@@ -192,9 +201,31 @@ export default function CodeEditorWorkspace({
 
   const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(initialLanguage);
   const [code, setCode] = useState<string>(initialCode || LANGUAGES[initialLanguage].defaultCode);
-  const [customInput, setCustomInput] = useState<string>('');
+  const [selectedCaseIdx, setSelectedCaseIdx] = useState<number>(0);
+  const [customInput, setCustomInput] = useState<string>(() => {
+    if (initialCustomInput !== undefined) return initialCustomInput;
+    if (sampleTestCases && sampleTestCases.length > 0) return sampleTestCases[0].input;
+    return '';
+  });
   const [output, setOutput] = useState<string>('');
   const [stderr, setStderr] = useState<string>('');
+
+  const prevSampleCasesRef = useRef<string | null>(
+    sampleTestCases && sampleTestCases.length > 0 ? JSON.stringify(sampleTestCases) : null
+  );
+
+  // Sync testcases when sampleTestCases arrive or change meaningfully
+  useEffect(() => {
+    if (initialCustomInput !== undefined) return;
+    if (!sampleTestCases || sampleTestCases.length === 0) return;
+
+    const currentSig = JSON.stringify(sampleTestCases);
+    if (prevSampleCasesRef.current !== currentSig) {
+      prevSampleCasesRef.current = currentSig;
+      setCustomInput(sampleTestCases[0].input);
+      setSelectedCaseIdx(0);
+    }
+  }, [sampleTestCases, initialCustomInput]);
 
   // Execution states
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -202,6 +233,10 @@ export default function CodeEditorWorkspace({
   const [executionTimeMs, setExecutionTimeMs] = useState<number | null>(null);
   const [memoryUsedKb, setMemoryUsedKb] = useState<number | null>(null);
   const [statusVerdict, setStatusVerdict] = useState<'IDLE' | 'SUCCESS' | 'ERROR'>('IDLE');
+
+  // Console Drawer Panel State (Bottom Panel)
+  const [consoleOpen, setConsoleOpen] = useState<boolean>(true);
+  const [consoleTab, setConsoleTab] = useState<'input' | 'output'>('input');
 
   // Editor Settings
   const [themeName, setThemeName] = useState<'deep-space' | 'vs-dark' | 'hc-black'>('deep-space');
@@ -224,18 +259,18 @@ export default function CodeEditorWorkspace({
       rules: [
         { token: 'comment', foreground: '64748B', fontStyle: 'italic' },
         { token: 'keyword', foreground: '38BDF8', fontStyle: 'bold' },
-        { token: 'type', foreground: 'A78BFA' },
-        { token: 'string', foreground: '34D399' },
+        { token: 'string', foreground: '4ADE80' },
         { token: 'number', foreground: 'FBBF24' },
-        { token: 'function', foreground: '60A5FA' },
-        { token: 'delimiter', foreground: '94A3B8' },
-        { token: 'identifier', foreground: 'E2E8F0' },
+        { token: 'type', foreground: '818CF8' },
+        { token: 'function', foreground: 'A78BFA' },
+        { token: 'operator', foreground: 'F472B6' },
+        { token: 'variable', foreground: 'F8FAFC' },
       ],
       colors: {
-        'editor.background': '#111827',
-        'editor.foreground': '#F3F4F6',
-        'editor.lineHighlightBackground': '#1F2937',
-        'editorLineNumber.foreground': '#4B5563',
+        'editor.background': '#0B0F19',
+        'editor.foreground': '#F8FAFC',
+        'editor.lineHighlightBackground': '#111827',
+        'editorLineNumber.foreground': '#475569',
         'editorLineNumber.activeForeground': '#38BDF8',
         'editorIndentGuide.background': '#1F2937',
         'editorIndentGuide.activeBackground': '#38BDF8',
@@ -263,8 +298,22 @@ export default function CodeEditorWorkspace({
       });
     });
 
-    editor.focus();
+    // Ensure layout and cursor focus are primed immediately upon mount
+    setTimeout(() => {
+      editor.layout();
+      editor.focus();
+    }, 50);
   };
+
+  // Re-layout Monaco whenever console drawer toggles or fullscreen changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (editorRef.current) {
+        editorRef.current.layout();
+      }
+    }, 60);
+    return () => clearTimeout(timer);
+  }, [consoleOpen, isFullscreen]);
 
   const handleLanguageSelect = (newLang: SupportedLanguage) => {
     setSelectedLang(newLang);
@@ -318,15 +367,26 @@ export default function CodeEditorWorkspace({
   // Run Code Execution (Real-time Piston compiler sandbox)
   const handleRunCode = async () => {
     setIsRunning(true);
+    setConsoleOpen(true);
+    setConsoleTab('output');
     setOutput('');
     setStderr('');
     setStatusVerdict('IDLE');
+
+    const effectiveInput =
+      selectedCaseIdx === -1
+        ? customInput
+        : customInput.trim() !== ''
+        ? customInput
+        : sampleTestCases && sampleTestCases.length > 0
+        ? sampleTestCases[selectedCaseIdx >= 0 ? selectedCaseIdx : 0]?.input || sampleTestCases[0].input
+        : '';
 
     try {
       const result = await compilerService.executeCode(
         selectedLang as SupportedCompilerLang,
         code,
-        customInput
+        effectiveInput
       );
 
       setExecutionTimeMs(result.executionTimeMs);
@@ -364,12 +424,6 @@ export default function CodeEditorWorkspace({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 850));
-      setStatusVerdict('SUCCESS');
-      setExecutionTimeMs(6);
-      setMemoryUsedKb(8900);
-      setOutput('🎉 Correct Answer!\nAll 45/45 testcases passed.\nExecution Time: 0.06s\nMemory: 8.9 MB');
-      toast.success('Solution submitted & accepted!', 'Verdict: AC');
       onSubmit?.(code, selectedLang);
     } catch (err: any) {
       toast.error('Submission failed', 'Error');
@@ -403,310 +457,342 @@ export default function CodeEditorWorkspace({
         inset: isFullscreen ? 0 : 'auto',
         zIndex: isFullscreen ? 1400 : 'auto',
         width: isFullscreen ? '100vw' : '100%',
-        height: isFullscreen ? '100vh' : 'auto',
-        minHeight: isFullscreen ? '100vh' : 620,
+        height: isFullscreen ? '100vh' : 680,
+        minHeight: isFullscreen ? '100vh' : 680,
       }}
     >
-      {/* Split Pane Container */}
+      {/* ========================================================================= */}
+      {/* 1. TOP UNIFIED TOOLBAR: Language + Action Buttons + Settings + Fullscreen */}
+      {/* ========================================================================= */}
       <Box
         sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', lg: '1.2fr 0.8fr' },
-          height: isFullscreen ? '100vh' : 'auto',
-          minHeight: isFullscreen ? '100vh' : 580,
-          flex: 1,
-          overflow: 'hidden',
+          bgcolor: '#FFFFFF',
+          px: 2,
+          py: 0.8,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid #E2E8F0',
+          flexShrink: 0,
+          flexWrap: 'wrap',
+          gap: 1.5,
+          minHeight: 52,
         }}
       >
-        {/* ========================================================================= */}
-        {/* LEFT COLUMN: Top Language Bar + Monaco Code Editor */}
-        {/* ========================================================================= */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            borderRight: { xs: 'none', lg: '1px solid #1E293B' },
-            borderBottom: { xs: '1px solid #1E293B', lg: 'none' },
-            bgcolor: '#111827',
-            height: isFullscreen ? '100vh' : '100%',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Top Bar for Editor */}
-          <Box
-            sx={{
-              bgcolor: '#FFFFFF',
-              px: 2,
-              py: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              borderBottom: '1px solid #E2E8F0',
-              flexShrink: 0,
-              height: 52,
-            }}
-          >
-            {/* Language Selector Dropdown */}
-            <FormControl size="small" sx={{ minWidth: 200 }}>
-              <Select
-                value={selectedLang}
-                onChange={(e) => handleLanguageSelect(e.target.value as SupportedLanguage)}
-                MenuProps={{
-                  sx: { zIndex: 99999 },
-                  slotProps: {
-                    root: {
-                      sx: { zIndex: 99999 },
-                    },
-                    paper: {
-                      sx: {
-                        zIndex: 99999,
-                        bgcolor: '#0F172A',
-                        color: '#F1F5F9',
-                        border: '1px solid #1E293B',
-                        borderRadius: '8px',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
-                        '& .MuiMenuItem-root': {
-                          fontSize: '0.84rem',
-                          fontWeight: 600,
-                          py: 1,
-                          '&:hover': {
-                            bgcolor: 'rgba(56, 189, 248, 0.12)',
-                            color: '#38BDF8',
-                          },
-                          '&.Mui-selected': {
-                            bgcolor: 'rgba(56, 189, 248, 0.2)',
-                            color: '#38BDF8',
-                            fontWeight: 700,
-                          },
+        {/* Left Toolbar: Language Dropdown */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <FormControl size="small" sx={{ minWidth: 180 }}>
+            <Select
+              value={selectedLang}
+              onChange={(e) => handleLanguageSelect(e.target.value as SupportedLanguage)}
+              MenuProps={{
+                sx: { zIndex: 99999 },
+                slotProps: {
+                  paper: {
+                    sx: {
+                      zIndex: 99999,
+                      bgcolor: '#0F172A',
+                      color: '#F1F5F9',
+                      border: '1px solid #1E293B',
+                      borderRadius: '8px',
+                      boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
+                      '& .MuiMenuItem-root': {
+                        fontSize: '0.84rem',
+                        fontWeight: 600,
+                        py: 0.8,
+                        '&:hover': {
+                          bgcolor: 'rgba(56, 189, 248, 0.12)',
+                          color: '#38BDF8',
+                        },
+                        '&.Mui-selected': {
+                          bgcolor: 'rgba(56, 189, 248, 0.2)',
+                          color: '#38BDF8',
+                          fontWeight: 700,
                         },
                       },
                     },
                   },
-                }}
-                sx={{
-                  bgcolor: '#FFFFFF',
-                  borderRadius: '6px',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                  color: '#1E293B',
-                  height: 36,
-                  '& fieldset': { borderColor: '#CBD5E1' },
-                  '&:hover fieldset': { borderColor: '#94A3B8' },
-                  '&.Mui-focused fieldset': { borderColor: '#2563EB' },
-                }}
-              >
-                {Object.values(LANGUAGES).map((l) => (
-                  <MenuItem key={l.id} value={l.id}>
-                    {l.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            {/* Editor Action Icons & Settings Gear */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Tooltip title="Format Code" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
-                <IconButton size="small" onClick={handleFormat} sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}>
-                  <FormatAlignLeftRoundedIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title="Reset Code" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
-                <IconButton size="small" onClick={handleReset} sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}>
-                  <RestartAltRoundedIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title="Copy Code" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
-                <IconButton size="small" onClick={handleCopyCode} sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}>
-                  <ContentCopyRoundedIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title="Download Code" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
-                <IconButton size="small" onClick={handleDownloadCode} sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}>
-                  <DownloadRoundedIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title="Editor Settings" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
-                <IconButton
-                  size="small"
-                  onClick={(e) => setSettingsAnchor(e.currentTarget)}
-                  sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}
-                >
-                  <SettingsOutlinedIcon sx={{ fontSize: 19 }} />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Fullscreen'} arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
-                <IconButton
-                  size="small"
-                  onClick={() => setIsFullscreen(!isFullscreen)}
-                  sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}
-                >
-                  {isFullscreen ? <FullscreenExitRoundedIcon sx={{ fontSize: 20 }} /> : <FullscreenRoundedIcon sx={{ fontSize: 20 }} />}
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
-
-          {/* Monaco Editor Canvas */}
-          <Box
-            sx={{
-              flex: 1,
-              height: isFullscreen ? 'calc(100vh - 84px)' : '100%',
-              minHeight: isFullscreen ? 'calc(100vh - 84px)' : 500,
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            <MonacoEditor
-              height="100%"
-              language={LANGUAGES[selectedLang].monacoLang}
-              value={code}
-              theme={themeName}
-              beforeMount={handleEditorWillMount}
-              onMount={handleEditorDidMount}
-              onChange={handleCodeChange}
-              options={{
-                fontSize: fontSize,
-                tabSize: tabSize,
-                insertSpaces: true,
-                detectIndentation: false,
-                fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-                fontLigatures: true,
-                minimap: { enabled: showMinimap },
-                lineNumbers: 'on',
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                wordWrap: wordWrap,
-                bracketPairColorization: { enabled: true },
-                cursorBlinking: 'smooth',
-                cursorSmoothCaretAnimation: 'on',
-                renderLineHighlight: 'line',
-                padding: { top: 12, bottom: 12 },
-                smoothScrolling: true,
+                },
               }}
-            />
-          </Box>
-
-          {/* Editor Status Footer */}
-          <Box
-            sx={{
-              px: 2,
-              py: 0.6,
-              bgcolor: '#0B0F19',
-              borderTop: '1px solid #1F2937',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontSize: '0.74rem',
-              color: '#64748B',
-              fontFamily: 'monospace',
-              flexShrink: 0,
-              height: 32,
-            }}
-          >
-            <span>
-              Ln {cursorPos.line}, Col {cursorPos.col}
-            </span>
-            <span>Spaces: {tabSize}</span>
-            <span>UTF-8</span>
-            <span style={{ color: '#38BDF8', fontWeight: 700 }}>{LANGUAGES[selectedLang].version}</span>
-          </Box>
+              sx={{
+                bgcolor: '#FFFFFF',
+                borderRadius: '8px',
+                fontSize: '0.84rem',
+                fontWeight: 600,
+                color: '#1E293B',
+                height: 36,
+                '& fieldset': { borderColor: '#CBD5E1' },
+                '&:hover fieldset': { borderColor: '#94A3B8' },
+                '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+              }}
+            >
+              {Object.values(LANGUAGES).map((l) => (
+                <MenuItem key={l.id} value={l.id}>
+                  {l.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
 
-        {/* ========================================================================= */}
-        {/* RIGHT COLUMN: Action Header (Run/Submit) + Custom Input + Output */}
-        {/* ========================================================================= */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            bgcolor: '#111827',
-            height: isFullscreen ? '100vh' : '100%',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Top Bar with Run & Submit Buttons */}
-          <Box
+        {/* Right Toolbar: Run, Submit & Quick Actions */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Prominent Run Button */}
+          <Button
+            variant="contained"
+            disabled={isRunning}
+            onClick={handleRunCode}
+            startIcon={
+              isRunning ? (
+                <CircularProgress size={15} sx={{ color: '#FFFFFF' }} />
+              ) : (
+                <PlayArrowRoundedIcon sx={{ fontSize: 18 }} />
+              )
+            }
             sx={{
-              bgcolor: '#FFFFFF',
-              px: 2,
-              py: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              borderBottom: '1px solid #E2E8F0',
-              gap: 1.5,
-              flexShrink: 0,
-              height: 52,
+              background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+              color: '#FFFFFF',
+              borderRadius: '8px',
+              textTransform: 'none',
+              fontWeight: 700,
+              fontSize: '0.86rem',
+              px: 2.2,
+              py: 0.65,
+              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.35)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)',
+              },
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {/* Prominent Run Button */}
-              <Button
-                variant="contained"
-                disabled={isRunning}
-                onClick={handleRunCode}
-                startIcon={
-                  isRunning ? <CircularProgress size={15} sx={{ color: '#FFFFFF' }} /> : <PlayArrowRoundedIcon />
-                }
-                sx={{
-                  bgcolor: '#2563EB',
-                  background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-                  color: '#FFFFFF',
-                  borderRadius: '6px',
-                  textTransform: 'none',
-                  fontWeight: 700,
-                  fontSize: '0.86rem',
-                  px: 2.5,
-                  py: 0.65,
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.35)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)',
-                  },
-                }}
-              >
-                {isRunning ? 'Running...' : 'Run'}
-              </Button>
+            {isRunning ? 'Running...' : 'Run'}
+          </Button>
 
-              {/* Submit Button (Only shown in problem/contest mode when onSubmit is passed) */}
-              {Boolean(onSubmit) && (
-                <Button
-                  variant="outlined"
-                  disabled={isSubmitting}
-                  onClick={handleSubmit}
-                  startIcon={
-                    isSubmitting ? (
-                      <CircularProgress size={15} sx={{ color: '#2563EB' }} />
-                    ) : (
-                      <SendRoundedIcon sx={{ fontSize: 16 }} />
-                    )
-                  }
+          {/* Submit Button (Only shown in problem/contest mode when onSubmit is passed) */}
+          {Boolean(onSubmit) && (
+            <Button
+              variant="outlined"
+              disabled={isSubmitting}
+              onClick={handleSubmit}
+              startIcon={
+                isSubmitting ? (
+                  <CircularProgress size={15} sx={{ color: '#2563EB' }} />
+                ) : (
+                  <SendRoundedIcon sx={{ fontSize: 16 }} />
+                )
+              }
+              sx={{
+                borderRadius: '8px',
+                borderColor: '#CBD5E1',
+                color: '#1E293B',
+                textTransform: 'none',
+                fontWeight: 700,
+                fontSize: '0.86rem',
+                px: 2,
+                py: 0.65,
+                '&:hover': { bgcolor: '#F8FAFC', borderColor: '#94A3B8' },
+              }}
+            >
+              Submit
+            </Button>
+          )}
+
+          <Divider orientation="vertical" flexItem sx={{ mx: 0.5, borderColor: '#E2E8F0' }} />
+
+          {/* Editor Action Icons */}
+          <Tooltip title="Format Code" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
+            <IconButton size="small" onClick={handleFormat} sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}>
+              <FormatAlignLeftRoundedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Reset Code" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
+            <IconButton size="small" onClick={handleReset} sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}>
+              <RestartAltRoundedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Copy Code" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
+            <IconButton size="small" onClick={handleCopyCode} sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}>
+              <ContentCopyRoundedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Download Code" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
+            <IconButton size="small" onClick={handleDownloadCode} sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}>
+              <DownloadRoundedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Editor Settings" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
+            <IconButton
+              size="small"
+              onClick={(e) => setSettingsAnchor(e.currentTarget)}
+              sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}
+            >
+              <SettingsOutlinedIcon sx={{ fontSize: 19 }} />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title={isFullscreen ? 'Exit Fullscreen (Esc)' : 'Fullscreen'} arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
+            <IconButton
+              size="small"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}
+            >
+              {isFullscreen ? <FullscreenExitRoundedIcon sx={{ fontSize: 20 }} /> : <FullscreenRoundedIcon sx={{ fontSize: 20 }} />}
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </Box>
+
+      {/* ========================================================================= */}
+      {/* 2. FULL-WIDTH MONACO CODE EDITOR CANVAS */}
+      {/* ========================================================================= */}
+      <Box
+        sx={{
+          flex: 1,
+          width: '100%',
+          minHeight: 0,
+          height: '100%',
+          position: 'relative',
+          overflow: 'hidden',
+          bgcolor: '#0B0F19',
+        }}
+      >
+        <MonacoEditor
+          height="100%"
+          width="100%"
+          language={LANGUAGES[selectedLang].monacoLang}
+          value={code}
+          theme={themeName}
+          beforeMount={handleEditorWillMount}
+          onMount={handleEditorDidMount}
+          onChange={handleCodeChange}
+          options={{
+            fontSize: fontSize,
+            tabSize: tabSize,
+            insertSpaces: true,
+            detectIndentation: false,
+            fontFamily: 'var(--font-mono), "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas, monospace',
+            fontLigatures: true,
+            minimap: { enabled: showMinimap },
+            lineNumbers: 'on',
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            wordWrap: wordWrap,
+            bracketPairColorization: { enabled: true },
+            cursorBlinking: 'smooth',
+            cursorSmoothCaretAnimation: 'on',
+            renderLineHighlight: 'line',
+            padding: { top: 12, bottom: 12 },
+            smoothScrolling: true,
+          }}
+        />
+      </Box>
+
+      {/* ========================================================================= */}
+      {/* 3. EXPANDABLE BOTTOM CONSOLE DRAWER (Custom Input & Output Tabs) */}
+      {/* ========================================================================= */}
+      <Box
+        sx={{
+          bgcolor: '#111827',
+          borderTop: '1px solid #1F2937',
+          display: 'flex',
+          flexDirection: 'column',
+          flexShrink: 0,
+          maxHeight: consoleOpen ? (isFullscreen ? '42vh' : 280) : 38,
+          transition: 'max-height 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Console Header Bar */}
+        <Box
+          sx={{
+            px: 2,
+            py: 0.6,
+            bgcolor: '#0F172A',
+            borderBottom: consoleOpen ? '1px solid #1E293B' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            height: 38,
+            cursor: 'pointer',
+            userSelect: 'none',
+          }}
+          onClick={() => setConsoleOpen(!consoleOpen)}
+        >
+          {/* Tabs */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} onClick={(e) => e.stopPropagation()}>
+            <Button
+              size="small"
+              onClick={() => {
+                setConsoleTab('input');
+                setConsoleOpen(true);
+              }}
+              sx={{
+                textTransform: 'none',
+                fontWeight: consoleTab === 'input' ? 800 : 600,
+                fontSize: '0.78rem',
+                px: 1.5,
+                py: 0.3,
+                borderRadius: '6px',
+                bgcolor: consoleTab === 'input' && consoleOpen ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                color: consoleTab === 'input' && consoleOpen ? '#38BDF8' : '#94A3B8',
+                '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.1)', color: '#38BDF8' },
+              }}
+            >
+              Testcase (stdin)
+            </Button>
+
+            <Button
+              size="small"
+              onClick={() => {
+                setConsoleTab('output');
+                setConsoleOpen(true);
+              }}
+              sx={{
+                textTransform: 'none',
+                fontWeight: consoleTab === 'output' ? 800 : 600,
+                fontSize: '0.78rem',
+                px: 1.5,
+                py: 0.3,
+                borderRadius: '6px',
+                bgcolor: consoleTab === 'output' && consoleOpen ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+                color: consoleTab === 'output' && consoleOpen ? '#38BDF8' : '#94A3B8',
+                '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.1)', color: '#38BDF8' },
+              }}
+            >
+              Console Output
+              {statusVerdict !== 'IDLE' && (
+                <Box
+                  component="span"
                   sx={{
-                    borderRadius: '6px',
-                    borderColor: '#CBD5E1',
-                    color: '#1E293B',
-                    textTransform: 'none',
-                    fontWeight: 700,
-                    fontSize: '0.86rem',
-                    px: 2,
-                    py: 0.65,
-                    '&:hover': { bgcolor: '#F8FAFC', borderColor: '#94A3B8' },
+                    ml: 1,
+                    width: 7,
+                    height: 7,
+                    borderRadius: '50%',
+                    bgcolor: statusVerdict === 'SUCCESS' ? '#4ADE80' : '#F87171',
+                    display: 'inline-block',
                   }}
-                >
-                  Submit
-                </Button>
+                />
               )}
-            </Box>
+            </Button>
+          </Box>
 
-            {/* Clear Output Icon */}
+          {/* Right Status & Expand Chevron */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            {statusVerdict !== 'IDLE' && executionTimeMs !== null && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontSize: '0.72rem', color: '#94A3B8', fontFamily: 'monospace' }}>
+                <span>Time: <strong style={{ color: '#F3F4F6' }}>{executionTimeMs}ms</strong></span>
+                <span>RAM: <strong style={{ color: '#F3F4F6' }}>{(memoryUsedKb! / 1024).toFixed(1)}MB</strong></span>
+              </Box>
+            )}
+
             <Tooltip title="Clear Input & Output" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
               <IconButton
                 size="small"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setCustomInput('');
                   setOutput('');
                   setStderr('');
@@ -714,121 +800,213 @@ export default function CodeEditorWorkspace({
                   setExecutionTimeMs(null);
                   toast.info('Cleared I/O panes.', 'Cleared');
                 }}
-                sx={{ color: '#64748B', '&:hover': { color: '#EF4444' } }}
+                sx={{ color: '#64748B', p: 0.4, '&:hover': { color: '#EF4444' } }}
               >
-                <DeleteOutlineRoundedIcon sx={{ fontSize: 18 }} />
+                <DeleteOutlineRoundedIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title={consoleOpen ? 'Collapse Console' : 'Expand Console'} arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
+              <IconButton size="small" sx={{ color: '#94A3B8', p: 0.4 }}>
+                {consoleOpen ? <KeyboardArrowDownRoundedIcon sx={{ fontSize: 18 }} /> : <KeyboardArrowUpRoundedIcon sx={{ fontSize: 18 }} />}
               </IconButton>
             </Tooltip>
           </Box>
+        </Box>
 
-          {/* Right Pane Body (Custom Input & Output Sections) */}
-          <Box
-            sx={{
-              p: 2,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 2,
-              flex: 1,
-              bgcolor: '#0B0F19',
-              height: isFullscreen ? 'calc(100vh - 52px)' : 'auto',
-              overflowY: 'auto',
-            }}
-          >
-            {/* Custom Input Section */}
-            <Box sx={{ flexShrink: 0 }}>
-              {/* Input Header & Quick Input Helpers */}
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1, flexWrap: 'wrap', gap: 1 }}>
-                <Box>
-                  <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#E2E8F0' }}>
-                    Custom Input (stdin)
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8' }}>
-                    Provide inputs passed to standard input before running.
-                  </Typography>
+        {/* Console Body */}
+        {consoleOpen && (
+          <Box sx={{ p: 1.5, bgcolor: '#0B0F19', flex: 1, overflowY: 'auto' }}>
+            {/* TAB 1: Custom Input (stdin) */}
+            {consoleTab === 'input' && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {/* Testcase selector chips or presets */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                  {sampleTestCases && sampleTestCases.length > 0 ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                      {sampleTestCases.map((tc, idx) => (
+                        <Button
+                          key={idx}
+                          size="small"
+                          onClick={() => {
+                            setSelectedCaseIdx(idx);
+                            setCustomInput(tc.input);
+                          }}
+                          sx={{
+                            fontSize: '0.74rem',
+                            fontWeight: selectedCaseIdx === idx ? 800 : 600,
+                            textTransform: 'none',
+                            borderRadius: '6px',
+                            px: 1.4,
+                            py: 0.2,
+                            bgcolor: selectedCaseIdx === idx ? 'rgba(56, 189, 248, 0.2)' : '#1F2937',
+                            color: selectedCaseIdx === idx ? '#38BDF8' : '#94A3B8',
+                            border: selectedCaseIdx === idx ? '1px solid #38BDF8' : '1px solid #374151',
+                            '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.15)', color: '#38BDF8' },
+                          }}
+                        >
+                          Case {idx + 1}
+                        </Button>
+                      ))}
+                      <Button
+                        size="small"
+                        onClick={() => {
+                          setSelectedCaseIdx(-1);
+                        }}
+                        sx={{
+                          fontSize: '0.74rem',
+                          fontWeight: selectedCaseIdx === -1 ? 800 : 600,
+                          textTransform: 'none',
+                          borderRadius: '6px',
+                          px: 1.2,
+                          py: 0.2,
+                          bgcolor: selectedCaseIdx === -1 ? 'rgba(56, 189, 248, 0.2)' : '#1F2937',
+                          color: selectedCaseIdx === -1 ? '#38BDF8' : '#94A3B8',
+                          border: selectedCaseIdx === -1 ? '1px solid #38BDF8' : '1px solid #374151',
+                          '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.15)', color: '#38BDF8' },
+                        }}
+                      >
+                        + Custom
+                      </Button>
+                    </Box>
+                  ) : (
+                    <>
+                      <Typography sx={{ fontSize: '0.74rem', color: '#94A3B8' }}>
+                        Standard Input (stdin):
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 0.8 }}>
+                        <Button
+                          size="small"
+                          onClick={() => setCustomInput('5\n10 20 30 40 50')}
+                          sx={{
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            textTransform: 'none',
+                            color: '#38BDF8',
+                            bgcolor: 'rgba(56, 189, 248, 0.1)',
+                            px: 1,
+                            py: 0.2,
+                            minWidth: 0,
+                            borderRadius: '4px',
+                            '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.2)' },
+                          }}
+                        >
+                          + Sample Array
+                        </Button>
+                        <Button
+                          size="small"
+                          onClick={() => setCustomInput('4 9\n2 7 11 15')}
+                          sx={{
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            textTransform: 'none',
+                            color: '#A78BFA',
+                            bgcolor: 'rgba(167, 139, 250, 0.1)',
+                            px: 1,
+                            py: 0.2,
+                            minWidth: 0,
+                            borderRadius: '4px',
+                            '&:hover': { bgcolor: 'rgba(167, 139, 250, 0.2)' },
+                          }}
+                        >
+                          + Target Pair
+                        </Button>
+                      </Box>
+                    </>
+                  )}
                 </Box>
 
-                {/* Quick Presets */}
-                <Box sx={{ display: 'flex', gap: 0.5 }}>
-                  <Button
-                    size="small"
-                    onClick={() => setCustomInput('5\n10 20 30 40 50')}
-                    sx={{
-                      fontSize: '0.68rem',
-                      fontWeight: 700,
-                      textTransform: 'none',
-                      color: '#38BDF8',
-                      bgcolor: 'rgba(56, 189, 248, 0.1)',
-                      px: 1,
-                      py: 0.2,
-                      minWidth: 0,
-                      borderRadius: '4px',
-                      '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.2)' },
-                    }}
-                  >
-                    + Sample Array
-                  </Button>
-                  <Button
-                    size="small"
-                    onClick={() => setCustomInput('4 9\n2 7 11 15')}
-                    sx={{
-                      fontSize: '0.68rem',
-                      fontWeight: 700,
-                      textTransform: 'none',
-                      color: '#A78BFA',
-                      bgcolor: 'rgba(167, 139, 250, 0.1)',
-                      px: 1,
-                      py: 0.2,
-                      minWidth: 0,
-                      borderRadius: '4px',
-                      '&:hover': { bgcolor: 'rgba(167, 139, 250, 0.2)' },
-                    }}
-                  >
-                    + Target Pair
-                  </Button>
+                <Box sx={{ display: 'flex', gap: 1.5, flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
+                  {/* Input Box */}
+                  <Box sx={{ flex: 1, minWidth: 240 }}>
+                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748B', mb: 0.4 }}>
+                      INPUT (STDIN)
+                    </Typography>
+                    <textarea
+                      className="code-editor-font"
+                      rows={3}
+                      value={customInput}
+                      onChange={(e) => {
+                        setCustomInput(e.target.value);
+                      }}
+                      placeholder="Enter stdin input here..."
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#111827',
+                        color: '#38BDF8',
+                        fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+                        fontSize: '13px',
+                        lineHeight: '1.5',
+                        border: '1px solid #1F2937',
+                        borderRadius: '6px',
+                        padding: '8px 12px',
+                        outline: 'none',
+                        resize: 'vertical',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </Box>
+
+                  {/* Expected Output Box (if active case has output) */}
+                  {sampleTestCases && selectedCaseIdx >= 0 && sampleTestCases[selectedCaseIdx]?.output && (
+                    <Box sx={{ width: { xs: '100%', md: '35%' }, minWidth: 160 }}>
+                      <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748B', mb: 0.4 }}>
+                        EXPECTED OUTPUT
+                      </Typography>
+                      <Box
+                        sx={{
+                          p: '8px 12px',
+                          bgcolor: '#111827',
+                          border: '1px solid #1F2937',
+                          borderRadius: '6px',
+                          color: '#4ADE80',
+                          fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+                          fontSize: '13px',
+                          lineHeight: '1.5',
+                          minHeight: 70,
+                          maxHeight: 110,
+                          overflowY: 'auto',
+                          whiteSpace: 'pre-wrap',
+                        }}
+                      >
+                        {sampleTestCases[selectedCaseIdx].output}
+                      </Box>
+                    </Box>
+                  )}
                 </Box>
               </Box>
+            )}
 
-              {/* Input Textarea */}
-              <Box
-                sx={{
-                  borderRadius: '8px',
-                  bgcolor: '#111827',
-                  border: '1px solid #1F2937',
-                  p: 1.5,
-                  '&:focus-within': { borderColor: '#38BDF8' },
-                }}
-              >
-                <textarea
-                  className="code-editor-font"
-                  rows={isFullscreen ? 5 : 4}
-                  value={customInput}
-                  onChange={(e) => setCustomInput(e.target.value)}
-                  placeholder="Enter Input here..."
-                  style={{
-                    width: '100%',
-                    backgroundColor: 'transparent',
-                    color: '#38BDF8',
-                    fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-                    fontSize: '13px',
-                    lineHeight: '1.5',
-                    border: 'none',
-                    outline: 'none',
-                    resize: 'vertical',
-                  }}
-                />
-              </Box>
-            </Box>
+            {/* TAB 2: Console Output */}
+            {consoleTab === 'output' && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography sx={{ fontSize: '0.74rem', color: '#94A3B8' }}>
+                      Program Standard Output & Diagnostic Stream:
+                    </Typography>
+                    {statusVerdict !== 'IDLE' && (
+                      <Chip
+                        size="small"
+                        icon={
+                          statusVerdict === 'SUCCESS' ? (
+                            <CheckCircleRoundedIcon sx={{ fontSize: 13 }} />
+                          ) : (
+                            <ErrorOutlineRoundedIcon sx={{ fontSize: 13 }} />
+                          )
+                        }
+                        label={statusVerdict === 'SUCCESS' ? 'Success (0)' : 'Error'}
+                        sx={{
+                          bgcolor: statusVerdict === 'SUCCESS' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                          color: statusVerdict === 'SUCCESS' ? '#4ADE80' : '#F87171',
+                          fontWeight: 700,
+                          fontSize: '0.68rem',
+                          height: 20,
+                        }}
+                      />
+                    )}
+                  </Box>
 
-            <Divider sx={{ borderColor: '#1F2937' }} />
-
-            {/* Output Section */}
-            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: isFullscreen ? 280 : 200 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#E2E8F0' }}>
-                  Output
-                </Typography>
-
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   {(output || stderr) && (
                     <Tooltip title="Copy Output" arrow slotProps={{ popper: { sx: { zIndex: 99999 } } }}>
                       <IconButton
@@ -837,149 +1015,93 @@ export default function CodeEditorWorkspace({
                           navigator.clipboard.writeText(output || stderr);
                           toast.success('Output copied to clipboard!', 'Copied');
                         }}
-                        sx={{ color: '#64748B', p: 0.3, '&:hover': { color: '#38BDF8' } }}
+                        sx={{ color: '#64748B', p: 0.2, '&:hover': { color: '#38BDF8' } }}
                       >
-                        <ContentCopyRoundedIcon sx={{ fontSize: 15 }} />
+                        <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
                       </IconButton>
                     </Tooltip>
                   )}
+                </Box>
 
-                  {/* Verdict Badge */}
-                  {statusVerdict !== 'IDLE' && (
-                    <Chip
-                      size="small"
-                      icon={
-                        statusVerdict === 'SUCCESS' ? (
-                          <CheckCircleRoundedIcon sx={{ fontSize: 13 }} />
-                        ) : (
-                          <ErrorOutlineRoundedIcon sx={{ fontSize: 13 }} />
-                        )
-                      }
-                      label={statusVerdict === 'SUCCESS' ? 'Success (0)' : 'Error'}
-                      sx={{
-                        bgcolor: statusVerdict === 'SUCCESS' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                        color: statusVerdict === 'SUCCESS' ? '#4ADE80' : '#F87171',
-                        fontWeight: 700,
-                        fontSize: '0.7rem',
-                        height: 22,
-                      }}
-                    />
+                <Box
+                  className="code-editor-font"
+                  sx={{
+                    p: 1.5,
+                    bgcolor: '#111827',
+                    border: '1px solid #1F2937',
+                    borderRadius: '6px',
+                    minHeight: 110,
+                    maxHeight: 180,
+                    overflowY: 'auto',
+                    fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+                    fontSize: '13px',
+                    lineHeight: '1.5',
+                  }}
+                >
+                  {isRunning ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 2, justifyContent: 'center' }}>
+                      <CircularProgress size={16} sx={{ color: '#38BDF8' }} />
+                      <Typography sx={{ color: '#94A3B8', fontSize: '0.8rem', fontFamily: 'monospace' }}>
+                        Compiling & executing code...
+                      </Typography>
+                    </Box>
+                  ) : output || stderr ? (
+                    <Box sx={{ color: stderr ? '#F87171' : '#E2E8F0', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                      {stderr ? (
+                        <pre style={{ margin: 0, color: '#F87171', fontFamily: 'inherit' }}>{stderr}</pre>
+                      ) : (
+                        output.split('\n').map((line, idx) => (
+                          <div key={idx}>{line}</div>
+                        ))
+                      )}
+                    </Box>
+                  ) : (
+                    <Typography sx={{ color: '#4B5563', fontSize: '0.78rem', fontFamily: 'monospace' }}>
+                      Click &ldquo;Run&rdquo; to execute the code and view stdout/stderr output here.
+                    </Typography>
                   )}
                 </Box>
               </Box>
-
-              {/* Output Display Terminal Box */}
-              <Box
-                sx={{
-                  flex: 1,
-                  minHeight: isFullscreen ? 260 : 180,
-                  maxHeight: isFullscreen ? 'calc(100vh - 360px)' : 280,
-                  borderRadius: '8px',
-                  bgcolor: '#111827',
-                  border: '1px solid #1F2937',
-                  p: 1.5,
-                  overflowY: 'auto',
-                }}
-              >
-                {isRunning ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 3, justifyContent: 'center' }}>
-                    <CircularProgress size={18} sx={{ color: '#38BDF8' }} />
-                    <Typography sx={{ color: '#94A3B8', fontSize: '0.82rem', fontFamily: 'monospace' }}>
-                      Compiling & executing code...
-                    </Typography>
-                  </Box>
-                ) : output || stderr ? (
-                  <Box
-                    className="code-editor-font"
-                    sx={{
-                      m: 0,
-                      color: stderr ? '#F87171' : '#E2E8F0',
-                      fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-                      fontSize: '13px',
-                      lineHeight: '1.6',
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                    }}
-                  >
-                    {stderr ? (
-                      <pre style={{ margin: 0, color: '#F87171', fontFamily: 'inherit' }}>{stderr}</pre>
-                    ) : (
-                      output.split('\n').map((line, idx) => {
-                        // Check if line contains an interactive prompt pattern like "Enter ...: 120"
-                        const promptMatch = line.match(/^([^:\n?]+[:?]\s*)(.+)$/);
-                        if (promptMatch) {
-                          return (
-                            <div key={idx} style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'baseline' }}>
-                              <span style={{ color: '#64748B', fontStyle: 'italic' }}>{promptMatch[1]}</span>
-                              <span style={{ color: '#38BDF8', fontWeight: 700 }}>{promptMatch[2]}</span>
-                            </div>
-                          );
-                        }
-                        return <div key={idx}>{line}</div>;
-                      })
-                    )}
-                  </Box>
-                ) : (
-                  <Typography sx={{ color: '#4B5563', fontSize: '0.8rem', fontFamily: 'monospace' }}>
-                    Click &ldquo;Run&rdquo; to execute the program and view output here.
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Right Column Status Footer (Aligned with Left Editor Footer) */}
-          <Box
-            sx={{
-              px: 2,
-              py: 0.6,
-              bgcolor: '#0B0F19',
-              borderTop: '1px solid #1F2937',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontSize: '0.74rem',
-              color: '#64748B',
-              fontFamily: 'monospace',
-              flexShrink: 0,
-              height: 32,
-            }}
-          >
-            {executionTimeMs !== null ? (
-              <>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <TimerOutlinedIcon sx={{ fontSize: 13, color: '#38BDF8' }} />
-                  <span>Time: <strong style={{ color: '#F3F4F6' }}>{executionTimeMs}ms</strong></span>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <MemoryOutlinedIcon sx={{ fontSize: 13, color: '#A78BFA' }} />
-                  <span>Memory: <strong style={{ color: '#F3F4F6' }}>{(memoryUsedKb! / 1024).toFixed(1)}MB</strong></span>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <TerminalRoundedIcon sx={{ fontSize: 13, color: statusVerdict === 'SUCCESS' ? '#4ADE80' : statusVerdict === 'ERROR' ? '#F87171' : '#64748B' }} />
-                  <span>Exit: <strong style={{ color: statusVerdict === 'SUCCESS' ? '#4ADE80' : statusVerdict === 'ERROR' ? '#F87171' : '#64748B' }}>{statusVerdict === 'SUCCESS' ? '0 (OK)' : statusVerdict === 'ERROR' ? 'Error' : 'Ready'}</strong></span>
-                </Box>
-              </>
-            ) : (
-              <>
-                <span>I/O: Batch Stdin</span>
-                <span>Sandbox: Isolated</span>
-                <span style={{ color: '#38BDF8', fontWeight: 600 }}>Ready</span>
-              </>
             )}
           </Box>
-        </Box>
+        )}
       </Box>
 
-      {/* Editor Preferences Menu */}
+      {/* ========================================================================= */}
+      {/* 4. EDITOR FOOTER STATUS BAR */}
+      {/* ========================================================================= */}
+      <Box
+        sx={{
+          px: 2,
+          py: 0.4,
+          bgcolor: '#0B0F19',
+          borderTop: '1px solid #1F2937',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '0.72rem',
+          color: '#64748B',
+          fontFamily: 'monospace',
+          flexShrink: 0,
+          height: 28,
+        }}
+      >
+        <span>
+          Ln {cursorPos.line}, Col {cursorPos.col}
+        </span>
+        <span>Spaces: {tabSize}</span>
+        <span>UTF-8</span>
+        <span style={{ color: '#38BDF8', fontWeight: 700 }}>{LANGUAGES[selectedLang].version}</span>
+      </Box>
+
+      {/* ========================================================================= */}
+      {/* 5. PREFERENCES MENU */}
+      {/* ========================================================================= */}
       <Menu
         anchorEl={settingsAnchor}
         open={Boolean(settingsAnchor)}
         onClose={() => setSettingsAnchor(null)}
         slotProps={{
-          root: {
-            sx: { zIndex: 99999 },
-          },
           paper: {
             sx: {
               zIndex: 99999,

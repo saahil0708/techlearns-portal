@@ -44,16 +44,23 @@ body {
   font-family: var(--font-gt-flexa), 'GT Flexa Lt', 'GT Flexa', 'Plus Jakarta Sans', sans-serif !important;
 }
 
-/* Specific Monaco Editor & Code Font Exemption */
+/* Specific Monaco Editor & Code Font Exemption with Menlo */
+code,
+pre,
+kbd,
+samp,
+.font-mono,
+.ide-code-font,
+.ide-code-font *,
+.code-editor-font,
+.code-editor-font *,
 .monaco-editor,
 .monaco-editor *,
 .monaco-editor .view-line,
 .monaco-editor .view-line span,
 .monaco-editor .margin,
-.monaco-editor .line-numbers,
-.code-editor-font,
-.code-editor-font * {
-  font-family: 'SF Mono', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace !important;
+.monaco-editor .line-numbers {
+  font-family: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
 }
 
 /* Sleek Light Scrollbar */

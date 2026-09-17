@@ -226,7 +226,7 @@ export class JudgeService {
     const sourcePath = path.join(workDir, `solution.${extensions[language]}`);
     const containerName = `codeplatform-judge-${randomUUID()}`;
     const args = [
-      'run', '--rm', '--name', containerName, '--network', 'none', '--read-only',
+      'run', '-i', '--rm', '--name', containerName, '--network', 'none', '--read-only',
       '--tmpfs', '/tmp:rw,size=64m', '--memory', `${Math.max(16, memoryLimitMb)}m`,
       '--memory-swap', `${Math.max(16, memoryLimitMb)}m`,
       '--cpus', '1', '--pids-limit', '64', '--cap-drop', 'ALL',
@@ -243,11 +243,12 @@ export class JudgeService {
         let error = '';
         let timedOut = false;
         const maxOutput = 512 * 1024;
+        // Host safety timeout accounts for container startup overhead + CPU execution limit
         const timer = setTimeout(() => {
           timedOut = true;
           child.kill('SIGKILL');
           spawn('docker', ['rm', '-f', containerName], { windowsHide: true, stdio: 'ignore' });
-        }, Math.max(100, timeLimitMs));
+        }, Math.max(4000, timeLimitMs + 5000));
         child.stdout.on('data', (chunk: Buffer) => {
           output += chunk.toString();
           if (Buffer.byteLength(output) > maxOutput) child.kill('SIGKILL');

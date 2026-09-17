@@ -153,50 +153,13 @@ export default function StudentProfileClient({
   });
 
   // Submissions state
-  const [submissions, setSubmissions] = useState<StudentSubmission[]>([
-    {
-      id: 'sub-9912',
-      problemTitle: 'Two Sum & Pair Target Lookups',
-      problemSlug: 'two-sum',
-      problemCode: 'PROB-001',
-      difficulty: 'Easy',
-      language: 'CPP',
-      verdict: 'Accepted',
-      runtimeMs: 4,
-      memoryKb: 10400,
-      submittedAt: 'Today, 10:24 AM',
-      codeSnippet: `#include <vector>\n#include <unordered_map>\nusing namespace std;\n\nvector<int> twoSum(vector<int>& nums, int target) {\n    unordered_map<int, int> mp;\n    for (int i = 0; i < nums.size(); ++i) {\n        int comp = target - nums[i];\n        if (mp.count(comp)) return {mp[comp], i};\n        mp[nums[i]] = i;\n    }\n    return {};\n}`,
-    },
-  ]);
+  const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
 
   // Contests History
-  const [contests, setContests] = useState<StudentContestHistory[]>([
-    {
-      id: 'cnt-1',
-      contestName: 'CodePlatform Global Round #42 (Div. 1 + 2)',
-      contestDate: 'Aug 24, 2025',
-      rank: 14,
-      totalParticipants: 4820,
-      score: 1850,
-      penaltyTime: '01:14:22',
-      ratingDelta: +48,
-      newRating: 1500,
-    },
-  ]);
+  const [contests, setContests] = useState<StudentContestHistory[]>([]);
 
   // Courses Progress
-  const [courses, setCourses] = useState<StudentCourseProgress[]>([
-    {
-      id: 'crs-1',
-      title: 'Data Structures & Algorithms Mastery',
-      slug: 'data-structures-and-algorithms-mastery',
-      instructor: 'Prof. Thomas Cormen',
-      modulesCompleted: 12,
-      totalModules: 12,
-      progressPct: 100,
-      status: 'Completed',
-    },
-  ]);
+  const [courses, setCourses] = useState<StudentCourseProgress[]>([]);
 
   // Topic Skills
   const [topics, setTopics] = useState<StudentTopicSkill[]>([]);

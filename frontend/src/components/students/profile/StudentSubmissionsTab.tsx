@@ -28,6 +28,17 @@ interface StudentSubmissionsTabProps {
   onViewCode: (sub: StudentSubmission) => void;
 }
 
+function sanitizeCsvField(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return '""';
+  if (typeof value === 'number') return String(value);
+
+  let str = String(value);
+  if (/^[=+\-@]/.test(str)) {
+    str = `'${str}`;
+  }
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
 export default function StudentSubmissionsTab({
   submissions,
   studentHandle,
@@ -51,25 +62,27 @@ export default function StudentSubmissionsTab({
   const handleExportSubmissionsCSV = () => {
     const headers = ['Submission ID', 'Problem Code', 'Problem Title', 'Difficulty', 'Verdict', 'Language', 'Runtime (ms)', 'Memory (KB)', 'Submitted At'];
     const rows = submissions.map((s) => [
-      `"${s.id}"`,
-      `"${s.problemCode}"`,
-      `"${s.problemTitle}"`,
-      `"${s.difficulty}"`,
-      `"${s.verdict}"`,
-      `"${s.language}"`,
-      s.runtimeMs,
-      s.memoryKb,
-      `"${s.submittedAt}"`,
+      sanitizeCsvField(s.id),
+      sanitizeCsvField(s.problemCode),
+      sanitizeCsvField(s.problemTitle),
+      sanitizeCsvField(s.difficulty),
+      sanitizeCsvField(s.verdict),
+      sanitizeCsvField(s.language),
+      sanitizeCsvField(s.runtimeMs),
+      sanitizeCsvField(s.memoryKb),
+      sanitizeCsvField(s.submittedAt),
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const csvData = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `${studentHandle}_submissions_${Date.now()}.csv`);
+    link.href = url;
+    link.download = `${studentHandle}_submissions_${Date.now()}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 
     toast.success(`Exported ${submissions.length} submissions to CSV.`, 'CSV Export Ready');
   };
@@ -131,69 +144,82 @@ export default function StudentSubmissionsTab({
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredSubmissions.map((sub) => {
-              const isAcc = sub.verdict === 'Accepted';
-              return (
-                <TableRow key={sub.id} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                  <TableCell>
-                    <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.88rem' }}>
-                      {sub.problemTitle}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.76rem', color: '#64748B', fontFamily: 'monospace' }}>
-                      {sub.problemCode}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={sub.difficulty}
-                      size="small"
-                      sx={{
-                        bgcolor: sub.difficulty === 'Easy' ? '#F0FDF4' : sub.difficulty === 'Medium' ? '#FFFBEB' : '#FEF2F2',
-                        color: sub.difficulty === 'Easy' ? '#16A34A' : sub.difficulty === 'Medium' ? '#D97706' : '#DC2626',
-                        border: `1px solid ${sub.difficulty === 'Easy' ? '#BBF7D0' : sub.difficulty === 'Medium' ? '#FDE68A' : '#FECACA'}`,
-                        fontWeight: 800,
-                        fontSize: '0.72rem',
-                        borderRadius: '6px',
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={sub.verdict}
-                      size="small"
-                      sx={{
-                        bgcolor: isAcc ? '#F0FDF4' : '#FEF2F2',
-                        color: isAcc ? '#16A34A' : '#DC2626',
-                        border: `1px solid ${isAcc ? '#BBF7D0' : '#FECACA'}`,
-                        fontWeight: 800,
-                        fontSize: '0.74rem',
-                        borderRadius: '6px',
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: '#334155', fontSize: '0.85rem' }}>
-                    {sub.language}
-                  </TableCell>
-                  <TableCell sx={{ fontSize: '0.82rem', color: '#64748B' }}>
-                    <strong>{sub.runtimeMs} ms</strong> • {(sub.memoryKb / 1024).toFixed(1)} MB
-                  </TableCell>
-                  <TableCell sx={{ fontSize: '0.82rem', color: '#64748B' }}>
-                    {sub.submittedAt}
-                  </TableCell>
-                  <TableCell sx={{ textAlign: 'right' }}>
-                    <Button
-                      variant="text"
-                      size="small"
-                      startIcon={<VisibilityRoundedIcon sx={{ fontSize: 16 }} />}
-                      onClick={() => onViewCode(sub)}
-                      sx={{ textTransform: 'none', fontWeight: 700, color: '#2563EB' }}
-                    >
-                      View Code
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {filteredSubmissions.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} sx={{ py: 6, textAlign: 'center', color: '#94A3B8' }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>
+                    No submissions found
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#94A3B8', mt: 0.5 }}>
+                    Solve problems in the practice portal or contests to record submissions.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredSubmissions.map((sub) => {
+                const isAcc = sub.verdict === 'Accepted';
+                return (
+                  <TableRow key={sub.id} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
+                    <TableCell>
+                      <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.88rem' }}>
+                        {sub.problemTitle}
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.76rem', color: '#64748B', fontFamily: 'monospace' }}>
+                        {sub.problemCode}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={sub.difficulty}
+                        size="small"
+                        sx={{
+                          bgcolor: sub.difficulty === 'Easy' ? '#F0FDF4' : sub.difficulty === 'Medium' ? '#FFFBEB' : '#FEF2F2',
+                          color: sub.difficulty === 'Easy' ? '#16A34A' : sub.difficulty === 'Medium' ? '#D97706' : '#DC2626',
+                          border: `1px solid ${sub.difficulty === 'Easy' ? '#BBF7D0' : sub.difficulty === 'Medium' ? '#FDE68A' : '#FECACA'}`,
+                          fontWeight: 800,
+                          fontSize: '0.72rem',
+                          borderRadius: '6px',
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={sub.verdict}
+                        size="small"
+                        sx={{
+                          bgcolor: isAcc ? '#F0FDF4' : '#FEF2F2',
+                          color: isAcc ? '#16A34A' : '#DC2626',
+                          border: `1px solid ${isAcc ? '#BBF7D0' : '#FECACA'}`,
+                          fontWeight: 800,
+                          fontSize: '0.74rem',
+                          borderRadius: '6px',
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#334155', fontSize: '0.85rem' }}>
+                      {sub.language}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.82rem', color: '#64748B' }}>
+                      <strong>{sub.runtimeMs} ms</strong> • {(sub.memoryKb / 1024).toFixed(1)} MB
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.82rem', color: '#64748B' }}>
+                      {sub.submittedAt}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'right' }}>
+                      <Button
+                        variant="text"
+                        size="small"
+                        startIcon={<VisibilityRoundedIcon sx={{ fontSize: 16 }} />}
+                        onClick={() => onViewCode(sub)}
+                        sx={{ textTransform: 'none', fontWeight: 700, color: '#2563EB' }}
+                      >
+                        View Code
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
           </TableBody>
         </Table>
       </TableContainer>

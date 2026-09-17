@@ -815,6 +815,11 @@ export const apiService = {
     status?: string;
     institutionId?: string;
     collegeId?: string;
+    code?: string;
+    category?: string;
+    tags?: string[];
+    points?: number;
+    slug?: string;
   }) {
     const institutionId = input.institutionId || input.collegeId;
     const data = await fetchGraphQL<{ createProblem: any }>(CREATE_PROBLEM_MUTATION, {

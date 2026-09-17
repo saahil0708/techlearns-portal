@@ -40,13 +40,15 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
 import { MOCK_CONTESTS } from '@/lib/mock-contests-data';
-import { ContestEntity, ContestScope, ContestStatus } from '@/types/contest';
+import { ContestEntity, ContestScope, ContestStatus, ScoringFormat } from '@/types/contest';
 import { useToast } from '@/context/ToastContext';
+import { apiService } from '@/lib/api-service';
 
 export default function ContestsArenaClient() {
   const router = useRouter();
   const toast = useToast();
 
+  const [contests, setContests] = useState<ContestEntity[]>(MOCK_CONTESTS);
   const [search, setSearch] = useState('');
   const [statusTab, setStatusTab] = useState<string>('ALL');
   const [scopeFilter, setScopeFilter] = useState<string>('ALL');
@@ -61,6 +63,52 @@ export default function ContestsArenaClient() {
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Fetch live contests from backend GraphQL API with fallback
+  useEffect(() => {
+    let isMounted = true;
+    async function loadContests() {
+      try {
+        const res = await apiService.getContests({ limit: 50 });
+        if (isMounted && res?.items && res.items.length > 0) {
+          const mapped: ContestEntity[] = res.items.map((c: any, idx: number) => {
+            const rawStatus = String(c.status || '').toUpperCase();
+            const status: ContestStatus = rawStatus === 'RUNNING' ? 'LIVE' : rawStatus === 'ENDED' ? 'PAST' : 'UPCOMING';
+            const durationMins = c.startTime && c.endTime
+              ? Math.round((new Date(c.endTime).getTime() - new Date(c.startTime).getTime()) / 60000)
+              : 120;
+            return {
+              id: c.id,
+              code: c.code || `CONTEST-${String(101 + idx)}`,
+              slug: c.slug || c.id,
+              title: c.title,
+              description: c.description || 'Weekly competitive programming round featuring standard ICPC and ACM scoring formats.',
+              status,
+              scope: (c.scope || 'Global') as ContestScope,
+              scoringFormat: (c.scoringFormat || 'ICPC (Penalty Time)') as ScoringFormat,
+              startTime: c.startTime || new Date(Date.now() + 86400000).toISOString(),
+              endTime: c.endTime || new Date(Date.now() + 86400000 + 7200000).toISOString(),
+              durationMinutes: durationMins,
+              problemsCount: c._count?.problems || 4,
+              registeredParticipants: c._count?.registrations || 240,
+              submissionsCount: c._count?.submissions || 0,
+              organizer: c.organizer || 'Competitive Programming Council',
+              bannerColor: '#2563EB',
+              tags: Array.isArray(c.tags) ? c.tags : ['Rated', 'Standard'],
+              rated: c.rated !== undefined ? Boolean(c.rated) : true,
+            };
+          });
+          setContests(mapped);
+        }
+      } catch (err) {
+        console.warn('Live contests fetch fallback:', err);
+      }
+    }
+    loadContests();
+    return () => {
+      isMounted = false;
+    };
+  }, [registeredIds]);
 
   const formatCountdown = (targetIso: string, isLive: boolean) => {
     if (now === null) return '--:--:--';
@@ -80,9 +128,19 @@ export default function ContestsArenaClient() {
     return `${prefix}${totalHours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleRegister = (contestId: string, title: string) => {
+  const handleRegister = async (contestId: string, title: string) => {
     setRegisteredIds((prev) => new Set(prev).add(contestId));
-    toast.success(`Successfully registered for ${title}!`, 'Registration Confirmed');
+    try {
+      await apiService.registerForContest(contestId);
+      toast.success(`Successfully registered for ${title}!`, 'Registration Confirmed');
+    } catch (err: any) {
+      setRegisteredIds((prev) => {
+        const next = new Set(prev);
+        next.delete(contestId);
+        return next;
+      });
+      toast.error(err?.message || `Failed to register for ${title}.`, 'Registration Failed');
+    }
   };
 
   // Reset pagination on filter change
@@ -92,7 +150,7 @@ export default function ContestsArenaClient() {
 
   // Filtered dataset
   const filteredContests = useMemo(() => {
-    return MOCK_CONTESTS.filter((c) => {
+    return contests.filter((c) => {
       const matchesSearch =
         c.title.toLowerCase().includes(search.toLowerCase()) ||
         c.code.toLowerCase().includes(search.toLowerCase()) ||
@@ -104,7 +162,7 @@ export default function ContestsArenaClient() {
 
       return matchesSearch && matchesScope && matchesStatus;
     });
-  }, [search, scopeFilter, statusTab]);
+  }, [contests, search, scopeFilter, statusTab]);
 
   // Export CSV using Blob to prevent truncation on '#' or special chars
   const handleExportCSV = () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -48,6 +48,7 @@ import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
 import { MOCK_COURSES } from '@/lib/mock-courses-data';
 import { CourseDirectoryEntity, CourseLevel, CourseCategory } from '@/types/course';
 import { useToast } from '@/context/ToastContext';
+import { apiService } from '@/lib/api-service';
 
 const LEVEL_COLORS: Record<CourseLevel, { bg: string; text: string }> = {
   Beginner: { bg: 'rgba(22, 163, 74, 0.1)', text: '#16A34A' },
@@ -59,6 +60,7 @@ export default function CourseCatalogClient() {
   const router = useRouter();
   const toast = useToast();
 
+  const [courses, setCourses] = useState<CourseDirectoryEntity[]>(MOCK_COURSES);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [levelFilter, setLevelFilter] = useState<string>('ALL');
@@ -76,16 +78,69 @@ export default function CourseCatalogClient() {
   // Selected course for syllabus inspection dialog
   const [selectedCourse, setSelectedCourse] = useState<CourseDirectoryEntity | null>(null);
 
+  // Fetch live courses from API with fallback
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCourses() {
+      try {
+        const res = await apiService.getCourses({ limit: 50 });
+        if (isMounted && res?.items && res.items.length > 0) {
+          const mapped: CourseDirectoryEntity[] = res.items.map((c: any, idx: number) => {
+            const totalLessons = c.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 12;
+            return {
+              id: c.id,
+              code: c.code || `CS-${String(100 + idx * 10)}`,
+              slug: c.slug || c.id,
+              title: c.title,
+              description: c.description || 'Comprehensive interactive curriculum covering core fundamentals and hands-on projects.',
+              category: (c.category || 'Computer Science & DSA') as CourseCategory,
+              level: (c.level || 'Intermediate') as CourseLevel,
+              instructorName: c.instructorName || c.instructor?.name || 'Academic Faculty',
+              instructorTitle: c.instructorTitle || 'Senior Faculty Instructor',
+              institutionName: c.institutionName || c.institution?.name || c.college?.name || 'Academic Institution',
+              durationHours: c.durationHours || 40,
+              modulesCount: c.modules?.length || c._count?.modules || 6,
+              lessonsCount: totalLessons,
+              enrolledStudents: c.enrolledStudents || c._count?.enrollments || 120,
+              completionRate: c.completionRate || 78,
+              status: (c.status === 'Draft' || c.status === 'Archived' ? c.status : 'Published') as 'Published' | 'Draft' | 'Archived',
+              tags: Array.isArray(c.tags) ? c.tags : ['Core', 'Curriculum'],
+              accentColor: c.accentColor || '#2563EB',
+              moduleHighlights: Array.isArray(c.moduleHighlights) && c.moduleHighlights.length > 0
+                ? c.moduleHighlights
+                : (Array.isArray(c.modules) && c.modules.length > 0
+                    ? c.modules.map((m: any) => ({
+                        title: m.title || 'Course Module',
+                        lessons: m.lessons?.length || 4,
+                      }))
+                    : [
+                        { title: 'Core Foundations', lessons: 6 },
+                        { title: 'Applied Practice', lessons: 6 },
+                      ]),
+            };
+          });
+          setCourses(mapped);
+        }
+      } catch (err) {
+        console.warn('Live courses fetch fallback:', err);
+      }
+    }
+    loadCourses();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Categories list
   const categories = useMemo(() => {
     const set = new Set<string>();
-    MOCK_COURSES.forEach((c) => set.add(c.category));
+    courses.forEach((c) => set.add(c.category));
     return Array.from(set);
-  }, []);
+  }, [courses]);
 
   // Filtered dataset
   const filteredCourses = useMemo(() => {
-    return MOCK_COURSES.filter((c) => {
+    return courses.filter((c) => {
       const matchesSearch =
         c.title.toLowerCase().includes(search.toLowerCase()) ||
         c.code.toLowerCase().includes(search.toLowerCase()) ||
@@ -103,7 +158,7 @@ export default function CourseCatalogClient() {
 
       return matchesSearch && matchesCategory && matchesLevel && matchesTab;
     });
-  }, [search, categoryFilter, levelFilter, activeTab, enrolledMap]);
+  }, [courses, search, categoryFilter, levelFilter, activeTab, enrolledMap]);
 
   // Export CSV
   const handleExportCSV = () => {
@@ -120,21 +175,31 @@ export default function CourseCatalogClient() {
       `${enrolledMap[c.id] ?? 0}%`,
     ]);
 
-    const csvContent = [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvData = [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `course_curriculum_${new Date().toISOString().split('T')[0]}.csv`);
+    link.href = url;
+    link.download = `courses_catalog_${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
 
-  const handleEnrollCourse = (courseId: string, title: string) => {
+  const handleEnrollCourse = async (courseId: string, title: string) => {
     setEnrolledMap((prev) => ({ ...prev, [courseId]: 0 }));
-    toast.success(`Enrolled in ${title}!`, 'Enrolled');
+    try {
+      await apiService.enrollInCourse(courseId);
+      toast.success(`Enrolled in ${title}!`, 'Enrolled');
+    } catch (err: any) {
+      setEnrolledMap((prev) => {
+        const next = { ...prev };
+        delete next[courseId];
+        return next;
+      });
+      toast.error(err?.message || `Failed to enroll in ${title}.`, 'Enrollment Failed');
+    }
   };
 
   return (

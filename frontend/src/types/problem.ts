@@ -39,8 +39,11 @@ export interface ProblemEntity {
   premium: boolean;
   companies: string[];
   statementMarkdown: string;
+  constraints?: string;
   sampleTestCases: TestCaseSample[];
   hints?: string[];
+  editorialMarkdown?: string;
+  referenceSolution?: { language: string; code: string };
 }
 
 export interface NewProblemData {

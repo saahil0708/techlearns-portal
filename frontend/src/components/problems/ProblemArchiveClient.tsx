@@ -44,6 +44,7 @@ import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRou
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
 import { MOCK_PROBLEMS } from '@/lib/mock-problems-data';
 import { ProblemDifficulty, ProblemEntity } from '@/types/problem';
+import { apiService } from '@/lib/api-service';
 
 const DIFFICULTY_CONFIG: Record<ProblemDifficulty, { label: string; color: string; bg: string }> = {
   Easy: { label: 'Easy', color: '#16A34A', bg: 'rgba(22, 163, 74, 0.1)' },
@@ -51,8 +52,21 @@ const DIFFICULTY_CONFIG: Record<ProblemDifficulty, { label: string; color: strin
   Hard: { label: 'Hard', color: '#DC2626', bg: 'rgba(220, 38, 38, 0.1)' },
 };
 
+function sanitizeCsvField(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return '""';
+  if (typeof value === 'number') return String(value);
+
+  let str = String(value);
+  if (/^[=+\-@]/.test(str)) {
+    str = `'${str}`;
+  }
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
 export default function ProblemArchiveClient() {
   const router = useRouter();
+  const [problems, setProblems] = useState<ProblemEntity[]>(MOCK_PROBLEMS);
+  const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
@@ -60,9 +74,86 @@ export default function ProblemArchiveClient() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Solved problem tracker (mock student state)
-  const [solvedIds] = useState<Set<string>>(new Set(['prob-1', 'prob-8']));
-  const [attemptedIds] = useState<Set<string>>(new Set(['prob-2', 'prob-5']));
+  // Solved and Attempted problem trackers from live submissions API
+  const [solvedIds, setSolvedIds] = useState<Set<string>>(new Set());
+  const [attemptedIds, setAttemptedIds] = useState<Set<string>>(new Set());
+
+  // Fetch live problems and user submissions from backend GraphQL API
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const [res, subsRes] = await Promise.all([
+          apiService.getProblems({ limit: 100 }),
+          apiService.getSubmissions({ limit: 100 }).catch(() => null),
+        ]);
+
+        if (subsRes?.items && isMounted) {
+          const solved = new Set<string>();
+          const attempted = new Set<string>();
+          subsRes.items.forEach((sub: any) => {
+            const pId = sub.problemId || sub.problem?.id;
+            if (pId) {
+              const v = String(sub.verdict || '').toUpperCase();
+              if (v === 'ACCEPTED' || v === 'AC') {
+                solved.add(pId);
+              } else {
+                attempted.add(pId);
+              }
+            }
+          });
+          // Unsolved attempted problems only
+          solved.forEach((id) => attempted.delete(id));
+          setSolvedIds(solved);
+          setAttemptedIds(attempted);
+        }
+
+        if (isMounted && res?.items && res.items.length > 0) {
+          const mapped: ProblemEntity[] = res.items.map((item: any, idx: number) => {
+            const rawDiff = String(item.difficulty || '').toUpperCase();
+            const diff: ProblemDifficulty = rawDiff === 'EASY' ? 'Easy' : rawDiff === 'HARD' ? 'Hard' : 'Medium';
+            const subCount = item._count?.submissions || item.submissionsCount || 0;
+            const accepted = item.acceptedCount || 0;
+            const accRate = subCount > 0 ? Math.round((accepted / subCount) * 100) : 54;
+            return {
+              id: item.id,
+              code: item.code || `PROB-${String(idx + 1).padStart(3, '0')}`,
+              slug: item.slug || item.id,
+              title: item.title,
+              category: item.category || 'Dynamic Programming',
+              difficulty: diff,
+              acceptanceRate: accRate,
+              totalSubmissions: subCount,
+              acceptedSubmissions: accepted,
+              testCasesCount: item._count?.testCases || 10,
+              authorName: item.authorName || 'Platform Team',
+              tags: Array.isArray(item.tags) ? item.tags : ['Algorithms'],
+              status: item.status === 'PUBLISHED' ? 'Published' : 'Draft',
+              points: item.points || (diff === 'Easy' ? 100 : diff === 'Medium' ? 200 : 350),
+              timeLimitMs: item.timeLimit || 2000,
+              memoryLimitMb: item.memoryLimit || 256,
+              likes: 120 + idx * 7,
+              dislikes: 4 + (idx % 3),
+              premium: false,
+              companies: ['Google', 'Meta', 'Amazon'],
+              statementMarkdown: item.statement || '',
+              sampleTestCases: [],
+            };
+          });
+          setProblems(mapped);
+        }
+      } catch (err) {
+        console.warn('Live problems query failed, fallback to mock problems:', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadData();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Reset pagination on filter change
   useEffect(() => {
@@ -72,13 +163,13 @@ export default function ProblemArchiveClient() {
   // Categories list
   const categories = useMemo(() => {
     const set = new Set<string>();
-    MOCK_PROBLEMS.forEach((p) => set.add(p.category));
+    problems.forEach((p) => set.add(p.category));
     return Array.from(set);
-  }, []);
+  }, [problems]);
 
   // Filtered dataset
   const filteredProblems = useMemo(() => {
-    return MOCK_PROBLEMS.filter((p) => {
+    return problems.filter((p) => {
       const matchesSearch =
         p.title.toLowerCase().includes(search.toLowerCase()) ||
         p.code.toLowerCase().includes(search.toLowerCase()) ||
@@ -89,24 +180,24 @@ export default function ProblemArchiveClient() {
 
       let matchesStatus = true;
       if (statusTab === 'SOLVED') matchesStatus = solvedIds.has(p.id);
-      if (statusTab === 'ATTEMPTED') matchesStatus = attemptedIds.has(p.id);
+      if (statusTab === 'ATTEMPTED') matchesStatus = attemptedIds.has(p.id) && !solvedIds.has(p.id);
       if (statusTab === 'TODO') matchesStatus = !solvedIds.has(p.id) && !attemptedIds.has(p.id);
 
       return matchesSearch && matchesDifficulty && matchesCategory && matchesStatus;
     });
-  }, [search, difficultyFilter, categoryFilter, statusTab, solvedIds, attemptedIds]);
+  }, [problems, search, difficultyFilter, categoryFilter, statusTab, solvedIds, attemptedIds]);
 
   // Export CSV using Blob to prevent truncation on '#' or special chars
   const handleExportCSV = () => {
     const headers = ['Code', 'Title', 'Category', 'Difficulty', 'AcceptanceRate', 'Submissions', 'Points'];
     const rows = filteredProblems.map((p) => [
-      p.code,
-      `"${p.title.replace(/"/g, '""')}"`,
-      `"${p.category}"`,
-      p.difficulty,
-      `${p.acceptanceRate}%`,
-      p.totalSubmissions,
-      p.points,
+      sanitizeCsvField(p.code),
+      sanitizeCsvField(p.title),
+      sanitizeCsvField(p.category),
+      sanitizeCsvField(p.difficulty),
+      sanitizeCsvField(`${p.acceptanceRate}%`),
+      sanitizeCsvField(p.totalSubmissions),
+      sanitizeCsvField(p.points),
     ]);
 
     const csvData = [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
@@ -129,10 +220,26 @@ export default function ProblemArchiveClient() {
     }
   };
 
-  const totalEasy = MOCK_PROBLEMS.filter((p) => p.difficulty === 'Easy').length;
-  const totalMed = MOCK_PROBLEMS.filter((p) => p.difficulty === 'Medium').length;
-  const totalHard = MOCK_PROBLEMS.filter((p) => p.difficulty === 'Hard').length;
-  const solvedCount = solvedIds.size;
+  const solvedInProblems = useMemo(() => {
+    return problems.filter((p) => solvedIds.has(p.id));
+  }, [problems, solvedIds]);
+
+  const attemptedInProblems = useMemo(() => {
+    return problems.filter((p) => attemptedIds.has(p.id) && !solvedIds.has(p.id));
+  }, [problems, attemptedIds, solvedIds]);
+
+  const solvedCount = solvedInProblems.length;
+  const attemptedCount = attemptedInProblems.length;
+
+  const totalEasy = useMemo(() => problems.filter((p) => p.difficulty === 'Easy').length, [problems]);
+  const totalMed = useMemo(() => problems.filter((p) => p.difficulty === 'Medium').length, [problems]);
+  const totalHard = useMemo(() => problems.filter((p) => p.difficulty === 'Hard').length, [problems]);
+
+  const solvedEasy = useMemo(() => solvedInProblems.filter((p) => p.difficulty === 'Easy').length, [solvedInProblems]);
+  const solvedMed = useMemo(() => solvedInProblems.filter((p) => p.difficulty === 'Medium').length, [solvedInProblems]);
+  const solvedHard = useMemo(() => solvedInProblems.filter((p) => p.difficulty === 'Hard').length, [solvedInProblems]);
+
+  const progressPercent = problems.length > 0 ? Math.min(100, Math.max(0, Math.round((solvedCount / problems.length) * 100))) : 0;
 
   return (
     <StudentAppLayout streakDays={48} contestRating={2380} ratingTier="Master">
@@ -238,12 +345,12 @@ export default function ProblemArchiveClient() {
                 {solvedCount}
               </Typography>
               <Typography sx={{ fontSize: '0.84rem', color: '#64748B', fontWeight: 600 }}>
-                / {MOCK_PROBLEMS.length} Solved ({Math.round((solvedCount / MOCK_PROBLEMS.length) * 100)}%)
+                / {problems.length} Solved ({progressPercent}%)
               </Typography>
             </Box>
             <LinearProgress
               variant="determinate"
-              value={(solvedCount / MOCK_PROBLEMS.length) * 100}
+              value={progressPercent}
               sx={{
                 mt: 1,
                 height: 8,
@@ -263,7 +370,7 @@ export default function ProblemArchiveClient() {
               Easy Solves
             </Typography>
             <Typography sx={{ fontSize: '1.15rem', fontWeight: 800, color: '#0F172A' }}>
-              {Array.from(solvedIds).filter((id) => MOCK_PROBLEMS.find((p) => p.id === id)?.difficulty === 'Easy').length}
+              {solvedEasy}
               <span style={{ fontSize: '0.78rem', color: '#94A3B8', fontWeight: 600 }}> / {totalEasy}</span>
             </Typography>
           </Box>
@@ -274,7 +381,7 @@ export default function ProblemArchiveClient() {
               Medium Solves
             </Typography>
             <Typography sx={{ fontSize: '1.15rem', fontWeight: 800, color: '#0F172A' }}>
-              {Array.from(solvedIds).filter((id) => MOCK_PROBLEMS.find((p) => p.id === id)?.difficulty === 'Medium').length}
+              {solvedMed}
               <span style={{ fontSize: '0.78rem', color: '#94A3B8', fontWeight: 600 }}> / {totalMed}</span>
             </Typography>
           </Box>
@@ -285,7 +392,7 @@ export default function ProblemArchiveClient() {
               Hard Solves
             </Typography>
             <Typography sx={{ fontSize: '1.15rem', fontWeight: 800, color: '#0F172A' }}>
-              {Array.from(solvedIds).filter((id) => MOCK_PROBLEMS.find((p) => p.id === id)?.difficulty === 'Hard').length}
+              {solvedHard}
               <span style={{ fontSize: '0.78rem', color: '#94A3B8', fontWeight: 600 }}> / {totalHard}</span>
             </Typography>
           </Box>
@@ -333,8 +440,8 @@ export default function ProblemArchiveClient() {
               }}
             >
               <Tab label="All Problems" value="ALL" />
-              <Tab label={`Solved (${solvedIds.size})`} value="SOLVED" />
-              <Tab label={`Attempted (${attemptedIds.size})`} value="ATTEMPTED" />
+              <Tab label={`Solved (${solvedCount})`} value="SOLVED" />
+              <Tab label={`Attempted (${attemptedCount})`} value="ATTEMPTED" />
               <Tab label="Todo" value="TODO" />
             </Tabs>
 

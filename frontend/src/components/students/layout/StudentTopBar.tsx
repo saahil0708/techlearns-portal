@@ -16,6 +16,7 @@ import {
   ListItemIcon,
   Divider,
 } from '@mui/material';
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import {
   FaMagnifyingGlass,
   FaFire,
@@ -202,16 +203,25 @@ export default function StudentTopBar({
                 fontWeight: 700,
               }}
             >
-              {initials}
+              <span suppressHydrationWarning>{initials}</span>
             </Avatar>
             <Box sx={{ display: { xs: 'none', md: 'block' }, textAlign: 'left' }}>
-              <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A', lineHeight: 1.1 }}>
+              <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A', lineHeight: 1.1 }} suppressHydrationWarning>
                 {displayName}
               </Typography>
               <Typography sx={{ fontSize: '0.68rem', color: '#64748B' }}>
                 Student Coder
               </Typography>
             </Box>
+            <KeyboardArrowDownRoundedIcon
+              sx={{
+                fontSize: 18,
+                color: '#64748B',
+                transition: 'transform 0.2s ease, color 0.15s ease',
+                transform: Boolean(anchorEl) ? 'rotate(180deg)' : 'rotate(0deg)',
+                ml: 0.25,
+              }}
+            />
           </Box>
         </Box>
       </Box>
