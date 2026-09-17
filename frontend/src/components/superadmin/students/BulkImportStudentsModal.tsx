@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,12 +11,15 @@ import {
   Select,
   MenuItem,
   Chip,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded';
 import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
 import { parseCsvText } from '@/utils/csv';
@@ -27,20 +28,45 @@ export interface BulkImportStudentsModalProps {
   open: boolean;
   onClose: () => void;
   onImportSuccess: (count: number) => void;
+  institutionId?: string;
+  institutionName?: string;
+  defaultBatchId?: string;
+  batches?: Array<{ id: string; name: string; code?: string }>;
 }
 
 export default function BulkImportStudentsModal({
   open,
   onClose,
   onImportSuccess,
+  institutionId,
+  institutionName,
+  defaultBatchId,
+  batches = [],
 }: BulkImportStudentsModalProps) {
   const toast = useToast();
-  const [selectedInstitution, setSelectedInstitution] = useState('Stanford University - Dept of CS');
+  const [selectedInstitution, setSelectedInstitution] = useState(institutionName || 'Stanford University - Dept of CS');
+  const [selectedBatchId, setSelectedBatchId] = useState<string>(defaultBatchId || '');
   const [fileName, setFileName] = useState<string | null>(null);
   const [rowCount, setRowCount] = useState<number>(0);
   const [parsedStudents, setParsedStudents] = useState<Array<{ name: string; email: string; rollNo?: string }>>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const borderColor = '#E2E8F0';
+
+  useEffect(() => {
+    if (defaultBatchId) {
+      setSelectedBatchId(defaultBatchId);
+    } else if (batches.length > 0) {
+      setSelectedBatchId(batches[0].id);
+    } else {
+      setSelectedBatchId('');
+    }
+  }, [defaultBatchId, batches]);
+
+  useEffect(() => {
+    if (institutionName) {
+      setSelectedInstitution(institutionName);
+    }
+  }, [institutionName]);
 
   const handleSimulateFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -124,11 +150,18 @@ export default function BulkImportStudentsModal({
     if (parsedStudents.length === 0) return;
     setIsProcessing(true);
     try {
+      const targetBatchId =
+        selectedBatchId && selectedBatchId !== 'ALL' && selectedBatchId !== 'Unassigned'
+          ? selectedBatchId
+          : undefined;
+
       await apiService.bulkInviteUsers({
         users: parsedStudents.map((s) => ({
           name: s.name,
           email: s.email,
           role: 'STUDENT',
+          ...(institutionId ? { institutionId } : {}),
+          ...(targetBatchId ? { batchId: targetBatchId } : {}),
           ...(s.rollNo ? { rollNo: s.rollNo } : {}),
         })),
       });
@@ -210,30 +243,81 @@ export default function BulkImportStudentsModal({
       </DialogTitle>
 
       <DialogContent sx={{ px: 3.5, pt: '28px !important', pb: 3, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-        {/* Step 1: Destination Institution */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
-            ASSIGN TO INSTITUTION & COHORT
-          </Typography>
-          <Select
-            size="small"
-            value={selectedInstitution}
-            onChange={(e) => setSelectedInstitution(e.target.value)}
-            sx={{
-              bgcolor: '#F8FAFC',
-              color: '#0F172A',
-              borderRadius: '9999px',
-              fontSize: '0.85rem',
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-              '& .MuiSvgIcon-root': { color: '#64748B' },
-            }}
-          >
-            <MenuItem value="Stanford University - Dept of CS">Stanford University - Dept of CS</MenuItem>
-            <MenuItem value="Massachusetts Inst of Technology (MIT)">Massachusetts Inst of Technology (MIT)</MenuItem>
-            <MenuItem value="IIT Delhi - Dept of Comp Science">IIT Delhi - Dept of Comp Science</MenuItem>
-            <MenuItem value="Stuyvesant High School of Science">Stuyvesant High School of Science</MenuItem>
-            <MenuItem value="Thomas Jefferson High School for Science & Tech">Thomas Jefferson High School for Science & Tech</MenuItem>
-          </Select>
+        {/* Step 1: Destination Institution & Batch */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: batches.length > 0 ? { xs: '1fr', sm: '1.2fr 1fr' } : '1fr', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+            <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, fontSize: '0.72rem' }}>
+              TARGET INSTITUTION
+            </Typography>
+            {institutionName ? (
+              <Box
+                sx={{
+                  p: 1.25,
+                  px: 1.75,
+                  bgcolor: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
+                <SchoolRoundedIcon sx={{ color: '#2563EB', fontSize: 18 }} />
+                <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {institutionName}
+                </Typography>
+              </Box>
+            ) : (
+              <Select
+                size="small"
+                value={selectedInstitution}
+                onChange={(e) => setSelectedInstitution(e.target.value)}
+                sx={{
+                  bgcolor: '#F8FAFC',
+                  color: '#0F172A',
+                  borderRadius: '10px',
+                  fontSize: '0.85rem',
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                  '& .MuiSvgIcon-root': { color: '#64748B' },
+                }}
+              >
+                <MenuItem value="Stanford University - Dept of CS">Stanford University - Dept of CS</MenuItem>
+                <MenuItem value="Massachusetts Inst of Technology (MIT)">Massachusetts Inst of Technology (MIT)</MenuItem>
+                <MenuItem value="IIT Delhi - Dept of Comp Science">IIT Delhi - Dept of Comp Science</MenuItem>
+                <MenuItem value="Stuyvesant High School of Science">Stuyvesant High School of Science</MenuItem>
+                <MenuItem value="Thomas Jefferson High School for Science & Tech">Thomas Jefferson High School for Science & Tech</MenuItem>
+              </Select>
+            )}
+          </Box>
+
+          {batches.length > 0 && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+              <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, fontSize: '0.72rem' }}>
+                TARGET BATCH / COHORT
+              </Typography>
+              <Select
+                size="small"
+                value={selectedBatchId}
+                onChange={(e) => setSelectedBatchId(e.target.value)}
+                sx={{
+                  bgcolor: '#F8FAFC',
+                  color: '#0F172A',
+                  borderRadius: '10px',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                  '& .MuiSvgIcon-root': { color: '#64748B' },
+                }}
+              >
+                <MenuItem value=""><em>Unassigned / From CSV</em></MenuItem>
+                {batches.map((b) => (
+                  <MenuItem key={b.id} value={b.id}>
+                    {b.name} {b.code ? `(${b.code})` : ''}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+          )}
         </Box>
 
         {/* Step 2: Upload Dropzone */}

@@ -176,7 +176,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 gap: 1.5,
                 px: 2.25,
                 py: 1.2,
-                borderRadius: '9999px',
+                borderRadius: '16px',
                 bgcolor: '#090D14',
                 background: 'linear-gradient(180deg, #111827 0%, #030712 100%)',
                 border: '1px solid rgba(255, 255, 255, 0.12)',
@@ -184,7 +184,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
                 color: '#FFFFFF',
-                maxWidth: '100%',
+                maxWidth: 'min(92vw, 560px)',
                 animation: 'dynamicIslandDrop 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                 '@keyframes dynamicIslandDrop': {
                   '0%': { transform: 'scale(0.65) translateY(-24px)', opacity: 0 },
@@ -227,8 +227,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 {style.icon}
               </Box>
 
-              {/* Text content in sleek inline layout */}
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, minWidth: 0 }}>
+              {/* Text content with flexible, readable layout */}
+              <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, gap: { xs: 0.25, sm: 1 }, minWidth: 0, flex: 1 }}>
                 <Typography
                   component="span"
                   sx={{
@@ -237,9 +237,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     color: '#FFFFFF',
                     letterSpacing: '-0.01em',
                     whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: { xs: '180px', sm: '260px' },
+                    flexShrink: 0,
                   }}
                 >
                   {item.title || style.defaultTitle}
@@ -252,10 +250,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                       fontSize: '0.8rem',
                       color: '#94A3B8',
                       fontWeight: 450,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      maxWidth: { xs: '200px', sm: '320px' },
+                      lineHeight: 1.35,
+                      wordBreak: 'break-word',
                     }}
                   >
                     {item.message}

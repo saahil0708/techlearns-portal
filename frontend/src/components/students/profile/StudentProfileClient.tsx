@@ -14,7 +14,7 @@ import {
 
 export type { StudentProfileData };
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { setUser } from '@/store/slices/authSlice';
+import { setUser, checkCurrentUser } from '@/store/slices/authSlice';
 import { useToast } from '@/context/ToastContext';
 import { MuiCenterLoader, MuiPageLoader } from '@/components/shared/MuiLoadingFallback';
 import { apiService } from '@/lib/api-service';
@@ -203,27 +203,58 @@ export default function StudentProfileClient({
 
   // 1. Sync when Redux currentUser state arrives or updates
   useEffect(() => {
-    if (isOwner && currentUser?.name) {
-      setProfile((prev) => ({
-        ...prev,
-        id: currentUser.id || prev.id,
-        name: currentUser.name,
-        handle: currentUser.rollNo || currentUser.handle || (currentUser.email ? currentUser.email.split('@')[0] : prev.handle),
-        email: currentUser.email || prev.email,
-        role: currentUser.globalRole || prev.role,
-        bio: (currentUser as any).bio !== undefined && (currentUser as any).bio !== null ? (currentUser as any).bio : prev.bio,
-        institution: (currentUser as any).institution || (currentUser as any).memberships?.[0]?.college?.name || prev.institution,
-        location: (currentUser as any).location !== undefined && (currentUser as any).location !== null ? (currentUser as any).location : prev.location,
-        phone: (currentUser as any).phone !== undefined && (currentUser as any).phone !== null ? (currentUser as any).phone : prev.phone,
-        githubUrl: (currentUser as any).githubUrl !== undefined && (currentUser as any).githubUrl !== null ? (currentUser as any).githubUrl : prev.githubUrl,
-        linkedinUrl: (currentUser as any).linkedinUrl !== undefined && (currentUser as any).linkedinUrl !== null ? (currentUser as any).linkedinUrl : prev.linkedinUrl,
-        websiteUrl: (currentUser as any).websiteUrl !== undefined && (currentUser as any).websiteUrl !== null ? (currentUser as any).websiteUrl : prev.websiteUrl,
-        contestRating: (currentUser as any).contestRating !== undefined ? (currentUser as any).contestRating : prev.contestRating,
-        ratingTier: (currentUser as any).ratingTier || prev.ratingTier,
-        avatarUrl: (currentUser as any).avatarUrl || prev.avatarUrl,
-      }));
+    if (isOwner) {
+      if (currentUser?.name) {
+        setProfile((prev) => ({
+          ...prev,
+          id: currentUser.id || prev.id,
+          name: currentUser.name,
+          handle: currentUser.rollNo || currentUser.handle || (currentUser.email ? currentUser.email.split('@')[0] : prev.handle),
+          email: currentUser.email || prev.email,
+          role: currentUser.globalRole || prev.role,
+          bio: (currentUser as any).bio !== undefined && (currentUser as any).bio !== null ? (currentUser as any).bio : prev.bio,
+          institution: (currentUser as any).institution || (currentUser as any).memberships?.[0]?.college?.name || prev.institution,
+          location: (currentUser as any).location !== undefined && (currentUser as any).location !== null ? (currentUser as any).location : prev.location,
+          phone: (currentUser as any).phone !== undefined && (currentUser as any).phone !== null ? (currentUser as any).phone : prev.phone,
+          githubUrl: (currentUser as any).githubUrl !== undefined && (currentUser as any).githubUrl !== null ? (currentUser as any).githubUrl : prev.githubUrl,
+          linkedinUrl: (currentUser as any).linkedinUrl !== undefined && (currentUser as any).linkedinUrl !== null ? (currentUser as any).linkedinUrl : prev.linkedinUrl,
+          websiteUrl: (currentUser as any).websiteUrl !== undefined && (currentUser as any).websiteUrl !== null ? (currentUser as any).websiteUrl : prev.websiteUrl,
+          contestRating: (currentUser as any).contestRating !== undefined ? (currentUser as any).contestRating : prev.contestRating,
+          ratingTier: (currentUser as any).ratingTier || prev.ratingTier,
+          avatarUrl: (currentUser as any).avatarUrl || prev.avatarUrl,
+        }));
+      } else if (typeof window !== 'undefined') {
+        // Instant fallback hydration from localStorage while Redux boots
+        try {
+          const raw = localStorage.getItem('codeplatform_user');
+          if (raw) {
+            const u = JSON.parse(raw);
+            if (u?.name) {
+              setProfile((prev) => ({
+                ...prev,
+                id: u.id || prev.id,
+                name: u.name,
+                handle: u.rollNo || u.handle || (u.email ? u.email.split('@')[0] : prev.handle),
+                email: u.email || prev.email,
+                role: u.globalRole || prev.role,
+                bio: u.bio !== undefined && u.bio !== null ? u.bio : prev.bio,
+                institution: u.institution || u.memberships?.[0]?.college?.name || prev.institution,
+                location: u.location !== undefined && u.location !== null ? u.location : prev.location,
+                phone: u.phone !== undefined && u.phone !== null ? u.phone : prev.phone,
+                githubUrl: u.githubUrl !== undefined && u.githubUrl !== null ? u.githubUrl : prev.githubUrl,
+                linkedinUrl: u.linkedinUrl !== undefined && u.linkedinUrl !== null ? u.linkedinUrl : prev.linkedinUrl,
+                websiteUrl: u.websiteUrl !== undefined && u.websiteUrl !== null ? u.websiteUrl : prev.websiteUrl,
+                contestRating: u.contestRating !== undefined ? u.contestRating : prev.contestRating,
+                ratingTier: u.ratingTier || prev.ratingTier,
+                avatarUrl: u.avatarUrl || prev.avatarUrl,
+              }));
+            }
+          }
+        } catch {}
+        dispatch(checkCurrentUser());
+      }
     }
-  }, [currentUser, isOwner]);
+  }, [currentUser, isOwner, dispatch]);
 
   // 2. Auto-polling: Query live comprehensive profile statistics from backend with tab visibility awareness
   const fetchLiveProfile = useCallback(async () => {

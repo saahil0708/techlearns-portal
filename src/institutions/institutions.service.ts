@@ -130,33 +130,59 @@ export class InstitutionsService {
   }
 
   async findOne(id: string) {
-    const institution = await this.prisma.institution.findUnique({
-      where: { id },
-      include: {
-        memberships: {
-          include: {
-            user: {
-              select: userSanitizedSelect,
+    const [institution, pendingInvitations] = await Promise.all([
+      this.prisma.institution.findUnique({
+        where: { id },
+        include: {
+          memberships: {
+            include: {
+              user: {
+                select: userSanitizedSelect,
+              },
+            },
+          },
+          batches: {
+            include: {
+              _count: {
+                select: { students: true },
+              },
+            },
+          },
+          _count: {
+            select: {
+              memberships: true,
+              batches: true,
+              courses: true,
+              problems: true,
+              contests: true,
             },
           },
         },
-        _count: {
-          select: {
-            memberships: true,
-            batches: true,
-            courses: true,
-            problems: true,
-            contests: true,
+      }),
+      this.prisma.userInvitation.findMany({
+        where: {
+          institutionId: id,
+          acceptedAt: null,
+          revokedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        include: {
+          delivery: {
+            select: { status: true },
           },
         },
-      },
-    });
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
 
     if (!institution) {
       throw new NotFoundException(`Institution with ID ${id} not found`);
     }
 
-    return institution;
+    return {
+      ...institution,
+      pendingInvitations,
+    };
   }
 
   async update(id: string, dto: UpdateInstitutionDto) {

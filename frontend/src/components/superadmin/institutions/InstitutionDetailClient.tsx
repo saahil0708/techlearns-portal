@@ -21,6 +21,8 @@ import {
   TableRow,
   TableCell,
   TableContainer,
+  FormControl,
+  InputLabel,
   Select,
   Tabs,
   Tab,
@@ -57,7 +59,11 @@ import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
-import { generateBatchCode } from '@/utils/batch-code';
+import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
+import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded';
+import dynamic from 'next/dynamic';
+
+const BulkImportStudentsModal = dynamic(() => import('@/components/superadmin/students/BulkImportStudentsModal'), { loading: () => null });
 
 // Components
 import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
@@ -95,7 +101,8 @@ export interface StudentRosterItem {
   accuracy: string;
   streakDays: number;
   rank: number;
-  status: 'Active' | 'Inactive';
+  status: 'Active' | 'Pending' | 'Inactive';
+  activationUrl?: string;
 }
 
 // Course Assignment item
@@ -130,6 +137,47 @@ export interface InstitutionDetailClientProps {
 }
 
 export type CollegeDetailClientProps = InstitutionDetailClientProps;
+
+function generateBatchCode(batchName: string, institutionCode?: string, existingBatches?: { code?: string }[]): string {
+  if (!batchName?.trim()) {
+    const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `${(institutionCode || 'BATCH').toUpperCase()}-${new Date().getFullYear()}-${randomSuffix}`;
+  }
+
+  const cleaned = batchName.trim().toUpperCase().replace(/[^A-Z0-9\s-]/g, '');
+  const rawWords = cleaned.split(/[\s-]+/).filter(Boolean);
+
+  // Filter common filler/noise words if other meaningful words exist
+  const stopWords = new Set(['THE', 'OF', 'AND', 'FOR', 'IN', 'ON', 'AT', 'TO', 'A', 'AN', 'BATCH', 'COHORT', 'CLASS', 'SECTION']);
+  const meaningfulWords = rawWords.filter((w) => !stopWords.has(w));
+  const wordsToUse = meaningfulWords.length > 0 ? meaningfulWords : rawWords;
+
+  let basePrefix = '';
+  if (wordsToUse.length === 1) {
+    basePrefix = wordsToUse[0].slice(0, 10);
+  } else if (wordsToUse.length === 2 && wordsToUse[0].length <= 5 && wordsToUse[1].length <= 6) {
+    basePrefix = `${wordsToUse[0]}-${wordsToUse[1]}`;
+  } else if (wordsToUse.length <= 3 && wordsToUse.every((w) => w.length <= 4)) {
+    basePrefix = wordsToUse.join('-');
+  } else {
+    // Meaningful longest keyword (e.g. "The Uniques" -> "UNIQUES", "Full Stack Web" -> "FSW")
+    const acronym = wordsToUse.map((w) => w[0]).join('');
+    const longestWord = wordsToUse.reduce((a, b) => (b.length > a.length ? b : a), '');
+    basePrefix = longestWord.length >= 4 && wordsToUse.length <= 2 ? longestWord.slice(0, 10) : acronym.slice(0, 6);
+  }
+
+  const effectivePrefix = basePrefix.trim() || (institutionCode || 'BATCH').toUpperCase();
+  const year = new Date().getFullYear();
+  let candidate = `${effectivePrefix}-${year}`;
+
+  // If candidate code already exists in institution's batches, append random salt
+  if (existingBatches && existingBatches.some((b) => b.code?.toUpperCase() === candidate)) {
+    const randomTag = Math.random().toString(36).substring(2, 5).toUpperCase();
+    candidate = `${effectivePrefix}-${year}-${randomTag}`;
+  }
+
+  return candidate;
+}
 
 interface PaginationToolbarProps {
   totalEntries: number;
@@ -390,8 +438,21 @@ export default function InstitutionDetailClient({
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentEmail, setNewStudentEmail] = useState('');
+  const [newStudentRollNo, setNewStudentRollNo] = useState('');
   const [newStudentBatch, setNewStudentBatch] = useState('Unassigned');
   const [isSubmittingStudent, setIsSubmittingStudent] = useState(false);
+
+  // Edit Student Modal State
+  const [editingStudent, setEditingStudent] = useState<StudentRosterItem | null>(null);
+  const [editStudentName, setEditStudentName] = useState<string>('');
+  const [editStudentEmail, setEditStudentEmail] = useState<string>('');
+  const [editStudentRollNo, setEditStudentRollNo] = useState<string>('');
+  const [editStudentBatchId, setEditStudentBatchId] = useState<string>('Unassigned');
+  const [isSavingStudent, setIsSavingStudent] = useState<boolean>(false);
+
+  // Delete Student Modal State
+  const [deleteTargetStudent, setDeleteTargetStudent] = useState<StudentRosterItem | null>(null);
+  const [isDeletingStudent, setIsDeletingStudent] = useState<boolean>(false);
 
   // Invitation Success & Copy Modal State
   const [invitationSuccessData, setInvitationSuccessData] = useState<{
@@ -405,6 +466,182 @@ export default function InstitutionDetailClient({
   const [assigningStudent, setAssigningStudent] = useState<StudentRosterItem | null>(null);
   const [assignTargetBatchId, setAssignTargetBatchId] = useState<string>('');
   const [isAssigningBatch, setIsAssigningBatch] = useState<boolean>(false);
+
+  // Bulk Import Students Modal State
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState<boolean>(false);
+  const [bulkImportDefaultBatchId, setBulkImportDefaultBatchId] = useState<string>('');
+
+  const handleBulkImportSuccess = async (count: number) => {
+    toast.success(`Successfully imported and sent invitations to ${count} students.`, 'Bulk Import Complete');
+    try {
+      const updatedInst = await apiService.getInstitutionById(liveInstitution.id);
+      if (updatedInst && updatedInst.batches) {
+        setBatches(
+          updatedInst.batches.map((b: any) => ({
+            id: b.id,
+            name: b.name,
+            code: b.code || '',
+            studentsCount: b.studentsCount || b._count?.users || 0,
+            maxCapacity: b.capacity || 100,
+            facultyLead: b.leadFaculty?.name || 'Unassigned',
+            coursesAssigned: b.coursesCount || b._count?.courses || 0,
+            year: b.year || `${new Date().getFullYear()}`,
+            status: b.status === 'ARCHIVED' ? 'Completed' : 'Active',
+            avgAccuracy: '80%',
+          }))
+        );
+      }
+      const usersRes = await apiService.getUsers({ role: 'STUDENT', limit: 100 });
+      const studentsData = usersRes?.items || [];
+      if (studentsData && Array.isArray(studentsData)) {
+        const instStudents = studentsData.filter(
+          (s: any) => s.institutionId === liveInstitution.id || s.collegeId === liveInstitution.id || s.institutionName === liveInstitution.name || s.institution === liveInstitution.name
+        );
+        if (instStudents.length > 0) {
+          setStudents(
+            instStudents.map((s: any, idx: number) => ({
+              id: s.id || `stu-${idx}`,
+              name: s.name || 'Student',
+              rollNo: s.rollNo || `ID-${idx + 1}`,
+              email: s.email,
+              batch: s.batchName || s.batch?.name || 'Unassigned',
+              problemsSolved: s.problemsSolved || 0,
+              accuracy: s.accuracy || '0%',
+              streakDays: s.streakDays || 0,
+              rank: s.rank || idx + 1,
+              status: s.status === 'INACTIVE' ? 'Inactive' : 'Active',
+            }))
+          );
+        }
+      }
+    } catch {
+      // Background sync
+    }
+  };
+
+  const handleOpenEditStudent = (student: StudentRosterItem) => {
+    setEditingStudent(student);
+    setEditStudentName(student.name);
+    setEditStudentEmail(student.email);
+    setEditStudentRollNo(student.rollNo === '—' ? '' : student.rollNo);
+    const matchedBatch = batches.find((b) => b.name === student.batch);
+    setEditStudentBatchId(matchedBatch ? matchedBatch.id : 'Unassigned');
+  };
+
+  const handleSaveEditStudent = async () => {
+    if (!editingStudent || !editStudentName.trim() || isSavingStudent) return;
+    setIsSavingStudent(true);
+    try {
+      await apiService.updateUser(editingStudent.id, {
+        name: editStudentName.trim(),
+        email: editStudentEmail.trim().toLowerCase(),
+        rollNo: editStudentRollNo.trim() || undefined,
+      });
+
+      // 1. Immediately reflect user fields (name, email, rollNo) in local state
+      setStudents((prev) =>
+        prev.map((s) =>
+          s.id === editingStudent.id
+            ? {
+                ...s,
+                name: editStudentName.trim(),
+                email: editStudentEmail.trim().toLowerCase(),
+                rollNo: editStudentRollNo.trim() || '—',
+              }
+            : s
+        )
+      );
+
+      // 2. Handle batch reassignment separately if changed
+      const oldBatch = batches.find((b) => b.name === editingStudent.batch);
+      const isBatchChanging =
+        (editStudentBatchId && editStudentBatchId !== 'Unassigned' && (!oldBatch || oldBatch.id !== editStudentBatchId)) ||
+        (editStudentBatchId === 'Unassigned' && oldBatch);
+
+      if (isBatchChanging) {
+        try {
+          let targetBatchName = editingStudent.batch;
+          if (editStudentBatchId && editStudentBatchId !== 'Unassigned') {
+            await apiService.assignStudentsToBatch(editStudentBatchId, [editingStudent.id]);
+            const newBatchObj = batches.find((b) => b.id === editStudentBatchId);
+            targetBatchName = newBatchObj ? newBatchObj.name : 'Assigned';
+            setBatches((prev) =>
+              prev.map((b) => {
+                if (b.id === editStudentBatchId) return { ...b, studentsCount: (b.studentsCount || 0) + 1 };
+                if (oldBatch && b.id === oldBatch.id) return { ...b, studentsCount: Math.max(0, (b.studentsCount || 0) - 1) };
+                return b;
+              })
+            );
+          } else if (editStudentBatchId === 'Unassigned' && oldBatch) {
+            await apiService.removeStudentFromBatch(oldBatch.id, editingStudent.id);
+            targetBatchName = 'Unassigned';
+            setBatches((prev) =>
+              prev.map((b) =>
+                b.id === oldBatch.id ? { ...b, studentsCount: Math.max(0, (b.studentsCount || 0) - 1) } : b
+              )
+            );
+          }
+
+          setStudents((prev) =>
+            prev.map((s) => (s.id === editingStudent.id ? { ...s, batch: targetBatchName } : s))
+          );
+          toast.success(`Student ${editStudentName.trim()} updated successfully.`, 'Student Updated');
+        } catch (batchErr: any) {
+          toast.error(
+            `Student profile updated, but batch assignment failed: ${batchErr?.message || 'Unable to update batch'}`,
+            'Batch Assignment Incomplete'
+          );
+        }
+      } else {
+        toast.success(`Student ${editStudentName.trim()} updated successfully.`, 'Student Updated');
+      }
+
+      setEditingStudent(null);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update student.', 'Update Error');
+    } finally {
+      setIsSavingStudent(false);
+    }
+  };
+
+  const handleOpenDeleteStudent = (student: StudentRosterItem) => {
+    setDeleteTargetStudent(student);
+  };
+
+  const handleConfirmDeleteStudent = async () => {
+    if (!deleteTargetStudent || isDeletingStudent) return;
+    setIsDeletingStudent(true);
+    const target = deleteTargetStudent;
+    try {
+      await apiService.deleteUser(target.id);
+      setStudents((prev) => prev.filter((s) => s.id !== target.id));
+      setLiveInstitution((prev) => ({
+        ...prev,
+        studentsCount: Math.max(0, prev.studentsCount - 1),
+      }));
+      if (target.batch && target.batch !== 'Unassigned') {
+        setBatches((prev) =>
+          prev.map((b) =>
+            b.name === target.batch ? { ...b, studentsCount: Math.max(0, (b.studentsCount || 0) - 1) } : b
+          )
+        );
+      }
+
+      // Clamp rosterPage to previous valid page when removing the only student on the current last page
+      const remainingFilteredCount = filteredStudents.filter((s) => s.id !== target.id).length;
+      const maxValidPage = Math.max(0, Math.ceil(remainingFilteredCount / rosterRowsPerPage) - 1);
+      if (rosterPage > maxValidPage) {
+        setRosterPage(maxValidPage);
+      }
+
+      toast.success(`Removed student ${target.name} from institution.`, 'Student Deleted');
+      setDeleteTargetStudent(null);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete student.', 'Deletion Error');
+    } finally {
+      setIsDeletingStudent(false);
+    }
+  };
 
   const handleOpenAssignBatchModal = (student: StudentRosterItem) => {
     if (!batches || batches.length === 0) {
@@ -453,13 +690,19 @@ export default function InstitutionDetailClient({
     }
   };
 
-  // Client-side live institution hydration (fixes SSR fallback when token not on server)
+  // Client-side live institution hydration & real-time auto-polling
   useEffect(() => {
     let cancelled = false;
+    let isHydrating = false;
+    let requestSeq = 0;
+
     async function hydrateLiveInstitution() {
+      if (isHydrating || cancelled) return;
+      isHydrating = true;
+      const currentSeq = ++requestSeq;
       try {
         const live = await apiService.getInstitutionById(institution.id);
-        if (!cancelled && live?.id) {
+        if (!cancelled && currentSeq === requestSeq && live?.id) {
           const facultyMembers = Array.isArray(live.memberships)
             ? live.memberships.filter((m: any) => m.role === 'FACULTY' || m.role === 'INSTITUTION_ADMIN' || m.role === 'COLLEGE_ADMIN').length
             : (live.facultyCount ?? 0);
@@ -489,46 +732,102 @@ export default function InstitutionDetailClient({
           if (live.email) setSettingsEmail(live.email);
           if (live.phone) setSettingsPhone(live.phone);
 
-          if (Array.isArray(live.memberships)) {
-            const facultyList: FacultyCoordinatorItem[] = live.memberships
-              .filter((m: any) => m.role === 'FACULTY' || m.role === 'INSTITUTION_ADMIN' || m.role === 'COLLEGE_ADMIN')
-              .map((m: any) => ({
-                id: m.user?.id || m.userId,
-                name: m.user?.name || 'Faculty Member',
-                email: m.user?.email || '',
-                department: m.user?.department || 'Computer Science & Engineering',
-                role: (m.role === 'INSTITUTION_ADMIN' || m.role === 'COLLEGE_ADMIN') ? 'Department Head' : 'Senior Mentor',
-                batchesAssigned: [],
-                activeCourses: 0,
-              }));
+          const currentBatches = Array.isArray(live.batches) ? live.batches : batches;
+
+          if (Array.isArray(live.memberships) || Array.isArray(live.pendingInvitations)) {
+            const facultyList: FacultyCoordinatorItem[] = [
+              ...(Array.isArray(live.pendingInvitations)
+                ? live.pendingInvitations
+                    .filter((inv: any) => inv.role === 'FACULTY' || inv.role === 'INSTITUTION_ADMIN')
+                    .map((inv: any) => ({
+                      id: inv.id,
+                      name: inv.name,
+                      email: inv.email,
+                      department: 'Computer Science & Engineering',
+                      role: inv.role === 'INSTITUTION_ADMIN' ? ('Department Head' as const) : ('Senior Mentor' as const),
+                      batchesAssigned: [],
+                      activeCourses: 0,
+                    }))
+                : []),
+              ...(Array.isArray(live.memberships)
+                ? live.memberships
+                    .filter((m: any) => m.role === 'FACULTY' || m.role === 'INSTITUTION_ADMIN' || m.role === 'COLLEGE_ADMIN')
+                    .map((m: any) => ({
+                      id: m.user?.id || m.userId,
+                      name: m.user?.name || 'Faculty Member',
+                      email: m.user?.email || '',
+                      department: m.user?.department || 'Computer Science & Engineering',
+                      role: (m.role === 'INSTITUTION_ADMIN' || m.role === 'COLLEGE_ADMIN') ? ('Department Head' as const) : ('Senior Mentor' as const),
+                      batchesAssigned: [],
+                      activeCourses: 0,
+                    }))
+                : []),
+            ];
             setFaculty(facultyList);
 
-            const studentList: StudentRosterItem[] = live.memberships
-              .filter((m: any) => m.role === 'STUDENT')
-              .map((m: any, idx: number) => {
-                const batchEnrollment = m.user?.batchEnrollments?.[0]?.batch;
-                return {
-                  id: m.user?.id || m.userId,
-                  name: m.user?.name || 'Student Developer',
-                  rollNo: `STU-${(m.user?.id || m.userId).slice(0, 4).toUpperCase()}`,
-                  email: m.user?.email || '',
-                  batch: batchEnrollment?.name || 'Unassigned',
-                  problemsSolved: 0,
-                  accuracy: '0.0%',
-                  streakDays: 0,
-                  rank: idx + 1,
-                  status: 'Active',
-                };
-              });
-            setStudents(studentList);
+            const activeStudents: StudentRosterItem[] = Array.isArray(live.memberships)
+              ? live.memberships
+                  .filter((m: any) => m.role === 'STUDENT')
+                  .map((m: any, idx: number) => {
+                    const batchEnrollment = m.user?.batchEnrollments?.[0]?.batch;
+                    return {
+                      id: m.user?.id || m.userId,
+                      name: m.user?.name || 'Student Developer',
+                      rollNo: m.user?.rollNo || m.user?.handle || '—',
+                      email: m.user?.email || '',
+                      batch: batchEnrollment?.name || 'Unassigned',
+                      problemsSolved: 0,
+                      accuracy: '0.0%',
+                      streakDays: 0,
+                      rank: idx + 1,
+                      status: 'Active' as const,
+                    };
+                  })
+              : [];
+
+            const invitedStudents: StudentRosterItem[] = Array.isArray(live.pendingInvitations)
+              ? live.pendingInvitations
+                  .filter((inv: any) => inv.role === 'STUDENT')
+                  .map((inv: any) => {
+                    const matchedBatch = currentBatches.find((b: any) => b.id === inv.batchId);
+                    return {
+                      id: inv.id,
+                      name: inv.name,
+                      rollNo: inv.rollNo || '—',
+                      email: inv.email,
+                      batch: matchedBatch ? matchedBatch.name : 'Unassigned',
+                      problemsSolved: 0,
+                      accuracy: '0.0%',
+                      streakDays: 0,
+                      rank: 0,
+                      status: 'Pending' as const,
+                    };
+                  })
+              : [];
+
+            setStudents([...invitedStudents, ...activeStudents]);
           }
         }
       } catch {
         // keep SSR-provided institution
+      } finally {
+        isHydrating = false;
       }
     }
+
     hydrateLiveInstitution();
-    return () => { cancelled = true; };
+
+    // Auto-polling interval every 8 seconds to automatically reflect real-time invitation acceptances & roster updates
+    const pollTimer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        hydrateLiveInstitution();
+      }
+    }, 8000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(pollTimer);
+    };
   }, [institution.id]);
 
   // Filter & Pagination states for Tab 0: Batches & Cohorts
@@ -562,6 +861,7 @@ export default function InstitutionDetailClient({
   const [isCreateBatchOpen, setIsCreateBatchOpen] = useState(false);
   const [newBatchName, setNewBatchName] = useState('');
   const [newBatchCode, setNewBatchCode] = useState('');
+  const [batchCodeManuallyEdited, setBatchCodeManuallyEdited] = useState(false);
   const [newBatchCapacity, setNewBatchCapacity] = useState(120);
   const [newBatchFaculty, setNewBatchFaculty] = useState('Unassigned');
   const [isCreatingBatch, setIsCreatingBatch] = useState(false);
@@ -740,18 +1040,27 @@ export default function InstitutionDetailClient({
   };
 
   const handleCreateBatchSubmit = async () => {
-    if (!newBatchName.trim() || !newBatchCode.trim() || isCreatingBatch) return;
+    if (!newBatchName.trim()) {
+      toast.warning('Please enter a batch name.', 'Batch Name Required');
+      return;
+    }
+    if (isCreatingBatch) return;
+
+    const finalCode = newBatchCode.trim()
+      ? newBatchCode.trim().toUpperCase()
+      : generateBatchCode(newBatchName.trim(), institution.code, batches);
+
     setIsCreatingBatch(true);
     const tempId = `batch-${Date.now()}`;
     const created: BatchItem = {
       id: tempId,
       name: newBatchName.trim(),
-      code: newBatchCode.trim().toUpperCase(),
+      code: finalCode,
       studentsCount: 0,
       maxCapacity: Number(newBatchCapacity) || 100,
       facultyLead: newBatchFaculty || (faculty.length > 0 ? faculty[0].name : 'Unassigned'),
       coursesAssigned: 0,
-      year: '2026-2027',
+      year: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
       status: 'Active',
       avgAccuracy: '0.0%',
     };
@@ -759,6 +1068,7 @@ export default function InstitutionDetailClient({
     setIsCreateBatchOpen(false);
     setNewBatchName('');
     setNewBatchCode('');
+    setBatchCodeManuallyEdited(false);
 
     try {
       const liveCreated = await apiService.createBatch({
@@ -771,11 +1081,11 @@ export default function InstitutionDetailClient({
           prev.map((b) => (b.id === tempId ? { ...b, id: liveCreated.id, maxCapacity: liveCreated.maxCapacity ?? created.maxCapacity } : b))
         );
       }
-      toast.success(`Batch "${created.name}" created successfully.`, 'Batch Created');
-    } catch (err) {
+      toast.success(`Batch "${created.name}" (${finalCode}) created successfully.`, 'Batch Created');
+    } catch (err: any) {
       console.warn('Batch creation backend sync:', err);
       setBatches((prev) => prev.filter((b) => b.id !== tempId));
-      toast.error(err instanceof Error ? err.message : 'Failed to create batch on server.', 'Batch Error');
+      toast.error(err?.message || 'Failed to create batch on server.', 'Batch Error');
     } finally {
       setIsCreatingBatch(false);
     }
@@ -880,91 +1190,63 @@ export default function InstitutionDetailClient({
     if (!newStudentName.trim() || !newStudentEmail.trim() || isSubmittingStudent) return;
     setIsSubmittingStudent(true);
     try {
-      const assignedPassword = `StudentPass@${Date.now().toString().slice(-4)}!`;
-      const newUser = await apiService.createUser({
-        name: newStudentName.trim(),
-        email: newStudentEmail.trim().toLowerCase(),
-        password: assignedPassword,
-        globalRole: 'STUDENT',
-        institutionId: institution.id,
+      const selectedBatch = batches.find((b) => b.id === newStudentBatch || b.name === newStudentBatch);
+      const isBatchValid = selectedBatch && selectedBatch.id && !selectedBatch.id.startsWith('batch-') && selectedBatch.id !== 'Unassigned';
+
+      const result = await apiService.bulkInviteUsers({
+        users: [
+          {
+            name: newStudentName.trim(),
+            email: newStudentEmail.trim().toLowerCase(),
+            role: 'STUDENT',
+            institutionId: institution.id,
+            ...(isBatchValid ? { batchId: selectedBatch.id } : {}),
+            ...(newStudentRollNo.trim() ? { rollNo: newStudentRollNo.trim() } : {}),
+          },
+        ],
       });
 
-      let assignedBatchName = 'Unassigned';
-      const selectedBatch = batches.find((b) => b.id === newStudentBatch || b.name === newStudentBatch);
-      if (selectedBatch && selectedBatch.id && !selectedBatch.id.startsWith('batch-') && selectedBatch.id !== 'Unassigned' && newUser?.id) {
-        try {
-          await apiService.assignStudentsToBatch(selectedBatch.id, [newUser.id]);
-          assignedBatchName = selectedBatch.name;
-          setBatches((prev) =>
-            prev.map((b) =>
-              b.id === selectedBatch.id ? { ...b, studentsCount: (b.studentsCount || 0) + 1 } : b
-            )
-          );
-        } catch (batchErr) {
-          console.warn('Failed to assign batch during student creation:', batchErr);
-          assignedBatchName = 'Unassigned';
-          toast.error(
-            `Student created, but batch assignment failed. You can assign ${newStudentName.trim()} to ${selectedBatch.name} from the roster.`,
-            'Batch Assignment Incomplete'
-          );
-        }
-      }
-
-      let invitationLinkUrl: string | null = null;
-      try {
-        const result = await apiService.bulkInviteUsers({
-          users: [
-            {
-              name: newStudentName.trim(),
-              email: newStudentEmail.trim().toLowerCase(),
-              role: 'STUDENT',
-              institutionId: institution.id,
-            },
-          ],
-        });
-        if (result?.invitationLinks?.[0]?.activationUrl) {
-          invitationLinkUrl = result.invitationLinks[0].activationUrl;
-        }
-      } catch (inviteErr) {
-        console.warn('Student invitation dispatch failed:', inviteErr);
-      }
+      const activationUrl = result?.invitationLinks?.[0]?.activationUrl || `${window.location.origin}/accept-invitation`;
 
       const newStudentItem: StudentRosterItem = {
-        id: newUser?.id || `stu-${Date.now()}`,
+        id: `stu-${Date.now()}`,
         name: newStudentName.trim(),
-        rollNo: `STU-${(newUser?.id || Date.now().toString()).slice(-4).toUpperCase()}`,
+        rollNo: newStudentRollNo.trim() || '—',
         email: newStudentEmail.trim().toLowerCase(),
-        batch: assignedBatchName,
+        batch: isBatchValid ? selectedBatch.name : 'Unassigned',
         problemsSolved: 0,
         accuracy: '0.0%',
         streakDays: 0,
         rank: students.length + 1,
         status: 'Active',
       };
+
+      if (isBatchValid) {
+        setBatches((prev) =>
+          prev.map((b) =>
+            b.id === selectedBatch.id ? { ...b, studentsCount: (b.studentsCount || 0) + 1 } : b
+          )
+        );
+      }
+
       setStudents((prev) => [newStudentItem, ...prev]);
       setLiveInstitution((prev) => ({ ...prev, studentsCount: prev.studentsCount + 1 }));
       setIsAddStudentOpen(false);
 
-      if (invitationLinkUrl) {
-        setInvitationSuccessData({
-          name: newStudentName.trim(),
-          email: newStudentEmail.trim().toLowerCase(),
-          role: 'Student Coder',
-          activationUrl: invitationLinkUrl,
-        });
-      } else {
-        toast.error(
-          `Account created for ${newStudentName.trim()}, but invitation link generation failed. You can resend the invite or reset access.`,
-          'Invitation Error'
-        );
-      }
+      setInvitationSuccessData({
+        name: newStudentName.trim(),
+        email: newStudentEmail.trim().toLowerCase(),
+        role: 'Student Coder',
+        activationUrl,
+      });
 
       setNewStudentName('');
       setNewStudentEmail('');
+      setNewStudentRollNo('');
       setNewStudentBatch('Unassigned');
-      toast.success(`Student ${newStudentName.trim()} enrolled successfully.`, 'Student Added');
+      toast.success(`Invitation created for ${newStudentName.trim()}.`, 'Invitation Sent');
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to enroll student.', 'Error');
+      toast.error(err?.message || 'Failed to send student invitation.', 'Invitation Error');
     } finally {
       setIsSubmittingStudent(false);
     }
@@ -1631,6 +1913,31 @@ export default function InstitutionDetailClient({
                                 >
                                   View Roster
                                 </Button>
+                                <Tooltip title={`Bulk Import Students into ${batch.name}`}>
+                                  <Button
+                                    size="small"
+                                    variant="outlined"
+                                    startIcon={<CloudUploadRoundedIcon sx={{ fontSize: 13 }} />}
+                                    onClick={() => {
+                                      setBulkImportDefaultBatchId(batch.id);
+                                      setIsBulkImportOpen(true);
+                                    }}
+                                    sx={{
+                                      textTransform: 'none',
+                                      fontWeight: 700,
+                                      fontSize: '0.74rem',
+                                      color: '#059669',
+                                      borderColor: '#A7F3D0',
+                                      bgcolor: '#ECFDF5',
+                                      borderRadius: '6px',
+                                      px: 1.2,
+                                      py: 0.4,
+                                      '&:hover': { bgcolor: '#D1FAE5', borderColor: '#6EE7B7' },
+                                    }}
+                                  >
+                                    Bulk Import
+                                  </Button>
+                                </Tooltip>
                                 <Tooltip title="Edit Batch">
                                   <IconButton
                                     size="small"
@@ -1746,10 +2053,34 @@ export default function InstitutionDetailClient({
                   </Select>
                 </Box>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                   <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
                     Showing <strong style={{ color: '#0F172A' }}>{filteredStudents.length}</strong> students
                   </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<CloudUploadRoundedIcon sx={{ fontSize: 15 }} />}
+                    onClick={() => {
+                      const matchedBatch = batches.find((b) => b.name === rosterBatchFilter);
+                      setBulkImportDefaultBatchId(matchedBatch ? matchedBatch.id : '');
+                      setIsBulkImportOpen(true);
+                    }}
+                    sx={{
+                      color: '#2563EB',
+                      borderColor: '#BFDBFE',
+                      bgcolor: '#EFF6FF',
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.8rem',
+                      px: 1.5,
+                      py: 0.6,
+                      '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                    }}
+                  >
+                    Bulk Import
+                  </Button>
                   <Button
                     variant="contained"
                     size="small"
@@ -1785,7 +2116,8 @@ export default function InstitutionDetailClient({
                         <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>PROBLEMS SOLVED</TableCell>
                         <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>ACCURACY</TableCell>
                         <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>STREAK</TableCell>
-                        <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5 }}>RANK</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>RANK</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5 }}>ACTIONS</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -1793,11 +2125,30 @@ export default function InstitutionDetailClient({
                         <TableRow key={s.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
                           <TableCell sx={{ pl: 3, py: 1.6 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                              <Avatar sx={{ width: 32, height: 32, bgcolor: '#2563EB', fontSize: '0.76rem', fontWeight: 700 }}>
+                              <Avatar sx={{ width: 32, height: 32, bgcolor: s.status === 'Pending' ? '#F59E0B' : '#2563EB', fontSize: '0.76rem', fontWeight: 700 }}>
                                 {s.name.substring(0, 2).toUpperCase()}
                               </Avatar>
                               <Box>
-                                <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#0F172A' }}>{s.name}</Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                                  <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#0F172A' }}>{s.name}</Typography>
+                                  {s.status === 'Pending' && (
+                                    <Tooltip title="Invitation sent. Waiting for student to set password and activate.">
+                                      <Chip
+                                        label="Pending Activation ⏳"
+                                        size="small"
+                                        sx={{
+                                          height: 18,
+                                          fontSize: '0.66rem',
+                                          fontWeight: 700,
+                                          bgcolor: '#FFFBEB',
+                                          color: '#D97706',
+                                          border: '1px solid #FEF3C7',
+                                          borderRadius: '4px',
+                                        }}
+                                      />
+                                    </Tooltip>
+                                  )}
+                                </Box>
                                 <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>{s.email}</Typography>
                               </Box>
                             </Box>
@@ -1860,10 +2211,78 @@ export default function InstitutionDetailClient({
                           <TableCell sx={{ py: 1.6 }}>
                             <Chip label={`🔥 ${s.streakDays} days`} size="small" sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, bgcolor: '#FFFBEB', color: '#D97706', border: '1px solid #FEF3C7', borderRadius: '5px' }} />
                           </TableCell>
+                          <TableCell sx={{ py: 1.6 }}>
+                            {s.problemsSolved > 0 ? (
+                              <Typography sx={{ fontSize: '0.88rem', fontWeight: 900, color: s.rank <= 3 ? '#2563EB' : '#64748B' }}>
+                                #{s.rank}
+                              </Typography>
+                            ) : (
+                              <Tooltip title="Unranked — 0 problems solved">
+                                <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#94A3B8' }}>
+                                  —
+                                </Typography>
+                              </Tooltip>
+                            )}
+                          </TableCell>
                           <TableCell align="right" sx={{ pr: 3, py: 1.6 }}>
-                            <Typography sx={{ fontSize: '0.9rem', fontWeight: 900, color: s.rank <= 3 ? '#2563EB' : '#64748B' }}>
-                              #{s.rank}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.75 }}>
+                              {s.activationUrl && (
+                                <Tooltip title="Copy Activation Link">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(s.activationUrl!);
+                                      toast.success(`Activation link copied for ${s.name}.`, 'Link Copied');
+                                    }}
+                                    sx={{
+                                      color: '#059669',
+                                      width: 30,
+                                      height: 30,
+                                      borderRadius: '6px',
+                                      border: '1px solid #A7F3D0',
+                                      bgcolor: '#ECFDF5',
+                                      '&:hover': { bgcolor: '#D1FAE5', borderColor: '#6EE7B7' },
+                                    }}
+                                  >
+                                    <ContentCopyRoundedIcon sx={{ fontSize: 15 }} />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
+                              <Tooltip title="Edit Student">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleOpenEditStudent(s)}
+                                  sx={{
+                                    color: '#2563EB',
+                                    width: 30,
+                                    height: 30,
+                                    borderRadius: '6px',
+                                    border: '1px solid #DBEAFE',
+                                    bgcolor: '#EFF6FF',
+                                    '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                                  }}
+                                >
+                                  <EditRoundedIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete Student">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleOpenDeleteStudent(s)}
+                                  sx={{
+                                    color: '#EF4444',
+                                    width: 30,
+                                    height: 30,
+                                    borderRadius: '6px',
+                                    border: '1px solid #FEE2E2',
+                                    bgcolor: '#FEF2F2',
+                                    '&:hover': { bgcolor: '#FEE2E2', borderColor: '#FCA5A5' },
+                                  }}
+                                >
+                                  <DeleteOutlineRoundedIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -2338,19 +2757,51 @@ export default function InstitutionDetailClient({
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, px: 3, pt: '24px !important', pb: 2.5 }}>
           <TextField
             label="Batch Name"
-            placeholder="e.g. Batch 2026 - CS Alpha"
+            placeholder="e.g. The Uniques, Batch 2026 - CS Alpha"
             fullWidth
             size="small"
+            required
             value={newBatchName}
-            onChange={(e) => setNewBatchName(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setNewBatchName(val);
+              if (!batchCodeManuallyEdited) {
+                setNewBatchCode(generateBatchCode(val, institution.code, batches));
+              }
+            }}
           />
           <TextField
             label="Batch Code"
-            placeholder="e.g. STAN-2026-A"
+            placeholder="e.g. UNIQUES-2026"
             fullWidth
             size="small"
             value={newBatchCode}
-            onChange={(e) => setNewBatchCode(e.target.value)}
+            helperText="Auto-generated from name or enter custom code"
+            onChange={(e) => {
+              setNewBatchCode(e.target.value);
+              setBatchCodeManuallyEdited(true);
+            }}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Tooltip title="Regenerate code from batch name">
+                      <IconButton
+                        size="small"
+                        onClick={() => {
+                          const autoCode = generateBatchCode(newBatchName, institution.code, batches);
+                          setNewBatchCode(autoCode);
+                          setBatchCodeManuallyEdited(false);
+                        }}
+                        sx={{ color: '#2563EB', '&:hover': { bgcolor: '#EFF6FF' } }}
+                      >
+                        <AutorenewRoundedIcon sx={{ fontSize: 18 }} />
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
           <TextField
             label="Student Capacity"
@@ -2386,10 +2837,11 @@ export default function InstitutionDetailClient({
           </Button>
           <Button
             variant="contained"
+            disabled={!newBatchName.trim() || isCreatingBatch}
             onClick={handleCreateBatchSubmit}
             sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5 }}
           >
-            Create Batch
+            {isCreatingBatch ? 'Creating...' : 'Create Batch'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -2540,6 +2992,14 @@ export default function InstitutionDetailClient({
             size="small"
             value={newStudentEmail}
             onChange={(e) => setNewStudentEmail(e.target.value)}
+          />
+          <TextField
+            label="Roll Number / Student ID (Optional)"
+            placeholder="e.g. 21CS042"
+            fullWidth
+            size="small"
+            value={newStudentRollNo}
+            onChange={(e) => setNewStudentRollNo(e.target.value)}
           />
           <Box>
             <Typography sx={{ fontSize: '0.76rem', fontWeight: 600, color: '#64748B', mb: 0.5 }}>
@@ -2716,6 +3176,124 @@ export default function InstitutionDetailClient({
             sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5, '&:hover': { bgcolor: '#1D4ED8' } }}
           >
             {isAssigningBatch ? 'Assigning...' : 'Assign to Batch'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Bulk Import Students into Cohort Modal */}
+      <BulkImportStudentsModal
+        open={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        onImportSuccess={handleBulkImportSuccess}
+        institutionId={liveInstitution.id}
+        institutionName={liveInstitution.name}
+        defaultBatchId={bulkImportDefaultBatchId}
+        batches={batches.map((b) => ({ id: b.id, name: b.name, code: b.code }))}
+      />
+
+      {/* Edit Student Modal Dialog */}
+      <Dialog
+        open={Boolean(editingStudent)}
+        onClose={() => setEditingStudent(null)}
+        slotProps={{
+          paper: {
+            sx: { borderRadius: '18px', width: '100%', maxWidth: 460, p: 1 },
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.15rem', color: '#0F172A' }}>
+          Edit Student Details
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, px: 3, pt: '16px !important', pb: 2 }}>
+          <TextField
+            label="Full Name"
+            fullWidth
+            size="small"
+            value={editStudentName}
+            onChange={(e) => setEditStudentName(e.target.value)}
+          />
+          <TextField
+            label="Email Address"
+            fullWidth
+            size="small"
+            value={editStudentEmail}
+            onChange={(e) => setEditStudentEmail(e.target.value)}
+          />
+          <TextField
+            label="Roll Number / Student ID"
+            placeholder="e.g. 21CS042"
+            fullWidth
+            size="small"
+            value={editStudentRollNo}
+            onChange={(e) => setEditStudentRollNo(e.target.value)}
+          />
+          <Box>
+            <Typography sx={{ fontSize: '0.76rem', fontWeight: 600, color: '#64748B', mb: 0.5 }}>
+              Assigned Batch / Cohort
+            </Typography>
+            <Select
+              fullWidth
+              size="small"
+              value={editStudentBatchId}
+              onChange={(e) => setEditStudentBatchId(e.target.value)}
+              sx={{ borderRadius: '8px', fontSize: '0.85rem' }}
+            >
+              <MenuItem value="Unassigned">Unassigned (General Roster)</MenuItem>
+              {batches.map((b) => (
+                <MenuItem key={b.id} value={b.id}>
+                  {b.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setEditingStudent(null)} sx={{ textTransform: 'none', color: '#64748B', fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={!editStudentName.trim() || isSavingStudent}
+            onClick={handleSaveEditStudent}
+            sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5, '&:hover': { bgcolor: '#1D4ED8' } }}
+          >
+            {isSavingStudent ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Student Confirmation Dialog */}
+      <Dialog
+        open={Boolean(deleteTargetStudent)}
+        onClose={() => setDeleteTargetStudent(null)}
+        slotProps={{
+          paper: {
+            sx: { borderRadius: '18px', width: '100%', maxWidth: 420, p: 1 },
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#DC2626' }}>
+          Remove Student from Institution
+        </DialogTitle>
+        <DialogContent sx={{ px: 3, pt: '12px !important', pb: 2 }}>
+          <Typography sx={{ fontSize: '0.86rem', color: '#334155', mb: 1 }}>
+            Are you sure you want to remove <strong>{deleteTargetStudent?.name}</strong> ({deleteTargetStudent?.email})?
+          </Typography>
+          <Typography sx={{ fontSize: '0.78rem', color: '#64748B' }}>
+            This will remove the student account from {liveInstitution.name} and revoke their cohort access.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setDeleteTargetStudent(null)} sx={{ textTransform: 'none', color: '#64748B', fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={isDeletingStudent}
+            onClick={handleConfirmDeleteStudent}
+            sx={{ bgcolor: '#DC2626', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5, '&:hover': { bgcolor: '#B91C1C' } }}
+          >
+            {isDeletingStudent ? 'Removing...' : 'Remove Student'}
           </Button>
         </DialogActions>
       </Dialog>

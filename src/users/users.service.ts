@@ -662,7 +662,20 @@ export class UsersService {
   async deleteUser(id: string): Promise<boolean> {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      const inv = await this.prisma.userInvitation.findUnique({ where: { id } });
+      if (inv) {
+        if (inv.acceptedAt || inv.revokedAt) {
+          throw new ConflictException(`Invitation with ID ${id} is already ${inv.acceptedAt ? 'accepted' : 'revoked'}`);
+        }
+        const deleted = await this.prisma.userInvitation.deleteMany({
+          where: { id, acceptedAt: null, revokedAt: null },
+        });
+        if (deleted.count === 0) {
+          throw new ConflictException(`Invitation with ID ${id} could not be revoked`);
+        }
+        return true;
+      }
+      throw new NotFoundException(`User or invitation with ID ${id} not found`);
     }
 
     const fallbackAdmin = await this.prisma.user.findFirst({
