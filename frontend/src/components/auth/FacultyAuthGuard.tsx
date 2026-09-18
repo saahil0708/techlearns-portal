@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Box, Typography, Button, Card } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 import { useAppSelector } from '@/store/hooks';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 
@@ -90,7 +90,7 @@ export default function FacultyAuthGuard({ children }: FacultyAuthGuardProps) {
             <Button
               variant="contained"
               fullWidth
-              endIcon={<ArrowForwardRoundedIcon />}
+              endIcon={<FluidArrowRight size={18} />}
               onClick={() => router.push(user.globalRole === 'STUDENT' ? '/students' : '/')}
               sx={{
                 bgcolor: '#2563EB',

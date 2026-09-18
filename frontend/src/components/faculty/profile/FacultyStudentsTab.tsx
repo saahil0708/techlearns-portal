@@ -123,9 +123,20 @@ export default function FacultyStudentsTab({
       // If GraphQL users items has students belonging to this college
       if (usersData?.items && Array.isArray(usersData.items)) {
         for (const u of usersData.items) {
-          const hasCollegeMembership = u.memberships?.some(
-            (m: any) => m.collegeId === collegeId || m.college?.id === collegeId
-          );
+          const hasCollegeMembership =
+            u.memberships && u.memberships.length > 0
+              ? u.memberships.some((m: any) => {
+                  const ids = [m.collegeId, m.college?.id, m.institutionId, m.institution?.id].filter(Boolean);
+                  if (ids.length > 0) {
+                    return ids.includes(collegeId);
+                  }
+                  return Boolean(collegeName && (m.institution?.name === collegeName || m.college?.name === collegeName));
+                })
+              : Boolean(
+                  u.institutionId === collegeId ||
+                  u.collegeId === collegeId ||
+                  (!u.institutionId && !u.collegeId && collegeName && u.institution === collegeName)
+                );
           if (hasCollegeMembership && (u.globalRole === 'STUDENT' || !u.globalRole)) {
             memberUserMap.set(u.id, {
               ...(memberUserMap.get(u.id) || {}),

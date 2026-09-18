@@ -37,7 +37,7 @@ import Link from 'next/link';
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import { FluidArrowLeft } from '@/utils/fluid_arrow';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
@@ -126,6 +126,8 @@ export interface FacultyCoordinatorItem {
   role: 'Department Head' | 'Senior Mentor' | 'Lab Instructor';
   batchesAssigned: string[];
   activeCourses: number;
+  status?: 'Active' | 'Invited' | 'Pending';
+  activationUrl?: string;
 }
 
 export interface InstitutionDetailClientProps {
@@ -747,6 +749,8 @@ export default function InstitutionDetailClient({
                       role: inv.role === 'INSTITUTION_ADMIN' ? ('Department Head' as const) : ('Senior Mentor' as const),
                       batchesAssigned: [],
                       activeCourses: 0,
+                      status: 'Invited' as const,
+                      activationUrl: inv.activationUrl,
                     }))
                 : []),
               ...(Array.isArray(live.memberships)
@@ -760,6 +764,7 @@ export default function InstitutionDetailClient({
                       role: (m.role === 'INSTITUTION_ADMIN' || m.role === 'COLLEGE_ADMIN') ? ('Department Head' as const) : ('Senior Mentor' as const),
                       batchesAssigned: [],
                       activeCourses: 0,
+                      status: 'Active' as const,
                     }))
                 : []),
             ];
@@ -896,7 +901,7 @@ export default function InstitutionDetailClient({
               code: b.code || generateBatchCode(resolvedName, b.id),
               studentsCount: b._count?.students || 0,
               maxCapacity: b.maxCapacity || 100,
-              facultyLead: b.facultyLead || (faculty.length > 0 ? faculty[0].name : 'Unassigned'),
+              facultyLead: b.facultyLead || 'Unassigned',
               coursesAssigned: b._count?.courses || 0,
               year: b.startDate ? new Date(b.startDate).getFullYear().toString() : '2026-2027',
               status: b.status === 'ACTIVE' || !b.status ? 'Active' : b.status,
@@ -1409,7 +1414,7 @@ export default function InstitutionDetailClient({
               <Button
                 component={Link}
                 href="/superadmin/institutions"
-                startIcon={<ArrowBackRoundedIcon sx={{ fontSize: 18 }} />}
+                startIcon={<FluidArrowLeft size={18} />}
                 sx={{
                   color: '#64748B',
                   textTransform: 'none',
@@ -2554,6 +2559,7 @@ export default function InstitutionDetailClient({
                       <TableRow>
                         <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pl: 3, py: 1.5 }}>FACULTY COORDINATOR</TableCell>
                         <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>ROLE</TableCell>
+                        <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>STATUS</TableCell>
                         <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>DEPARTMENT</TableCell>
                         <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>ASSIGNED BATCHES</TableCell>
                         <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5 }}>ACTIVE COURSES</TableCell>
@@ -2564,7 +2570,7 @@ export default function InstitutionDetailClient({
                         <TableRow key={idx} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
                           <TableCell sx={{ pl: 3, py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                              <Avatar sx={{ width: 34, height: 34, bgcolor: '#3B82F6', fontWeight: 800, fontSize: '0.8rem' }}>
+                              <Avatar sx={{ width: 34, height: 34, bgcolor: f.status === 'Invited' ? '#F59E0B' : '#3B82F6', fontWeight: 800, fontSize: '0.8rem' }}>
                                 {f.name.split(' ').map((n) => n[0]).join('').substring(0, 2)}
                               </Avatar>
                               <Box>
@@ -2577,13 +2583,50 @@ export default function InstitutionDetailClient({
                             <Chip label={f.role} size="small" sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#EFF6FF', color: '#2563EB', borderRadius: '5px' }} />
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
+                            {f.status === 'Invited' ? (
+                              <Tooltip title="Invitation sent, pending user account activation" arrow>
+                                <Chip
+                                  label="Pending Invite"
+                                  size="small"
+                                  sx={{
+                                    height: 22,
+                                    fontSize: '0.68rem',
+                                    fontWeight: 700,
+                                    bgcolor: 'rgba(217, 119, 6, 0.1)',
+                                    color: '#D97706',
+                                    border: '1px solid rgba(217, 119, 6, 0.25)',
+                                    borderRadius: '5px',
+                                  }}
+                                />
+                              </Tooltip>
+                            ) : (
+                              <Chip
+                                label="Active"
+                                size="small"
+                                sx={{
+                                  height: 22,
+                                  fontSize: '0.68rem',
+                                  fontWeight: 700,
+                                  bgcolor: 'rgba(22, 163, 74, 0.1)',
+                                  color: '#16A34A',
+                                  border: '1px solid rgba(22, 163, 74, 0.25)',
+                                  borderRadius: '5px',
+                                }}
+                              />
+                            )}
+                          </TableCell>
+                          <TableCell sx={{ py: 1.75 }}>
                             <Chip label={f.department} size="small" sx={{ height: 22, fontSize: '0.7rem', bgcolor: '#F1F5F9', color: '#475569', borderRadius: '5px' }} />
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                              {f.batchesAssigned.map((bName, bIdx) => (
-                                <Chip key={bIdx} label={bName} size="small" sx={{ height: 20, fontSize: '0.68rem', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', color: '#334155', borderRadius: '4px' }} />
-                              ))}
+                              {f.batchesAssigned.length > 0 ? (
+                                f.batchesAssigned.map((bName, bIdx) => (
+                                  <Chip key={bIdx} label={bName} size="small" sx={{ height: 20, fontSize: '0.68rem', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', color: '#334155', borderRadius: '4px' }} />
+                                ))
+                              ) : (
+                                <Typography sx={{ fontSize: '0.76rem', color: '#94A3B8' }}>—</Typography>
+                              )}
                             </Box>
                           </TableCell>
                           <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>

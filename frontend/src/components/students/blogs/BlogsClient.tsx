@@ -32,7 +32,7 @@ import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 
 import { useToast } from '@/context/ToastContext';
 
@@ -1025,7 +1025,7 @@ export default function BlogsClient() {
 
                   <Button
                     size="small"
-                    endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 15 }} />}
+                    endIcon={<FluidArrowRight size={15} />}
                     sx={{
                       textTransform: 'none',
                       fontWeight: 700,

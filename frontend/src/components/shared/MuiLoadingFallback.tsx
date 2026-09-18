@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, CircularProgress, Skeleton, Card } from '@mui/material';
+import { Box, Typography, LinearProgress, Skeleton, Card } from '@mui/material';
 import LoadingScreen, { LoadingScreenProps } from '@/components/ui/LoadingScreen';
 
 export { LoadingScreen };
@@ -130,7 +130,17 @@ export function MuiChartLoader({ height = 340 }: { height?: number }) {
       </Box>
       <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <Skeleton variant="rectangular" width="100%" height="80%" sx={{ borderRadius: '16px', bgcolor: '#F8FAFC' }} />
-        <CircularProgress size={32} thickness={4} sx={{ color: '#2563EB', position: 'absolute' }} />
+        <LinearProgress
+          aria-label="Loading..."
+          sx={{
+            width: 140,
+            height: 4,
+            borderRadius: 2,
+            position: 'absolute',
+            bgcolor: 'rgba(37, 99, 235, 0.12)',
+            '& .MuiLinearProgress-bar': { bgcolor: '#2563EB', borderRadius: 2 },
+          }}
+        />
       </Box>
     </Card>
   );

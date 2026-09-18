@@ -29,7 +29,7 @@ import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded';
@@ -601,7 +601,7 @@ export default function StudentOverviewTab({
                 },
               }}
             >
-              Add your missing details <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />
+              Add your missing details <FluidArrowRight size={18} />
             </Typography>
 
             <Typography
@@ -737,7 +737,7 @@ export default function StudentOverviewTab({
                   '&:hover': { textDecoration: 'underline' },
                 }}
               >
-                Solve Problems <ArrowForwardRoundedIcon sx={{ fontSize: 15 }} />
+                Solve Problems <FluidArrowRight size={15} />
               </Typography>
             </Link>
           </Box>
@@ -1220,7 +1220,7 @@ export default function StudentOverviewTab({
                     }}
                   >
                     <span>View Credential</span>
-                    <ArrowForwardRoundedIcon sx={{ fontSize: 14 }} />
+                    <FluidArrowRight size={14} />
                   </Box>
                 </Card>
               );

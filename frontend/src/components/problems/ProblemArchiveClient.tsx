@@ -522,6 +522,20 @@ export default function ProblemArchiveClient() {
             </Box>
           </Box>
 
+          {/* Loading Indicator */}
+          {isLoading && (
+            <LinearProgress
+              aria-label="Loading..."
+              sx={{
+                height: 3,
+                bgcolor: 'rgba(37, 99, 235, 0.08)',
+                '& .MuiLinearProgress-bar': {
+                  bgcolor: '#2563EB',
+                },
+              }}
+            />
+          )}
+
           {/* Table Element */}
           <TableContainer>
             <Table sx={{ minWidth: 800 }}>

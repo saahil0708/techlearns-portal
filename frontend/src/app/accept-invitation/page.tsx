@@ -23,7 +23,7 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import KeyRoundedIcon from '@mui/icons-material/KeyRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 
 import { apiService } from '@/lib/api-service';
@@ -316,7 +316,12 @@ function AcceptInvitationForm() {
                     transition: 'all 0.15s ease',
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB', borderWidth: '1.5px', bgcolor: '#FFFFFF' },
+                    '&.Mui-focused': { bgcolor: '#FFFFFF' },
+                    '&.Mui-focused fieldset': { borderColor: '#2563EB', borderWidth: '1.5px' },
+                    '& .MuiInputBase-input': {
+                      color: '#0F172A !important',
+                      WebkitTextFillColor: '#0F172A !important',
+                    },
                   },
                 }}
               />
@@ -444,7 +449,12 @@ function AcceptInvitationForm() {
                       borderColor: passwordsMatch ? '#059669' : '#E2E8F0',
                     },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB', borderWidth: '1.5px', bgcolor: '#FFFFFF' },
+                    '&.Mui-focused': { bgcolor: '#FFFFFF' },
+                    '&.Mui-focused fieldset': { borderColor: '#2563EB', borderWidth: '1.5px' },
+                    '& .MuiInputBase-input': {
+                      color: '#0F172A !important',
+                      WebkitTextFillColor: '#0F172A !important',
+                    },
                   },
                 }}
               />
@@ -456,7 +466,7 @@ function AcceptInvitationForm() {
               variant="contained"
               size="large"
               disabled={submitting || !token || password.length < 8 || password !== confirmPassword}
-              endIcon={!submitting && <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />}
+              endIcon={!submitting && <FluidArrowRight size={18} />}
               sx={{
                 mt: 1,
                 py: 1.5,

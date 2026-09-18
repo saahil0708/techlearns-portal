@@ -84,12 +84,32 @@ export default function FacultySidebar() {
       ? 'Super Admin'
       : 'Faculty Mentor';
 
+  const activeMemberships = Array.isArray(activeUser?.memberships) ? activeUser.memberships : [];
+  const qualifyingMembership = activeMemberships.find(
+    (m: any) =>
+      m?.role === 'FACULTY' ||
+      m?.role === 'COLLEGE_ADMIN' ||
+      m?.role === 'INSTITUTION_ADMIN'
+  );
+
   const collegeName =
+    qualifyingMembership?.institution?.name ||
+    qualifyingMembership?.college?.name ||
+    activeUser?.memberships?.[0]?.institution?.name ||
     activeUser?.memberships?.[0]?.college?.name ||
+    (activeUser as any)?.institution ||
+    (activeUser as any)?.institutionName ||
+    user?.memberships?.[0]?.institution?.name ||
     user?.memberships?.[0]?.college?.name ||
+    (user as any)?.institution ||
+    (user as any)?.institutionName ||
     'Academic Institution';
   const collegeCode =
+    qualifyingMembership?.institution?.code ||
+    qualifyingMembership?.college?.code ||
+    activeUser?.memberships?.[0]?.institution?.code ||
     activeUser?.memberships?.[0]?.college?.code ||
+    user?.memberships?.[0]?.institution?.code ||
     user?.memberships?.[0]?.college?.code ||
     'COLLEGE';
 

@@ -26,7 +26,7 @@ import {
 import Link from 'next/link';
 
 // Icons
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import { FluidArrowLeft } from '@/utils/fluid_arrow';
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
@@ -258,7 +258,7 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
               <Button
                 component={Link}
                 href="/superadmin/courses"
-                startIcon={<ArrowBackRoundedIcon sx={{ fontSize: 18 }} />}
+                startIcon={<FluidArrowLeft size={18} />}
                 sx={{
                   color: '#64748B',
                   borderRadius: '9999px',

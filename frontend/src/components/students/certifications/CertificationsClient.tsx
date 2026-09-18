@@ -17,7 +17,7 @@ import VerifiedRoundedIcon from '@mui/icons-material/VerifiedRounded';
 import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 import ShareRoundedIcon from '@mui/icons-material/ShareRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
@@ -864,7 +864,7 @@ export default function CertificationsClient() {
                   <Button
                     className="view-btn"
                     size="small"
-                    endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 15 }} />}
+                    endIcon={<FluidArrowRight size={15} />}
                     onClick={(e) => handleViewCert(cert, e)}
                     sx={{
                       textTransform: 'none',

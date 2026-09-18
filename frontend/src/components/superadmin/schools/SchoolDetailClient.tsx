@@ -35,7 +35,7 @@ import Link from 'next/link';
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import { FluidArrowLeft } from '@/utils/fluid_arrow';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
@@ -639,7 +639,7 @@ export default function SchoolDetailClient({
               <Button
                 component={Link}
                 href="/superadmin/schools"
-                startIcon={<ArrowBackRoundedIcon sx={{ fontSize: 18 }} />}
+                startIcon={<FluidArrowLeft size={18} />}
                 sx={{
                   color: '#64748B',
                   textTransform: 'none',

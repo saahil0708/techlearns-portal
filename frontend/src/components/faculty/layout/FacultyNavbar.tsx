@@ -50,6 +50,20 @@ interface NotificationItem {
   type: 'info' | 'success' | 'warning';
 }
 
+function extractInstitutionDetails(u: any) {
+  const memberships = Array.isArray(u?.memberships) ? u.memberships : [];
+  return (
+    memberships.find(
+      (m: any) =>
+        m?.role === 'FACULTY' ||
+        m?.role === 'COLLEGE_ADMIN' ||
+        m?.role === 'INSTITUTION_ADMIN'
+    ) ||
+    memberships.find((m: any) => m?.institution?.name || m?.college?.name) ||
+    memberships[0]
+  );
+}
+
 export default function FacultyNavbar({
   collegeName,
   collegeCode,
@@ -70,8 +84,20 @@ export default function FacultyNavbar({
       ? 'SUPER ADMIN'
       : 'FACULTY MENTOR';
 
-  const displayCollege = collegeName || user?.memberships?.[0]?.college?.name || 'Academic Campus';
-  const displayCode = collegeCode || user?.memberships?.[0]?.college?.code || 'FAC';
+  const primaryMembership = extractInstitutionDetails(user);
+
+  const displayCollege =
+    collegeName ||
+    primaryMembership?.institution?.name ||
+    primaryMembership?.college?.name ||
+    (user as any)?.institution ||
+    (user as any)?.institutionName ||
+    'Academic Campus';
+  const displayCode =
+    collegeCode ||
+    primaryMembership?.institution?.code ||
+    primaryMembership?.college?.code ||
+    'FAC';
   const displayDept = department || (user as any)?.department || 'Computer Science & Engineering';
 
   // Quick Action Menu state

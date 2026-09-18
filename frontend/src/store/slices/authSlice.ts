@@ -1,13 +1,21 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 export interface UserMembership {
-  collegeId: string;
+  collegeId?: string;
+  institutionId?: string;
   role: string;
   college?: {
     id: string;
     name: string;
     code: string;
     email?: string;
+  };
+  institution?: {
+    id: string;
+    name: string;
+    code: string;
+    email?: string;
+    tier?: string;
   };
 }
 

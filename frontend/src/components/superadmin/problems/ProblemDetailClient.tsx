@@ -30,7 +30,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 // Icons
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import { FluidArrowLeft } from '@/utils/fluid_arrow';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
@@ -717,7 +717,7 @@ export default function ProblemDetailClient({
             href="/superadmin/problems"
             variant="outlined"
             size="small"
-            startIcon={<ArrowBackRoundedIcon />}
+            startIcon={<FluidArrowLeft size={18} />}
             sx={{
               borderRadius: '9999px',
               textTransform: 'none',

@@ -54,11 +54,35 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     avatarColor: '#7C3AED',
   };
 
+  const initialMemberships = Array.isArray(liveUser.memberships) && liveUser.memberships.length > 0
+    ? liveUser.memberships.map((m: any) => ({
+        id: m.id || `mem-${m.institutionId || 'default'}`,
+        tenantName: m.institution?.name || m.college?.name || liveUser.institution || user.institutionName,
+        tenantType: (m.institution?.tier?.includes('School') || liveUser.institutionType === 'School' ? 'School' : 'College') as 'College' | 'School',
+        role: m.role || liveUser.globalRole || 'FACULTY',
+        domain: m.institution?.email?.split('@')[1] || m.college?.email?.split('@')[1] || 'campus.edu',
+        joinedAt: m.createdAt ? new Date(m.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : user.createdAt,
+        status: 'Active' as const,
+      }))
+    : user.institutionName !== 'Global Platform'
+    ? [
+        {
+          id: `mem-primary-${user.id}`,
+          tenantName: user.institutionName,
+          tenantType: user.institutionType,
+          role: user.role,
+          domain: 'campus.edu',
+          joinedAt: user.createdAt,
+          status: 'Active' as const,
+        },
+      ]
+    : [];
+
   return (
     <UserDetailClient
       user={user}
       initialSecurityLogs={[]}
-      initialMemberships={[]}
+      initialMemberships={initialMemberships}
       initialSessions={[]}
       initialPreferences={[]}
     />

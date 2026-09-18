@@ -10,6 +10,7 @@ import {
   FaTableCellsLarge,
   FaDiagramProject,
   FaBookOpen,
+  FaCode,
   FaBullseye,
   FaDesktop,
   FaBuildingColumns,
@@ -55,6 +56,11 @@ const SIDEBAR_SECTIONS: NavSection[] = [
         label: 'Learning Hub',
         icon: <FaBookOpen size={15} />,
         path: '/courses',
+      },
+      {
+        label: 'Problems',
+        icon: <FaCode size={15} />,
+        path: '/problems',
       },
       {
         label: 'Practice Engine',

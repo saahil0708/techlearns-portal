@@ -16,7 +16,7 @@ import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import HourglassTopRoundedIcon from '@mui/icons-material/HourglassTopRounded';
 import LockRoundedIcon from '@mui/icons-material/LockRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
@@ -396,7 +396,7 @@ export default function SkillGraphClient() {
                           </Typography>
                         </Box>
                         <Typography sx={{ fontSize: '0.76rem', fontWeight: 700, color: '#2563EB', display: 'flex', alignItems: 'center', gap: 0.25 }}>
-                          Details <ArrowForwardRoundedIcon sx={{ fontSize: 13 }} />
+                          Details <FluidArrowRight size={13} />
                         </Typography>
                       </Box>
                     </Card>

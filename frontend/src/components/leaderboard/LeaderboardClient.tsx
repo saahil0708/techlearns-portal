@@ -34,7 +34,7 @@ import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
 import MilitaryTechRoundedIcon from '@mui/icons-material/MilitaryTechRounded';
 import WhatshotRoundedIcon from '@mui/icons-material/WhatshotRounded';
-import ArrowOutwardRoundedIcon from '@mui/icons-material/ArrowOutwardRounded';
+import { FluidArrowOutward } from '@/utils/fluid_arrow';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
@@ -596,7 +596,7 @@ export default function LeaderboardClient() {
                             <Button
                               size="small"
                               variant="outlined"
-                              endIcon={<ArrowOutwardRoundedIcon sx={{ fontSize: 14 }} />}
+                              endIcon={<FluidArrowOutward size={14} />}
                               onClick={() => router.push(isCurrentUser ? '/students' : `/students/${r.handle}`)}
                               sx={{
                                 borderRadius: '6px',

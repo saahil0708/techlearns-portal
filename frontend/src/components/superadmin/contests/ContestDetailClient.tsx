@@ -30,7 +30,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 // Icons
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import { FluidArrowLeft } from '@/utils/fluid_arrow';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
@@ -385,7 +385,7 @@ export default function ContestDetailClient({
             href="/superadmin/contests"
             variant="outlined"
             size="small"
-            startIcon={<ArrowBackRoundedIcon />}
+            startIcon={<FluidArrowLeft size={18} />}
             sx={{
               borderRadius: '9999px',
               textTransform: 'none',

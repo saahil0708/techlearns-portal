@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Box, Typography, CircularProgress, Button, Card } from '@mui/material';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 import { useAppSelector } from '@/store/hooks';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 
@@ -89,7 +89,7 @@ export default function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardPro
             <Button
               variant="contained"
               fullWidth
-              endIcon={<ArrowForwardRoundedIcon />}
+              endIcon={<FluidArrowRight size={18} />}
               onClick={() => router.push(user.globalRole === 'STUDENT' ? '/students' : '/students')}
               sx={{
                 bgcolor: '#2563EB',

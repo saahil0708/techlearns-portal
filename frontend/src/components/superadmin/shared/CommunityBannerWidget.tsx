@@ -3,7 +3,7 @@
 import React from 'react';
 import { Box, Typography, Card, Avatar, AvatarGroup, Button } from '@mui/material';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 import Link from 'next/link';
 
 interface CommunityBannerWidgetProps {
@@ -91,7 +91,7 @@ export default function CommunityBannerWidget({
             },
           }}
         >
-          <ArrowForwardRoundedIcon sx={{ fontSize: 16 }} />
+          <FluidArrowRight size={16} />
         </Button>
       </Box>
 

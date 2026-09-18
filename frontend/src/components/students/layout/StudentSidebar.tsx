@@ -42,6 +42,7 @@ const STUDENT_NAV_ITEMS = [
   { label: 'Dashboard', icon: <GridViewRoundedIcon sx={{ fontSize: 20 }} />, path: '/students/profile' },
   { label: 'Role Skill Graph', icon: <AccountTreeOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/skill-graph' },
   { label: 'Learning Hub', icon: <MenuBookRoundedIcon sx={{ fontSize: 19 }} />, path: '/courses' },
+  { label: 'Problems', icon: <CodeRoundedIcon sx={{ fontSize: 20 }} />, path: '/problems' },
   { label: 'Practice Engine', icon: <TerminalRoundedIcon sx={{ fontSize: 20 }} />, path: '/practice' },
 
   // Build & Prove

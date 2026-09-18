@@ -25,7 +25,7 @@ import {
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
-import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
+import { FluidArrowUp } from '@/utils/fluid_arrow';
 import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useToast } from '@/context/ToastContext';
@@ -278,7 +278,7 @@ export default function CommunityClient() {
                           '&:hover': { bgcolor: '#EFF6FF', borderColor: '#93C5FD' },
                         }}
                       >
-                        <ArrowUpwardRoundedIcon sx={{ fontSize: 16, color: '#2563EB' }} />
+                        <FluidArrowUp size={16} color="#2563EB" />
                         <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: '#0F172A' }}>
                           {post.upvotes}
                         </Typography>

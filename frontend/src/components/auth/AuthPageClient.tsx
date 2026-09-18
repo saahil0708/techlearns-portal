@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
@@ -822,7 +822,7 @@ export default function AuthPageClient() {
                 {isLoading ? (
                   <CircularProgress size={14} sx={{ color: '#FFFFFF' }} />
                 ) : (
-                  <ArrowForwardRoundedIcon sx={{ fontSize: 16, color: '#FFFFFF' }} />
+                  <FluidArrowRight size={16} color="#FFFFFF" />
                 )}
               </Box>
             </Button>

@@ -13,7 +13,7 @@ import PsychologyRoundedIcon from '@mui/icons-material/PsychologyRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 import { useRouter } from 'next/navigation';
 
 export interface SkillDomainMetric {
@@ -530,7 +530,7 @@ export default function SkillDomainMasteryCard({
 
         <Button
           size="small"
-          endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 15 }} />}
+          endIcon={<FluidArrowRight size={15} />}
           onClick={() => router.push('/superadmin/analytics')}
           sx={{
             textTransform: 'none',

@@ -37,6 +37,54 @@ interface FacultyProfileClientProps {
   initialCourses?: FacultyCourseItem[];
 }
 
+function extractInstitutionDetails(u: any, fallbackProfile?: FacultyProfileEntity) {
+  const memberships = Array.isArray(u?.memberships) ? u.memberships : [];
+  const primaryMembership =
+    memberships.find(
+      (m: any) =>
+        m?.role === 'FACULTY' ||
+        m?.role === 'COLLEGE_ADMIN' ||
+        m?.role === 'INSTITUTION_ADMIN'
+    ) ||
+    memberships.find((m: any) => m?.institution?.name || m?.college?.name) ||
+    memberships[0];
+
+  const collegeName =
+    primaryMembership?.institution?.name ||
+    primaryMembership?.college?.name ||
+    u?.institution ||
+    u?.institutionName ||
+    fallbackProfile?.collegeName ||
+    undefined;
+
+  const collegeCode =
+    primaryMembership?.institution?.code ||
+    primaryMembership?.college?.code ||
+    fallbackProfile?.collegeCode ||
+    undefined;
+
+  const collegeDomain =
+    primaryMembership?.institution?.email?.split('@')[1] ||
+    primaryMembership?.college?.email?.split('@')[1] ||
+    fallbackProfile?.collegeDomain ||
+    undefined;
+
+  const collegeId =
+    primaryMembership?.institutionId ||
+    primaryMembership?.collegeId ||
+    primaryMembership?.institution?.id ||
+    primaryMembership?.college?.id ||
+    u?.institutionId ||
+    u?.collegeId ||
+    memberships[0]?.institutionId ||
+    memberships[0]?.collegeId ||
+    (fallbackProfile as any)?.collegeId ||
+    (fallbackProfile as any)?.institutionId ||
+    undefined;
+
+  return { collegeName, collegeCode, collegeDomain, collegeId };
+}
+
 export default function FacultyProfileClient({
   initialProfile,
   initialBatches = [],
@@ -46,11 +94,10 @@ export default function FacultyProfileClient({
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
   const { user } = useAppSelector((state) => state.auth);
-  const facultyMembership = user?.memberships?.find(
-    (m) => m.role === 'FACULTY' || m.role === 'COLLEGE_ADMIN'
-  );
+
+  const initialInst = extractInstitutionDetails(user, initialProfile);
   const [activeCollegeId, setActiveCollegeId] = useState<string | undefined>(
-    facultyMembership?.collegeId || facultyMembership?.college?.id || user?.memberships?.[0]?.collegeId
+    initialInst.collegeId || (initialProfile as any)?.collegeId || (initialProfile as any)?.institutionId || undefined
   );
 
   const defaultProfile: FacultyProfileEntity = {
@@ -66,10 +113,10 @@ export default function FacultyProfileClient({
     githubUrl: (user as any)?.githubUrl || '',
     linkedinUrl: (user as any)?.linkedinUrl || '',
     websiteUrl: (user as any)?.websiteUrl || '',
-    roleTitle: user?.globalRole === 'COLLEGE_ADMIN' ? 'Department Head & Campus Lead' : 'Senior Faculty Mentor',
-    collegeName: facultyMembership?.college?.name || 'Academic Institution',
-    collegeCode: facultyMembership?.college?.code || 'CSE',
-    collegeDomain: facultyMembership?.college?.email?.split('@')[1] || 'campus.edu',
+    roleTitle: user?.globalRole === 'COLLEGE_ADMIN' || (user?.globalRole as any) === 'INSTITUTION_ADMIN' ? 'Department Head & Campus Lead' : 'Senior Faculty Mentor',
+    collegeName: initialInst.collegeName || initialProfile?.collegeName || 'Academic Institution',
+    collegeCode: initialInst.collegeCode || initialProfile?.collegeCode || 'CSE',
+    collegeDomain: initialInst.collegeDomain || initialProfile?.collegeDomain || 'campus.edu',
     twoFactorEnabled: Boolean(user?.twoFactorEnabled),
   };
 
@@ -80,6 +127,37 @@ export default function FacultyProfileClient({
   const [activeTab, setActiveTab] = useState<number>(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Sync profile & activeCollegeId whenever Redux auth user updates
+  useEffect(() => {
+    if (user && user.id) {
+      const inst = extractInstitutionDetails(user, initialProfile);
+      setProfile((prev) => ({
+        ...prev,
+        id: user.id || prev.id,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        department: (user as any)?.department ?? prev.department,
+        specialization: (user as any)?.specialization ?? prev.specialization,
+        officeHours: (user as any)?.officeHours ?? prev.officeHours,
+        location: (user as any)?.location ?? prev.location,
+        phone: (user as any)?.phone ?? prev.phone,
+        bio: (user as any)?.bio ?? prev.bio,
+        githubUrl: (user as any)?.githubUrl ?? prev.githubUrl,
+        linkedinUrl: (user as any)?.linkedinUrl ?? prev.linkedinUrl,
+        websiteUrl: (user as any)?.websiteUrl ?? prev.websiteUrl,
+        roleTitle: user.globalRole === 'COLLEGE_ADMIN' || (user.globalRole as any) === 'INSTITUTION_ADMIN' ? 'Department Head & Campus Lead' : 'Senior Faculty Mentor',
+        collegeName: inst.collegeName,
+        collegeCode: inst.collegeCode,
+        collegeDomain: inst.collegeDomain,
+        twoFactorEnabled: Boolean(user.twoFactorEnabled),
+      }));
+
+      if (inst.collegeId) {
+        setActiveCollegeId(inst.collegeId);
+      }
+    }
+  }, [user, initialProfile]);
 
   // Sync activeTab with URL search params
   useEffect(() => {
@@ -154,10 +232,7 @@ export default function FacultyProfileClient({
       const res = await apiService.getProfile();
       const liveUser = res?.data || res;
       if (liveUser && liveUser.id) {
-        const authMembership = liveUser.memberships?.find(
-          (m: any) => m.role === 'FACULTY' || m.role === 'COLLEGE_ADMIN'
-        );
-        const cId = authMembership?.collegeId || authMembership?.college?.id || liveUser.memberships?.[0]?.collegeId;
+        const inst = extractInstitutionDetails(liveUser);
 
         setProfile((prev) => ({
           ...prev,
@@ -173,12 +248,13 @@ export default function FacultyProfileClient({
           githubUrl: liveUser.githubUrl !== undefined && liveUser.githubUrl !== null ? liveUser.githubUrl : prev.githubUrl,
           linkedinUrl: liveUser.linkedinUrl !== undefined && liveUser.linkedinUrl !== null ? liveUser.linkedinUrl : prev.linkedinUrl,
           websiteUrl: liveUser.websiteUrl !== undefined && liveUser.websiteUrl !== null ? liveUser.websiteUrl : prev.websiteUrl,
-          collegeName: authMembership?.college?.name || prev.collegeName,
-          collegeCode: authMembership?.college?.code || prev.collegeCode,
-          collegeDomain: authMembership?.college?.email?.split('@')[1] || prev.collegeDomain,
+          collegeName: inst.collegeName || prev.collegeName,
+          collegeCode: inst.collegeCode || prev.collegeCode,
+          collegeDomain: inst.collegeDomain || prev.collegeDomain,
           twoFactorEnabled: Boolean(liveUser.twoFactorEnabled),
         }));
 
+        const cId = inst.collegeId || activeCollegeId;
         if (cId) {
           setActiveCollegeId(cId);
         }
@@ -195,7 +271,7 @@ export default function FacultyProfileClient({
       // Fallback
       return null;
     }
-  }, [loadBatches, loadCourses, loadProblems]);
+  }, [activeCollegeId, loadBatches, loadCourses, loadProblems]);
 
   usePolling(fetchLiveFacultyData, {
     intervalMs: 25000,

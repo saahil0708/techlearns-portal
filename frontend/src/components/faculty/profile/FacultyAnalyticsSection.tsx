@@ -25,7 +25,7 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import LayersRoundedIcon from '@mui/icons-material/LayersRounded';
 import PsychologyRoundedIcon from '@mui/icons-material/PsychologyRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import LanguageRoundedIcon from '@mui/icons-material/LanguageRounded';
@@ -627,7 +627,7 @@ export default function FacultyAnalyticsSection({
 
               <Button
                 size="small"
-                endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 14 }} />}
+                endIcon={<FluidArrowRight size={14} />}
                 onClick={() => onNavigateTab(1)}
                 sx={{
                   textTransform: 'none',

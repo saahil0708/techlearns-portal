@@ -28,7 +28,7 @@ import {
 import Link from 'next/link';
 
 // Icons
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import { FluidArrowLeft } from '@/utils/fluid_arrow';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
@@ -438,7 +438,7 @@ export default function UserDetailClient({
               <Button
                 component={Link}
                 href="/superadmin/users"
-                startIcon={<ArrowBackRoundedIcon sx={{ fontSize: 18 }} />}
+                startIcon={<FluidArrowLeft size={18} />}
                 sx={{
                   color: '#64748B',
                   borderRadius: '9999px',
