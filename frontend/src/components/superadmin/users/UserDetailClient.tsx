@@ -72,7 +72,7 @@ export interface UserSecurityLogItem {
 export interface UserTenantMembershipItem {
   id: string;
   tenantName: string;
-  tenantType: 'College' | 'School' | 'Independent';
+  tenantType: 'Institute' | 'Independent';
   roleInTenant: string;
   permissionsScope: string;
   assignedAt: string;

@@ -42,8 +42,8 @@ const ACTION_ITEMS = [
     href: '/contests',
   },
   {
-    key: 'onboard_college',
-    title: 'Onboard College / School',
+    key: 'onboard_institute',
+    title: 'Onboard Institute',
     subtitle: 'Provision new tenant org and faculty seats',
     icon: AccountBalanceRoundedIcon,
     iconColor: '#2563EB',
@@ -52,7 +52,7 @@ const ACTION_ITEMS = [
     badge: 'Multi-Tenant',
     badgeColor: '#2563EB',
     badgeBg: '#EFF6FF',
-    href: '/colleges',
+    href: '/superadmin/institutions',
   },
   {
     key: 'import_roster',

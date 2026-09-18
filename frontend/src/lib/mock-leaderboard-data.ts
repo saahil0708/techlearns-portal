@@ -124,7 +124,7 @@ export const MOCK_LEADERBOARD: LeaderboardRankEntity[] = [
     contestsAttended: 24,
     globalPercentile: 'Top 0.85%',
     streakDays: 48,
-    badge: '🚀 Collegiate Master',
+    badge: '🚀 Institute Master',
   },
   {
     id: 'rank-7',

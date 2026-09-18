@@ -199,7 +199,7 @@ export default function LiveSubmissionsFeed({
             </Typography>
           </Box>
           <Typography sx={{ fontSize: '0.82rem', fontWeight: 500, color: '#64748B', mt: 0.25 }}>
-            Real-time judge evaluation across Colleges, Schools & Independent Students
+            Real-time judge evaluation across Institutes & Independent Students
           </Typography>
         </Box>
 

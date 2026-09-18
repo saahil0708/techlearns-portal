@@ -342,8 +342,8 @@ export default function ContestsArenaClient() {
                 >
                   <MenuItem value="ALL" sx={{ fontSize: '0.84rem', fontWeight: 600 }}>All Scopes</MenuItem>
                   <MenuItem value="Global" sx={{ fontSize: '0.84rem' }}>Global</MenuItem>
-                  <MenuItem value="Collegiate League" sx={{ fontSize: '0.84rem' }}>Collegiate League</MenuItem>
-                  <MenuItem value="High School Invitational" sx={{ fontSize: '0.84rem' }}>High School</MenuItem>
+                  <MenuItem value="Institute League" sx={{ fontSize: '0.84rem' }}>Institute League</MenuItem>
+                  <MenuItem value="Institutional Invitational" sx={{ fontSize: '0.84rem' }}>Institutional Invitational</MenuItem>
                   <MenuItem value="Internal Faculty Assessment" sx={{ fontSize: '0.84rem' }}>Faculty Internal</MenuItem>
                 </Select>
               </FormControl>

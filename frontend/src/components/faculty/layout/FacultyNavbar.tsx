@@ -77,14 +77,20 @@ export default function FacultyNavbar({
   const user = useAppSelector((state) => state.auth.user);
 
   const firstName = user?.name ? user.name.split(' ')[0] : 'Faculty';
+  const primaryMembership = extractInstitutionDetails(user);
+  const userMemberships = Array.isArray(user?.memberships) ? user.memberships : [];
+  const hasAdminMembership = userMemberships.some(
+    (m: any) => m?.role === 'COLLEGE_ADMIN' || m?.role === 'INSTITUTION_ADMIN'
+  );
+
   const roleLabel =
-    user?.globalRole === 'COLLEGE_ADMIN'
-      ? 'DEPARTMENT HEAD'
+    user?.globalRole === 'COLLEGE_ADMIN' ||
+    user?.globalRole === 'INSTITUTION_ADMIN' ||
+    hasAdminMembership
+      ? 'COLLEGE ADMIN / DEPT HEAD'
       : user?.globalRole === 'SUPER_ADMIN'
       ? 'SUPER ADMIN'
       : 'FACULTY MENTOR';
-
-  const primaryMembership = extractInstitutionDetails(user);
 
   const displayCollege =
     collegeName ||
@@ -98,7 +104,7 @@ export default function FacultyNavbar({
     primaryMembership?.institution?.code ||
     primaryMembership?.college?.code ||
     'FAC';
-  const displayDept = department || (user as any)?.department || 'Computer Science & Engineering';
+  const displayDept = department?.trim() || (user as any)?.department?.trim() || '';
 
   // Quick Action Menu state
   const [createAnchorEl, setCreateAnchorEl] = useState<null | HTMLElement>(null);
@@ -214,8 +220,12 @@ export default function FacultyNavbar({
           }}
         >
           <span>{displayCollege} ({displayCode})</span>
-          <span>•</span>
-          <span>{displayDept}</span>
+          {displayDept && (
+            <>
+              <span>•</span>
+              <span>{displayDept}</span>
+            </>
+          )}
         </Typography>
       </Box>
 

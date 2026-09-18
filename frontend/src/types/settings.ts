@@ -28,7 +28,7 @@ export interface SecuritySettings {
   allowGithubSSO: boolean;
   allowSamlSSO: boolean;
   samlEntityId: string;
-  enforceCollegeDomainMatch: boolean;
+  enforceInstituteDomainMatch: boolean;
 }
 
 export interface ScoringEngineSettings {

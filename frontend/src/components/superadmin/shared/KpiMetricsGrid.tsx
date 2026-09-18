@@ -14,26 +14,26 @@ interface KpiMetricsGridProps {
 export default function KpiMetricsGrid({ primaryBlue = '#2563eb' }: KpiMetricsGridProps) {
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
-      {/* 1. Colleges */}
+      {/* 1. Institutes */}
       <StatsCard
-        title="Colleges"
+        title="Institutes"
         value="32"
         icon={<AccountBalanceRoundedIcon sx={{ fontSize: 20 }} />}
         variant="blue"
         shape="orbital"
         trendBadge={{ text: '+12.5%', type: 'positive' }}
-        subtitle="14,200 Undergrads"
+        subtitle="14,200 Enrolled Coders"
       />
 
-      {/* 2. Schools */}
+      {/* 2. Active Cohorts & Batches */}
       <StatsCard
-        title="Schools"
-        value="26"
+        title="Active Batches"
+        value="86"
         icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
         variant="black"
         shape="topography"
         trendBadge={{ text: '+18.0%', type: 'positive' }}
-        subtitle="6,450 High Schoolers"
+        subtitle="Structured Cohorts"
       />
 
       {/* 3. Individual Students */}

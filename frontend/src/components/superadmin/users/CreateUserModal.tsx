@@ -36,7 +36,6 @@ import { useAppSelector } from '@/store/hooks';
 export type UserRole =
   | 'SUPER_ADMIN'
   | 'COLLEGE_ADMIN'
-  | 'SCHOOL_ADMIN'
   | 'FACULTY'
   | 'STUDENT'
   | 'RECRUITER';
@@ -47,7 +46,7 @@ export interface NewUserData {
   email: string;
   password?: string;
   role: UserRole;
-  institutionType: 'College' | 'School' | 'Independent';
+  institutionType: 'Institute' | 'Independent';
   institutionName: string;
   sendInviteEmail: boolean;
 }
@@ -64,12 +63,12 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
 
   const allowedRoles: UserRole[] = React.useMemo(() => {
     if (callerRole === 'SUPER_ADMIN') {
-      return ['SUPER_ADMIN', 'COLLEGE_ADMIN', 'SCHOOL_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
+      return ['SUPER_ADMIN', 'COLLEGE_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
     }
     if (callerRole === 'PLATFORM_ADMIN') {
-      return ['COLLEGE_ADMIN', 'SCHOOL_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
+      return ['COLLEGE_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
     }
-    if (callerRole === 'COLLEGE_ADMIN' || callerRole === 'SCHOOL_ADMIN' || callerRole === 'INSTITUTION_ADMIN') {
+    if (callerRole === 'COLLEGE_ADMIN' || callerRole === 'INSTITUTION_ADMIN') {
       return ['FACULTY', 'STUDENT', 'RECRUITER'];
     }
     if (callerRole === 'FACULTY') {
@@ -84,7 +83,7 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
   const [password, setPassword] = useState('TemporaryPass123!');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<UserRole>(() => allowedRoles[0] || 'FACULTY');
-  const [institutionType, setInstitutionType] = useState<'College' | 'School' | 'Independent'>('College');
+  const [institutionType, setInstitutionType] = useState<'Institute' | 'Independent'>('Institute');
   const [institutionName, setInstitutionName] = useState('Stanford University - Dept of CS');
 
   React.useEffect(() => {
@@ -387,12 +386,8 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
                     icon: <AdminPanelSettingsRoundedIcon sx={{ fontSize: 18, color: '#7C3AED' }} />,
                   },
                   COLLEGE_ADMIN: {
-                    label: 'College Administrator (Tenant Admin)',
+                    label: 'Institute Administrator (Tenant Admin)',
                     icon: <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />,
-                  },
-                  SCHOOL_ADMIN: {
-                    label: 'School Administrator (STEM Admin)',
-                    icon: <SchoolRoundedIcon sx={{ fontSize: 18, color: '#059669' }} />,
                   },
                   FACULTY: {
                     label: 'Faculty / Instructor (Course & Problem Creator)',
@@ -441,17 +436,7 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
                     <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
                     <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>
-                      College Administrator (Tenant Admin)
-                    </Typography>
-                  </Box>
-                </MenuItem>
-              )}
-              {allowedRoles.includes('SCHOOL_ADMIN') && (
-                <MenuItem value="SCHOOL_ADMIN" sx={{ py: 1, px: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                    <SchoolRoundedIcon sx={{ fontSize: 18, color: '#059669' }} />
-                    <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>
-                      School Administrator (STEM Admin)
+                      Institute Administrator (Tenant Admin)
                     </Typography>
                   </Box>
                 </MenuItem>
@@ -529,8 +514,7 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
                     '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
                   }}
                 >
-                  <MenuItem value="College">University / College</MenuItem>
-                  <MenuItem value="School">K-12 / High School</MenuItem>
+                  <MenuItem value="Institute">Higher Education Institute / University</MenuItem>
                   <MenuItem value="Independent">Independent Organization</MenuItem>
                 </Select>
               </Box>

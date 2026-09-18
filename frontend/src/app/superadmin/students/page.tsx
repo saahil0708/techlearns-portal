@@ -48,10 +48,8 @@ export default async function StudentsPage() {
             : null;
           const batchName = primaryBatch?.batch?.name || u.cohort?.trim();
 
-          const institutionType: 'College' | 'School' | 'Independent' = collegeName
-            ? 'College'
-            : u.institutionType === 'School'
-            ? 'School'
+          const institutionType: 'Institute' | 'Independent' = (collegeName || userInstitution)
+            ? 'Institute'
             : 'Independent';
 
           const institutionName = collegeName

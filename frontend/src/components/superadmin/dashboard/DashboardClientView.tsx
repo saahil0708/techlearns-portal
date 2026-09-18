@@ -35,18 +35,15 @@ import { isSchoolOrganization } from '@/utils/organization';
 interface DashboardClientViewProps {
   initialSubmissions: SubmissionItem[];
   initialInstitutions: DirectoryEntry[];
-  initialIndividualStudents: DirectoryEntry[];
 }
 
 export default function DashboardClientView({
   initialSubmissions,
   initialInstitutions,
-  initialIndividualStudents,
 }: DashboardClientViewProps) {
   const router = useRouter();
   const [submissions, setSubmissions] = useState<SubmissionItem[]>(initialSubmissions);
   const [institutions, setInstitutions] = useState<DirectoryEntry[]>(initialInstitutions);
-  const [individualStudents, setIndividualStudents] = useState<DirectoryEntry[]>(initialIndividualStudents);
 
   const [submissionFilter, setSubmissionFilter] = useState<string>('ALL');
   const [instTab, setInstTab] = useState<string>('ALL');
@@ -56,10 +53,9 @@ export default function DashboardClientView({
   React.useEffect(() => {
     async function loadLiveDashboard() {
       try {
-        const [submissionsData, collegesData, usersData] = await Promise.all([
+        const [submissionsData, collegesData] = await Promise.all([
           apiService.getLiveSubmissions(10).catch(() => null),
-          apiService.getColleges({ limit: 10 }).catch(() => null),
-          apiService.getUsers({ limit: 10 }).catch(() => null),
+          apiService.getColleges({ limit: 50 }).catch(() => null),
         ]);
 
         if (Array.isArray(submissionsData)) {
@@ -89,31 +85,14 @@ export default function DashboardClientView({
 
               return {
                 name: col.name,
-                type: isSchoolOrganization(col) ? 'School' : 'College',
+                type: 'Institute',
                 code: col.code,
                 count: `${studentCount} ${studentCount === 1 ? 'student' : 'students'}`,
                 detail: `${col._count?.courses || 0} courses • ${col._count?.batches || 0} cohorts`,
-                region: 'Global',
+                region: col.region || col.location || col.address || 'Asia-Pacific',
                 status: col.status === 'ACTIVE' ? 'Active' : 'Suspended',
               };
             })
-          );
-        }
-
-        if (usersData && Array.isArray(usersData.items)) {
-          setIndividualStudents(
-            usersData.items
-              .filter((u: any) => u.globalRole === 'STUDENT')
-              .slice(0, 5)
-              .map((u: any) => ({
-                name: u.name,
-                handle: `@${u.email ? u.email.split('@')[0] : 'student'}`,
-                type: 'Individual',
-                count: 'Active',
-                detail: 'Student Account',
-                region: 'Global Learner',
-                status: 'Active',
-              }))
           );
         }
       } catch (err) {
@@ -133,10 +112,8 @@ export default function DashboardClientView({
     return true;
   });
 
-  // Filter Directory Entries (Institutions Only)
+  // Filter Directory Entries (Institutes Only)
   const filteredDirectory = institutions.filter((item) => {
-    if (instTab === 'COLLEGE' && item.type !== 'College') return false;
-    if (instTab === 'SCHOOL' && item.type !== 'School') return false;
     if (searchQuery && !item.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });

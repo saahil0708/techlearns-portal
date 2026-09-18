@@ -56,6 +56,9 @@ import LockResetRoundedIcon from '@mui/icons-material/LockResetRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import DeleteForeverRoundedIcon from '@mui/icons-material/DeleteForeverRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
+import LinkOffRoundedIcon from '@mui/icons-material/LinkOffRounded';
 
 import dynamic from 'next/dynamic';
 
@@ -70,6 +73,8 @@ import YouBadge from '@/components/common/YouBadge';
 import StatsCard from '@/components/superadmin/shared/StatsCard';
 
 const CreateUserModal = dynamic(() => import('@/components/superadmin/users/CreateUserModal'), { loading: () => null });
+const EditUserModal = dynamic(() => import('@/components/superadmin/users/EditUserModal'), { loading: () => null });
+const AssignInstitutionModal = dynamic(() => import('@/components/superadmin/users/AssignInstitutionModal'), { loading: () => null });
 const UserQuickPeekDrawer = dynamic(() => import('@/components/superadmin/users/UserQuickPeekDrawer'), { loading: () => null });
 const BulkInviteUsersModal = dynamic(() => import('@/components/superadmin/users/BulkInviteUsersModal'), { loading: () => null });
 const DeleteConfirmModal = dynamic(() => import('@/components/superadmin/shared/DeleteConfirmModal'), { loading: () => null });
@@ -81,7 +86,7 @@ export interface UserDirectoryEntity {
   handle: string;
   email: string;
   role: UserRole;
-  institutionType: 'College' | 'School' | 'Independent';
+  institutionType: 'Institute' | 'Independent';
   institutionName: string;
   twoFactorEnabled: boolean;
   lastLoginAt: string;
@@ -127,12 +132,8 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
               const collegeName = primaryMembership?.institution?.name || primaryMembership?.college?.name;
               const userInstitution = item.institution?.trim();
 
-              const institutionType: 'College' | 'School' | 'Independent' = collegeName
-                ? 'College'
-                : item.institutionType === 'School'
-                ? 'School'
-                : userInstitution
-                ? item.institutionType || 'Independent'
+              const institutionType: 'Institute' | 'Independent' = collegeName || userInstitution
+                ? 'Institute'
                 : 'Independent';
 
               const institutionName = collegeName || userInstitution || 'Independent';
@@ -168,8 +169,12 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                       year: 'numeric',
                     })
                   : 'Recently',
-                createdAtRaw,
-                status: item.status === 'ACTIVE' ? 'Active' : 'Suspended',
+                status:
+                  item.status === 'ACTIVE'
+                    ? 'Active'
+                    : item.status === 'INVITED'
+                    ? 'Invited'
+                    : 'Suspended',
                 avatarColor: '#7C3AED',
               };
             });
@@ -191,6 +196,10 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [isBulkInviteOpen, setIsBulkInviteOpen] = useState<boolean>(false);
   const [peekUser, setPeekUser] = useState<UserDirectoryEntity | null>(null);
+  const [editingUser, setEditingUser] = useState<UserDirectoryEntity | null>(null);
+  const [assigningUser, setAssigningUser] = useState<UserDirectoryEntity | null>(null);
+  const [actionMenuAnchor, setActionMenuAnchor] = useState<null | HTMLElement>(null);
+  const [actionMenuUser, setActionMenuUser] = useState<UserDirectoryEntity | null>(null);
   const [deleteTargetUsers, setDeleteTargetUsers] = useState<UserDirectoryEntity[] | null>(null);
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
 
@@ -199,6 +208,53 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
 
   const borderColor = '#E2E8F0';
+
+  const handleOpenActionMenu = (event: React.MouseEvent<HTMLElement>, targetUser: UserDirectoryEntity) => {
+    event.stopPropagation();
+    setActionMenuAnchor(event.currentTarget);
+    setActionMenuUser(targetUser);
+  };
+
+  const handleCloseActionMenu = () => {
+    setActionMenuAnchor(null);
+    setActionMenuUser(null);
+  };
+
+  const handleUpdateUserSuccess = (updated: Partial<UserDirectoryEntity> & { id: string }) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u))
+    );
+    if (peekUser?.id === updated.id) {
+      setPeekUser((prev) => (prev ? { ...prev, ...updated } : null));
+    }
+  };
+
+  const handleAssignInstitutionSuccess = (updated: Partial<UserDirectoryEntity> & { id: string }) => {
+    setUsers((prev) =>
+      prev.map((u) => (u.id === updated.id ? { ...u, ...updated } : u))
+    );
+    if (peekUser?.id === updated.id) {
+      setPeekUser((prev) => (prev ? { ...prev, ...updated } : null));
+    }
+  };
+
+  const handleUnassignUser = async (targetUser: UserDirectoryEntity) => {
+    try {
+      await apiService.unassignUserFromInstitutions(targetUser.id);
+      toast.success(
+        `Unassigned ${targetUser.name} from ${targetUser.institutionName} (now Independent).`,
+        'Affiliation Removed'
+      );
+      handleAssignInstitutionSuccess({
+        id: targetUser.id,
+        institutionName: 'Independent',
+        institutionType: 'Independent',
+      });
+    } catch (err: any) {
+      console.error('Failed to unassign user:', err);
+      toast.error(err?.message || 'Failed to unassign user from institution.', 'Unassign Failed');
+    }
+  };
 
   // Handle Sort Change
   const handleSort = (field: SortField) => {
@@ -332,8 +388,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
   // Stats Counters
   const totalCount = users.length;
   const superAdminCount = users.filter((u) => u.role === 'SUPER_ADMIN').length;
-  const collegeAdminCount = users.filter((u) => u.role === 'COLLEGE_ADMIN').length;
-  const schoolAdminCount = users.filter((u) => u.role === 'SCHOOL_ADMIN').length;
+  const instituteAdminCount = users.filter((u) => u.role === 'COLLEGE_ADMIN').length;
   const adminCount = users.filter((u) => u.role.includes('ADMIN')).length;
   const facultyCount = users.filter((u) => u.role === 'FACULTY').length;
   const recruiterCount = users.filter((u) => u.role === 'RECRUITER').length;
@@ -372,7 +427,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
         globalRole:
           newData.role === 'SUPER_ADMIN'
             ? 'SUPER_ADMIN'
-            : newData.role === 'COLLEGE_ADMIN' || newData.role === 'SCHOOL_ADMIN'
+            : newData.role === 'COLLEGE_ADMIN'
             ? 'COLLEGE_ADMIN'
             : newData.role === 'STUDENT'
             ? 'STUDENT'
@@ -461,8 +516,6 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
         return { bg: '#FAF5FF', text: '#7C3AED', border: '#E9D5FF' };
       case 'COLLEGE_ADMIN':
         return { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' };
-      case 'SCHOOL_ADMIN':
-        return { bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' };
       case 'FACULTY':
         return { bg: '#ECFEFF', text: '#0891B2', border: '#A5F3FC' };
       case 'STUDENT':
@@ -718,8 +771,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                 {[
                   { id: 'ALL', label: 'All Users', count: totalCount },
                   { id: 'SUPER_ADMIN', label: 'Super Admins', count: superAdminCount },
-                  { id: 'COLLEGE_ADMIN', label: 'College Admins', count: collegeAdminCount },
-                  { id: 'SCHOOL_ADMIN', label: 'School Admins', count: schoolAdminCount },
+                  { id: 'COLLEGE_ADMIN', label: 'Institute Admins', count: instituteAdminCount },
                   { id: 'FACULTY', label: 'Faculty', count: facultyCount },
                   { id: 'RECRUITER', label: 'Recruiters', count: recruiterCount },
                 ].map((tab) => (
@@ -1339,6 +1391,51 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                                 </IconButton>
                               </Tooltip>
 
+                              {/* Edit User Details */}
+                              <Tooltip title="Edit User Details">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => setEditingUser(user)}
+                                  sx={{
+                                    color: '#64748B',
+                                    borderRadius: '9999px',
+                                    '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' },
+                                  }}
+                                >
+                                  <EditRoundedIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+
+                              {/* Assign Active Institute */}
+                              <Tooltip title="Assign Active Institute">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => setAssigningUser(user)}
+                                  sx={{
+                                    color: '#64748B',
+                                    borderRadius: '9999px',
+                                    '&:hover': { color: '#16A34A', bgcolor: '#F0FDF4' },
+                                  }}
+                                >
+                                  <AccountBalanceRoundedIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+
+                              {/* More Actions Menu Button */}
+                              <Tooltip title="More Actions">
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => handleOpenActionMenu(e, user)}
+                                  sx={{
+                                    color: '#64748B',
+                                    borderRadius: '9999px',
+                                    '&:hover': { color: '#0F172A', bgcolor: '#F1F5F9' },
+                                  }}
+                                >
+                                  <MoreVertRoundedIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+
                               {/* Full Profile Link */}
                               <Link href={`/superadmin/users/${user.id}`} passHref style={{ textDecoration: 'none' }}>
                                 <IconButton
@@ -1543,6 +1640,20 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
         onCreate={handleAddUser}
       />
 
+      <EditUserModal
+        open={Boolean(editingUser)}
+        onClose={() => setEditingUser(null)}
+        user={editingUser}
+        onUpdateSuccess={handleUpdateUserSuccess}
+      />
+
+      <AssignInstitutionModal
+        open={Boolean(assigningUser)}
+        onClose={() => setAssigningUser(null)}
+        user={assigningUser}
+        onAssignSuccess={handleAssignInstitutionSuccess}
+      />
+
       <BulkInviteUsersModal
         open={isBulkInviteOpen}
         onClose={() => setIsBulkInviteOpen(false)}
@@ -1555,7 +1666,114 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
         open={Boolean(peekUser)}
         onClose={() => setPeekUser(null)}
         user={peekUser}
+        onEditUser={(u) => setEditingUser(u)}
+        onAssignInstitution={(u) => setAssigningUser(u)}
+        onUnassignInstitution={handleUnassignUser}
       />
+
+      {/* Row Action Menu */}
+      <Menu
+        anchorEl={actionMenuAnchor}
+        open={Boolean(actionMenuAnchor)}
+        onClose={handleCloseActionMenu}
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: '14px',
+              border: `1px solid ${borderColor}`,
+              boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+              p: 0.5,
+              minWidth: 200,
+            },
+          },
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            if (actionMenuUser) setPeekUser(actionMenuUser);
+            handleCloseActionMenu();
+          }}
+          sx={{ fontSize: '0.82rem', fontWeight: 600, borderRadius: '8px', color: '#0F172A' }}
+        >
+          <ListItemIcon sx={{ minWidth: '28px !important', color: '#2563EB' }}>
+            <VisibilityRoundedIcon fontSize="small" />
+          </ListItemIcon>
+          Quick Peek Profile
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            if (actionMenuUser) setEditingUser(actionMenuUser);
+            handleCloseActionMenu();
+          }}
+          sx={{ fontSize: '0.82rem', fontWeight: 600, borderRadius: '8px', color: '#0F172A' }}
+        >
+          <ListItemIcon sx={{ minWidth: '28px !important', color: '#2563EB' }}>
+            <EditRoundedIcon fontSize="small" />
+          </ListItemIcon>
+          Edit User Details
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            if (actionMenuUser) setAssigningUser(actionMenuUser);
+            handleCloseActionMenu();
+          }}
+          sx={{ fontSize: '0.82rem', fontWeight: 600, borderRadius: '8px', color: '#0F172A' }}
+        >
+          <ListItemIcon sx={{ minWidth: '28px !important', color: '#16A34A' }}>
+            <AccountBalanceRoundedIcon fontSize="small" />
+          </ListItemIcon>
+          Assign Active Institute
+        </MenuItem>
+
+        {actionMenuUser && actionMenuUser.institutionName && actionMenuUser.institutionName !== 'Independent' && (
+          <MenuItem
+            onClick={() => {
+              const u = actionMenuUser;
+              handleCloseActionMenu();
+              handleUnassignUser(u);
+            }}
+            sx={{ fontSize: '0.82rem', fontWeight: 600, borderRadius: '8px', color: '#D97706' }}
+          >
+            <ListItemIcon sx={{ minWidth: '28px !important', color: '#D97706' }}>
+              <LinkOffRoundedIcon fontSize="small" />
+            </ListItemIcon>
+            Unassign from Institute
+          </MenuItem>
+        )}
+
+        {actionMenuUser && (
+          <Link href={`/superadmin/users/${actionMenuUser.id}`} passHref style={{ textDecoration: 'none' }}>
+            <MenuItem
+              onClick={handleCloseActionMenu}
+              sx={{ fontSize: '0.82rem', fontWeight: 600, borderRadius: '8px', color: '#0F172A' }}
+            >
+              <ListItemIcon sx={{ minWidth: '28px !important', color: '#64748B' }}>
+                <FluidArrowRight size={16} />
+              </ListItemIcon>
+              Open Full Profile
+            </MenuItem>
+          </Link>
+        )}
+
+        <Divider sx={{ my: 0.5, borderColor: '#F1F5F9' }} />
+
+        <MenuItem
+          onClick={() => {
+            if (actionMenuUser) {
+              setDeleteTargetUsers([actionMenuUser]);
+            }
+            handleCloseActionMenu();
+          }}
+          sx={{ fontSize: '0.82rem', fontWeight: 600, borderRadius: '8px', color: '#DC2626' }}
+        >
+          <ListItemIcon sx={{ minWidth: '28px !important', color: '#DC2626' }}>
+            <DeleteOutlineRoundedIcon fontSize="small" />
+          </ListItemIcon>
+          Delete Account
+        </MenuItem>
+      </Menu>
 
       {/* Deletion Confirmation Modal */}
       <DeleteConfirmModal

@@ -35,7 +35,6 @@ export interface UpdateInstitutionData {
   domain?: string;
   region?: string;
   quota?: number;
-  tier?: string;
   email?: string;
   phone?: string;
   status?: string;
@@ -58,7 +57,6 @@ export default function EditInstitutionModal({ open, institution, onClose, onSub
     domain: '',
     region: 'Asia-Pacific',
     quota: 5000,
-    tier: 'Enterprise Tier',
     email: '',
     phone: '',
     status: 'ACTIVE',
@@ -75,7 +73,6 @@ export default function EditInstitutionModal({ open, institution, onClose, onSub
         domain: institution.domain || '',
         region: institution.region || 'Global',
         quota: institution.maxQuota || 5000,
-        tier: institution.tier || 'Enterprise Tier',
         email: '',
         phone: '',
         status: institution.status === 'Active' ? 'ACTIVE' : institution.status === 'Suspended' ? 'SUSPENDED' : 'ACTIVE',
@@ -223,12 +220,11 @@ export default function EditInstitutionModal({ open, institution, onClose, onSub
             />
           </Box>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             <FormControl size="small" fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}>
-              <InputLabel id="edit-region-label">Region</InputLabel>
+              <InputLabel id="edit-region-label">Region / Location</InputLabel>
               <Select
                 labelId="edit-region-label"
-                label="Region"
+                label="Region / Location"
                 value={formData.region}
                 onChange={(e) => setFormData({ ...formData, region: e.target.value })}
               >
@@ -240,21 +236,6 @@ export default function EditInstitutionModal({ open, institution, onClose, onSub
                 <MenuItem value="Global">Global</MenuItem>
               </Select>
             </FormControl>
-
-            <FormControl size="small" fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}>
-              <InputLabel id="edit-tier-label">Tier</InputLabel>
-              <Select
-                labelId="edit-tier-label"
-                label="Tier"
-                value={formData.tier}
-                onChange={(e) => setFormData({ ...formData, tier: e.target.value })}
-              >
-                <MenuItem value="Enterprise Tier">Enterprise Tier</MenuItem>
-                <MenuItem value="Pro Academic">Pro Academic</MenuItem>
-                <MenuItem value="Standard Academic">Standard Academic</MenuItem>
-              </Select>
-            </FormControl>
-          </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
             <TextField

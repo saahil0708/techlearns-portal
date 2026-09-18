@@ -41,12 +41,12 @@ export default function BulkInviteUsersModal({
 
   const allowedRoles: UserRole[] = React.useMemo(() => {
     if (callerRole === 'SUPER_ADMIN') {
-      return ['SUPER_ADMIN', 'COLLEGE_ADMIN', 'SCHOOL_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
+      return ['SUPER_ADMIN', 'COLLEGE_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
     }
     if (callerRole === 'PLATFORM_ADMIN') {
-      return ['COLLEGE_ADMIN', 'SCHOOL_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
+      return ['COLLEGE_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'];
     }
-    if (callerRole === 'COLLEGE_ADMIN' || callerRole === 'SCHOOL_ADMIN' || callerRole === 'INSTITUTION_ADMIN') {
+    if (callerRole === 'COLLEGE_ADMIN' || callerRole === 'INSTITUTION_ADMIN') {
       return ['FACULTY', 'STUDENT', 'RECRUITER'];
     }
     if (callerRole === 'FACULTY') {
@@ -86,7 +86,8 @@ export default function BulkInviteUsersModal({
             if (parts.length >= 2) {
               const name = parts[0] || 'Invited User';
               const email = parts.find((p) => p.includes('@')) || parts[1] || '';
-              const role = parts.find((p) => ['SUPER_ADMIN', 'COLLEGE_ADMIN', 'SCHOOL_ADMIN', 'FACULTY', 'STUDENT', 'RECRUITER'].includes(p.toUpperCase())) || defaultRole;
+              const roleCandidate = parts.find((p) => allowedRoles.includes(p.toUpperCase() as UserRole));
+              const role = roleCandidate ? (roleCandidate.toUpperCase() as UserRole) : defaultRole;
               if (email) {
                 entries.push({ name, email, role });
               }
@@ -106,7 +107,7 @@ export default function BulkInviteUsersModal({
       'data:text/csv;charset=utf-8,Full Name,Handle,Email,Role,Institution\n' +
       'Dr. Robert Sedgewick,sedgewick_cs,sedgewick@stanford.edu,FACULTY,Stanford CS\n' +
       'Prof. Thomas Cormen,cormen_t,cormen@mit.edu,FACULTY,MIT EECS\n' +
-      'Sarah Connor,sconnor,s.connor@stuy.edu,SCHOOL_ADMIN,Stuyvesant High\n';
+      'Sarah Connor,sconnor,s.connor@iitb.ac.in,COLLEGE_ADMIN,IIT Bombay\n';
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
@@ -227,10 +228,7 @@ export default function BulkInviteUsersModal({
                 <MenuItem value="SUPER_ADMIN">Super Administrator</MenuItem>
               )}
               {allowedRoles.includes('COLLEGE_ADMIN') && (
-                <MenuItem value="COLLEGE_ADMIN">College Admin</MenuItem>
-              )}
-              {allowedRoles.includes('SCHOOL_ADMIN') && (
-                <MenuItem value="SCHOOL_ADMIN">School Admin</MenuItem>
+                <MenuItem value="COLLEGE_ADMIN">Institute Admin</MenuItem>
               )}
               {allowedRoles.includes('FACULTY') && (
                 <MenuItem value="FACULTY">Faculty / Instructor</MenuItem>
@@ -283,7 +281,7 @@ export default function BulkInviteUsersModal({
               >
                 <MenuItem value="Stanford University - Dept of CS">Stanford University</MenuItem>
                 <MenuItem value="Massachusetts Inst of Technology (MIT)">MIT EECS</MenuItem>
-                <MenuItem value="Stuyvesant High School of Science">Stuyvesant High</MenuItem>
+                <MenuItem value="IIT Bombay - Dept of Computer Science">IIT Bombay CS</MenuItem>
                 <MenuItem value="Global CodePlatform Platform">Global Admin Cluster</MenuItem>
               </Select>
             </Box>

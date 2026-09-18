@@ -11,12 +11,12 @@ import type {
 
 export const metadata: Metadata = {
   title: 'Platform Settings & Security Console | CodePlatform Admin',
-  description: 'Manage compiler sandboxes, collegiate SSO authentication, scoring engine parameters, and security audit logs.',
+  description: 'Manage compiler sandboxes, institutional SSO authentication, scoring engine parameters, and security audit logs.',
 };
 
 const INITIAL_GENERAL: GeneralSettings = {
   platformName: 'CodePlatform Academic Cloud',
-  institutionTagline: 'Collegiate Competitive Programming & Placement Learning System',
+  institutionTagline: 'Institute Competitive Programming & Placement Learning System',
   primaryDomain: 'https://codeplatform.edu',
   supportEmail: 'admin-support@codeplatform.edu',
   academicYear: '2026 - 2027',
@@ -96,7 +96,7 @@ const INITIAL_SECURITY: SecuritySettings = {
   allowGithubSSO: true,
   allowSamlSSO: true,
   samlEntityId: 'https://codeplatform.edu/auth/saml/metadata',
-  enforceCollegeDomainMatch: true,
+  enforceInstituteDomainMatch: true,
 };
 
 const INITIAL_SCORING: ScoringEngineSettings = {

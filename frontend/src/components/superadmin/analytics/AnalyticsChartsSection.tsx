@@ -976,7 +976,7 @@ export default function AnalyticsChartsSection() {
             </Box>
             <Box>
               <Typography sx={{ fontSize: '0.96rem', fontWeight: 800, color: '#0F172A' }}>
-                Collegiate Benchmark & Placement Readiness Index
+                Institute Benchmark & Placement Readiness Index
               </Typography>
               <Typography sx={{ fontSize: '0.74rem', color: '#64748B' }}>
                 Percentage of students passing milestone & average solves per student
@@ -985,7 +985,7 @@ export default function AnalyticsChartsSection() {
           </Box>
           <Chip
             size="small"
-            label="Live Collegiate Index"
+            label="Live Institute Index"
             sx={{
               height: 22,
               fontSize: '0.68rem',

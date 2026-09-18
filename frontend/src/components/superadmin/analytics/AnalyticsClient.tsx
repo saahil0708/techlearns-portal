@@ -67,7 +67,7 @@ const AnalyticsDrilldownDrawer = dynamic(
 import { FluidArrowRight } from '@/utils/fluid_arrow';
 import type {
   AcademicKPIStats,
-  CollegeBenchmarkEntity,
+  InstituteBenchmarkEntity,
   DSATopicMasteryEntity,
   ContestPerformanceEntity,
   LanguageSubmissionEntity,
@@ -76,7 +76,7 @@ import type {
 
 interface AnalyticsClientProps {
   stats: AcademicKPIStats;
-  colleges: CollegeBenchmarkEntity[];
+  colleges: InstituteBenchmarkEntity[];
   topics: DSATopicMasteryEntity[];
   contests: ContestPerformanceEntity[];
   languages: LanguageSubmissionEntity[];
@@ -222,7 +222,7 @@ export default function AnalyticsClient({
     if (activeTab === 0) {
       rows = filteredColleges.map((c) => ({
         Code: c.code,
-        College: c.name,
+        Institute: c.name,
         Tier: c.tier,
         Active_Students: c.activeStudents,
         Problems_Solved: c.problemsSolved,
@@ -328,7 +328,7 @@ export default function AnalyticsClient({
                 Academic & Competitive Intelligence
               </Typography>
               <Typography sx={{ fontSize: '0.88rem', color: '#64748B', mt: 0.25 }}>
-                Student problem-solving velocity, DSA topic weakness heatmaps, college placement benchmarks, and contest outcomes.
+                Student problem-solving velocity, DSA topic weakness heatmaps, institute placement benchmarks, and contest outcomes.
               </Typography>
             </Box>
 
@@ -390,7 +390,7 @@ export default function AnalyticsClient({
               variant="blue"
               shape="orbital"
               trendBadge={{ text: stats.activeCodersGrowth, type: 'positive' }}
-              subtitle="across 32 universities"
+              subtitle="across 32 institutions"
             />
 
             <StatsCard
@@ -424,8 +424,8 @@ export default function AnalyticsClient({
               icon={<EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />}
               variant="black"
               shape="aurora-waves"
-              trendBadge={{ text: `Top: ${stats.topPerformingCollege}`, type: 'neutral' }}
-              subtitle="Collegiate benchmark"
+              trendBadge={{ text: `Top: ${stats.topPerformingInstitute || 'N/A'}`, type: 'neutral' }}
+              subtitle="Institute benchmark"
             />
           </Box>
 
@@ -446,7 +446,7 @@ export default function AnalyticsClient({
                 },
               }}
             >
-              <Tab label={`Campus & College Benchmarks (${colleges.length})`} sx={{ textTransform: 'none', fontWeight: activeTab === 0 ? 700 : 500, fontSize: '0.86rem', color: activeTab === 0 ? primaryBlue : '#64748B', minHeight: 48 }} />
+              <Tab label={`Campus & Institute Benchmarks (${colleges.length})`} sx={{ textTransform: 'none', fontWeight: activeTab === 0 ? 700 : 500, fontSize: '0.86rem', color: activeTab === 0 ? primaryBlue : '#64748B', minHeight: 48 }} />
               <Tab label={`DSA Topic Mastery & Friction (${topics.length})`} sx={{ textTransform: 'none', fontWeight: activeTab === 1 ? 700 : 500, fontSize: '0.86rem', color: activeTab === 1 ? primaryBlue : '#64748B', minHeight: 48 }} />
               <Tab label={`Contest & Tournament Turnout (${contests.length})`} sx={{ textTransform: 'none', fontWeight: activeTab === 2 ? 700 : 500, fontSize: '0.86rem', color: activeTab === 2 ? primaryBlue : '#64748B', minHeight: 48 }} />
               <Tab label={`Language & Error Distributions (${languages.length})`} sx={{ textTransform: 'none', fontWeight: activeTab === 3 ? 700 : 500, fontSize: '0.86rem', color: activeTab === 3 ? primaryBlue : '#64748B', minHeight: 48 }} />
@@ -474,7 +474,7 @@ export default function AnalyticsClient({
                 size="small"
                 fullWidth
                 placeholder={
-                  activeTab === 0 ? 'Search colleges, campus codes, top performers...' :
+                  activeTab === 0 ? 'Search institutes, campus codes, top performers...' :
                   activeTab === 1 ? 'Search DSA topics, algorithms, friction patterns...' :
                   activeTab === 2 ? 'Search contests, tournaments, formats...' :
                   'Search languages, error codes...'
@@ -556,7 +556,7 @@ export default function AnalyticsClient({
                       <TableCell padding="checkbox" sx={{ pl: 2.5, py: 1.5 }}>
                         <Checkbox size="small" checked={isAllSelected} indeterminate={isSomeSelected} onChange={(e) => handleSelectAll(e.target.checked)} sx={{ color: '#94A3B8', '&.Mui-checked': { color: primaryBlue } }} />
                       </TableCell>
-                      <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, minWidth: 260 }}>COLLEGE & CAMPUS CODE</TableCell>
+                      <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, minWidth: 260 }}>INSTITUTE & CAMPUS CODE</TableCell>
                       <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, minWidth: 120 }}>TIER</TableCell>
                       <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, minWidth: 140 }}>ACTIVE STUDENTS</TableCell>
                       <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, minWidth: 150 }}>TOTAL SOLVES</TableCell>
@@ -668,11 +668,11 @@ export default function AnalyticsClient({
                           <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                               <Tooltip title="View Diagnostic Details">
-                                <IconButton size="small" onClick={() => setPeekRow({ ...col, rowType: 'college' })} sx={{ color: '#64748B', border: '1px solid #E2E8F0', borderRadius: '8px', '&:hover': { bgcolor: '#EFF6FF', color: primaryBlue } }}>
+                                <IconButton size="small" onClick={() => setPeekRow({ ...col, rowType: 'institute' })} sx={{ color: '#64748B', border: '1px solid #E2E8F0', borderRadius: '8px', '&:hover': { bgcolor: '#EFF6FF', color: primaryBlue } }}>
                                   <VisibilityRoundedIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
                               </Tooltip>
-                              <Button size="small" variant="outlined" onClick={() => setPeekRow({ ...col, rowType: 'college' })} endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.76rem', color: primaryBlue, borderColor: '#DBEAFE', bgcolor: '#EFF6FF', borderRadius: '8px', px: 1.5, py: 0.4 }}>
+                              <Button size="small" variant="outlined" onClick={() => setPeekRow({ ...col, rowType: 'institute' })} endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.76rem', color: primaryBlue, borderColor: '#DBEAFE', bgcolor: '#EFF6FF', borderRadius: '8px', px: 1.5, py: 0.4 }}>
                                 Inspect
                               </Button>
                             </Box>

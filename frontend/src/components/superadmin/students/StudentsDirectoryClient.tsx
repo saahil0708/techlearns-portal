@@ -76,6 +76,8 @@ const StudentQuickPeekDrawer = dynamic(() => import('@/components/superadmin/stu
 const BulkImportStudentsModal = dynamic(() => import('@/components/superadmin/students/BulkImportStudentsModal'), { loading: () => null });
 const DeleteConfirmModal = dynamic(() => import('@/components/superadmin/shared/DeleteConfirmModal'), { loading: () => null });
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
+const AssignBatchModal = dynamic(() => import('@/components/superadmin/students/AssignBatchModal'), { loading: () => null });
+import type { AssignBatchStudentTarget } from '@/components/superadmin/students/AssignBatchModal';
 
 export interface StudentDirectoryEntity {
   id: string;
@@ -83,7 +85,7 @@ export interface StudentDirectoryEntity {
   handle: string;
   email: string;
   studentId: string;
-  institutionType: 'College' | 'School' | 'Independent';
+  institutionType: 'Institute' | 'Independent';
   institutionName: string;
   cohort: string;
   problemsSolved: number;
@@ -160,10 +162,8 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                 : null;
               const batchName = primaryBatch?.batch?.name || u.cohort?.trim();
 
-              const institutionType: 'College' | 'School' | 'Independent' = collegeName
-                ? 'College'
-                : u.institutionType === 'School'
-                ? 'School'
+              const institutionType: 'Institute' | 'Independent' = collegeName || userInstitution
+                ? 'Institute'
                 : 'Independent';
 
               const institutionName = collegeName
@@ -218,6 +218,59 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
   const [peekStudent, setPeekStudent] = useState<StudentDirectoryEntity | null>(null);
   const [deleteTargetStudents, setDeleteTargetStudents] = useState<StudentDirectoryEntity[] | null>(null);
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
+
+  // Assign Batch Modal State
+  const [isAssignBatchOpen, setIsAssignBatchOpen] = useState<boolean>(false);
+  const [assignBatchTargets, setAssignBatchTargets] = useState<AssignBatchStudentTarget[]>([]);
+
+  const handleOpenAssignBatchSingle = (stu: StudentDirectoryEntity) => {
+    setAssignBatchTargets([
+      {
+        id: stu.id,
+        name: stu.name,
+        email: stu.email,
+        handle: stu.handle,
+        currentCohort: stu.cohort,
+        currentInstitution: stu.institutionName,
+      },
+    ]);
+    setIsAssignBatchOpen(true);
+  };
+
+  const handleOpenAssignBatchBulk = () => {
+    const targets = students
+      .filter((s) => selectedIds.includes(s.id))
+      .map((stu) => ({
+        id: stu.id,
+        name: stu.name,
+        email: stu.email,
+        handle: stu.handle,
+        currentCohort: stu.cohort,
+        currentInstitution: stu.institutionName,
+      }));
+    if (targets.length > 0) {
+      setAssignBatchTargets(targets);
+      setIsAssignBatchOpen(true);
+    }
+  };
+
+  const handleAssignedSuccess = (assignedBatchName: string, institutionName: string, updatedStudentIds: string[]) => {
+    const idSet = new Set(updatedStudentIds);
+    setStudents((prev) =>
+      prev.map((s) => {
+        if (idSet.has(s.id)) {
+          return {
+            ...s,
+            cohort: assignedBatchName,
+            institutionName: assignedBatchName === 'No Batch Assigned' ? s.institutionName : institutionName,
+            institutionType: assignedBatchName === 'No Batch Assigned' ? s.institutionType : 'Institute',
+          };
+        }
+        return s;
+      })
+    );
+    setSelectedIds([]);
+  };
 
   // Pagination states
   const [page, setPage] = useState<number>(0);
@@ -356,8 +409,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
   const totalCount = students.length;
   const _activeSolvers = students.filter((s) => s.status === 'Active').length;
   const _masterCoders = students.filter((s) => s.ratingTier === 'Master').length;
-  const collegiateCount = students.filter((s) => s.institutionType === 'College').length;
-  const schoolCount = students.filter((s) => s.institutionType === 'School').length;
+  const instituteCount = students.filter((s) => s.institutionType === 'Institute').length;
   const indCount = students.filter((s) => s.institutionType === 'Independent').length;
 
   // Add new student handler
@@ -653,7 +705,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
               icon={<SchoolRoundedIcon sx={{ fontSize: 20 }} />}
               variant="blue"
               shape="orbital"
-              subtitle={`${collegiateCount} College • ${schoolCount} High School`}
+              subtitle={`${instituteCount} Institute • ${indCount} Independent`}
             />
 
             <StatsCard
@@ -727,8 +779,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
               >
                 {[
                   { id: 'ALL', label: 'All Students', count: totalCount },
-                  { id: 'College', label: 'Collegiate', count: collegiateCount },
-                  { id: 'School', label: 'High Schools', count: schoolCount },
+                  { id: 'Institute', label: 'Institutes', count: instituteCount },
                   { id: 'Independent', label: 'Independent', count: indCount },
                 ].map((tab) => (
                   <Tab
@@ -929,6 +980,29 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
             onExport={handleExportExcel}
             onDelete={handleRequestDeleteBulk}
           >
+            {/* Assign Batch Button */}
+            <Tooltip title="Assign selected students to an academic cohort">
+              <Button
+                size="small"
+                variant="contained"
+                onClick={handleOpenAssignBatchBulk}
+                startIcon={<SchoolRoundedIcon sx={{ fontSize: '1rem' }} />}
+                sx={{
+                  borderRadius: '9999px',
+                  bgcolor: '#2563EB',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  color: '#FFFFFF',
+                  height: 30,
+                  px: 1.75,
+                  '&:hover': { bgcolor: '#1D4ED8' },
+                }}
+              >
+                Assign Batch ({selectedIds.length})
+              </Button>
+            </Tooltip>
+
             {/* Compare Button */}
             <Tooltip
               title={
@@ -1279,23 +1353,17 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                                     fontWeight: 800,
                                     borderRadius: '9999px',
                                     bgcolor:
-                                      stu.institutionType === 'College'
+                                      stu.institutionType === 'Institute'
                                         ? '#EFF6FF'
-                                        : stu.institutionType === 'School'
-                                        ? '#F0FDF4'
                                         : '#FAF5FF',
                                     color:
-                                      stu.institutionType === 'College'
+                                      stu.institutionType === 'Institute'
                                         ? '#2563EB'
-                                        : stu.institutionType === 'School'
-                                        ? '#16A34A'
                                         : '#7C3AED',
                                     border: '1px solid',
                                     borderColor:
-                                      stu.institutionType === 'College'
+                                      stu.institutionType === 'Institute'
                                         ? '#BFDBFE'
-                                        : stu.institutionType === 'School'
-                                        ? '#BBF7D0'
                                         : '#E9D5FF',
                                   }}
                                 />
@@ -1313,18 +1381,30 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                                   {stu.institutionName}
                                 </Typography>
                               </Box>
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  color: stu.cohort === 'No Batch Assigned' ? '#94A3B8' : '#64748B',
-                                  fontStyle: stu.cohort === 'No Batch Assigned' ? 'italic' : 'normal',
-                                  fontSize: '0.72rem',
-                                  display: 'block',
-                                  mt: 0.25,
-                                }}
-                              >
-                                {stu.cohort}
-                              </Typography>
+                              <Tooltip title="Click to assign or change academic cohort">
+                                <Typography
+                                  variant="caption"
+                                  onClick={() => handleOpenAssignBatchSingle(stu)}
+                                  sx={{
+                                    color: stu.cohort === 'No Batch Assigned' ? '#94A3B8' : '#2563EB',
+                                    fontStyle: stu.cohort === 'No Batch Assigned' ? 'italic' : 'normal',
+                                    fontWeight: stu.cohort === 'No Batch Assigned' ? 500 : 700,
+                                    fontSize: '0.72rem',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 0.5,
+                                    mt: 0.25,
+                                    cursor: 'pointer',
+                                    borderRadius: '4px',
+                                    px: 0.5,
+                                    py: 0.1,
+                                    bgcolor: stu.cohort === 'No Batch Assigned' ? 'transparent' : 'rgba(37, 99, 235, 0.06)',
+                                    '&:hover': { color: '#1D4ED8', textDecoration: 'underline', bgcolor: 'rgba(37, 99, 235, 0.1)' },
+                                  }}
+                                >
+                                  {stu.cohort}
+                                </Typography>
+                              </Tooltip>
                             </Box>
                           </TableCell>
 
@@ -1391,6 +1471,22 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                           {/* Actions */}
                           <TableCell align="right" sx={{ pr: 2.5, borderColor: '#E2E8F0' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                              {/* Assign Batch Action */}
+                              <Tooltip title="Assign to Batch / Cohort">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleOpenAssignBatchSingle(stu)}
+                                  sx={{
+                                    color: '#2563EB',
+                                    borderRadius: '9999px',
+                                    bgcolor: 'rgba(37, 99, 235, 0.06)',
+                                    '&:hover': { color: '#1D4ED8', bgcolor: 'rgba(37, 99, 235, 0.14)' },
+                                  }}
+                                >
+                                  <SchoolRoundedIcon sx={{ fontSize: 16 }} />
+                                </IconButton>
+                              </Tooltip>
+
                               {/* Peek Quick View */}
                               <Tooltip title="Quick Peek Profile">
                                 <IconButton
@@ -1628,6 +1724,13 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
         open={Boolean(peekStudent)}
         onClose={() => setPeekStudent(null)}
         student={peekStudent}
+      />
+
+      <AssignBatchModal
+        open={isAssignBatchOpen}
+        onClose={() => setIsAssignBatchOpen(false)}
+        students={assignBatchTargets}
+        onAssignedSuccess={handleAssignedSuccess}
       />
 
       {/* Deletion Confirmation Modal */}

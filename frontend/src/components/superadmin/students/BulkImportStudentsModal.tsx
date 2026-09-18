@@ -44,13 +44,28 @@ export default function BulkImportStudentsModal({
   batches = [],
 }: BulkImportStudentsModalProps) {
   const toast = useToast();
-  const [selectedInstitution, setSelectedInstitution] = useState(institutionName || 'Stanford University - Dept of CS');
+  const [availableInstitutions, setAvailableInstitutions] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedInstitutionId, setSelectedInstitutionId] = useState<string>(institutionId || '');
   const [selectedBatchId, setSelectedBatchId] = useState<string>(defaultBatchId || '');
   const [fileName, setFileName] = useState<string | null>(null);
   const [rowCount, setRowCount] = useState<number>(0);
   const [parsedStudents, setParsedStudents] = useState<Array<{ name: string; email: string; rollNo?: string }>>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const borderColor = '#E2E8F0';
+
+  useEffect(() => {
+    if (!institutionId && open) {
+      apiService.getColleges({ limit: 50 }).then((res) => {
+        if (res?.items && Array.isArray(res.items)) {
+          const mapped = res.items.map((c: any) => ({ id: c.id, name: c.name }));
+          setAvailableInstitutions(mapped);
+          if (mapped.length > 0) {
+            setSelectedInstitutionId((prev) => prev || mapped[0].id);
+          }
+        }
+      }).catch(() => {});
+    }
+  }, [open, institutionId]);
 
   useEffect(() => {
     if (defaultBatchId) {
@@ -63,10 +78,12 @@ export default function BulkImportStudentsModal({
   }, [defaultBatchId, batches]);
 
   useEffect(() => {
-    if (institutionName) {
-      setSelectedInstitution(institutionName);
+    if (institutionId) {
+      setSelectedInstitutionId(institutionId);
+    } else {
+      setSelectedInstitutionId('');
     }
-  }, [institutionName]);
+  }, [institutionId]);
 
   const handleSimulateFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -134,7 +151,7 @@ export default function BulkImportStudentsModal({
   const handleDownloadSample = () => {
     const csvContent =
       'data:text/csv;charset=utf-8,Student Name,Handle,Email,Student ID,Cohort,Institution\n' +
-      'Maya Lin,mayalin_cs,m.lin@stuy.edu,STUY-2027-014,Grade 11 - USACO Gold,Stuyvesant High\n' +
+      'Maya Lin,mayalin_cs,m.lin@iitb.ac.in,IITB-2026-014,Batch 2026 CS,IIT Bombay\n' +
       'Liam Vance,liam_vance,l.vance@stanford.edu,STAN-2026-088,Batch 2026 Alpha,Stanford CS\n';
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
@@ -148,6 +165,11 @@ export default function BulkImportStudentsModal({
 
   const handleExecuteImport = async () => {
     if (parsedStudents.length === 0) return;
+    const effectiveInstitutionId = institutionId || selectedInstitutionId || undefined;
+    if (!effectiveInstitutionId) {
+      toast.error('Please select an institution before importing students.', 'Institution Required');
+      return;
+    }
     setIsProcessing(true);
     try {
       const targetBatchId =
@@ -160,7 +182,7 @@ export default function BulkImportStudentsModal({
           name: s.name,
           email: s.email,
           role: 'STUDENT',
-          ...(institutionId ? { institutionId } : {}),
+          ...(effectiveInstitutionId ? { institutionId: effectiveInstitutionId } : {}),
           ...(targetBatchId ? { batchId: targetBatchId } : {}),
           ...(s.rollNo ? { rollNo: s.rollNo } : {}),
         })),
@@ -270,8 +292,8 @@ export default function BulkImportStudentsModal({
             ) : (
               <Select
                 size="small"
-                value={selectedInstitution}
-                onChange={(e) => setSelectedInstitution(e.target.value)}
+                value={selectedInstitutionId}
+                onChange={(e) => setSelectedInstitutionId(e.target.value)}
                 sx={{
                   bgcolor: '#F8FAFC',
                   color: '#0F172A',
@@ -281,11 +303,15 @@ export default function BulkImportStudentsModal({
                   '& .MuiSvgIcon-root': { color: '#64748B' },
                 }}
               >
-                <MenuItem value="Stanford University - Dept of CS">Stanford University - Dept of CS</MenuItem>
-                <MenuItem value="Massachusetts Inst of Technology (MIT)">Massachusetts Inst of Technology (MIT)</MenuItem>
-                <MenuItem value="IIT Delhi - Dept of Comp Science">IIT Delhi - Dept of Comp Science</MenuItem>
-                <MenuItem value="Stuyvesant High School of Science">Stuyvesant High School of Science</MenuItem>
-                <MenuItem value="Thomas Jefferson High School for Science & Tech">Thomas Jefferson High School for Science & Tech</MenuItem>
+                {availableInstitutions.length > 0 ? (
+                  availableInstitutions.map((inst) => (
+                    <MenuItem key={inst.id} value={inst.id}>
+                      {inst.name}
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem value=""><em>No institutions found</em></MenuItem>
+                )}
               </Select>
             )}
           </Box>
@@ -404,7 +430,12 @@ export default function BulkImportStudentsModal({
           Cancel
         </Button>
         <Button
-          disabled={!fileName || isProcessing || parsedStudents.length === 0}
+          disabled={
+            !fileName ||
+            isProcessing ||
+            parsedStudents.length === 0 ||
+            (!institutionId && !selectedInstitutionId)
+          }
           onClick={handleExecuteImport}
           variant="contained"
           sx={{

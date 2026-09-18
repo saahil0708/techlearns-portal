@@ -19,6 +19,9 @@ import LockResetRoundedIcon from '@mui/icons-material/LockResetRounded';
 import VpnKeyRoundedIcon from '@mui/icons-material/VpnKeyRounded';
 import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import SecurityRoundedIcon from '@mui/icons-material/SecurityRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
+import LinkOffRoundedIcon from '@mui/icons-material/LinkOffRounded';
 import Link from 'next/link';
 import { useToast } from '@/context/ToastContext';
 import type { UserDirectoryEntity } from './UsersDirectoryClient';
@@ -27,12 +30,18 @@ interface UserQuickPeekDrawerProps {
   open: boolean;
   onClose: () => void;
   user: UserDirectoryEntity | null;
+  onEditUser?: (user: UserDirectoryEntity) => void;
+  onAssignInstitution?: (user: UserDirectoryEntity) => void;
+  onUnassignInstitution?: (user: UserDirectoryEntity) => void;
 }
 
 export default function UserQuickPeekDrawer({
   open,
   onClose,
   user,
+  onEditUser,
+  onAssignInstitution,
+  onUnassignInstitution,
 }: UserQuickPeekDrawerProps) {
   const toast = useToast();
   if (!user) return null;
@@ -52,9 +61,8 @@ export default function UserQuickPeekDrawer({
       case 'SUPER_ADMIN':
         return { bg: '#FAF5FF', text: '#7C3AED', border: '#E9D5FF' };
       case 'COLLEGE_ADMIN':
+      case 'INSTITUTION_ADMIN':
         return { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' };
-      case 'SCHOOL_ADMIN':
-        return { bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' };
       case 'FACULTY':
         return { bg: '#ECFEFF', text: '#0891B2', border: '#A5F3FC' };
       case 'STUDENT':
@@ -244,6 +252,93 @@ export default function UserQuickPeekDrawer({
               {copied ? 'Email Copied!' : user.email}
             </Button>
           </Tooltip>
+
+          {/* Edit User Details */}
+          {onEditUser && (
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => {
+                onClose();
+                onEditUser(user);
+              }}
+              startIcon={<EditRoundedIcon sx={{ fontSize: '1rem' }} />}
+              sx={{
+                borderRadius: '9999px',
+                borderColor: '#BFDBFE',
+                color: '#2563EB',
+                bgcolor: '#EFF6FF',
+                textTransform: 'none',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                py: 1,
+                '&:hover': {
+                  borderColor: '#2563EB',
+                  bgcolor: '#DBEAFE',
+                },
+              }}
+            >
+              Edit User Details
+            </Button>
+          )}
+
+          {/* Assign Active Institute */}
+          {onAssignInstitution && (
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => {
+                onClose();
+                onAssignInstitution(user);
+              }}
+              startIcon={<AccountBalanceRoundedIcon sx={{ fontSize: '1rem' }} />}
+              sx={{
+                borderRadius: '9999px',
+                borderColor: '#BBF7D0',
+                color: '#16A34A',
+                bgcolor: '#F0FDF4',
+                textTransform: 'none',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                py: 1,
+                '&:hover': {
+                  borderColor: '#16A34A',
+                  bgcolor: '#DCFCE7',
+                },
+              }}
+            >
+              Assign Active Institute
+            </Button>
+          )}
+
+          {/* Unassign from Institute */}
+          {user.institutionName && user.institutionName !== 'Independent' && onUnassignInstitution && (
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => {
+                onClose();
+                onUnassignInstitution(user);
+              }}
+              startIcon={<LinkOffRoundedIcon sx={{ fontSize: '1rem' }} />}
+              sx={{
+                borderRadius: '9999px',
+                borderColor: '#FECACA',
+                color: '#DC2626',
+                bgcolor: '#FEF2F2',
+                textTransform: 'none',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                py: 1,
+                '&:hover': {
+                  borderColor: '#DC2626',
+                  bgcolor: '#FEE2E2',
+                },
+              }}
+            >
+              Unassign from Institute
+            </Button>
+          )}
 
           <Button
             fullWidth

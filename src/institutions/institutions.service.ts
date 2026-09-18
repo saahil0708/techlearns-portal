@@ -204,14 +204,79 @@ export class InstitutionsService {
     });
   }
 
-  async delete(id: string) {
+  async delete(id: string, purgeUsers: boolean = false) {
     await this.findOne(id);
 
-    await this.prisma.institution.delete({
-      where: { id },
-    });
+    return this.prisma.$transaction(
+      async (tx) => {
+        if (purgeUsers) {
+          // Find all members belonging to this institution
+          const members = await tx.institutionMembership.findMany({
+            where: { institutionId: id },
+            select: {
+              userId: true,
+              user: {
+                select: { id: true, globalRole: true },
+              },
+            },
+          });
 
-    return true;
+          const candidateUserIds: string[] = [];
+          for (const member of members) {
+            if (
+              member.user &&
+              member.user.globalRole !== Role.SUPER_ADMIN &&
+              member.user.globalRole !== Role.PLATFORM_ADMIN
+            ) {
+              candidateUserIds.push(member.userId);
+            }
+          }
+
+          // Recheck exclusivity within transaction before deletion in a single query
+          let userIdsToPurge: string[] = [];
+          if (candidateUserIds.length > 0) {
+            const nonExclusiveMembers = await tx.institutionMembership.findMany({
+              where: {
+                userId: { in: candidateUserIds },
+                institutionId: { not: id },
+              },
+              select: {
+                userId: true,
+              },
+              distinct: ['userId'],
+            });
+
+            const nonExclusiveUserIds = new Set(nonExclusiveMembers.map((m) => m.userId));
+            userIdsToPurge = candidateUserIds.filter((userId) => !nonExclusiveUserIds.has(userId));
+          }
+
+          // Delete the institution (cascades memberships, batches, courses)
+          await tx.institution.delete({
+            where: { id },
+          });
+
+          // Purge the exclusive user accounts
+          if (userIdsToPurge.length > 0) {
+            await tx.user.deleteMany({
+              where: {
+                id: { in: userIdsToPurge },
+                globalRole: { notIn: [Role.SUPER_ADMIN, Role.PLATFORM_ADMIN] },
+                memberships: { none: {} },
+              },
+            });
+          }
+        } else {
+          await tx.institution.delete({
+            where: { id },
+          });
+        }
+
+        return true;
+      },
+      {
+        isolationLevel: 'Serializable',
+      },
+    );
   }
 
   async addMember(institutionId: string, dto: AddMemberDto, allowedTargetRole?: Role) {

@@ -33,7 +33,7 @@ export interface NewStudentData {
   email: string;
   password?: string;
   studentId: string;
-  institutionType: 'College' | 'School' | 'Independent';
+  institutionType: 'Institute' | 'Independent';
   institutionName: string;
   cohort: string;
 }
@@ -79,7 +79,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
   const [password, setPassword] = useState(() => generateStrongPassword());
   const [showPassword, setShowPassword] = useState(false);
   const [studentId, setStudentId] = useState('');
-  const [institutionType, setInstitutionType] = useState<'College' | 'School' | 'Independent'>('College');
+  const [institutionType, setInstitutionType] = useState<'Institute' | 'Independent'>('Institute');
   const [institutionName, setInstitutionName] = useState('Stanford University');
   const [cohort, setCohort] = useState('Batch 2026 - CS Alpha');
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -134,7 +134,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
     setPassword(generateStrongPassword());
     setShowPassword(false);
     setStudentId('');
-    setInstitutionType('College');
+    setInstitutionType('Institute');
     setInstitutionName('Stanford University');
     setCohort('Batch 2026 - CS Alpha');
     setErrors({});
@@ -417,8 +417,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
               }}
             >
-              <MenuItem value="College">College / University</MenuItem>
-              <MenuItem value="School">High School / STEM</MenuItem>
+              <MenuItem value="Institute">Institute / University</MenuItem>
               <MenuItem value="Independent">Independent Learner</MenuItem>
             </Select>
           </Box>
@@ -432,7 +431,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
                 fullWidth
                 size="small"
                 disabled
-                value="Self-Paced Community Learner"
+                value="Self-Enrolled"
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '10px',
@@ -446,7 +445,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
                 size="small"
                 value={institutionName}
                 onChange={(e) => setInstitutionName(e.target.value)}
-                placeholder={institutionType === 'College' ? 'e.g. Stanford University' : 'e.g. Stuyvesant High'}
+                placeholder="e.g. Stanford University"
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '10px',

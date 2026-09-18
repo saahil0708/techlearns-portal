@@ -178,8 +178,8 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
   const liveCount = contests.filter((c) => c.status === 'LIVE').length;
   const upcomingCount = contests.filter((c) => c.status === 'UPCOMING').length;
   const pastCount = contests.filter((c) => c.status === 'PAST').length;
-  const collegiateCount = contests.filter((c) => c.scope === 'Collegiate League').length;
-  const stemCount = contests.filter((c) => c.scope === 'High School Invitational').length;
+  const instituteCount = contests.filter((c) => c.scope === 'Institute League').length;
+  const invitationalCount = contests.filter((c) => c.scope === 'Institutional Invitational').length;
   const totalRegistrations = contests.reduce((acc, c) => acc + c.registeredParticipants, 0);
   const totalSubmissions = contests.reduce((acc, c) => acc + c.submissionsCount, 0);
 
@@ -189,8 +189,8 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
     if (tabKey === 'LIVE') return liveCount;
     if (tabKey === 'UPCOMING') return upcomingCount;
     if (tabKey === 'PAST') return pastCount;
-    if (tabKey === 'COLLEGIATE') return collegiateCount;
-    if (tabKey === 'STEM') return stemCount;
+    if (tabKey === 'INSTITUTE') return instituteCount;
+    if (tabKey === 'INVITATIONAL') return invitationalCount;
     return 0;
   };
 
@@ -201,8 +201,8 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
       if (selectedTab === 'LIVE' && c.status !== 'LIVE') return false;
       if (selectedTab === 'UPCOMING' && c.status !== 'UPCOMING') return false;
       if (selectedTab === 'PAST' && c.status !== 'PAST') return false;
-      if (selectedTab === 'COLLEGIATE' && c.scope !== 'Collegiate League') return false;
-      if (selectedTab === 'STEM' && c.scope !== 'High School Invitational') return false;
+      if (selectedTab === 'INSTITUTE' && c.scope !== 'Institute League') return false;
+      if (selectedTab === 'INVITATIONAL' && c.scope !== 'Institutional Invitational') return false;
 
       // Dropdown filters
       if (selectedScope !== 'ALL' && c.scope !== selectedScope) return false;
@@ -478,7 +478,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                 </Typography>
               </Box>
               <Typography sx={{ color: '#64748B', fontSize: '0.86rem', mt: 0.5, fontWeight: 500 }}>
-                Live arenas, ICPC qualifiers, collegiate coding cups, and official rated programming rounds
+                Live arenas, ICPC qualifiers, institute coding cups, and official rated programming rounds
               </Typography>
             </Box>
 
@@ -644,8 +644,8 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                   { id: 'LIVE', label: 'Live Arenas' },
                   { id: 'UPCOMING', label: 'Upcoming Rounds' },
                   { id: 'PAST', label: 'Past Archives' },
-                  { id: 'COLLEGIATE', label: 'Collegiate Leagues' },
-                  { id: 'STEM', label: 'K-12 Invitationals' },
+                  { id: 'INSTITUTE', label: 'Institute Leagues' },
+                  { id: 'INVITATIONAL', label: 'Invitationals' },
                 ].map((tab) => (
                   <Tab
                     key={tab.id}
@@ -755,8 +755,8 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                 >
                   <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>All Scopes</MenuItem>
                   <MenuItem value="Global" sx={{ fontSize: '0.8rem' }}>Global</MenuItem>
-                  <MenuItem value="Collegiate League" sx={{ fontSize: '0.8rem' }}>Collegiate League</MenuItem>
-                  <MenuItem value="High School Invitational" sx={{ fontSize: '0.8rem' }}>High School</MenuItem>
+                  <MenuItem value="Institute League" sx={{ fontSize: '0.8rem' }}>Institute League</MenuItem>
+                  <MenuItem value="Institutional Invitational" sx={{ fontSize: '0.8rem' }}>Institutional Invitational</MenuItem>
                   <MenuItem value="Internal Faculty Assessment" sx={{ fontSize: '0.8rem' }}>Faculty Internal</MenuItem>
                 </Select>
 

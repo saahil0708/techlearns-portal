@@ -28,8 +28,8 @@ interface CreateContestModalProps {
 
 const SCOPES: ContestScope[] = [
   'Global',
-  'Collegiate League',
-  'High School Invitational',
+  'Institute League',
+  'Institutional Invitational',
   'Internal Faculty Assessment',
 ];
 
@@ -52,7 +52,7 @@ export default function CreateContestModal({
     slug: '',
     code: '',
     description: '',
-    scope: 'Collegiate League',
+    scope: 'Institute League',
     scoringFormat: 'ICPC (Penalty Time)',
     status: 'UPCOMING',
     startTime: new Date(Date.now() + 86400000).toISOString().slice(0, 16),
@@ -172,7 +172,7 @@ export default function CreateContestModal({
               size="small"
               required
               fullWidth
-              placeholder="e.g., Annual Collegiate Coding Championship 2026"
+              placeholder="e.g., Annual Institute Coding Championship 2026"
               value={formData.title}
               onChange={(e) => handleChange('title', e.target.value)}
             />
@@ -301,7 +301,7 @@ export default function CreateContestModal({
             rows={3}
             required
             fullWidth
-            placeholder="Official institutional contest open to all verified college undergraduates..."
+            placeholder="Official institutional contest open to all verified institute students..."
             value={formData.description}
             onChange={(e) => handleChange('description', e.target.value)}
           />
@@ -321,7 +321,7 @@ export default function CreateContestModal({
                   Rated Contest (Updates Coder Rating Matrix)
                 </Typography>
                 <Typography sx={{ fontSize: '0.74rem', color: '#64748B' }}>
-                  Participant performances will recalculate global and collegiate Elo rating points
+                  Participant performances will recalculate global and institute Elo rating points
                 </Typography>
               </Box>
             }

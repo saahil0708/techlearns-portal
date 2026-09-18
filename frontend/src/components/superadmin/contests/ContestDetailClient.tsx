@@ -117,8 +117,8 @@ export default function ContestDetailClient({
             rank: 1,
             studentId: 'st-1',
             name: 'Maya Lin',
-            email: 'm.lin@stuy.edu',
-            institution: 'Stuyvesant High School',
+            email: 'm.lin@iitb.ac.in',
+            institution: 'IIT Bombay',
             score: 750,
             penaltyTime: '01:14:22',
             problemsSolved: 4,
@@ -253,7 +253,7 @@ export default function ContestDetailClient({
     initialParticipants.length > 0
       ? initialParticipants
       : [
-          { id: 'p-1', name: 'Maya Lin', email: 'm.lin@stuy.edu', institution: 'Stuyvesant High School', registeredAt: 'Feb 20, 2026', status: 'Checked In' },
+          { id: 'p-1', name: 'Maya Lin', email: 'm.lin@iitb.ac.in', institution: 'IIT Bombay', registeredAt: 'Feb 20, 2026', status: 'Checked In' },
           { id: 'p-2', name: 'Liam Vance', email: 'l.vance@stanford.edu', institution: 'Stanford University', registeredAt: 'Feb 21, 2026', status: 'Checked In' },
           { id: 'p-3', name: 'Alex Mercer', email: 'alex.m@mit.edu', institution: 'MIT', registeredAt: 'Feb 22, 2026', status: 'Checked In' },
           { id: 'p-4', name: 'Devin Sharma', email: 'devin.s@iitd.ac.in', institution: 'IIT Delhi', registeredAt: 'Feb 22, 2026', status: 'Checked In' },

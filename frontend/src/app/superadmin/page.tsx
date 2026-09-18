@@ -19,13 +19,11 @@ export const dynamic = 'force-dynamic';
 export default async function SuperAdminDashboardPage() {
   let liveSubmissions: SubmissionItem[] = [];
   let institutions: DirectoryEntry[] = [];
-  let individualStudents: DirectoryEntry[] = [];
 
   try {
-    const [submissionsData, collegesData, usersData] = await Promise.all([
+    const [submissionsData, collegesData] = await Promise.all([
       apiService.getLiveSubmissions(10).catch(() => null),
-      apiService.getColleges({ limit: 10 }).catch(() => null),
-      apiService.getUsers({ limit: 10 }).catch(() => null),
+      apiService.getColleges({ limit: 50 }).catch(() => null),
     ]);
 
     if (submissionsData && submissionsData.length > 0) {
@@ -52,29 +50,14 @@ export default async function SuperAdminDashboardPage() {
 
         return {
           name: col.name,
-          type: isSchoolOrganization(col) ? 'School' : 'College',
+          type: 'Institute',
           code: col.code,
           count: `${studentCount} ${studentCount === 1 ? 'student' : 'students'}`,
           detail: `${col._count?.courses || 0} courses • ${col._count?.batches || 0} cohorts`,
-          region: 'Global',
+          region: col.region || col.location || col.address || 'Asia-Pacific',
           status: col.status === 'ACTIVE' ? 'Active' : 'Suspended',
         };
       });
-    }
-
-    if (usersData?.items && usersData.items.length > 0) {
-      individualStudents = usersData.items
-        .filter((u: any) => u.globalRole === 'STUDENT')
-        .slice(0, 5)
-        .map((u: any) => ({
-          name: u.name,
-          handle: `@${u.email ? u.email.split('@')[0] : 'student'}`,
-          type: 'Individual',
-          count: 'Active',
-          detail: 'Student Account',
-          region: 'Global Learner',
-          status: 'Active',
-        }));
     }
   } catch (err) {
     console.error('Failed to load dashboard metrics from API:', err);
@@ -84,7 +67,6 @@ export default async function SuperAdminDashboardPage() {
     <DashboardClientView
       initialSubmissions={liveSubmissions}
       initialInstitutions={institutions}
-      initialIndividualStudents={individualStudents}
     />
   );
 }

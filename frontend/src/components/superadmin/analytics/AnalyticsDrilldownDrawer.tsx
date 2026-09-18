@@ -91,7 +91,7 @@ export default function AnalyticsDrilldownDrawer({
                 color: '#2563EB',
               }}
             >
-              {row.rowType === 'college' && <SchoolRoundedIcon sx={{ fontSize: 20 }} />}
+              {row.rowType === 'institute' && <SchoolRoundedIcon sx={{ fontSize: 20 }} />}
               {row.rowType === 'topic' && <AutoStoriesRoundedIcon sx={{ fontSize: 20 }} />}
               {row.rowType === 'contest' && <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />}
               {row.rowType === 'submission' && <CodeRoundedIcon sx={{ fontSize: 20 }} />}
@@ -101,7 +101,7 @@ export default function AnalyticsDrilldownDrawer({
                 Academic Diagnostic Drilldown
               </Typography>
               <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, color: '#0F172A' }}>
-                {row.rowType === 'college' && row.name}
+                {row.rowType === 'institute' && row.name}
                 {row.rowType === 'topic' && row.name}
                 {row.rowType === 'contest' && row.title}
                 {row.rowType === 'submission' && `${row.language} Engine`}
@@ -140,8 +140,8 @@ export default function AnalyticsDrilldownDrawer({
 
         {/* Body Content */}
         <Box sx={{ p: 3, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3, flex: 1 }}>
-          {/* 1. College Details */}
-          {row.rowType === 'college' && (
+          {/* 1. Institute Details */}
+          {row.rowType === 'institute' && (
             <>
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -364,7 +364,7 @@ export default function AnalyticsDrilldownDrawer({
             Close
           </Button>
 
-          {row.rowType === 'college' && (
+          {row.rowType === 'institute' && (
             <Button
               component={Link}
               href={`/superadmin/institutions/${row.id}`}

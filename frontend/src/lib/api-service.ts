@@ -423,28 +423,34 @@ export const apiService = {
     return this.updateInstitution(id, input);
   },
 
-  async deleteInstitution(id: string) {
+  async deleteInstitution(id: string, options?: { purgeUsers?: boolean }) {
+    let response: Response | null = null;
     try {
       const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/institutions/${id}`, {
+      const query = options?.purgeUsers ? '?purgeUsers=true' : '';
+      response = await fetch(`${API_URL}/institutions/${id}${query}`, {
         method: 'DELETE',
         headers,
         credentials: 'include',
       });
-      if (res.ok) return true;
-      const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
-      throw new Error(err.message || 'Failed to delete institution');
-    } catch (err: any) {
-      if (err?.message && !err.message.includes('HTTP') && !err.message.includes('Failed to delete institution')) {
+    } catch (networkErr) {
+      // Only fallback to GraphQL if purgeUsers is not requested (GraphQL mutation doesn't support purge query param)
+      if (!options?.purgeUsers) {
         const data = await fetchGraphQL<{ deleteInstitution: boolean }>(DELETE_INSTITUTION_MUTATION, { id });
         return data.deleteInstitution;
       }
-      throw err;
+      throw networkErr;
     }
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: `HTTP ${response.status} error` }));
+      throw new Error(err.message || 'Failed to delete institution');
+    }
+    return true;
   },
 
-  async deleteCollege(id: string) {
-    return this.deleteInstitution(id);
+  async deleteCollege(id: string, options?: { purgeUsers?: boolean }) {
+    return this.deleteInstitution(id, options);
   },
 
   async addInstitutionMember(institutionId: string, input: { userId: string; role?: string }) {
@@ -457,12 +463,46 @@ export const apiService = {
   },
 
   async removeInstitutionMember(institutionId: string, userId: string) {
-    const data = await fetchGraphQL<{ removeInstitutionMember: boolean }>(REMOVE_INSTITUTION_MEMBER_MUTATION, { institutionId, userId });
-    return data.removeInstitutionMember;
+    let response: Response | null = null;
+    try {
+      const headers = await getAuthHeaders();
+      response = await fetch(`${API_URL}/institutions/${institutionId}/members/${userId}`, {
+        method: 'DELETE',
+        headers,
+        credentials: 'include',
+      });
+    } catch {
+      const data = await fetchGraphQL<{ removeInstitutionMember: boolean }>(REMOVE_INSTITUTION_MEMBER_MUTATION, { institutionId, userId });
+      return data.removeInstitutionMember;
+    }
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: `HTTP ${response.status} error` }));
+      throw new Error(err.message || 'Failed to remove institution member');
+    }
+    return true;
   },
 
   async removeCollegeMember(collegeId: string, userId: string) {
     return this.removeInstitutionMember(collegeId, userId);
+  },
+
+  async unassignUserFromInstitutions(userId: string, targetInstitutionId?: string) {
+    if (targetInstitutionId) {
+      await this.removeInstitutionMember(targetInstitutionId, userId);
+    } else {
+      const user = await this.getUserById(userId);
+      if (user?.memberships && Array.isArray(user.memberships)) {
+        for (const m of user.memberships) {
+          const instId = m.institutionId || m.institution?.id;
+          if (instId) {
+            await this.removeInstitutionMember(instId, userId);
+          }
+        }
+      }
+    }
+    await this.updateUser(userId, { institution: '' });
+    return true;
   },
 
   async getInstitutionMembers(institutionId: string) {
@@ -717,8 +757,29 @@ export const apiService = {
       ...input,
       ...(rollNo !== undefined ? { rollNo } : {}),
     };
-    const data = await fetchGraphQL<{ updateUser: any }>(UPDATE_USER_MUTATION, { id, input: payload });
-    return data.updateUser;
+
+    let response: Response | null = null;
+    try {
+      const headers = await getAuthHeaders();
+      response = await fetch(`${API_URL}/users/${id}`, {
+        method: 'PATCH',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+    } catch (networkErr) {
+      // Genuine network / transport failure (e.g. offline, connection refused, CORS, DNS)
+      const data = await fetchGraphQL<{ updateUser: any }>(UPDATE_USER_MUTATION, { id, input: payload });
+      return data.updateUser;
+    }
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ message: `HTTP ${response.status} error` }));
+      throw new Error(err.message || 'Failed to update user');
+    }
+
+    const json = await response.json();
+    return json.data ?? json;
   },
 
   async getStudentProfile(handleOrId: string) {

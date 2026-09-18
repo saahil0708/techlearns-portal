@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -81,8 +82,11 @@ export class InstitutionsController {
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN)
   @ApiOperation({ summary: 'Delete an institution organization' })
   @ApiResponse({ status: 200, description: 'Institution deleted successfully' })
-  async delete(@Param('id') id: string) {
-    return this.institutionsService.delete(id);
+  async delete(
+    @Param('id') id: string,
+    @Query('purgeUsers') purgeUsers?: string
+  ) {
+    return this.institutionsService.delete(id, purgeUsers === 'true');
   }
 
   @Post(':id/members')

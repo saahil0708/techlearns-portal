@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import AnalyticsClient from '@/components/superadmin/analytics/AnalyticsClient';
 import type {
   AcademicKPIStats,
-  CollegeBenchmarkEntity,
+  InstituteBenchmarkEntity,
   DSATopicMasteryEntity,
   ContestPerformanceEntity,
   LanguageSubmissionEntity,
@@ -11,14 +11,14 @@ import { apiService } from '@/lib/api-service';
 
 export const metadata: Metadata = {
   title: 'Academic & Competitive Intelligence | CodePlatform Admin',
-  description: 'Student problem-solving mastery, DSA topic weakness heatmaps, college placement benchmarks, and tournament analytics.',
+  description: 'Student problem-solving mastery, DSA topic weakness heatmaps, institute placement benchmarks, and tournament analytics.',
 };
 
 export const dynamic = 'force-dynamic';
 
 /**
  * Analytics Page (React Server Component)
- * Dynamically aggregates live metrics, college benchmarks, topic stats, and contest standings from PostgreSQL via NestJS
+ * Dynamically aggregates live metrics, institute benchmarks, topic stats, and contest standings from PostgreSQL via NestJS
  */
 export default async function AnalyticsPage() {
   let stats: AcademicKPIStats = {
@@ -29,11 +29,11 @@ export default async function AnalyticsPage() {
     placementReadinessRate: 0,
     placementReadinessGrowth: '0 evaluated',
     avgWeeklyCodingHours: 5.2,
-    topPerformingCollege: 'N/A',
+    topPerformingInstitute: 'N/A',
     avgContestScore: 0,
   };
 
-  let colleges: CollegeBenchmarkEntity[] = [];
+  let colleges: InstituteBenchmarkEntity[] = [];
   let contests: ContestPerformanceEntity[] = [];
   let topics: DSATopicMasteryEntity[] = [];
   let languages: LanguageSubmissionEntity[] = [];
@@ -62,7 +62,7 @@ export default async function AnalyticsPage() {
       placementReadinessRate: totalSubs > 0 ? Math.round((acceptedSubs / totalSubs) * 100) : 0,
       placementReadinessGrowth: `${totalSubs} evaluated attempts`,
       avgWeeklyCodingHours: studentCount > 0 ? 5.8 : 0,
-      topPerformingCollege: collegesData?.items?.[0]?.name || 'N/A',
+      topPerformingInstitute: collegesData?.items?.[0]?.name || 'N/A',
       avgContestScore: contestsData?.items?.length ? 360 : 0,
     };
 

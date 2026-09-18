@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,12 +11,11 @@ import {
   TextField,
   Button,
   IconButton,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
   InputAdornment,
   Tooltip,
+  Autocomplete,
+  Chip,
+  CircularProgress,
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
@@ -26,11 +25,25 @@ import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
+import LocationCityRoundedIcon from '@mui/icons-material/LocationCityRounded';
+import PinDropRoundedIcon from '@mui/icons-material/PinDropRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+
+import {
+  INDIAN_STATES,
+  INDIAN_STATES_CITIES,
+  lookupPincode,
+} from '@/data/indianLocations';
 
 export interface NewInstitutionData {
   name: string;
   code: string;
   domain: string;
+  state?: string;
+  city?: string;
+  pincode?: string;
   region: string;
   quota: number;
   tier: string;
@@ -89,13 +102,24 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
     name: '',
     code: '',
     domain: '',
+    state: '',
+    city: '',
+    pincode: '',
     region: 'Asia-Pacific',
     quota: 2500,
     tier: 'Enterprise Tier',
     adminEmail: '',
   });
 
+  const [selectedState, setSelectedState] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [pincode, setPincode] = useState('');
+  const [detectedPlaces, setDetectedPlaces] = useState<string[]>([]);
+  const [isDetectingPin, setIsDetectingPin] = useState(false);
+  const [detectedLocationInfo, setDetectedLocationInfo] = useState<string | null>(null);
   const [codeManuallyEdited, setCodeManuallyEdited] = useState(false);
+
+  const pincodeLookupSeq = useRef(0);
 
   const handleNameChange = (nameVal: string) => {
     setFormData((prev) => {
@@ -105,6 +129,53 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
       }
       return updated;
     });
+  };
+
+  const handlePincodeChange = async (pinVal: string) => {
+    const sanitized = pinVal.replace(/\D/g, '').slice(0, 6);
+    setPincode(sanitized);
+
+    if (sanitized.length === 6) {
+      const currentSeq = ++pincodeLookupSeq.current;
+      setIsDetectingPin(true);
+      try {
+        const detected = await lookupPincode(sanitized);
+        if (pincodeLookupSeq.current !== currentSeq) return;
+
+        if (detected) {
+          setSelectedState(detected.state);
+          setSelectedCity(detected.city);
+          setDetectedPlaces(detected.places && detected.places.length > 0 ? detected.places : [detected.city]);
+          if (detected.district && detected.district.toLowerCase() !== detected.city.toLowerCase()) {
+            setDetectedLocationInfo(`Auto-detected: ${detected.city}, ${detected.district} Dist. (${detected.state})`);
+          } else {
+            setDetectedLocationInfo(`Auto-detected: ${detected.city}, ${detected.state}`);
+          }
+        } else {
+          setSelectedState('');
+          setSelectedCity('');
+          setDetectedPlaces([]);
+          setDetectedLocationInfo(null);
+        }
+      } catch {
+        if (pincodeLookupSeq.current !== currentSeq) return;
+        setSelectedState('');
+        setSelectedCity('');
+        setDetectedPlaces([]);
+        setDetectedLocationInfo(null);
+      } finally {
+        if (pincodeLookupSeq.current === currentSeq) {
+          setIsDetectingPin(false);
+        }
+      }
+    } else {
+      pincodeLookupSeq.current++;
+      setIsDetectingPin(false);
+      if (detectedLocationInfo) {
+        setDetectedPlaces([]);
+        setDetectedLocationInfo(null);
+      }
+    }
   };
 
   const handleAutoGenerateCode = () => {
@@ -120,10 +191,27 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const cityOptions = useMemo(() => {
+    const stateCities = selectedState && INDIAN_STATES_CITIES[selectedState] ? INDIAN_STATES_CITIES[selectedState] : [];
+    const combined = Array.from(new Set([...detectedPlaces, ...stateCities]));
+    return combined;
+  }, [selectedState, detectedPlaces]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.code.trim()) return;
-    onSubmit(formData);
+
+    const locationFormatted = [selectedCity, selectedState, pincode ? `PIN: ${pincode}` : '']
+      .filter(Boolean)
+      .join(', ');
+
+    onSubmit({
+      ...formData,
+      state: selectedState,
+      city: selectedCity,
+      pincode: pincode,
+      region: locationFormatted || formData.region || 'Asia-Pacific',
+    });
     onClose();
   };
 
@@ -153,7 +241,7 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="sm"
+      maxWidth="md"
       fullWidth
       slotProps={{
         paper: {
@@ -164,6 +252,7 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
             boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.2)',
             color: '#0F172A',
             p: 0.5,
+            maxHeight: '92vh',
           },
         },
       }}
@@ -191,7 +280,7 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
               Onboard New Institution
             </Typography>
             <Typography sx={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 500 }}>
-              Create an isolated organization tenant with code-based student enrollment
+              Create an isolated organization tenant with automated PIN code location detection
             </Typography>
           </Box>
         </Box>
@@ -206,148 +295,261 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
 
       <form onSubmit={handleSubmit}>
         <DialogContent sx={{ px: 3, pt: 1, pb: 2.5, display: 'flex', flexDirection: 'column', gap: 2.25 }}>
-          {/* Institution Full Name */}
-          <TextField
-            fullWidth
-            label="Institution Full Name *"
-            placeholder="e.g. Swami Vivekanand Institute of Engineering (SVIET)"
-            required
-            value={formData.name}
-            onChange={(e) => handleNameChange(e.target.value)}
-            helperText="Official university or institute name"
-            sx={inputStyle}
-          />
-
-          {/* Unique Join Code & Domain Whitelist */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1.1fr 1fr' }, gap: 2 }}>
+          
+          {/* Section 1: Institution Details */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+            {/* Institution Full Name */}
             <TextField
-              label="Institution Unique Code *"
-              placeholder="e.g. SVIET"
+              fullWidth
+              label="Institution Full Name *"
+              placeholder="e.g. Swami Vivekanand Institute of Engineering & Technology (SVIET)"
               required
-              value={formData.code}
-              onChange={(e) => handleChange('code', e.target.value.toUpperCase().replace(/\s+/g, '-'))}
-              helperText="Students use this code to join this institution"
+              value={formData.name}
+              onChange={(e) => handleNameChange(e.target.value)}
+              helperText="Official university or college name (Unique code is auto-generated as you type)"
+              sx={inputStyle}
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <CodeRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Tooltip title="Auto-generate code from name" arrow>
-                        <IconButton
-                          size="small"
-                          onClick={handleAutoGenerateCode}
-                          disabled={!formData.name.trim()}
-                          sx={{
-                            color: '#2563EB',
-                            p: 0.5,
-                            bgcolor: '#EFF6FF',
-                            '&:hover': { bgcolor: '#DBEAFE' },
-                          }}
-                        >
-                          <AutoFixHighRoundedIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                      </Tooltip>
+                      <SchoolRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
                     </InputAdornment>
                   ),
                 },
               }}
-              sx={inputStyle}
             />
 
-            <TextField
-              label="Email Domain (Optional)"
-              placeholder="e.g. sviet.ac.in"
-              value={formData.domain}
-              onChange={(e) => handleChange('domain', e.target.value.toLowerCase().trim())}
-              helperText="Optional: Leave blank for all emails (Gmail, etc.)"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LanguageRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              sx={inputStyle}
-            />
+            {/* Unique Join Code & Domain Whitelist */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1.1fr 1fr' }, gap: 2 }}>
+              <TextField
+                label="Institution Unique Code *"
+                placeholder="e.g. SVIET"
+                required
+                value={formData.code}
+                onChange={(e) => handleChange('code', e.target.value.toUpperCase().replace(/\s+/g, '-'))}
+                helperText="Students use this code to join this institution"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CodeRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Tooltip title="Auto-generate code from name" arrow>
+                          <IconButton
+                            size="small"
+                            onClick={handleAutoGenerateCode}
+                            disabled={!formData.name.trim()}
+                            sx={{
+                              color: '#2563EB',
+                              p: 0.5,
+                              bgcolor: '#EFF6FF',
+                              '&:hover': { bgcolor: '#DBEAFE' },
+                            }}
+                          >
+                            <AutoFixHighRoundedIcon sx={{ fontSize: 16 }} />
+                          </IconButton>
+                        </Tooltip>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+                sx={inputStyle}
+              />
+
+              <TextField
+                label="Email Domain (Optional)"
+                placeholder="e.g. sviet.ac.in"
+                value={formData.domain}
+                onChange={(e) => handleChange('domain', e.target.value.toLowerCase().trim())}
+                helperText="Optional: Leave blank for all emails (Gmail, etc.)"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LanguageRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+                sx={inputStyle}
+              />
+            </Box>
           </Box>
 
-          {/* Region & Tier Selectors */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-            <FormControl fullWidth sx={inputStyle}>
-              <InputLabel id="region-select-label">Geographic Region</InputLabel>
-              <Select
-                labelId="region-select-label"
-                label="Geographic Region"
-                value={formData.region}
-                onChange={(e) => handleChange('region', e.target.value)}
-              >
-                <MenuItem value="Asia-Pacific">Asia-Pacific (India / APAC)</MenuItem>
-                <MenuItem value="North America">North America (US / Canada)</MenuItem>
-                <MenuItem value="Europe">Europe (UK / EU)</MenuItem>
-                <MenuItem value="Middle East & Africa">Middle East & Africa</MenuItem>
-                <MenuItem value="Latin America">Latin America</MenuItem>
-              </Select>
-            </FormControl>
+          {/* Section 2: Campus Location & PIN Code Auto-Detection */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1, borderTop: '1px dashed #E2E8F0' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LocationOnRoundedIcon sx={{ fontSize: 16, color: '#2563EB' }} />
+                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Location & PIN Code Auto-Detection
+                </Typography>
+              </Box>
+              {detectedLocationInfo && (
+                <Chip
+                  icon={<CheckCircleRoundedIcon sx={{ fontSize: '14px !important', color: '#16A34A !important' }} />}
+                  label={detectedLocationInfo}
+                  size="small"
+                  sx={{
+                    bgcolor: '#F0FDF4',
+                    color: '#15803D',
+                    border: '1px solid #BBF7D0',
+                    fontWeight: 600,
+                    fontSize: '0.72rem',
+                    height: 22,
+                  }}
+                />
+              )}
+            </Box>
 
-            <FormControl fullWidth sx={inputStyle}>
-              <InputLabel id="tier-select-label">Subscription Tier</InputLabel>
-              <Select
-                labelId="tier-select-label"
-                label="Subscription Tier"
-                value={formData.tier}
-                onChange={(e) => handleChange('tier', e.target.value)}
-              >
-                <MenuItem value="Enterprise Tier">Enterprise Tier (Unlimited Contests)</MenuItem>
-                <MenuItem value="Pro Academic">Pro Academic (100 Contests/mo)</MenuItem>
-                <MenuItem value="Standard Academic">Standard Academic (Basic LMS)</MenuItem>
-              </Select>
-            </FormControl>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 1.75 }}>
+              {/* PIN Code Field with instant auto-detect */}
+              <TextField
+                label="PIN Code (Auto-Detect)"
+                placeholder="e.g. 140401"
+                value={pincode}
+                onChange={(e) => handlePincodeChange(e.target.value)}
+                helperText={
+                  isDetectingPin ? 'Detecting city & district...' : 'Type 6-digit PIN to auto-fill'
+                }
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <PinDropRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        {isDetectingPin && <CircularProgress size={16} sx={{ color: '#2563EB' }} />}
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+                sx={inputStyle}
+              />
+
+              {/* State Searchable Dropdown */}
+              <Autocomplete
+                options={INDIAN_STATES}
+                value={selectedState || null}
+                onChange={(_e, val) => {
+                  const newState = val || '';
+                  setSelectedState(newState);
+                  setDetectedPlaces([]);
+                  setDetectedLocationInfo(null);
+                  if (newState && INDIAN_STATES_CITIES[newState]) {
+                    if (selectedCity && !INDIAN_STATES_CITIES[newState].includes(selectedCity)) {
+                      setSelectedCity('');
+                    }
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="State / UT"
+                    placeholder="Search State..."
+                    helperText="Dropdown cum search list"
+                    sx={inputStyle}
+                    slotProps={{
+                      ...params.slotProps,
+                      input: {
+                        ...params.slotProps.input,
+                        startAdornment: (
+                          <>
+                            <InputAdornment position="start">
+                              <LocationOnRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                            </InputAdornment>
+                            {params.slotProps.input.startAdornment}
+                          </>
+                        ),
+                      },
+                    }}
+                  />
+                )}
+              />
+
+              {/* City Searchable Dropdown & Free Text */}
+              <Autocomplete
+                freeSolo
+                options={cityOptions}
+                value={selectedCity}
+                onInputChange={(_e, val) => {
+                  setSelectedCity(val);
+                }}
+                onChange={(_e, val) => {
+                  setSelectedCity(val || '');
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="City / Campus"
+                    placeholder={selectedState ? `Select or enter city...` : 'Enter or select city...'}
+                    helperText={selectedState ? `Cities in ${selectedState}` : 'Auto-detected / custom city'}
+                    sx={inputStyle}
+                    slotProps={{
+                      ...params.slotProps,
+                      input: {
+                        ...params.slotProps.input,
+                        startAdornment: (
+                          <>
+                            <InputAdornment position="start">
+                              <LocationCityRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                            </InputAdornment>
+                            {params.slotProps.input.startAdornment}
+                          </>
+                        ),
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Box>
           </Box>
 
-          {/* Seat Quota & Admin Email */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-            <TextField
-              label="Student Seat Quota"
-              type="number"
-              value={formData.quota}
-              onChange={(e) => handleChange('quota', Number(e.target.value))}
-              helperText="Maximum allowed concurrent student accounts"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <GroupRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              sx={inputStyle}
-            />
+          {/* Section 3: Administration & Quota */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, pt: 1, borderTop: '1px dashed #E2E8F0' }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1.5fr' }, gap: 2 }}>
+              <TextField
+                label="Student Seat Quota"
+                type="number"
+                value={formData.quota}
+                onChange={(e) => handleChange('quota', Number(e.target.value))}
+                helperText="Maximum allowed concurrent student accounts"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <GroupRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+                sx={inputStyle}
+              />
 
-            <TextField
-              label="Primary Admin / Dean Email"
-              type="email"
-              placeholder="dean.cs@institution.edu"
-              value={formData.adminEmail}
-              onChange={(e) => handleChange('adminEmail', e.target.value)}
-              helperText="Official administrative contact email"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <EmailRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-              sx={inputStyle}
-            />
+              <TextField
+                label="Primary Admin / Dean Email"
+                type="email"
+                placeholder="dean.cs@institution.edu"
+                value={formData.adminEmail}
+                onChange={(e) => handleChange('adminEmail', e.target.value)}
+                helperText="Official administrative contact email for instant tenant invitation"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <EmailRoundedIcon sx={{ color: '#64748B', fontSize: 18 }} />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+                sx={inputStyle}
+              />
+            </Box>
           </Box>
 
           {/* Batch & Hierarchy Hint Callout */}

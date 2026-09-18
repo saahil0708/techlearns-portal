@@ -21,23 +21,13 @@ import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
-import TerminalRoundedIcon from '@mui/icons-material/TerminalRounded';
+import AssignmentIndRoundedIcon from '@mui/icons-material/AssignmentIndRounded';
+import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutUser } from '@/store/slices/authSlice';
 import { apiService } from '@/lib/api-service';
 import LogoutConfirmModal from '@/components/shared/LogoutConfirmModal';
-
-// Faculty Navigation Items Matrix
-const FACULTY_NAV_ITEMS = [
-  { label: 'Faculty Profile & Bio', icon: <PersonRoundedIcon sx={{ fontSize: 21 }} />, path: '/faculty/profile' },
-  { label: 'Assigned Cohorts & Batches', icon: <SchoolRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=batches' },
-  { label: 'College Students Roster', icon: <GroupRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=students' },
-  { label: 'Curriculum & Courses', icon: <MenuBookRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=courses' },
-  { label: 'Lab Challenges & Question Bank', icon: <CodeRoundedIcon sx={{ fontSize: 21 }} />, path: '/faculty/profile?tab=problems' },
-  { label: 'Competitive Contests', icon: <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />, path: '/contests' },
-  { label: 'Global Leaderboard', icon: <LeaderboardRoundedIcon sx={{ fontSize: 20 }} />, path: '/leaderboard' },
-];
 
 export default function FacultySidebar() {
   const router = useRouter();
@@ -75,15 +65,6 @@ export default function FacultySidebar() {
     loadLiveUser();
   }, []);
 
-  const displayName = activeUser?.name || user?.name || 'Faculty Mentor';
-  const displayEmail = activeUser?.email || user?.email || '';
-  const displayRole =
-    activeUser?.globalRole === 'COLLEGE_ADMIN'
-      ? 'Department Head & Admin'
-      : activeUser?.globalRole === 'SUPER_ADMIN'
-      ? 'Super Admin'
-      : 'Faculty Mentor';
-
   const activeMemberships = Array.isArray(activeUser?.memberships) ? activeUser.memberships : [];
   const qualifyingMembership = activeMemberships.find(
     (m: any) =>
@@ -91,6 +72,28 @@ export default function FacultySidebar() {
       m?.role === 'COLLEGE_ADMIN' ||
       m?.role === 'INSTITUTION_ADMIN'
   );
+
+  const userMemberships = Array.isArray(user?.memberships) ? user.memberships : [];
+  const hasAdminMembership =
+    activeMemberships.some((m: any) => m?.role === 'INSTITUTION_ADMIN' || m?.role === 'COLLEGE_ADMIN') ||
+    userMemberships.some((m: any) => m?.role === 'INSTITUTION_ADMIN' || m?.role === 'COLLEGE_ADMIN');
+
+  const isInstitutionAdmin =
+    activeUser?.globalRole === 'INSTITUTION_ADMIN' ||
+    (activeUser?.globalRole as any) === 'COLLEGE_ADMIN' ||
+    user?.globalRole === 'INSTITUTION_ADMIN' ||
+    (user?.globalRole as any) === 'COLLEGE_ADMIN' ||
+    hasAdminMembership;
+
+  const isSuperAdmin = activeUser?.globalRole === 'SUPER_ADMIN' || user?.globalRole === 'SUPER_ADMIN';
+
+  const displayName = activeUser?.name || user?.name || 'Faculty Mentor';
+  const displayEmail = activeUser?.email || user?.email || '';
+  const displayRole = isSuperAdmin
+    ? 'Super Admin'
+    : isInstitutionAdmin
+    ? 'Department Head & Admin'
+    : 'Faculty Mentor';
 
   const collegeName =
     qualifyingMembership?.institution?.name ||
@@ -123,7 +126,26 @@ export default function FacultySidebar() {
         .slice(0, 2)
     : 'FM';
 
+  const navItems = [
+    ...(isInstitutionAdmin || isSuperAdmin
+      ? [{ label: 'Institution Admin Portal', icon: <AccountBalanceRoundedIcon sx={{ fontSize: 21 }} />, path: '/institution-admin' }]
+      : []),
+    { label: 'Faculty Profile & Bio', icon: <PersonRoundedIcon sx={{ fontSize: 21 }} />, path: '/faculty/profile' },
+    ...(isInstitutionAdmin || isSuperAdmin
+      ? [{ label: 'Department Faculty & Mentors', icon: <AssignmentIndRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=faculty' }]
+      : []),
+    { label: 'Assigned Cohorts & Batches', icon: <SchoolRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=batches' },
+    { label: 'College Students Roster', icon: <GroupRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=students' },
+    { label: 'Curriculum & Courses', icon: <MenuBookRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=courses' },
+    { label: 'Lab Challenges & Question Bank', icon: <CodeRoundedIcon sx={{ fontSize: 21 }} />, path: '/faculty/profile?tab=problems' },
+    { label: 'Competitive Contests', icon: <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />, path: '/contests' },
+    { label: 'Global Leaderboard', icon: <LeaderboardRoundedIcon sx={{ fontSize: 20 }} />, path: '/leaderboard' },
+  ];
+
   const isItemActive = (itemPath: string) => {
+    if (itemPath === '/faculty/profile?tab=faculty') {
+      return pathname.startsWith('/faculty') && currentTab === 'faculty';
+    }
     if (itemPath === '/faculty/profile?tab=batches') {
       return pathname.startsWith('/faculty') && currentTab === 'batches';
     }
@@ -249,7 +271,7 @@ export default function FacultySidebar() {
             flexShrink: 0,
           }}
         >
-          {FACULTY_NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active = isItemActive(item.path);
 
             return (

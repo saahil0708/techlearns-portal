@@ -44,7 +44,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     handle: liveUser.email ? liveUser.email.split('@')[0] : 'user',
     email: liveUser.email,
     role: liveUser.globalRole || 'STUDENT',
-    institutionType: liveUser.institutionType === 'School' ? 'School' : 'College',
+    institutionType: (liveUser.memberships?.length || liveUser.institution) ? 'Institute' : 'Independent',
     institutionName: liveUser.memberships?.[0]?.institution?.name || liveUser.memberships?.[0]?.college?.name || liveUser.institution || 'Global Platform',
     twoFactorEnabled: Boolean(liveUser.twoFactorEnabled),
     lastLoginAt: liveUser.lastLoginAt ? new Date(liveUser.lastLoginAt).toLocaleString() : 'Never',
@@ -58,7 +58,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     ? liveUser.memberships.map((m: any) => ({
         id: m.id || `mem-${m.institutionId || 'default'}`,
         tenantName: m.institution?.name || m.college?.name || liveUser.institution || user.institutionName,
-        tenantType: (m.institution?.tier?.includes('School') || liveUser.institutionType === 'School' ? 'School' : 'College') as 'College' | 'School',
+        tenantType: 'Institute' as const,
         role: m.role || liveUser.globalRole || 'FACULTY',
         domain: m.institution?.email?.split('@')[1] || m.college?.email?.split('@')[1] || 'campus.edu',
         joinedAt: m.createdAt ? new Date(m.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : user.createdAt,

@@ -42,14 +42,26 @@ export default async function StudentDetailPage({ params }: Props) {
     notFound();
   }
 
+  const primaryMembership = Array.isArray(liveUser.memberships)
+    ? liveUser.memberships.find((m: any) => m?.institution?.name || m?.college?.name)
+    : null;
+  const resolvedInstitution =
+    primaryMembership?.institution?.name ||
+    primaryMembership?.college?.name ||
+    liveUser.institution?.trim() ||
+    null;
+
+  const institutionType: 'Institute' | 'Independent' = resolvedInstitution ? 'Institute' : 'Independent';
+  const institutionName = resolvedInstitution || 'Self-Enrolled';
+
   const student: StudentDirectoryEntity = {
     id: liveUser.id,
     name: liveUser.name || 'Student Developer',
     handle: liveUser.email ? liveUser.email.split('@')[0] : 'coder',
     email: liveUser.email,
     studentId: `STU-${liveUser.id.slice(0, 4).toUpperCase()}`,
-    institutionType: liveUser.memberships?.[0]?.college?.type === 'SCHOOL' ? 'School' : 'College',
-    institutionName: liveUser.memberships?.[0]?.college?.name || 'Academic Campus',
+    institutionType,
+    institutionName,
     cohort: liveUser.batchEnrollments?.[0]?.batch?.name || 'Default Cohort',
     problemsSolved: liveUser._count?.submissions || 0,
     solvedEasy: 0,

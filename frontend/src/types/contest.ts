@@ -8,8 +8,8 @@ export type ScoringFormat =
 
 export type ContestScope =
   | 'Global'
-  | 'Collegiate League'
-  | 'High School Invitational'
+  | 'Institute League'
+  | 'Institutional Invitational'
   | 'Internal Faculty Assessment';
 
 export interface ContestEntity {

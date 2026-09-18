@@ -943,7 +943,7 @@ export default function InstitutionDetailClient({
       <head><meta charset="utf-8"/></head>
       <body>
         <h2>${institution.name} (${institution.code}) - Academic Report</h2>
-        <p>Domain: ${institution.domain} | Region: ${institution.region} | Tier: ${institution.tier}</p>
+        <p>Domain: ${institution.domain} | Region: ${institution.region}</p>
         <p>Students Enrolled: ${institution.studentsCount} / ${institution.maxQuota} quota</p>
         <br/>
         <h3>Student Roster & Performance</h3>
@@ -1567,8 +1567,6 @@ export default function InstitutionDetailClient({
                   <span>@{institution.domain}</span>
                   <span>•</span>
                   <span>{institution.region}</span>
-                  <span>•</span>
-                  <strong style={{ color: '#2563EB' }}>{institution.tier}</strong>
                 </Typography>
               </Box>
             </Box>
@@ -1678,7 +1676,7 @@ export default function InstitutionDetailClient({
               </Box>
               <Chip
                 size="small"
-                label={`${liveInstitution.tier} Partner Campus`}
+                label="Partner Campus"
                 sx={{
                   height: 22,
                   fontSize: '0.68rem',
@@ -2735,19 +2733,6 @@ export default function InstitutionDetailClient({
                   value={settingsAddress}
                   onChange={(e) => setSettingsAddress(e.target.value)}
                 />
-                <FormControl size="small" fullWidth sx={{ '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}>
-                  <InputLabel id="settings-tier-label">Subscription Tier</InputLabel>
-                  <Select
-                    labelId="settings-tier-label"
-                    label="Subscription Tier"
-                    value={settingsTier}
-                    onChange={(e) => setSettingsTier(e.target.value)}
-                  >
-                    <MenuItem value="Enterprise Tier">Enterprise Tier</MenuItem>
-                    <MenuItem value="Pro Academic">Pro Academic</MenuItem>
-                    <MenuItem value="Standard Academic">Standard Academic</MenuItem>
-                  </Select>
-                </FormControl>
                 <TextField
                   label="Student Seat Quota"
                   size="small"

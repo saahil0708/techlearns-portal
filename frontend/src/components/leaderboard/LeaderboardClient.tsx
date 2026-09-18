@@ -206,7 +206,7 @@ export default function LeaderboardClient() {
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
-                Global & Collegiate Leaderboard
+                Global & Institute Leaderboard
               </Typography>
               <Chip
                 icon={<WorkspacePremiumRoundedIcon sx={{ fontSize: 13, color: '#D97706 !important' }} />}
@@ -221,7 +221,7 @@ export default function LeaderboardClient() {
               />
             </Box>
             <Typography variant="body2" sx={{ color: '#64748B' }}>
-              Live ELO rating standings across competitive programmers, collegiate chapters, and global leagues.
+              Live ELO rating standings across competitive programmers, institute chapters, and global leagues.
             </Typography>
           </Box>
 
@@ -375,7 +375,7 @@ export default function LeaderboardClient() {
               }}
             >
               <Tab label="Global Overall" value="GLOBAL" />
-              <Tab label="Collegiate League" value="COLLEGIATE" />
+              <Tab label="Institute League" value="COLLEGIATE" />
               <Tab label="Weekly Standings" value="WEEKLY" />
             </Tabs>
 
@@ -383,7 +383,7 @@ export default function LeaderboardClient() {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
               <TextField
                 size="small"
-                placeholder="Search coder, handle, university..."
+                placeholder="Search coder, handle, institute..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 slotProps={{

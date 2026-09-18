@@ -263,7 +263,7 @@ export default function SettingsClient({
                     fullWidth
                   />
                   <TextField
-                    label="Institution / Collegiate Tagline"
+                    label="Institution / Institute Tagline"
                     value={general.institutionTagline}
                     onChange={(e) => setGeneral({ ...general, institutionTagline: e.target.value })}
                     size="small"
@@ -302,16 +302,15 @@ export default function SettingsClient({
                   </FormControl>
 
                   <FormControl size="small" fullWidth>
-                    <InputLabel>Default Server Timezone</InputLabel>
+                    <InputLabel>Default Timezone</InputLabel>
                     <Select
                       value={general.defaultTimezone}
-                      label="Default Server Timezone"
+                      label="Default Timezone"
                       onChange={(e) => setGeneral({ ...general, defaultTimezone: e.target.value })}
                     >
                       <MenuItem value="Asia/Kolkata (IST +5:30)">Asia/Kolkata (IST +5:30)</MenuItem>
-                      <MenuItem value="UTC (GMT +0:00)">UTC (GMT +0:00)</MenuItem>
-                      <MenuItem value="America/New_York (EST)">America/New_York (EST)</MenuItem>
-                      <MenuItem value="Europe/London (BST)">Europe/London (BST)</MenuItem>
+                      <MenuItem value="America/New_York (EST -5:00)">America/New_York (EST -5:00)</MenuItem>
+                      <MenuItem value="Europe/London (GMT +0:00)">Europe/London (GMT +0:00)</MenuItem>
                     </Select>
                   </FormControl>
                 </Box>
@@ -482,15 +481,15 @@ export default function SettingsClient({
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Box>
                     <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A' }}>
-                      Enforce University Domain Matching
+                      Enforce Institute Domain Matching
                     </Typography>
                     <Typography sx={{ fontSize: '0.76rem', color: '#64748B' }}>
-                      Restricts student and faculty logins strictly to their affiliated university email domains (@mit.edu, @cam.ac.uk).
+                      Restricts student and faculty logins strictly to their affiliated institute email domains (@mit.edu, @cam.ac.uk).
                     </Typography>
                   </Box>
                   <Switch
-                    checked={security.enforceCollegeDomainMatch}
-                    onChange={(e) => setSecurity({ ...security, enforceCollegeDomainMatch: e.target.checked })}
+                    checked={security.enforceInstituteDomainMatch}
+                    onChange={(e) => setSecurity({ ...security, enforceInstituteDomainMatch: e.target.checked })}
                     color="primary"
                   />
                 </Box>

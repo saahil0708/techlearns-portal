@@ -1,6 +1,6 @@
 export type AcademicDomainTab = 
   | 'ALL'
-  | 'COLLEGES'
+  | 'INSTITUTES'
   | 'TOPICS'
   | 'CONTESTS'
   | 'SUBMISSIONS';
@@ -13,11 +13,11 @@ export interface AcademicKPIStats {
   placementReadinessRate: number;
   placementReadinessGrowth: string;
   avgWeeklyCodingHours: number;
-  topPerformingCollege: string;
+  topPerformingInstitute: string;
   avgContestScore: number;
 }
 
-export interface CollegeBenchmarkEntity {
+export interface InstituteBenchmarkEntity {
   id: string;
   code: string;
   name: string;
@@ -77,7 +77,7 @@ export interface LanguageSubmissionEntity {
 }
 
 export type AnyAnalyticsRow = 
-  | (CollegeBenchmarkEntity & { rowType: 'college' })
+  | (InstituteBenchmarkEntity & { rowType: 'institute' })
   | (DSATopicMasteryEntity & { rowType: 'topic' })
   | (ContestPerformanceEntity & { rowType: 'contest' })
   | (LanguageSubmissionEntity & { rowType: 'submission' });

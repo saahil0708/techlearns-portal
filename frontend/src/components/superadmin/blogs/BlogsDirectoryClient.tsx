@@ -152,9 +152,9 @@ export default function BlogsDirectoryClient({
         const matchTitle = b.title.toLowerCase().includes(query);
         const matchSubtitle = b.subtitle.toLowerCase().includes(query);
         const matchAuthor = b.author.name.toLowerCase().includes(query);
-        const matchCollege = b.author.college.toLowerCase().includes(query);
+        const matchInstitute = (b.author.institute || b.author.college || '').toLowerCase().includes(query);
         const matchTags = b.tags.some((t) => t.toLowerCase().includes(query));
-        if (!matchTitle && !matchSubtitle && !matchAuthor && !matchCollege && !matchTags) {
+        if (!matchTitle && !matchSubtitle && !matchAuthor && !matchInstitute && !matchTags) {
           return false;
         }
       }
@@ -234,6 +234,7 @@ export default function BlogsDirectoryClient({
           name: newBlog.authorName || 'Super Administrator',
           avatarBg: '#2563EB',
           role: 'Platform Operations',
+          institute: newBlog.authorCollege || 'CodePlatform Global',
           college: newBlog.authorCollege || 'CodePlatform Global',
           handle: '@admin',
           isVerified: true,

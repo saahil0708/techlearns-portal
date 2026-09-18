@@ -65,8 +65,7 @@ export default function PlatformDirectoryTable({
   const [rowsPerPage, setRowsPerPage] = useState<number>(4);
 
   const listForCounts = allEntries || entries;
-  const collegeCount = listForCounts.filter((e) => e.type.toLowerCase() === 'college').length;
-  const schoolCount = listForCounts.filter((e) => e.type.toLowerCase() === 'school').length;
+  const instituteCount = listForCounts.filter((e) => e.type.toLowerCase() === 'institute' || e.type.toLowerCase() === 'college').length;
   const individualCount = listForCounts.filter((e) => e.type.toLowerCase() === 'individual').length;
   const totalAll = listForCounts.length;
 
@@ -182,7 +181,7 @@ export default function PlatformDirectoryTable({
             </Typography>
           </Box>
           <Typography sx={{ fontSize: '0.82rem', fontWeight: 500, color: '#64748B', mt: 0.25 }}>
-            Colleges, Universities & Academic Campus Tenants
+            Institutes, Universities & Academic Campus Tenants
           </Typography>
         </Box>
 
@@ -222,9 +221,7 @@ export default function PlatformDirectoryTable({
               },
             }}
           >
-            <ToggleButton value="ALL">All Institutions ({totalAll})</ToggleButton>
-            <ToggleButton value="COLLEGE">Colleges ({collegeCount})</ToggleButton>
-            <ToggleButton value="SCHOOL">Schools ({schoolCount})</ToggleButton>
+            <ToggleButton value="ALL">All Institutes ({totalAll})</ToggleButton>
           </ToggleButtonGroup>
 
           {/* Download Excel / CSV Button */}
@@ -312,7 +309,7 @@ export default function PlatformDirectoryTable({
         <Table size="small">
           <TableHead sx={{ bgcolor: '#F8FAFC' }}>
             <TableRow>
-              <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pl: 3, py: 1.5, letterSpacing: '0.04em', borderBottom: `1px solid ${borderColor}` }}>NAME / USER</TableCell>
+              <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pl: 3, py: 1.5, letterSpacing: '0.04em', borderBottom: `1px solid ${borderColor}` }}>INSTITUTE NAME</TableCell>
               <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', borderBottom: `1px solid ${borderColor}` }}>CATEGORY</TableCell>
               <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', borderBottom: `1px solid ${borderColor}` }}>VOLUME / STATS</TableCell>
               <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', borderBottom: `1px solid ${borderColor}` }}>DETAILS & TRACKS</TableCell>
@@ -324,17 +321,12 @@ export default function PlatformDirectoryTable({
             {paginatedEntries.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} align="center" sx={{ py: 4, color: '#64748B' }}>
-                  No directory entries found.
+                  No institutes found.
                 </TableCell>
               </TableRow>
             ) : (
               paginatedEntries.map((item, idx) => {
-                const targetRoute =
-                  item.type === 'Institution' || item.type === 'College'
-                    ? '/superadmin/institutions'
-                    : item.type === 'School'
-                    ? '/superadmin/blogs'
-                    : '/superadmin/students';
+                const targetRoute = '/superadmin/institutions';
 
                 return (
                   <TableRow
@@ -357,37 +349,29 @@ export default function PlatformDirectoryTable({
                     <Chip
                       size="small"
                       icon={
-                        item.type === 'College' ? (
+                        item.type === 'College' || item.type === 'Institute' || item.type === 'Institution' ? (
                           <AccountBalanceRoundedIcon sx={{ fontSize: '13px !important' }} />
-                        ) : item.type === 'School' ? (
-                          <SchoolRoundedIcon sx={{ fontSize: '13px !important' }} />
                         ) : (
                           <PersonRoundedIcon sx={{ fontSize: '13px !important' }} />
                         )
                       }
-                      label={item.type === 'Individual' ? 'Student' : item.type}
+                      label={item.type === 'Individual' ? 'Student' : item.type === 'College' ? 'Institute' : item.type}
                       sx={{
                         height: 22,
                         fontSize: '0.72rem',
                         fontWeight: 600,
                         borderRadius: '6px',
                         bgcolor:
-                          item.type === 'College'
+                          item.type === 'College' || item.type === 'Institute' || item.type === 'Institution'
                             ? '#EFF6FF'
-                            : item.type === 'School'
-                            ? '#FAF5FF'
                             : '#FFFBEB',
                         border:
-                          item.type === 'College'
+                          item.type === 'College' || item.type === 'Institute' || item.type === 'Institution'
                             ? '1px solid #BFDBFE'
-                            : item.type === 'School'
-                            ? '1px solid #E9D5FF'
                             : '1px solid #FDE68A',
                         color:
-                          item.type === 'College'
+                          item.type === 'College' || item.type === 'Institute' || item.type === 'Institution'
                             ? '#2563EB'
-                            : item.type === 'School'
-                            ? '#9333EA'
                             : '#D97706',
                       }}
                     />

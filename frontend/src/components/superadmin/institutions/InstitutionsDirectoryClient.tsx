@@ -29,7 +29,13 @@ import {
   Divider,
   Snackbar,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControlLabel,
 } from '@mui/material';
+import DeleteForeverRoundedIcon from '@mui/icons-material/DeleteForeverRounded';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import SearchIcon from '@mui/icons-material/Search';
@@ -95,7 +101,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedRegion, setSelectedRegion] = useState<string>('ALL');
-  const [selectedTier, setSelectedTier] = useState<string>('ALL');
+  const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [menuAnchor, setMenuAnchor] = useState<{ element: HTMLElement; institution: InstitutionEntity } | null>(null);
@@ -158,28 +164,77 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
-  const handleDeleteSelected = async () => {
-    const idsToDelete = [...selectedIds];
-    setInstitutions((prev) => prev.filter((c) => !selectedIds.includes(c.id)));
-    setSelectedIds([]);
-    for (const id of idsToDelete) {
-      try {
-        await apiService.deleteInstitution(id);
-      } catch (err) {
-        console.error(`Failed to delete institution ${id}:`, err);
-      }
-    }
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<{ id?: string; name?: string; isBulk?: boolean } | null>(null);
+  const [purgeUsersOnDelete, setPurgeUsersOnDelete] = useState<boolean>(true);
+
+  const handleDeleteSelected = () => {
+    if (selectedIds.length === 0) return;
+    setDeleteConfirmTarget({ isBulk: true });
+    setPurgeUsersOnDelete(true);
   };
 
-  const handleDeleteSingleInstitution = async (id: string) => {
-    setInstitutions((prev) => prev.filter((c) => c.id !== id));
-    setSelectedIds((prev) => prev.filter((item) => item !== id));
-    try {
-      await apiService.deleteInstitution(id);
-      toast.success('Institution removed successfully.', 'Institution Deleted');
-    } catch (err: any) {
-      console.error(`Failed to delete institution ${id}:`, err);
-      toast.error(err?.message || 'Failed to delete institution.', 'Delete Error');
+  const handleDeleteSingleInstitution = (id: string, name: string) => {
+    setDeleteConfirmTarget({ id, name });
+    setPurgeUsersOnDelete(true);
+  };
+
+  const handleExecuteConfirmedDelete = async () => {
+    if (!deleteConfirmTarget) return;
+    const purge = purgeUsersOnDelete;
+
+    if (deleteConfirmTarget.isBulk) {
+      const idsToDelete = [...selectedIds];
+      const successfulIds: string[] = [];
+      const failedIds: string[] = [];
+
+      for (const id of idsToDelete) {
+        try {
+          await apiService.deleteInstitution(id, { purgeUsers: purge });
+          successfulIds.push(id);
+        } catch (err) {
+          console.error(`Failed to delete institution ${id}:`, err);
+          failedIds.push(id);
+        }
+      }
+
+      if (successfulIds.length > 0) {
+        setInstitutions((prev) => prev.filter((c) => !successfulIds.includes(c.id)));
+        setSelectedIds((prev) => prev.filter((id) => !successfulIds.includes(id)));
+      }
+
+      setDeleteConfirmTarget(null);
+
+      if (failedIds.length === 0) {
+        toast.success(
+          `Selected institutions deleted${purge ? ' and associated users purged' : ''}.`,
+          'Institutions Deleted'
+        );
+      } else if (successfulIds.length > 0) {
+        toast.warning(
+          `Deleted ${successfulIds.length} institution${successfulIds.length > 1 ? 's' : ''}, but ${failedIds.length} failed.`,
+          'Partial Deletion'
+        );
+      } else {
+        toast.error('Failed to delete selected institutions.', 'Deletion Failed');
+      }
+    } else if (deleteConfirmTarget.id) {
+      const id = deleteConfirmTarget.id;
+      const name = deleteConfirmTarget.name || 'Institution';
+
+      try {
+        await apiService.deleteInstitution(id, { purgeUsers: purge });
+        setInstitutions((prev) => prev.filter((c) => c.id !== id));
+        setSelectedIds((prev) => prev.filter((item) => item !== id));
+        setDeleteConfirmTarget(null);
+        toast.success(
+          `"${name}" deleted successfully${purge ? ' and associated users purged' : ''}.`,
+          'Institution Deleted'
+        );
+      } catch (err: any) {
+        console.error(`Failed to delete institution ${id}:`, err);
+        setDeleteConfirmTarget(null);
+        toast.error(err?.message || 'Failed to delete institution.', 'Delete Error');
+      }
     }
   };
 
@@ -194,7 +249,6 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
               name: data.name || c.name,
               code: data.code || c.code,
               region: data.region || c.region,
-              tier: data.tier || c.tier,
               maxQuota: data.quota !== undefined ? data.quota : c.maxQuota,
               status: data.status === 'ACTIVE' ? 'Active' : data.status === 'SUSPENDED' ? 'Suspended' : c.status,
             }
@@ -208,7 +262,6 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
         email: data.email,
         phone: data.phone,
         address: data.region,
-        tier: data.tier,
         quota: data.quota,
         status: data.status,
       });
@@ -223,16 +276,20 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
     }
   };
 
-  // Tier Counters
+  // Status Counters
   const totalCount = institutions.length;
-  const enterpriseCount = institutions.filter((c) => c.tier === 'Enterprise Tier').length;
-  const proCount = institutions.filter((c) => c.tier === 'Pro Academic').length;
-  const standardCount = institutions.filter((c) => c.tier === 'Standard Academic').length;
+  const activeCount = institutions.filter((c) => c.status === 'Active').length;
+  const provisioningCount = institutions.filter((c) => c.status === 'Provisioning' || c.status === 'Trial').length;
+  const suspendedCount = institutions.filter((c) => c.status === 'Suspended').length;
 
   // Filtered Institutions List
   const filteredInstitutions = institutions.filter((col) => {
     if (selectedRegion !== 'ALL' && col.region !== selectedRegion) return false;
-    if (selectedTier !== 'ALL' && col.tier !== selectedTier) return false;
+    if (selectedStatus !== 'ALL') {
+      if (selectedStatus === 'Active' && col.status !== 'Active') return false;
+      if (selectedStatus === 'Provisioning' && col.status !== 'Provisioning' && col.status !== 'Trial') return false;
+      if (selectedStatus === 'Suspended' && col.status !== 'Suspended') return false;
+    }
     if (
       searchQuery &&
       !col.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -285,6 +342,29 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
         setInstitutions((prev) =>
           prev.map((c) => (c.id === tempId ? { ...c, id: created.id } : c))
         );
+
+        // If admin email was provided, dispatch an activation invite for the Institution Admin
+        if (data.adminEmail && data.adminEmail.trim()) {
+          try {
+            await apiService.bulkInviteUsers({
+              users: [
+                {
+                  name: `${data.name} Admin`,
+                  email: data.adminEmail.trim().toLowerCase(),
+                  role: 'INSTITUTION_ADMIN',
+                  institutionId: created.id,
+                },
+              ],
+            });
+            toast.success(`Invitation dispatched to Institution Administrator (${data.adminEmail}).`, 'Admin Invited');
+          } catch (invErr: any) {
+            console.warn('Initial admin invite dispatch error:', invErr);
+            toast.warning(
+              `Institution "${data.name}" was provisioned, but failed to send invitation to administrator (${data.adminEmail}): ${invErr?.message || 'Dispatch error'}. You can re-invite them from the institution details page.`,
+              'Admin Invitation Not Sent'
+            );
+          }
+        }
       }
       toast.success(`Successfully provisioned "${data.name}" (${data.code}) to platform database.`, 'Institution Created');
     } catch {
@@ -315,7 +395,6 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
             <th>Institution Name</th>
             <th>Domain</th>
             <th>Region</th>
-            <th>Subscription Tier</th>
             <th>Students Enrolled</th>
             <th>Max Quota</th>
             <th>Courses</th>
@@ -330,7 +409,6 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
               <td>${c.name}</td>
               <td>${c.domain}</td>
               <td>${c.region}</td>
-              <td>${c.tier}</td>
               <td align="right">${c.studentsCount}</td>
               <td align="right">${c.maxQuota}</td>
               <td align="right">${c.coursesCount}</td>
@@ -356,13 +434,12 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
   };
 
   const downloadInstitutionsCSV = () => {
-    const headers = ['Code', 'Institution Name', 'Domain', 'Region', 'Subscription Tier', 'Students Enrolled', 'Max Quota', 'Courses', 'Cohorts', 'Faculty', 'Status'];
+    const headers = ['Code', 'Institution Name', 'Domain', 'Region', 'Students Enrolled', 'Max Quota', 'Courses', 'Cohorts', 'Faculty', 'Status'];
     const rows = filteredInstitutions.map((c) => [
       `"${c.code}"`,
       `"${c.name}"`,
       `"${c.domain}"`,
       `"${c.region}"`,
-      `"${c.tier}"`,
       c.studentsCount,
       c.maxQuota,
       c.coursesCount,
@@ -575,12 +652,12 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
               overflow: 'hidden',
             }}
           >
-            {/* MUI Tabs for Organization Tiers */}
+            {/* MUI Tabs for Organization Status */}
             <Box sx={{ borderBottom: `1px solid ${borderColor}`, px: { xs: 2, md: 3 }, pt: 0.5, bgcolor: '#FFFFFF' }}>
               <Tabs
-                value={selectedTier}
+                value={selectedStatus}
                 onChange={(_, newValue) => {
-                  setSelectedTier(newValue);
+                  setSelectedStatus(newValue);
                   setPage(0);
                 }}
                 variant="scrollable"
@@ -599,16 +676,16 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
               >
                 {[
                   { id: 'ALL', label: 'All Organizations', count: totalCount },
-                  { id: 'Enterprise Tier', label: 'Enterprise Tier', count: enterpriseCount },
-                  { id: 'Pro Academic', label: 'Pro Academic', count: proCount },
-                  { id: 'Standard Academic', label: 'Standard Academic', count: standardCount },
+                  { id: 'Active', label: 'Active', count: activeCount },
+                  { id: 'Provisioning', label: 'Provisioning / Trial', count: provisioningCount },
+                  { id: 'Suspended', label: 'Suspended', count: suspendedCount },
                 ].map((tab) => (
                   <Tab
                     key={tab.id}
                     value={tab.id}
                     label={
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography sx={{ fontWeight: selectedTier === tab.id ? 700 : 600, fontSize: '0.84rem' }}>
+                        <Typography sx={{ fontWeight: selectedStatus === tab.id ? 700 : 600, fontSize: '0.84rem' }}>
                           {tab.label}
                         </Typography>
                         <Chip
@@ -619,10 +696,10 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                             fontSize: '0.68rem',
                             fontWeight: 700,
                             borderRadius: '9999px',
-                            bgcolor: selectedTier === tab.id ? '#EFF6FF' : '#F1F5F9',
-                            color: selectedTier === tab.id ? '#2563EB' : '#64748B',
+                            bgcolor: selectedStatus === tab.id ? '#EFF6FF' : '#F1F5F9',
+                            color: selectedStatus === tab.id ? '#2563EB' : '#64748B',
                             border: '1px solid',
-                            borderColor: selectedTier === tab.id ? '#BFDBFE' : '#E2E8F0',
+                            borderColor: selectedStatus === tab.id ? '#BFDBFE' : '#E2E8F0',
                             pointerEvents: 'none',
                           }}
                         />
@@ -634,7 +711,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                       py: 1,
                       px: 1.25,
                       textTransform: 'none',
-                      color: selectedTier === tab.id ? '#2563EB !important' : '#64748B',
+                      color: selectedStatus === tab.id ? '#2563EB !important' : '#64748B',
                       '&:hover': {
                         color: '#0F172A',
                       },
@@ -759,25 +836,22 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                         }}
                       />
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '28%', minWidth: 260 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '32%', minWidth: 260 }}>
                       INSTITUTION
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '18%', minWidth: 160 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '22%', minWidth: 180 }}>
                       REGION / LOCATION
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '14%', minWidth: 140 }}>
-                      SUBSCRIPTION TIER
-                    </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '16%', minWidth: 160 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '18%', minWidth: 160 }}>
                       SEAT UTILIZATION
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '14%', minWidth: 150 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '16%', minWidth: 150 }}>
                       COHORTS & FACULTY
                     </TableCell>
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '10%', minWidth: 90 }}>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, letterSpacing: '0.04em', width: '12%', minWidth: 90 }}>
                       STATUS
                     </TableCell>
-                    <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5, letterSpacing: '0.04em', width: '10%', minWidth: 110 }}>
+                    <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5, letterSpacing: '0.04em', width: '10%', minWidth: 100 }}>
                       ACTIONS
                     </TableCell>
                   </TableRow>
@@ -872,22 +946,6 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                           </Tooltip>
                         </TableCell>
                         <TableCell sx={{ py: 1.5 }}>
-                          <Chip
-                            label={institution.tier}
-                            size="small"
-                            sx={{
-                              height: 24,
-                              fontSize: '0.72rem',
-                              fontWeight: 700,
-                              bgcolor: '#EFF6FF',
-                              color: '#2563EB',
-                              borderRadius: '6px',
-                              border: '1px solid #DBEAFE',
-                              whiteSpace: 'nowrap',
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell sx={{ py: 1.5 }}>
                           <Box sx={{ minWidth: 130, maxWidth: 180 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                               <Typography noWrap sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A' }}>
@@ -958,7 +1016,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                             <Tooltip title="Delete Institution">
                               <IconButton
                                 size="small"
-                                onClick={() => handleDeleteSingleInstitution(institution.id)}
+                                onClick={() => handleDeleteSingleInstitution(institution.id, institution.name)}
                                 sx={{
                                   color: '#EF4444',
                                   width: 32,
@@ -1341,6 +1399,83 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
         onClose={() => setEditingInstitution(null)}
         onSubmit={handleUpdateInstitution}
       />
+
+      {/* 10. Delete Confirmation Dialog with Purge Option */}
+      <Dialog
+        open={Boolean(deleteConfirmTarget)}
+        onClose={() => setDeleteConfirmTarget(null)}
+        maxWidth="sm"
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: '16px',
+              p: 1,
+            },
+          },
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pb: 1 }}>
+          <Box sx={{ width: 40, height: 40, borderRadius: '10px', bgcolor: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444', flexShrink: 0 }}>
+            <DeleteForeverRoundedIcon sx={{ fontSize: 24 }} />
+          </Box>
+          <Box>
+            <Typography sx={{ fontWeight: 800, fontSize: '1.1rem', color: '#0F172A' }}>
+              {deleteConfirmTarget?.isBulk ? 'Delete Selected Institutions?' : `Delete "${deleteConfirmTarget?.name}"?`}
+            </Typography>
+            <Typography sx={{ fontSize: '0.8rem', color: '#64748B' }}>
+              This will permanently remove the organization tenant.
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Typography sx={{ fontSize: '0.88rem', color: '#334155', lineHeight: 1.5 }}>
+            Are you sure you want to delete <strong>{deleteConfirmTarget?.isBulk ? `${selectedIds.length} institutions` : deleteConfirmTarget?.name}</strong>? All associated batches, courses, and cohort mappings will be removed.
+          </Typography>
+
+          <Box sx={{ p: 1.75, bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={purgeUsersOnDelete}
+                  onChange={(e) => setPurgeUsersOnDelete(e.target.checked)}
+                  sx={{ color: '#94A3B8', '&.Mui-checked': { color: '#EF4444' } }}
+                />
+              }
+              label={
+                <Box>
+                  <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#0F172A' }}>
+                    Purge associated student & faculty accounts
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.76rem', color: '#64748B', lineHeight: 1.4 }}>
+                    Permanently delete all user profiles belonging exclusively to this institution. Uncheck if you want to keep them as independent accounts.
+                  </Typography>
+                </Box>
+              }
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+          <Button onClick={() => setDeleteConfirmTarget(null)} sx={{ color: '#64748B', fontWeight: 600, textTransform: 'none' }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleExecuteConfirmedDelete}
+            sx={{
+              bgcolor: '#EF4444',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              textTransform: 'none',
+              borderRadius: '10px',
+              px: 2.5,
+              '&:hover': { bgcolor: '#DC2626' },
+            }}
+          >
+            Delete Institution
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

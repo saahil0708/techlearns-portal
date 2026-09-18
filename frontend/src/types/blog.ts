@@ -3,7 +3,8 @@ export interface BlogAuthor {
   avatarBg: string;
   avatarImg?: string;
   role: string;
-  college: string;
+  institute?: string;
+  college?: string;
   handle: string;
   isVerified?: boolean;
 }
@@ -69,6 +70,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
       avatarBg: '#2563EB',
       avatarImg: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
       role: 'Final Year CSE',
+      institute: 'IIT Bombay',
       college: 'IIT Bombay',
       handle: '@aarav_arch',
       isVerified: true,
@@ -123,6 +125,7 @@ To solve this, we decoupled the ingestion pipeline from permanent storage:
       avatarBg: '#7C3AED',
       avatarImg: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80',
       role: 'Grandmaster (2420)',
+      institute: 'BITS Pilani',
       college: 'BITS Pilani',
       handle: '@priya_cp',
       isVerified: true,
@@ -155,6 +158,7 @@ By calculating subtree results in pass 1 and pushing "parent-contribution" resul
       avatarBg: '#059669',
       avatarImg: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&q=80',
       role: 'Platform Architect',
+      institute: 'IIIT Hyderabad',
       college: 'IIIT Hyderabad',
       handle: '@rohan_kernel',
       isVerified: true,
@@ -188,6 +192,7 @@ A malicious user submission might attempt fork bombs (\`:(){ :|:& };:\`), socket
       avatarBg: '#DC2626',
       avatarImg: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
       role: 'Incoming SDE II @ Google',
+      institute: 'DTU Delhi',
       college: 'DTU Delhi',
       handle: '@ananya_v',
       isVerified: true,

@@ -28,16 +28,8 @@ export default async function UsersDirectoryPage() {
           const collegeName = primaryMembership?.institution?.name || primaryMembership?.college?.name;
           const userInstitution = item.institution?.trim();
 
-          const rawInstType = item.institutionType === 'College' || item.institutionType === 'School' || item.institutionType === 'Independent'
-            ? item.institutionType
-            : 'Independent';
-
-          const institutionType: 'College' | 'School' | 'Independent' = collegeName
-            ? 'College'
-            : rawInstType === 'School'
-            ? 'School'
-            : userInstitution
-            ? rawInstType
+          const institutionType: 'Institute' | 'Independent' = (collegeName || userInstitution)
+            ? 'Institute'
             : 'Independent';
 
           const institutionName = collegeName || userInstitution || 'Independent';
