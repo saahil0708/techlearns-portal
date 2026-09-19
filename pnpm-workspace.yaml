@@ -1,9 +1,15 @@
+packages:
+  - 'server'
+  - 'client'
+
 allowBuilds:
   '@apollo/protobufjs': true
   '@prisma/client': true
   '@prisma/engines': true
   '@scarf/scarf': true
-  esbuild: true
-  msgpackr-extract: false
-  prisma: true
-  workerd: false
+  'bcryptjs': true
+  'esbuild': true
+  'msgpackr-extract': true
+  'prisma': true
+  'unrs-resolver': true
+  'workerd': false

@@ -4,13 +4,18 @@ services:
     container_name: codeplatform-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: codeplatform
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-codeplatform}
     ports:
       - '5433:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-codeplatform}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
@@ -20,11 +25,64 @@ services:
       - '6379:6379'
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    container_name: codeplatform-backend
+    restart: unless-stopped
+    ports:
+      - '8000:8000'
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 8000
+      DATABASE_URL: ${DOCKER_DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/codeplatform?schema=public}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET must be set}
+      TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY:?TOTP_ENCRYPTION_KEY must be set}
+      TOTP_PREVIOUS_ENCRYPTION_KEYS: ${TOTP_PREVIOUS_ENCRYPTION_KEYS:-}
+      JUDGE_QUEUE_NAME: ${JUDGE_QUEUE_NAME:-submission-queue}
+      JUDGE_IMAGE: ${JUDGE_IMAGE:-codeplatform-judge:latest}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    container_name: codeplatform-frontend
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      - backend
 
   judge:
     build:
       context: ./docker/judge
+      dockerfile: Dockerfile
     image: codeplatform-judge:latest
+    container_name: codeplatform-judge
     profiles: ['judge']
 
 volumes:

@@ -6,7 +6,7 @@
 
 ## Technology Stack
 
-### Backend (`/`)
+### Backend (`/server`)
 - **Framework**: NestJS (TypeScript, Node.js, ESM)
 - **Database & ORM**: PostgreSQL, Prisma ORM
 - **Cache & Message Queue**: Redis, BullMQ
@@ -15,12 +15,12 @@
 - **Testing**: Vitest, Supertest, Oxlint
 - **Package Manager**: pnpm
 
-### Frontend (`/frontend`)
+### Frontend (`/client`)
 - **Framework**: Next.js (App Router), React 19, TypeScript
 - **Rendering Strategy**: SSR-First (React Server Components by default; client components strictly for interactive state/browser APIs)
-- **Styling**: Tailwind CSS
-- **Icons & UI**: Lucide React
-- **HTTP Client**: Fetch API / Custom typed API client connected to backend (`http://localhost:3000`)
+- **Styling**: Tailwind CSS & MUI
+- **Icons & UI**: Lucide React & React Icons & MUI Icons
+- **HTTP Client**: Fetch API / Custom typed API client connected to backend (`http://localhost:8000`)
 - **Package Manager**: pnpm
 
 ## Architecture
