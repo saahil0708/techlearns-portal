@@ -13,7 +13,16 @@
 - **Polyglot Sandboxed Judge**: Docker-isolated execution environment (C#, Java, C++, Python, Rust, Go) with cgroups/seccomp security, sub-second test execution, and real-time result streaming.
 - **Monaco Code Editor & AI Workspace**: React 19 Monaco editor wrapper with custom themes, test runner console, and AI Copilot assistant.
 
-Detailed system architecture is documented in [`docs/SYSTEM_ARCHITECTURE.md`](./docs/SYSTEM_ARCHITECTURE.md).
+Detailed system documentation and engineering guidelines are available in [`docs/`](./docs/):
+
+| Document | Description |
+| :--- | :--- |
+| 📋 [**PRD.md**](./docs/PRD.md) | Product Requirements Document: Roles, features, KPIs, and roadmap |
+| 🏗️ [**ARCHITECTURE.md**](./docs/ARCHITECTURE.md) | System architecture, NestJS modules, Next.js RSC, Docker sandbox, and ER diagram |
+| 🎨 [**DESIGN.md**](./docs/DESIGN.md) | UI/UX design system, 1★–7★ star rating tokens, START256 matrix, and table standards |
+| 📜 [**RULES.md**](./docs/RULES.md) | Mandatory engineering invariants, security rules, and Rule #10 list table standard |
+| 📋 [**TASKS.md**](./docs/TASKS.md) | Engineering task breakdown, priorities (`P0`–`P3`), statuses, and acceptance criteria |
+| 🧠 [**MEMORY.md**](./docs/MEMORY.md) | Persistent project memory, ADR logs, domain glossary, and port mappings |
 
 ---
 
@@ -40,10 +49,13 @@ Detailed system architecture is documented in [`docs/SYSTEM_ARCHITECTURE.md`](./
 
 ```text
 ├── docker/                       # Sandbox containers for isolated code compilation/execution
-├── docs/                         # Architecture diagrams, specifications, and API docs
-│   ├── PROJECT_SPEC.md
-│   ├── FRONTEND_API_SPEC.md
-│   └── SYSTEM_ARCHITECTURE.md
+├── docs/                         # Engineering specifications, PRD, and architecture docs
+│   ├── ARCHITECTURE.md           # System architecture, C4 diagrams & ER model
+│   ├── DESIGN.md                 # UI/UX design system & CodeChef parity tokens
+│   ├── MEMORY.md                 # Project memory, ADR log & glossary
+│   ├── PRD.md                    # Product requirements & feature matrix
+│   ├── RULES.md                  # Mandatory engineering rules & standards
+│   └── TASKS.md                  # Feature roadmap & active sprint tasks
 ├── frontend/                     # Next.js 19 SSR Frontend application
 ├── prisma/                       # Database models and migration scripts
 │   ├── schema.prisma
