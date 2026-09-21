@@ -42,7 +42,12 @@ export class SubmissionsService {
       throw new NotFoundException(`Problem with ID ${input.problemId} not found`);
     }
 
-    if (problem.status && problem.status !== 'PUBLISHED') {
+    const isAuthorOrAdmin =
+      user?.id === problem.createdById ||
+      user?.globalRole === 'SUPER_ADMIN' ||
+      user?.globalRole === 'PLATFORM_ADMIN';
+
+    if (problem.status && problem.status !== 'PUBLISHED' && !isAuthorOrAdmin) {
       throw new ForbiddenException('You cannot submit to an unpublished problem');
     }
 

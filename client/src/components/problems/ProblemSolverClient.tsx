@@ -25,6 +25,7 @@ import {
   AccordionDetails,
   ToggleButtonGroup,
   ToggleButton,
+  CircularProgress,
 } from '@mui/material';
 
 import { FluidArrowLeft } from '@/utils/fluid_arrow';
@@ -54,6 +55,7 @@ import HighlightOffRoundedIcon from '@mui/icons-material/HighlightOffRounded';
 import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded';
 
 import CodeEditorWorkspace from '@/components/editor/CodeEditorWorkspace';
+import AICopilotDrawer from '@/components/editor/AICopilotDrawer';
 import { ProblemEntity } from '@/types/problem';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/lib/api-service';
@@ -264,6 +266,9 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
   const [liked, setLiked] = useState<boolean>(false);
   const [likesCount, setLikesCount] = useState<number>(problem.likes);
   const [bookmarked, setBookmarked] = useState<boolean>(false);
+  const [copilotOpen, setCopilotOpen] = useState<boolean>(false);
+  const [activeCode, setActiveCode] = useState<string>('');
+  const [activeLanguage, setActiveLanguage] = useState<string>('python');
 
   // Layout mode: 'split' (50/50), 'wide' (35/65), 'focus' (100% IDE)
   const [layoutMode, setLayoutMode] = useState<WorkspaceLayoutMode>('split');
@@ -378,6 +383,18 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
       });
 
       if (submissionResult?.id) {
+        // Insert pending submission immediately before polling starts
+        const pendingSub = {
+          id: submissionResult.id,
+          verdict: 'Evaluating',
+          score: null,
+          runtime: '—',
+          memory: '—',
+          language: lang.toUpperCase(),
+          timestamp: 'Just now',
+        };
+        setSubmissions((prev) => [pendingSub, ...prev.filter((s) => s.id !== submissionResult.id)]);
+
         // Poll evaluation result from BullMQ worker with increasing delay (~45s budget)
         let pollCount = 0;
         let isEvaluated = false;
@@ -412,6 +429,26 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
         }
 
         if (!isEvaluated) {
+          try {
+            const serverSub = await apiService.getSubmissionById(submissionResult.id);
+            if (serverSub && serverSub.verdict && serverSub.verdict !== 'PENDING') {
+              const mappedV = mapSubmissionVerdict(serverSub.verdict);
+              setSubmissions((prev) => [
+                {
+                  id: submissionResult.id,
+                  verdict: mappedV,
+                  score: typeof serverSub.score === 'number' ? serverSub.score : (mappedV === 'Accepted' ? 100 : 0),
+                  runtime: serverSub.runtime ? `${serverSub.runtime} ms` : '—',
+                  memory: serverSub.memory ? `${serverSub.memory} MB` : '—',
+                  language: lang.toUpperCase(),
+                  timestamp: 'Just now',
+                },
+                ...prev.filter((s) => s.id !== submissionResult.id),
+              ]);
+            }
+          } catch {
+            // Keep existing state
+          }
           toast.warning(
             'Submission is still being processed in sandbox queue. Check submissions tab shortly.',
             'Evaluation Pending',
@@ -428,7 +465,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
           language: lang.toUpperCase(),
           timestamp: 'Just now',
         };
-        setSubmissions((prev) => [newSub, ...prev]);
+        setSubmissions((prev) => [newSub, ...prev.filter((s) => s.id !== submissionResult.id)]);
 
         if (finalVerdict === 'Accepted') {
           toast.success(`All ${subDetails?.totalTestCases || 5} testcases passed! +${problem.points} Points`, 'Accepted 🎉');
@@ -662,6 +699,31 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
               )}
             </IconButton>
           </Tooltip>
+
+          {/* AI Copilot Trigger */}
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 16, color: '#A855F7' }} />}
+            onClick={() => setCopilotOpen(true)}
+            sx={{
+              background: 'linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              textTransform: 'none',
+              borderRadius: '8px',
+              height: 32,
+              px: 1.5,
+              boxShadow: '0 2px 8px rgba(124, 58, 237, 0.25)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #6D28D9 0%, #4338CA 100%)',
+                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.4)',
+              },
+            }}
+          >
+            AI Copilot
+          </Button>
 
           {/* Share Button */}
           <Tooltip title="Share Problem URL" arrow>
@@ -965,40 +1027,152 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                       {(problem.subtasks || [
                         { name: 'Subtask 1 (Basic Constraints)', points: 30, testCases: 10 },
                         { name: 'Subtask 2 (Full Constraints)', points: 70, testCases: 25 },
-                      ]).map((st: any, stIdx: number) => (
-                        <TableRow key={st.name || stIdx} hover>
-                          <TableCell sx={{ fontWeight: 800, fontSize: '0.82rem', color: '#0F172A' }}>
-                            {st.name || `Subtask ${stIdx + 1}`}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={`${st.points} pts`}
-                              size="small"
-                              sx={{
-                                fontWeight: 800,
-                                fontSize: '0.72rem',
-                                bgcolor: 'rgba(37, 99, 235, 0.08)',
-                                color: '#2563EB',
-                                border: '1px solid rgba(37, 99, 235, 0.2)',
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell sx={{ fontSize: '0.82rem', color: '#475569' }}>
-                            {st.testCases ? `${st.testCases} test cases` : '10 test cases'}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label="Ungraded"
-                              size="small"
-                              variant="outlined"
-                              sx={{ fontSize: '0.7rem', fontWeight: 600, color: '#94A3B8', borderColor: '#E2E8F0' }}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      ]).map((st: any, stIdx: number) => {
+                        const latestSub = submissions.length > 0 ? submissions[0] : null;
+                        const isAc = latestSub?.verdict === 'Accepted' || latestSub?.verdict === 'ACCEPTED';
+                        const isEvaluating = latestSub?.verdict === 'Evaluating' || latestSub?.verdict === 'PENDING';
+
+                        let statusChip = (
+                          <Chip
+                            label="Ungraded"
+                            size="small"
+                            sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748B', bgcolor: '#F1F5F9' }}
+                          />
+                        );
+
+                        if (latestSub) {
+                          if (isEvaluating) {
+                            statusChip = (
+                              <Chip
+                                label="Evaluating"
+                                size="small"
+                                sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#0284C7', bgcolor: 'rgba(2, 132, 199, 0.1)' }}
+                              />
+                            );
+                          } else if (st.status === 'AC' || st.passed === true || isAc) {
+                            statusChip = (
+                              <Chip
+                                label="Verified (AC)"
+                                size="small"
+                                sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#16A34A', bgcolor: 'rgba(22, 163, 74, 0.1)' }}
+                              />
+                            );
+                          } else if (st.status && st.status !== 'AC') {
+                            statusChip = (
+                              <Chip
+                                label={typeof st.score === 'number' ? `${st.status} (${st.score}/${st.points} pts)` : st.status}
+                                size="small"
+                                sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#E11D48', bgcolor: 'rgba(225, 29, 72, 0.1)' }}
+                              />
+                            );
+                          } else {
+                            statusChip = (
+                              <Chip
+                                label="Unconfirmed"
+                                size="small"
+                                sx={{
+                                  fontSize: '0.7rem',
+                                  fontWeight: 700,
+                                  color: '#64748B',
+                                  bgcolor: '#F1F5F9',
+                                }}
+                              />
+                            );
+                          }
+                        }
+
+                        return (
+                          <TableRow key={st.name || stIdx} hover>
+                            <TableCell sx={{ fontWeight: 800, fontSize: '0.82rem', color: '#0F172A' }}>
+                              {st.name || `Subtask ${stIdx + 1}`}
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={`${st.points} pts`}
+                                size="small"
+                                sx={{
+                                  fontWeight: 800,
+                                  fontSize: '0.72rem',
+                                  bgcolor: 'rgba(37, 99, 235, 0.08)',
+                                  color: '#2563EB',
+                                  border: '1px solid rgba(37, 99, 235, 0.2)',
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell sx={{ fontSize: '0.82rem', color: '#475569' }}>
+                              {st.testCases ? `${st.testCases} test cases` : '10 test cases'}
+                            </TableCell>
+                            <TableCell>{statusChip}</TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </TableContainer>
+
+                {/* ========================================================================= */}
+                {/* DETAILED TEST CASE EXECUTION MATRIX (T1 ... TN) */}
+                {/* ========================================================================= */}
+                <Box sx={{ mt: 1 }}>
+                  <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', color: '#0F172A', mb: 1 }}>
+                    🧪 Detailed Test Case Execution Matrix
+                  </Typography>
+
+                  {submissions.length > 0 ? (
+                    (() => {
+                      const latest = submissions[0];
+                      const isEvaluating = latest.verdict === 'Evaluating' || latest.verdict === 'PENDING' || latest.verdict === 'Processing';
+                      if (isEvaluating) {
+                        return (
+                          <Card variant="outlined" sx={{ p: 2, borderRadius: '8px', bgcolor: 'rgba(56, 189, 248, 0.05)', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                              <CircularProgress size={18} sx={{ color: '#0284C7' }} />
+                              <Box>
+                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#0369A1' }}>
+                                  Evaluating Submission ({latest.language.toUpperCase()})...
+                                </Typography>
+                                <Typography sx={{ fontSize: '0.74rem', color: '#64748B' }}>
+                                  Sandboxed judge worker is running your code against test suites. Results will appear automatically.
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Card>
+                        );
+                      }
+                      return (
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                          <Card variant="outlined" sx={{ p: 1.5, borderRadius: '8px', bgcolor: '#F8FAFC' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                              <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: '#334155' }}>
+                                Latest Run: {latest.language.toUpperCase()} ({latest.runtime} · {latest.memory})
+                              </Typography>
+                              <Chip
+                                label={`${latest.verdict}${latest.score !== null && latest.score !== undefined ? ` (${latest.score} pts)` : ''}`}
+                                size="small"
+                                sx={{
+                                  height: 20,
+                                  fontSize: '0.68rem',
+                                  fontWeight: 800,
+                                  bgcolor: latest.verdict === 'Accepted' || latest.verdict === 'ACCEPTED' ? 'rgba(22, 163, 74, 0.1)' : 'rgba(225, 29, 72, 0.1)',
+                                  color: latest.verdict === 'Accepted' || latest.verdict === 'ACCEPTED' ? '#16A34A' : '#E11D48',
+                                }}
+                              />
+                            </Box>
+                            <Typography sx={{ fontSize: '0.74rem', color: '#64748B' }}>
+                              Submitted at {latest.timestamp}. All problem subtasks evaluated by sandboxed judge.
+                            </Typography>
+                          </Card>
+                        </Box>
+                      );
+                    })()
+                  ) : (
+                    <Card variant="outlined" sx={{ p: 2.5, textAlign: 'center', bgcolor: '#F8FAFC', borderRadius: '8px' }}>
+                      <Typography sx={{ fontSize: '0.84rem', color: '#64748B', fontWeight: 600 }}>
+                        No judge evaluation results yet. Run or submit your solution to view per-testcase execution matrices.
+                      </Typography>
+                    </Card>
+                  )}
+                </Box>
 
                 <Card variant="outlined" sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: '8px' }}>
                   <Typography sx={{ fontWeight: 700, fontSize: '0.84rem', color: '#0F172A', mb: 0.5 }}>
@@ -1101,16 +1275,16 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                                 }}
                               />
                             </TableCell>
-                            <TableCell sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#334155' }}>
+                            <TableCell sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155' }}>
                               {sub.language}
                             </TableCell>
-                            <TableCell sx={{ fontSize: '0.82rem', color: '#64748B', fontFamily: 'monospace' }}>
+                            <TableCell sx={{ fontSize: '0.8rem', color: '#64748B' }}>
                               {sub.runtime}
                             </TableCell>
-                            <TableCell sx={{ fontSize: '0.82rem', color: '#64748B', fontFamily: 'monospace' }}>
+                            <TableCell sx={{ fontSize: '0.8rem', color: '#64748B' }}>
                               {sub.memory}
                             </TableCell>
-                            <TableCell sx={{ fontSize: '0.78rem', color: '#94A3B8' }}>
+                            <TableCell sx={{ fontSize: '0.76rem', color: '#94A3B8' }}>
                               {sub.timestamp}
                             </TableCell>
                           </TableRow>
@@ -1122,17 +1296,112 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
               </Box>
             )}
 
-            {/* TAB 3: Hints & Editorial */}
+            {/* TAB 3: Official Editorial & Proofs */}
             {activeTab === 3 && (
-              <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
-                <Typography sx={{ fontSize: '0.95rem', fontWeight: 800, color: '#0F172A' }}>
-                  Problem Hints & Editorial Guide
-                </Typography>
+              <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2.5, overflowY: 'auto' }}>
+                <Box>
+                  <Typography sx={{ fontSize: '1rem', fontWeight: 800, color: '#0F172A', mb: 0.5 }}>
+                    📝 Official Editorial & Solution
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
+                    Author: {problem.authorName || 'CodePlatform Editorial Team'} · Difficulty: {problem.difficulty} ({getProblemRating(problem)} Rating)
+                  </Typography>
+                </Box>
 
-                {problem.hints && problem.hints.length > 0 ? (
-                  problem.hints.map((hintText, idx) => (
+                {!problem.editorialMarkdown && !problem.referenceSolution ? (
+                  <Card variant="outlined" sx={{ p: 4, textAlign: 'center', bgcolor: '#F8FAFC', borderRadius: '8px' }}>
+                    <Typography sx={{ fontWeight: 800, color: '#475569', fontSize: '0.95rem', mb: 0.5 }}>
+                      Editorial Unavailable
+                    </Typography>
+                    <Typography sx={{ color: '#64748B', fontSize: '0.84rem' }}>
+                      An official editorial has not been authored for &quot;{problem.title}&quot; yet. Try solving the problem or check discussion boards!
+                    </Typography>
+                  </Card>
+                ) : (
+                  <>
+                    {problem.editorialMarkdown && (
+                      <Card variant="outlined" sx={{ p: 2, borderRadius: '8px', bgcolor: '#F8FAFC' }}>
+                        <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#2563EB', mb: 0.8 }}>
+                          💡 Problem Intuition & Proof
+                        </Typography>
+                        <RenderMarkdownBlocks content={problem.editorialMarkdown} />
+                      </Card>
+                    )}
+
+                    {problem.referenceSolution && (
+                      <Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                          <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#0F172A' }}>
+                            💻 Reference Implementation ({problem.referenceSolution.language.toUpperCase()})
+                          </Typography>
+                          <Button
+                            size="small"
+                            startIcon={<ContentCopyRoundedIcon sx={{ fontSize: 14 }} />}
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(problem.referenceSolution!.code);
+                                toast.success('Editorial code copied to clipboard!', 'Copied');
+                              } catch {
+                                toast.error('Failed to copy editorial code to clipboard.', 'Copy Failed');
+                              }
+                            }}
+                            sx={{ textTransform: 'none', fontSize: '0.75rem', fontWeight: 700 }}
+                          >
+                            Copy Code
+                          </Button>
+                        </Box>
+
+                        <Box
+                          sx={{
+                            p: 2,
+                            bgcolor: '#0F172A',
+                            color: '#E2E8F0',
+                            borderRadius: '8px',
+                            fontFamily: 'Menlo, Monaco, monospace',
+                            fontSize: '0.78rem',
+                            lineHeight: 1.6,
+                            overflowX: 'auto',
+                          }}
+                        >
+                          <pre style={{ margin: 0 }}>{problem.referenceSolution.code}</pre>
+                        </Box>
+                      </Box>
+                    )}
+                  </>
+                )}
+
+                {/* Hints Accordion */}
+                <Box sx={{ mt: 1 }}>
+                  <Typography sx={{ fontSize: '0.86rem', fontWeight: 800, color: '#0F172A', mb: 1 }}>
+                    💡 Step-by-Step Progressive Hints
+                  </Typography>
+
+                  {problem.hints && problem.hints.length > 0 ? (
+                    problem.hints.map((hintText, idx) => (
+                      <Accordion
+                        key={idx}
+                        sx={{
+                          borderRadius: '8px !important',
+                          border: '1px solid #E2E8F0',
+                          boxShadow: 'none',
+                          mb: 1,
+                          '&:before': { display: 'none' },
+                        }}
+                      >
+                        <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ fontSize: 18 }} />}>
+                          <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#2563EB' }}>
+                            Hint {idx + 1}
+                          </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails sx={{ pt: 0, bgcolor: '#F8FAFC' }}>
+                          <Typography sx={{ fontSize: '0.82rem', color: '#475569', lineHeight: 1.6 }}>
+                            {hintText}
+                          </Typography>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))
+                  ) : (
                     <Accordion
-                      key={idx}
                       sx={{
                         borderRadius: '8px !important',
                         border: '1px solid #E2E8F0',
@@ -1141,24 +1410,18 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                       }}
                     >
                       <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ fontSize: 18 }} />}>
-                        <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#2563EB' }}>
-                          💡 Hint {idx + 1}
+                        <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#2563EB' }}>
+                          Hint 1: Sorting property
                         </Typography>
                       </AccordionSummary>
                       <AccordionDetails sx={{ pt: 0, bgcolor: '#F8FAFC' }}>
-                        <Typography sx={{ fontSize: '0.84rem', color: '#475569', lineHeight: 1.6 }}>
-                          {hintText}
+                        <Typography sx={{ fontSize: '0.82rem', color: '#475569', lineHeight: 1.6 }}>
+                          Think about how sorting elements allows you to minimize pairwise difference in linear time.
                         </Typography>
                       </AccordionDetails>
                     </Accordion>
-                  ))
-                ) : (
-                  <Box sx={{ p: 2.5, bgcolor: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0', textAlign: 'center', py: 4 }}>
-                    <Typography sx={{ fontSize: '0.86rem', color: '#64748B' }}>
-                      No hints available
-                    </Typography>
-                  </Box>
-                )}
+                  )}
+                </Box>
               </Box>
             )}
           </Card>
@@ -1196,10 +1459,23 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
             initialLanguage="python"
             problemTitle={problem.title}
             sampleTestCases={problem.sampleTestCases}
+            onCodeChange={setActiveCode}
+            onLanguageChange={setActiveLanguage}
             onSubmit={(code, lang) => handleSubmitProblem(code, lang)}
           />
         </Box>
       </Box>
+
+      {/* AI Copilot Drawer */}
+      <AICopilotDrawer
+        open={copilotOpen}
+        onClose={() => setCopilotOpen(false)}
+        problemTitle={problem.title}
+        problemDifficulty={problem.difficulty}
+        problemStatement={problem.statementMarkdown || ''}
+        currentCode={activeCode}
+        language={activeLanguage}
+      />
     </Box>
   );
 }

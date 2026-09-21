@@ -65,6 +65,34 @@ timeline
 
 ---
 
+### 📌 ADR-007: Problem of the Day (POTD) Engine & Continuous Streak
+- **Context**: Daily student engagement requires consistent problem-solving incentives.
+- **Decision**: Implement a POTD scheduler providing a daily algorithmic challenge with streak multipliers, calendar badge tracking, and local date normalization.
+- **Consequences**: Boosts student daily active engagement without cluttering regular problem archive.
+
+---
+
+### 📌 ADR-008: Test Case Execution Telemetry Matrix ($T_1 \dots T_N$)
+- **Context**: Students and faculty need visibility into which specific test cases failed, timed out, or exceeded memory limits within subtasks.
+- **Decision**: Structure judge execution output into granular test case telemetry records displaying runtime (ms), memory (KB), and verdict chips per test case.
+- **Consequences**: High transparency for debugging without exposing hidden input/output contents.
+
+---
+
+### 📌 ADR-009: Inter-College & Batch-vs-Batch Rating Aggregation
+- **Context**: Institutions need benchmark rankings to measure performance against other colleges and between internal student cohorts.
+- **Decision**: Calculate institutional score based on the average rating of the top $10\%$ active competitive programmers, with department-level comparative solve metrics.
+- **Consequences**: Fair comparison regardless of college size.
+
+---
+
+### 📌 ADR-010: AST Token Similarity for Plagiarism Detection
+- **Context**: Cheating and solution copying undermine contest legitimacy and rating honesty.
+- **Decision**: Utilize AST tokenization and Winnowing fingerprinting to identify suspicious code similarities ($>85\%$) to flag candidate pairs for manual faculty review and administrative adjudication rather than immediate automated disqualification.
+- **Consequences**: Protects competitive integrity across inter-college and internal contests while avoiding false-positive automated penalties.
+
+---
+
 ## 📖 2. Domain Glossary & Technical Vocabulary
 
 | Term | Definition & System Role |

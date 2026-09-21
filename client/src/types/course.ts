@@ -5,7 +5,8 @@ export type CourseCategory =
   | 'System Design & Architecture'
   | 'Web & Full-Stack Development'
   | 'Competitive Programming'
-  | 'AI, ML & Data Science';
+  | 'AI, ML & Data Science'
+  | 'UI/UX & Product Design';
 
 export interface ModuleHighlight {
   title: string;
@@ -60,6 +61,11 @@ export interface CourseDirectoryEntity {
   whatYouWillLearn?: WhatYouWillLearnItem[];
   prerequisites?: string[];
   targetRoles?: string[];
+  rating?: number;
+  price?: string | number;
+  isFavorite?: boolean;
+  themeColor?: string;
+  themeGradient?: string;
   levels?: CourseLevelTrack[];
 }
 

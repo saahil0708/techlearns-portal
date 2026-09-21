@@ -106,12 +106,12 @@ graph TD
 
 ---
 
-### 📌 Rule 9: Continuous Verification & Quality Gates (R-09)
-- **Principle**: Never claim a feature, fix, or task is complete without automated verification.
+### 📌 Rule 9: Continuous Verification & Mandatory Testing (R-09)
+- **Principle**: Never claim a feature, fix, or task is complete without running automated tests and reporting results.
 - **Rules**:
-  - Run `oxlint` on both backend and frontend to catch code smell and lint violations.
-  - Run `pnpm test` (Vitest test suite) to ensure regression safety.
-  - Execute `pnpm exec tsc --noEmit` to verify type completeness.
+  - **Mandatory Test Run**: Always execute `pnpm test` (Vitest test suite) after completing code changes to verify zero regressions.
+  - **Type & Lint Gates**: Always run `pnpm lint` (`oxlint`) and `pnpm exec tsc --noEmit` across both client and server.
+  - **Explicit Reporting**: Explicitly include the testing command, number of test files passed, number of tests passed, and duration in the completion report.
 
 ---
 

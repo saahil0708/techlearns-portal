@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module.js';
 import { JUDGE_QUEUE_NAME } from './judge.constants.js';
 import { JudgeService } from './judge.service.js';
+import { PlagiarismService } from './plagiarism.service.js';
 import { JudgeProcessor } from './processors/judge.processor.js';
 
 @Module({
@@ -24,11 +25,14 @@ import { JudgeProcessor } from './processors/judge.processor.js';
   providers: [
     JudgeService,
     JudgeProcessor,
+    PlagiarismService,
   ],
   exports: [
     JudgeService,
+    PlagiarismService,
     BullModule,
   ],
 })
 export class JudgeModule {}
+
 

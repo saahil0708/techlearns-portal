@@ -78,18 +78,31 @@ pie title Task Distribution Across Phases
 | **TSK-CONT-02** | **CodeChef 1★ to 7★ Rating System Engine** | `P0` | `client/src/utils/codechefRating.ts` | ✅ Done | Star tier boundaries (<1400 to 2500+), unbounded 7★ tier, division mapping. |
 | **TSK-CONT-03** | **Division-Based Arena Filter Tabs** | `P1` | `client/src/components/contests/` | ✅ Done | Div 1, Div 2, Div 3, Div 4 tabs with automatic page reset on filter switch. |
 | **TSK-CONT-04** | **START256 Matrix Contest Leaderboard** | `P0` | `client/src/components/leaderboard/` | ✅ Done | Problem columns (`P1`, `P2...`), solve times (`0:14`), penalties (`+1`), pagination rank. |
+| **TSK-CONT-05** | **Inter-College & Batch Comparative Leaderboard** | `P1` | `server/src/contests/comparative-leaderboard.service.ts` | ✅ Done | College rankings by top 10% avg rating, and batch vs batch solve ratios. |
 | **TSK-USER-01** | **Student Profile Rating History Chart** | `P1` | `client/src/components/students/` | ✅ Done | Recharts interactive curve with `6M`, `1Y`, `ALL` date filters and peak rating. |
 | **TSK-USER-02** | **365-Day Submission Activity Heatmap** | `P1` | `client/src/components/students/` | ✅ Done | 52-week activity heatmap with streak calculations and local date parsing. |
+| **TSK-USER-03** | **Gamified Profile Badges & Achievements System** | `P1` | `client/src/components/students/` | 🟡 In Progress | Unlockable badges (Contest Crusader, Streak Master, Div 1 Contender). |
 
 ---
 
-### 🚀 Domain 6: Advanced Capabilities & Outbox Infrastructure
+### 🌟 Domain 6: CodeChef Parity Expansion & Daily Practice
 
 | Task ID | Task Title & Description | Priority | Component / Target Files | Status | Acceptance Criteria |
 | :---: | :--- | :---: | :--- | :---: | :--- |
-| **TSK-NOTIF-01**| **Multi-Channel Notification Dispatcher** | `P1` | `server/src/mail/` | 🟡 In Progress | Email (Nodemailer/ACS), SMS fallback, and transactional outbox worker. |
-| **TSK-AI-01** | **AI Coding Copilot Pane in Problem IDE** | `P2` | `client/src/components/editor/` | ⏳ Pending | Algorithmic hints, Big-O complexity analysis, and corner case generator. |
-| **TSK-E2E-01** | **Automated Multi-Tenant E2E Test Suite** | `P1` | `server/test/` | 🟡 In Progress | Vitest & Supertest suites validating end-to-end judge and auth pipelines. |
+| **TSK-POTD-01** | **Problem of the Day (POTD) & Streak Tracking** | `P1` | `server/src/problems/potd.service.ts` | ✅ Done | Daily curated problem, continuous streak multiplier, calendar badge sync. |
+| **TSK-PROB-05** | **Detailed Test Case Execution Matrix ($T_1..T_N$)**| `P0` | `client/src/components/problems/` | 🟡 In Progress | Subtask pills with per-test runtime (ms), memory (KB), and status badges. |
+| **TSK-PROB-06** | **Official Problem Editorials & $\LaTeX$ Proofs** | `P1` | `client/src/components/problems/` | 🟡 In Progress | Editorial tab with step-by-step mathematical proof and C++/Java/Python code. |
+| **TSK-PLAG-01** | **MOSS / Winnowing Plagiarism Detection Engine** | `P2` | `server/src/judge/plagiarism.service.ts` | ✅ Done | Post-contest AST token comparison flagging $>85\%$ match submissions. |
+
+---
+
+### 🚀 Domain 7: Advanced Capabilities & Outbox Infrastructure
+
+| Task ID | Task Title & Description | Priority | Component / Target Files | Status | Acceptance Criteria |
+| :---: | :--- | :---: | :--- | :---: | :--- |
+| **TSK-NOTIF-01**| **Multi-Channel Notification Dispatcher** | `P1` | `server/src/mail/outbox.service.ts` | ✅ Done | Email (Nodemailer/ACS), SMS fallback, and transactional outbox worker. |
+| **TSK-AI-01** | **AI Coding Copilot Pane in Problem IDE** | `P2` | `client/src/components/editor/AICopilotDrawer.tsx` | ✅ Done | Algorithmic hints, Big-O complexity analysis, and corner case generator. |
+| **TSK-E2E-01** | **Automated Multi-Tenant E2E Test Suite** | `P1` | `server/test/` | ✅ Done | Vitest & Supertest suites validating end-to-end judge and auth pipelines. |
 
 ---
 
@@ -102,5 +115,5 @@ pie title Task Distribution Across Phases
 - [x] **Sandboxed Polyglot Judge Worker** (Docker + BullMQ + cgroups)
 - [x] **CodeChef Feature Parity** (1★-7★ Ratings, Div 1-4, START256 Matrix Leaderboard)
 - [x] **Strict List Table Data Standard (Rule #10)** applied across all dataset views
-- [ ] **Multi-Channel Outbox Notification Worker** (In progress)
-- [ ] **AI Coding Assistant Wrapper** (Planned)
+- [x] **Multi-Channel Outbox Notification Worker** (`OutboxService` background processor)
+- [x] **AI Coding Assistant Wrapper** (`AICopilotDrawer` integrated into problem solver workspace)

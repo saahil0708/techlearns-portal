@@ -146,15 +146,15 @@ export default function StudentAppLayout({
           }}
         >
           {/* Top Bar Navigation */}
-          {!hideNavbar && (
-            <StudentTopBar
-              searchQuery={searchQuery}
-              onSearchChange={onSearchChange}
-              streakDays={streakDays}
-              contestRating={contestRating}
-              ratingTier={ratingTier}
-            />
-          )}
+            {!hideNavbar && (
+              <StudentTopBar
+                searchQuery={searchQuery}
+                onSearchChange={onSearchChange}
+                streakDays={streakDays !== undefined ? streakDays : (activeUser as any)?.streakDays}
+                contestRating={contestRating !== undefined ? contestRating : (activeUser as any)?.contestRating}
+                ratingTier={ratingTier !== undefined ? ratingTier : (activeUser as any)?.ratingTier}
+              />
+            )}
 
           {/* Page Content */}
           {children}

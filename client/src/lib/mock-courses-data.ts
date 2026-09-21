@@ -20,6 +20,8 @@ export const MOCK_COURSES: CourseDirectoryEntity[] = [
     tags: ['DSA', 'Trees', 'Dynamic Programming', 'Graphs'],
     description: 'Master advanced trees (AVL, Red-Black), Segment Trees, Fenwick Trees, Tarjan BFS/DFS, and dynamic programming state optimizations.',
     accentColor: '#2563EB',
+    rating: 4.9,
+    price: '$149',
     moduleHighlights: [
       { title: 'Segment Trees & Lazy Propagation', lessons: 5 },
       { title: 'Dynamic Programming on Trees & DAGs', lessons: 6 },
@@ -89,6 +91,8 @@ export const MOCK_COURSES: CourseDirectoryEntity[] = [
     tags: ['System Design', 'Kafka', 'Raft', 'Microservices', 'PostgreSQL'],
     description: 'Design fault-tolerant distributed systems, consensus algorithms (Paxos, Raft), database sharding, and high-throughput streaming pipelines.',
     accentColor: '#7C3AED',
+    rating: 4.8,
+    price: '$189',
     moduleHighlights: [
       { title: 'Consensus Protocols (Raft & Paxos)', lessons: 5 },
       { title: 'Distributed Caching & Sharding', lessons: 4 },
@@ -114,6 +118,8 @@ export const MOCK_COURSES: CourseDirectoryEntity[] = [
     tags: ['Math', 'Modular Arithmetic', 'Combinatorics', 'FFT', 'Matrix Exponentiation'],
     description: 'Fast I/O, Modular inverses, Chinese Remainder Theorem, Fermat Little Theorem, Fast Fourier Transform, and Matrix Multiplication algorithms.',
     accentColor: '#059669',
+    rating: 4.9,
+    price: '$129',
     moduleHighlights: [
       { title: 'Modular Arithmetic & Fermat Inverses', lessons: 4 },
       { title: 'Combinatorics & Lucas Theorem', lessons: 4 },
@@ -139,6 +145,8 @@ export const MOCK_COURSES: CourseDirectoryEntity[] = [
     tags: ['Next.js', 'NestJS', 'PostgreSQL', 'Prisma', 'Docker'],
     description: 'Production-ready full-stack applications with React Server Components, Tailwind CSS, NestJS microservices, Redis queues, and Docker sandboxes.',
     accentColor: '#0EA5E9',
+    rating: 4.7,
+    price: '$179',
     moduleHighlights: [
       { title: 'Next.js App Router & SSR Boundaries', lessons: 5 },
       { title: 'NestJS Microservices & BullMQ', lessons: 5 },
@@ -164,10 +172,44 @@ export const MOCK_COURSES: CourseDirectoryEntity[] = [
     tags: ['PyTorch', 'Transformers', 'Backpropagation', 'CNNs', 'LLMs'],
     description: 'Build neural networks from scratch, implement transformers, optimize backpropagation with PyTorch, and fine-tune open-source LLMs.',
     accentColor: '#D97706',
+    rating: 4.9,
+    price: '$199',
     moduleHighlights: [
       { title: 'Neural Networks & Gradient Descent from Scratch', lessons: 6 },
       { title: 'Transformer Architecture & Self-Attention', lessons: 6 },
       { title: 'Fine-Tuning & Model Deployment', lessons: 5 },
     ],
   },
+  {
+    id: 'course-6',
+    code: 'DES-101',
+    slug: 'ui-ux-design-essentials',
+    title: 'UI/UX Design Essentials',
+    category: 'UI/UX & Product Design',
+    level: 'Beginner',
+    instructorName: 'Elena Rostova',
+    instructorTitle: 'Design Lead & Product Strategist',
+    institutionName: 'DesignCraft Studio',
+    durationHours: 24,
+    modulesCount: 4,
+    lessonsCount: 16,
+    enrolledStudents: 3420,
+    completionRate: 91,
+    status: 'Published',
+    tags: ['UI/UX', 'Figma', 'Wireframing', 'Prototyping', 'Design Systems'],
+    description: 'Create modern, clean, and intuitive interfaces. From wireframes to prototypes — master the full design process with hands-on projects.',
+    accentColor: '#FF6B4A',
+    rating: 4.8,
+    price: '$199',
+    moduleHighlights: [
+      { title: 'Design Foundations & Typography', lessons: 4 },
+      { title: 'Wireframing & Information Architecture', lessons: 4 },
+      { title: 'High-Fidelity UI & Interactive Prototyping', lessons: 4 },
+      { title: 'Design System & Component Libraries', lessons: 4 },
+    ],
+  },
 ];
+
+export function getCourseBySlug(slug: string): CourseDirectoryEntity | undefined {
+  return MOCK_COURSES.find((c) => c.slug === slug || c.id === slug || c.code.toLowerCase() === slug.toLowerCase());
+}

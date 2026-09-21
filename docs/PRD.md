@@ -184,6 +184,12 @@ flowchart TD
   - `7★ Grandmaster` ($2500 - \infty$)
 - **🏁 START256 Matrix Leaderboard**: Problem columns (`P1`, `P2`, `P3...`), solve time indicators (`0:14`), penalty counts (`+1`, `+2`), and pagination offset ranking formulas.
 - **📈 Interactive Rating Curves & 365-Day Activity Heatmaps**: Real-time student portfolio showcasing contest trajectories and daily problem-solving streaks.
+- **📅 Problem of the Day (POTD) & Streaks**: Deterministic global daily algorithmic challenge with streak multiplier ($1.0\times - 1.6\times$), coin rewards, and calendar badge stamps.
+- **🧪 Detailed Test Case Execution Matrix**: Per-test case execution breakdown ($T_1, T_2, \dots, T_{20}$) displaying granular status, execution time (ms), and memory (KB).
+- **📝 Official Problem Editorials & $\LaTeX$ Proofs**: Multi-approach solutions ($O(N^2) \rightarrow O(N \log N)$), mathematical formulas, and official reference code in C++, Java, and Python.
+- **🏛️ Inter-College & Batch-vs-Batch Comparison**: College rankings based on average rating of top 10% active competitive programmers, and faculty comparative analytics between student batches.
+- **🎖️ Gamified Profile Badges & Achievements**: Unlockable achievements (e.g., *Contest Crusader*, *Streak Master*, *Night Owl*, *Div 1 Crusher*).
+- **🛡️ Automated Plagiarism & Code Similarity Detection**: AST token-based similarity analysis across contest submissions to flag cheating and protect leaderboard integrity.
 
 ---
 

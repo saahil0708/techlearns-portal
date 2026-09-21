@@ -192,8 +192,8 @@ export default function ContestsArenaClient() {
     URL.revokeObjectURL(url);
   };
 
-  const liveCount = MOCK_CONTESTS.filter((c) => c.status === 'LIVE').length;
-  const upcomingCount = MOCK_CONTESTS.filter((c) => c.status === 'UPCOMING').length;
+  const liveCount = contests.filter((c) => c.status === 'LIVE').length;
+  const upcomingCount = contests.filter((c) => c.status === 'UPCOMING').length;
 
   return (
     <StudentAppLayout streakDays={48} contestRating={2380} ratingTier="Master">
@@ -603,7 +603,7 @@ export default function ContestsArenaClient() {
                                 size="small"
                                 variant="contained"
                                 startIcon={<PlayArrowRoundedIcon sx={{ fontSize: 16 }} />}
-                                onClick={() => router.push('/problems')}
+                                onClick={() => router.push(`/contests/${contest.id}`)}
                                 sx={{
                                   borderRadius: '6px',
                                   textTransform: 'none',

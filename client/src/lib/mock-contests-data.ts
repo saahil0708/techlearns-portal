@@ -159,3 +159,9 @@ export function getMockContests(): ContestEntity[] {
 }
 
 export const MOCK_CONTESTS: ContestEntity[] = getMockContests();
+
+export function getContestByIdOrSlug(idOrSlug: string): ContestEntity | undefined {
+  return MOCK_CONTESTS.find(
+    (c) => c.id === idOrSlug || c.slug === idOrSlug || c.code.toLowerCase() === idOrSlug.toLowerCase()
+  );
+}

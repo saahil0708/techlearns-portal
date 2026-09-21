@@ -53,12 +53,14 @@ flowchart TB
         AuthM["🔐 Auth & Passkey Module"]
         InstM["🏛️ Institutions & Batches Module"]
         CourseM["📚 Courses & Progress Module"]
-        ProbM["🧩 Problems & TestCases Module"]
+        ProbM["🧩 Problems, Editorials & Test Cases Module"]
         SubmM["📤 Submissions & Ingestion Module"]
         ContM["🏆 Contests & Arena Module"]
+        PotdM["📅 POTD & Daily Streak Module"]
+        PlagM["🛡️ Plagiarism & Code Similarity Engine"]
         JudgeWorker["⚙️ BullMQ Judge Worker Pool"]
         
-        AuthM --- InstM --- CourseM --- ProbM --- SubmM --- ContM
+        AuthM --- InstM --- CourseM --- ProbM --- SubmM --- ContM --- PotdM --- PlagM
     end
 
     subgraph DATA_TIER ["🗄️ Persistence & Messaging Tier"]

@@ -26,8 +26,6 @@ import { UpdateModuleDto } from './dto/update-module.dto.js';
 import { UpdateProgressDto } from './dto/update-progress.dto.js';
 
 @ApiTags('courses')
-@ApiBearerAuth('JWT-auth')
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('courses')
 export class CoursesController {
   constructor(private coursesService: CoursesService) {}
@@ -37,7 +35,9 @@ export class CoursesController {
   // ----------------------------------------------------
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new course curriculum' })
   @ApiResponse({ status: 201, description: 'Course created successfully' })
   async create(
@@ -53,7 +53,7 @@ export class CoursesController {
   @ApiQuery({ name: 'collegeId', required: false })
   @ApiQuery({ name: 'status', enum: CourseStatus, required: false })
   async findAll(
-    @CurrentUser() user: CurrentUserPayload,
+    @CurrentUser() user?: CurrentUserPayload,
     @Query('institutionId') institutionId?: string,
     @Query('collegeId') collegeId?: string,
     @Query('status') status?: CourseStatus,
@@ -62,6 +62,8 @@ export class CoursesController {
   }
 
   @Get('enrolled')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'List all courses enrolled by the current user' })
   async getEnrolled(@CurrentUser() user: CurrentUserPayload) {
     return this.coursesService.getEnrolledCourses(user.id);
@@ -71,13 +73,15 @@ export class CoursesController {
   @ApiOperation({ summary: 'Get course curriculum details, modules, and lessons' })
   async findOne(
     @Param('id') id: string,
-    @CurrentUser() user: CurrentUserPayload,
+    @CurrentUser() user?: CurrentUserPayload,
   ) {
     return this.coursesService.findCourseById(id, user);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update course details' })
   async update(
     @Param('id') id: string,
@@ -88,7 +92,9 @@ export class CoursesController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete a course' })
   async delete(
     @Param('id') id: string,
@@ -102,7 +108,9 @@ export class CoursesController {
   // ----------------------------------------------------
 
   @Post(':id/modules')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Add a new module to a course' })
   async createModule(
     @Param('id') courseId: string,
@@ -113,7 +121,9 @@ export class CoursesController {
   }
 
   @Patch('modules/:moduleId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update module details' })
   async updateModule(
     @Param('moduleId') moduleId: string,
@@ -124,7 +134,9 @@ export class CoursesController {
   }
 
   @Delete('modules/:moduleId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete a module from a course' })
   async deleteModule(
     @Param('moduleId') moduleId: string,
@@ -138,7 +150,9 @@ export class CoursesController {
   // ----------------------------------------------------
 
   @Post('modules/:moduleId/lessons')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Add a lesson to a module' })
   async createLesson(
     @Param('moduleId') moduleId: string,
@@ -149,6 +163,8 @@ export class CoursesController {
   }
 
   @Get('lessons/:lessonId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Read lesson content and user completion state' })
   async getLesson(
     @Param('lessonId') lessonId: string,
@@ -158,7 +174,9 @@ export class CoursesController {
   }
 
   @Patch('lessons/:lessonId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update lesson content or title' })
   async updateLesson(
     @Param('lessonId') lessonId: string,
@@ -169,7 +187,9 @@ export class CoursesController {
   }
 
   @Delete('lessons/:lessonId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete a lesson' })
   async deleteLesson(
     @Param('lessonId') lessonId: string,
@@ -183,6 +203,8 @@ export class CoursesController {
   // ----------------------------------------------------
 
   @Post(':id/enroll')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Enroll current user into a course' })
   async enroll(
     @Param('id') courseId: string,
@@ -192,6 +214,8 @@ export class CoursesController {
   }
 
   @Post('lessons/:lessonId/progress')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Mark lesson as completed or in-progress' })
   async updateProgress(
     @Param('lessonId') lessonId: string,
@@ -202,6 +226,8 @@ export class CoursesController {
   }
 
   @Get(':id/progress')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get current user overall completion progress in a course' })
   async getCourseProgress(
     @Param('id') courseId: string,

@@ -170,7 +170,8 @@ export const apiService = {
       credentials: 'include',
     });
     if (!res.ok) throw new Error('Failed to fetch user profile');
-    return res.json();
+    const json = await res.json();
+    return json.data ?? json;
   },
 
   async changePassword(currentPassword: string, newPassword: string) {
@@ -185,7 +186,8 @@ export const apiService = {
       const err = await res.json().catch(() => ({ message: 'Failed to change password' }));
       throw new Error(err.message || 'Failed to change password');
     }
-    return res.json();
+    const json = await res.json();
+    return json.data ?? json;
   },
 
   async generate2FASecret() {
@@ -196,7 +198,8 @@ export const apiService = {
       credentials: 'include',
     });
     if (!res.ok) throw new Error('Failed to generate 2FA secret');
-    return res.json();
+    const json = await res.json();
+    return json.data ?? json;
   },
 
   async enable2FA(secret: string, token: string, recoveryCodes: string[]) {
@@ -208,7 +211,8 @@ export const apiService = {
       body: JSON.stringify({ secret, token, recoveryCodes }),
     });
     if (!res.ok) throw new Error('Failed to enable 2FA');
-    return res.json();
+    const json = await res.json();
+    return json.data ?? json;
   },
 
   async disable2FA(token: string) {
@@ -220,7 +224,8 @@ export const apiService = {
       body: JSON.stringify({ token }),
     });
     if (!res.ok) throw new Error('Failed to disable 2FA');
-    return res.json();
+    const json = await res.json();
+    return json.data ?? json;
   },
 
   async getPasskeys() {
@@ -231,7 +236,8 @@ export const apiService = {
       credentials: 'include',
     });
     if (!res.ok) return [];
-    return res.json();
+    const json = await res.json();
+    return json.data ?? json;
   },
 
   async deletePasskey(id: string) {
@@ -1155,4 +1161,95 @@ export const apiService = {
     }
     return true;
   },
+
+  // ----------------------------------------------------
+  // DAILY PROBLEM (POTD) & STREAKS
+  // ----------------------------------------------------
+  async getTodayPotd() {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/problems/potd/today`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Failed to fetch Problem of the Day');
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async getPotdHistory(days = 14) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/problems/potd/history?days=${days}`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Failed to fetch POTD history');
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async getUserStreak() {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/problems/user/streak`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Failed to fetch user streak');
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  // ----------------------------------------------------
+  // COMPARATIVE LEADERBOARDS & PLAGIARISM (REST)
+  // ----------------------------------------------------
+  async getCollegeLeaderboard() {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/contests/leaderboard/colleges`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Failed to fetch college leaderboard');
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async getBatchLeaderboard(institutionId: string) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/contests/leaderboard/batches/${institutionId}`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Failed to fetch batch leaderboard');
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async getContestMatrixLeaderboard(contestId: string) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/contests/${contestId}/matrix-leaderboard`, {
+      method: 'GET',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Failed to fetch contest matrix leaderboard');
+    const json = await res.json();
+    return json.data ?? json;
+  },
+
+  async runPlagiarismCheck(contestId: string, threshold = 80) {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/contests/${contestId}/plagiarism-check?threshold=${threshold}`, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Failed to run plagiarism check');
+    const json = await res.json();
+    return json.data ?? json;
+  },
 };
+

@@ -231,7 +231,7 @@ export class JudgeService {
       '--memory-swap', `${Math.max(16, memoryLimitMb)}m`,
       '--cpus', '1', '--pids-limit', '64', '--cap-drop', 'ALL',
       '--security-opt', 'no-new-privileges', '--user', '1000:1000',
-      '-v', `${sourcePath}:/workspace/${language === ProgrammingLanguage.JAVA ? 'Solution.java' : `solution.${extensions[language]}`}:ro`,
+      '-v', `${sourcePath.replace(/\\/g, '/')}:/workspace/${language === ProgrammingLanguage.JAVA ? 'Solution.java' : `solution.${extensions[language]}`}:ro`,
       image, language,
     ];
 

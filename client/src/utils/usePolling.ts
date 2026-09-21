@@ -44,7 +44,10 @@ export function usePolling<T>(
 
   const isFetchingRef = useRef(false);
   const fetcherRef = useRef(fetcher);
-  fetcherRef.current = fetcher;
+
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+  }, [fetcher]);
 
   const execute = useCallback(async () => {
     // Avoid concurrent overlapping requests or running when offline
@@ -58,7 +61,7 @@ export function usePolling<T>(
       setData(result);
       setError(null);
       setLastUpdated(new Date());
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       isFetchingRef.current = false;
@@ -69,8 +72,10 @@ export function usePolling<T>(
   useEffect(() => {
     if (!enabled) return;
 
-    // Initial fetch on mount
-    execute();
+    // Initial fetch on mount (deferred to next tick to avoid synchronous setState in effect)
+    const initialTimer = setTimeout(() => {
+      void execute();
+    }, 0);
 
     let timer: NodeJS.Timeout | null = null;
 
@@ -111,6 +116,7 @@ export function usePolling<T>(
     }
 
     return () => {
+      clearTimeout(initialTimer);
       if (timer) clearInterval(timer);
       if (pauseOnHidden || revalidateOnFocus) {
         document.removeEventListener('visibilitychange', handleVisibilityChange);

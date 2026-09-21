@@ -30,6 +30,9 @@ import {
   DialogActions,
   IconButton,
   Divider,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
 } from '@mui/material';
 
 // Icons
@@ -43,8 +46,11 @@ import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
+import ViewListRoundedIcon from '@mui/icons-material/ViewListRounded';
 
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
+import CourseGridCard from './CourseGridCard';
 import { MOCK_COURSES } from '@/lib/mock-courses-data';
 import { CourseDirectoryEntity, CourseLevel, CourseCategory } from '@/types/course';
 import { useToast } from '@/context/ToastContext';
@@ -65,6 +71,7 @@ export default function CourseCatalogClient() {
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [levelFilter, setLevelFilter] = useState<string>('ALL');
   const [activeTab, setActiveTab] = useState<string>('ENROLLED');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -109,14 +116,14 @@ export default function CourseCatalogClient() {
               moduleHighlights: Array.isArray(c.moduleHighlights) && c.moduleHighlights.length > 0
                 ? c.moduleHighlights
                 : (Array.isArray(c.modules) && c.modules.length > 0
-                    ? c.modules.map((m: any) => ({
-                        title: m.title || 'Course Module',
-                        lessons: m.lessons?.length || 4,
-                      }))
-                    : [
-                        { title: 'Core Foundations', lessons: 6 },
-                        { title: 'Applied Practice', lessons: 6 },
-                      ]),
+                  ? c.modules.map((m: any) => ({
+                    title: m.title || 'Course Module',
+                    lessons: m.lessons?.length || 4,
+                  }))
+                  : [
+                    { title: 'Core Foundations', lessons: 6 },
+                    { title: 'Applied Practice', lessons: 6 },
+                  ]),
             };
           });
           setCourses(mapped);
@@ -372,207 +379,299 @@ export default function CourseCatalogClient() {
                   ))}
                 </Select>
               </FormControl>
+
+              {/* View Mode Toggle: Grid & List */}
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(_, val) => {
+                  if (val) setViewMode(val);
+                }}
+                size="small"
+                aria-label="view mode toggle"
+                sx={{
+                  bgcolor: '#F1F5F9',
+                  borderRadius: '10px',
+                  p: '3px',
+                  border: '1px solid #E2E8F0',
+                  '& .MuiToggleButton-root': {
+                    border: 'none',
+                    borderRadius: '8px !important',
+                    px: 1.5,
+                    py: 0.6,
+                    color: '#64748B',
+                    fontWeight: 700,
+                    fontSize: '0.82rem',
+                    textTransform: 'none',
+                    gap: 0.6,
+                    transition: 'all 0.18s ease',
+                    '&.Mui-selected': {
+                      bgcolor: '#FFFFFF',
+                      color: '#2563EB',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      fontWeight: 800,
+                    },
+                    '&:hover': {
+                      bgcolor: 'rgba(255,255,255,0.8)',
+                    },
+                  },
+                }}
+              >
+                <ToggleButton value="grid" aria-label="grid view">
+                  <GridViewRoundedIcon sx={{ fontSize: 17 }} />
+                  <span>Grid</span>
+                </ToggleButton>
+                <ToggleButton value="list" aria-label="list view">
+                  <ViewListRoundedIcon sx={{ fontSize: 17 }} />
+                  <span>List</span>
+                </ToggleButton>
+              </ToggleButtonGroup>
             </Box>
           </Box>
 
-          {/* Table Element */}
-          <TableContainer>
-            <Table sx={{ minWidth: 850 }}>
-              <TableHead sx={{ bgcolor: '#F8FAFC' }}>
-                <TableRow>
-                  <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5, width: 100 }}>
-                    Code
-                  </TableCell>
-                  <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5 }}>
-                    Course Title & Category
-                  </TableCell>
-                  <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5 }}>
-                    Instructor & Institution
-                  </TableCell>
-                  <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5, width: 110 }}>
-                    Level
-                  </TableCell>
-                  <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5, width: 120 }}>
-                    Syllabus
-                  </TableCell>
-                  <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5, width: 150 }}>
-                    Your Progress
-                  </TableCell>
-                  <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5, width: 140 }}>
-                    Action
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredCourses.length === 0 ? (
+          {/* ========================================================================= */}
+          {/* GRID VIEW RENDERING (Matches 2nd Image Aesthetics) */}
+          {/* ========================================================================= */}
+          {viewMode === 'grid' ? (
+            <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, bgcolor: '#F8FAFC' }}>
+              {filteredCourses.length === 0 ? (
+                <Box sx={{ py: 10, textAlign: 'center', color: '#94A3B8' }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', color: '#64748B', mb: 0.5 }}>
+                    No courses found
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.85rem', color: '#94A3B8' }}>
+                    Try changing your search query or adjusting the filters.
+                  </Typography>
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      sm: 'repeat(auto-fill, minmax(260px, 1fr))',
+                      md: 'repeat(auto-fill, minmax(280px, 1fr))',
+                      lg: 'repeat(auto-fill, minmax(285px, 320px))',
+                    },
+                    gap: 3.5,
+                  }}
+                >
+                  {filteredCourses
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((course) => (
+                      <CourseGridCard
+                        key={course.id}
+                        course={course}
+                        progress={enrolledMap[course.id]}
+                        onInspect={(c) => setSelectedCourse(c)}
+                        onEnroll={(id, title) => handleEnrollCourse(id, title)}
+                      />
+                    ))}
+                </Box>
+              )}
+            </Box>
+          ) : (
+            /* ========================================================================= */
+            /* LIST TABLE RENDERING */
+            /* ========================================================================= */
+            <TableContainer>
+              <Table sx={{ minWidth: 850 }}>
+                <TableHead sx={{ bgcolor: '#F8FAFC' }}>
                   <TableRow>
-                    <TableCell colSpan={7} align="center" sx={{ py: 6, color: '#94A3B8' }}>
-                      <Typography sx={{ fontWeight: 600, fontSize: '0.92rem' }}>
-                        No courses found matching the criteria.
-                      </Typography>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5, width: 100 }}>
+                      Code
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5 }}>
+                      Course Title & Category
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5 }}>
+                      Instructor & Institution
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5, width: 110 }}>
+                      Level
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5, width: 120 }}>
+                      Syllabus
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5, width: 150 }}>
+                      Your Progress
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', py: 1.5, width: 140 }}>
+                      Action
                     </TableCell>
                   </TableRow>
-                ) : (
-                  filteredCourses
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((course) => {
-                      const progress = enrolledMap[course.id];
-                      const isEnrolled = progress !== undefined;
-                      const levelStyle = LEVEL_COLORS[course.level] || LEVEL_COLORS.Intermediate;
+                </TableHead>
+                <TableBody>
+                  {filteredCourses.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center" sx={{ py: 6, color: '#94A3B8' }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.92rem' }}>
+                          No courses found matching the criteria.
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredCourses
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((course) => {
+                        const progress = enrolledMap[course.id];
+                        const isEnrolled = progress !== undefined;
+                        const levelStyle = LEVEL_COLORS[course.level] || LEVEL_COLORS.Intermediate;
 
-                      return (
-                        <TableRow
-                          key={course.id}
-                          hover
-                          sx={{
-                            '&:hover': { bgcolor: 'rgba(248, 250, 252, 0.8)' },
-                            transition: 'background-color 0.15s ease',
-                          }}
-                        >
-                          {/* Code */}
-                          <TableCell sx={{ py: 1.8, fontFamily: 'monospace', fontWeight: 700, color: '#64748B', fontSize: '0.82rem' }}>
-                            {course.code}
-                          </TableCell>
+                        return (
+                          <TableRow
+                            key={course.id}
+                            hover
+                            sx={{
+                              '&:hover': { bgcolor: 'rgba(248, 250, 252, 0.8)' },
+                              transition: 'background-color 0.15s ease',
+                            }}
+                          >
+                            {/* Code */}
+                            <TableCell sx={{ py: 1.8, fontFamily: 'monospace', fontWeight: 700, color: '#64748B', fontSize: '0.82rem' }}>
+                              {course.code}
+                            </TableCell>
 
-                          {/* Title & Category */}
-                          <TableCell sx={{ py: 1.8 }}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                              <Typography sx={{ fontWeight: 800, fontSize: '0.9rem', color: '#0F172A' }}>
-                                {course.title}
-                              </Typography>
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                <Typography sx={{ fontSize: '0.76rem', color: '#2563EB', fontWeight: 600 }}>
-                                  {course.category}
+                            {/* Title & Category */}
+                            <TableCell sx={{ py: 1.8 }}>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                <Typography sx={{ fontWeight: 800, fontSize: '0.9rem', color: '#0F172A' }}>
+                                  {course.title}
                                 </Typography>
-                                <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8' }}>•</Typography>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-                                  <AccessTimeRoundedIcon sx={{ fontSize: 13, color: '#94A3B8' }} />
-                                  <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>
-                                    {course.durationHours} hrs
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                  <Typography sx={{ fontSize: '0.76rem', color: '#2563EB', fontWeight: 600 }}>
+                                    {course.category}
                                   </Typography>
+                                  <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8' }}>•</Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                                    <AccessTimeRoundedIcon sx={{ fontSize: 13, color: '#94A3B8' }} />
+                                    <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>
+                                      {course.durationHours} hrs
+                                    </Typography>
+                                  </Box>
                                 </Box>
                               </Box>
-                            </Box>
-                          </TableCell>
+                            </TableCell>
 
-                          {/* Instructor */}
-                          <TableCell sx={{ py: 1.8 }}>
-                            <Typography sx={{ fontWeight: 700, fontSize: '0.84rem', color: '#334155' }}>
-                              {course.instructorName}
-                            </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <SchoolOutlinedIcon sx={{ fontSize: 14, color: '#94A3B8' }} />
-                              <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>
-                                {course.institutionName}
+                            {/* Instructor */}
+                            <TableCell sx={{ py: 1.8 }}>
+                              <Typography sx={{ fontWeight: 700, fontSize: '0.84rem', color: '#334155' }}>
+                                {course.instructorName}
                               </Typography>
-                            </Box>
-                          </TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                <SchoolOutlinedIcon sx={{ fontSize: 14, color: '#94A3B8' }} />
+                                <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>
+                                  {course.institutionName}
+                                </Typography>
+                              </Box>
+                            </TableCell>
 
-                          {/* Level */}
-                          <TableCell sx={{ py: 1.8 }}>
-                            <Chip
-                              label={course.level}
-                              size="small"
-                              sx={{
-                                bgcolor: levelStyle.bg,
-                                color: levelStyle.text,
-                                fontWeight: 800,
-                                fontSize: '0.72rem',
-                                height: 22,
-                              }}
-                            />
-                          </TableCell>
+                            {/* Level */}
+                            <TableCell sx={{ py: 1.8 }}>
+                              <Chip
+                                label={course.level}
+                                size="small"
+                                sx={{
+                                  bgcolor: levelStyle.bg,
+                                  color: levelStyle.text,
+                                  fontWeight: 800,
+                                  fontSize: '0.72rem',
+                                  height: 22,
+                                }}
+                              />
+                            </TableCell>
 
-                          {/* Syllabus Count */}
-                          <TableCell sx={{ py: 1.8 }}>
-                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>
-                              {course.modulesCount} Modules
-                            </Typography>
-                            <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8' }}>
-                              {course.lessonsCount} lessons
-                            </Typography>
-                          </TableCell>
+                            {/* Syllabus Count */}
+                            <TableCell sx={{ py: 1.8 }}>
+                              <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>
+                                {course.modulesCount} Modules
+                              </Typography>
+                              <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8' }}>
+                                {course.lessonsCount} lessons
+                              </Typography>
+                            </TableCell>
 
-                          {/* Progress */}
-                          <TableCell sx={{ py: 1.8 }}>
-                            {isEnrolled ? (
-                              <Box sx={{ minWidth: 120 }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                  <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: progress === 100 ? '#16A34A' : '#2563EB' }}>
-                                    {progress}%
-                                  </Typography>
-                                  <Typography sx={{ fontSize: '0.7rem', color: '#94A3B8' }}>
-                                    {Math.round((progress / 100) * course.lessonsCount)}/{course.lessonsCount}
-                                  </Typography>
-                                </Box>
-                                <LinearProgress
-                                  variant="determinate"
-                                  value={progress}
-                                  sx={{
-                                    height: 6,
-                                    borderRadius: 3,
-                                    bgcolor: '#F1F5F9',
-                                    '& .MuiLinearProgress-bar': {
-                                      background: progress === 100 ? '#16A34A' : 'linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%)',
+                            {/* Progress */}
+                            <TableCell sx={{ py: 1.8 }}>
+                              {isEnrolled ? (
+                                <Box sx={{ minWidth: 120 }}>
+                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                    <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: progress === 100 ? '#16A34A' : '#2563EB' }}>
+                                      {progress}%
+                                    </Typography>
+                                    <Typography sx={{ fontSize: '0.7rem', color: '#94A3B8' }}>
+                                      {Math.round((progress / 100) * course.lessonsCount)}/{course.lessonsCount}
+                                    </Typography>
+                                  </Box>
+                                  <LinearProgress
+                                    variant="determinate"
+                                    value={progress}
+                                    sx={{
+                                      height: 6,
                                       borderRadius: 3,
-                                    },
-                                  }}
-                                />
-                              </Box>
-                            ) : (
-                              <Typography sx={{ fontSize: '0.78rem', color: '#94A3B8', fontStyle: 'italic' }}>
-                                Not Enrolled
-                              </Typography>
-                            )}
-                          </TableCell>
+                                      bgcolor: '#F1F5F9',
+                                      '& .MuiLinearProgress-bar': {
+                                        background: progress === 100 ? '#16A34A' : 'linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%)',
+                                        borderRadius: 3,
+                                      },
+                                    }}
+                                  />
+                                </Box>
+                              ) : (
+                                <Typography sx={{ fontSize: '0.78rem', color: '#94A3B8', fontStyle: 'italic' }}>
+                                  Not Enrolled
+                                </Typography>
+                              )}
+                            </TableCell>
 
-                          {/* Action Button */}
-                          <TableCell align="right" sx={{ py: 1.8 }}>
-                            {isEnrolled ? (
-                              <Button
-                                size="small"
-                                variant="contained"
-                                startIcon={<PlayArrowRoundedIcon sx={{ fontSize: 16 }} />}
-                                onClick={() => setSelectedCourse(course)}
-                                sx={{
-                                  borderRadius: '6px',
-                                  textTransform: 'none',
-                                  fontWeight: 700,
-                                  fontSize: '0.78rem',
-                                  px: 1.8,
-                                  py: 0.5,
-                                  bgcolor: progress === 100 ? '#0F172A' : '#2563EB',
-                                  '&:hover': { bgcolor: progress === 100 ? '#1E293B' : '#1D4ED8' },
-                                }}
-                              >
-                                {progress === 100 ? 'Review' : 'Resume'}
-                              </Button>
-                            ) : (
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                onClick={() => handleEnrollCourse(course.id, course.title)}
-                                sx={{
-                                  borderRadius: '6px',
-                                  textTransform: 'none',
-                                  fontWeight: 700,
-                                  fontSize: '0.78rem',
-                                  borderColor: '#2563EB',
-                                  color: '#2563EB',
-                                  '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.08)' },
-                                }}
-                              >
-                                Enroll Free
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                            {/* Action Button */}
+                            <TableCell align="right" sx={{ py: 1.8 }}>
+                              {isEnrolled ? (
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  startIcon={<PlayArrowRoundedIcon sx={{ fontSize: 16 }} />}
+                                  onClick={() => setSelectedCourse(course)}
+                                  sx={{
+                                    borderRadius: '6px',
+                                    textTransform: 'none',
+                                    fontWeight: 700,
+                                    fontSize: '0.78rem',
+                                    px: 1.8,
+                                    py: 0.5,
+                                    bgcolor: progress === 100 ? '#0F172A' : '#2563EB',
+                                    '&:hover': { bgcolor: progress === 100 ? '#1E293B' : '#1D4ED8' },
+                                  }}
+                                >
+                                  {progress === 100 ? 'Review' : 'Resume'}
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="small"
+                                  variant="outlined"
+                                  onClick={() => handleEnrollCourse(course.id, course.title)}
+                                  sx={{
+                                    borderRadius: '6px',
+                                    textTransform: 'none',
+                                    fontWeight: 700,
+                                    fontSize: '0.78rem',
+                                    borderColor: '#2563EB',
+                                    color: '#2563EB',
+                                    '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.08)' },
+                                  }}
+                                >
+                                  Enroll Free
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
 
           {/* Pagination */}
           <TablePagination
@@ -672,8 +771,9 @@ export default function CourseCatalogClient() {
                     size="small"
                     variant="outlined"
                     onClick={() => {
+                      const targetSlug = selectedCourse.slug || selectedCourse.id;
                       setSelectedCourse(null);
-                      router.push('/practice');
+                      router.push(`/courses/${targetSlug}`);
                     }}
                     sx={{
                       borderRadius: '6px',
@@ -695,8 +795,9 @@ export default function CourseCatalogClient() {
               <Button
                 variant="contained"
                 onClick={() => {
+                  const targetSlug = selectedCourse.slug || selectedCourse.id;
                   setSelectedCourse(null);
-                  router.push('/problems');
+                  router.push(`/courses/${targetSlug}`);
                 }}
                 sx={{
                   borderRadius: '6px',
@@ -705,7 +806,7 @@ export default function CourseCatalogClient() {
                   bgcolor: '#2563EB',
                 }}
               >
-                Go to Practice Arena
+                Enter Learning Workspace
               </Button>
             </DialogActions>
           </Dialog>

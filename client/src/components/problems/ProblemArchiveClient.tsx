@@ -78,17 +78,23 @@ export default function ProblemArchiveClient() {
   // Solved and Attempted problem trackers from live submissions API
   const [solvedIds, setSolvedIds] = useState<Set<string>>(new Set());
   const [attemptedIds, setAttemptedIds] = useState<Set<string>>(new Set());
+  const [potdData, setPotdData] = useState<any>(null);
 
-  // Fetch live problems and user submissions from backend GraphQL API
+  // Fetch live problems, POTD and user submissions from backend API
   useEffect(() => {
     let isMounted = true;
     async function loadData() {
       setIsLoading(true);
       try {
-        const [res, subsRes] = await Promise.all([
+        const [res, subsRes, potd] = await Promise.all([
           apiService.getProblems({ limit: 100 }),
           apiService.getSubmissions({ limit: 100 }).catch(() => null),
+          apiService.getTodayPotd().catch(() => null),
         ]);
+
+        if (potd && isMounted) {
+          setPotdData(potd);
+        }
 
         if (subsRes?.items && isMounted) {
           const solved = new Set<string>();
@@ -322,6 +328,177 @@ export default function ProblemArchiveClient() {
             </Button>
           </Box>
         </Box>
+
+        {/* ========================================================================= */}
+        {/* PROBLEM OF THE DAY (POTD) HERO BANNER */}
+        {/* ========================================================================= */}
+        <Card
+          sx={{
+            p: { xs: 2.5, sm: 3 },
+            borderRadius: '16px',
+            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0F2A66 100%)',
+            border: '1px solid rgba(56, 189, 248, 0.25)',
+            boxShadow: '0 8px 32px rgba(15, 23, 42, 0.2)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Subtle background glowing accent */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: -40,
+              right: -40,
+              width: 200,
+              height: 200,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }}
+          />
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              justifyContent: 'space-between',
+              alignItems: { xs: 'flex-start', md: 'center' },
+              gap: 2.5,
+              position: 'relative',
+              zIndex: 1,
+            }}
+          >
+            {/* Left: POTD Badge & Title */}
+            <Box sx={{ maxWidth: { xs: '100%', md: '65%' } }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
+                <Chip
+                  icon={<WhatshotRoundedIcon sx={{ fontSize: 16, color: '#F59E0B !important' }} />}
+                  label="Problem of the Day"
+                  size="small"
+                  sx={{
+                    bgcolor: 'rgba(245, 158, 11, 0.15)',
+                    color: '#FBBF24',
+                    fontWeight: 800,
+                    fontSize: '0.75rem',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                  }}
+                />
+                <Chip
+                  label={
+                    potdData?.userStreak?.currentStreak
+                      ? `🔥 ${potdData.userStreak.currentStreak}-Day Active Streak (${potdData.userStreak.streakMultiplier}x)`
+                      : '🔥 Daily Challenge'
+                  }
+                  size="small"
+                  sx={{
+                    bgcolor: 'rgba(239, 68, 68, 0.15)',
+                    color: '#F87171',
+                    fontWeight: 700,
+                    fontSize: '0.72rem',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                  }}
+                />
+                {potdData?.isSolved && (
+                  <Chip
+                    label="✓ Solved Today"
+                    size="small"
+                    sx={{
+                      bgcolor: 'rgba(16, 185, 129, 0.15)',
+                      color: '#34D399',
+                      fontWeight: 700,
+                      fontSize: '0.72rem',
+                      border: '1px solid rgba(16, 185, 129, 0.3)',
+                    }}
+                  />
+                )}
+                <Typography sx={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 600 }}>
+                  Date: {potdData?.date || new Date().toISOString().slice(0, 10)}
+                </Typography>
+              </Box>
+
+              <Typography
+                variant="h6"
+                sx={{
+                  color: '#FFFFFF',
+                  fontWeight: 800,
+                  fontSize: { xs: '1.05rem', sm: '1.2rem' },
+                  letterSpacing: '-0.01em',
+                  mb: 0.5,
+                }}
+              >
+                {potdData?.problem?.title || problems[0]?.title || 'Chef and String Minimization'}
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  color: '#CBD5E1',
+                  fontSize: '0.84rem',
+                  lineHeight: 1.5,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }}
+              >
+                {(
+                  potdData?.problem?.statement ||
+                  potdData?.problem?.statementMarkdown ||
+                  problems[0]?.statementMarkdown
+                )?.slice(0, 140) ||
+                  'Given a binary string S of length N, determine the minimum operations to sort the string.'}
+                ...
+              </Typography>
+            </Box>
+
+            {/* Right: Points, Rating Tier & CTA */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                flexWrap: 'wrap',
+                width: { xs: '100%', md: 'auto' },
+                justifyContent: { xs: 'flex-start', md: 'flex-end' },
+              }}
+            >
+              <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                <Typography sx={{ color: '#38BDF8', fontWeight: 800, fontSize: '0.95rem' }}>
+                  +{potdData?.bonusPoints || 50} Contest Pts
+                </Typography>
+                <Typography sx={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 600 }}>
+                  Rating: {getProblemRating(potdData?.problem || problems[0] || ({} as any))}
+                </Typography>
+              </Box>
+
+              <Button
+                variant="contained"
+                size="medium"
+                startIcon={<PlayArrowRoundedIcon />}
+                onClick={() => {
+                  const targetSlug = potdData?.problem?.slug || problems[0]?.slug;
+                  if (targetSlug) {
+                    router.push(`/problems/${targetSlug}`);
+                  }
+                }}
+                sx={{
+                  bgcolor: '#38BDF8',
+                  color: '#0F172A',
+                  fontWeight: 800,
+                  fontSize: '0.86rem',
+                  textTransform: 'none',
+                  borderRadius: '10px',
+                  px: 2.5,
+                  py: 1,
+                  boxShadow: '0 4px 14px rgba(56, 189, 248, 0.4)',
+                  '&:hover': { bgcolor: '#0EA5E9', boxShadow: '0 6px 20px rgba(56, 189, 248, 0.6)' },
+                }}
+              >
+                Solve Challenge 🚀
+              </Button>
+            </Box>
+          </Box>
+        </Card>
 
         {/* ========================================================================= */}
         {/* SOLVE PROGRESS STATS BAR */}

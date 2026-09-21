@@ -169,25 +169,94 @@ A reusable badge component rendering the user's star tier, division qualificatio
 
 ### 4.4 Problem Solving Workspace Layout
 
-```mermaid
-flowchart TD
-    Header["🧭 Problem Metadata Header (Code, 1★-7★ Rating, Time/Memory Limits)"]
-    
-    subgraph SplitPane ["Split-Pane Workspace"]
-        subgraph LeftPane ["Left Pane: Description & Subtasks"]
-            Tabs1["[Problem Statement]  [Subtasks & Points]  [Submissions History]  [Editorial & AI]"]
-            Statement["Problem Statement Markdown\n• Input / Output Specifications\n• Constraints (1 ≤ N ≤ 10^5)\n• Sample Test Cases & Explanations"]
-        end
-        
-        subgraph RightPane ["Right Pane: Monaco Editor & Console"]
-            Toolbar["Language Selector (C++, Java, Python, JS, C)  |  Theme Selector  |  Reset Code"]
-            Editor["💻 Monaco Code Editor Instance (VS Code Keybindings, IntelliSense)"]
-            Runner["🎛️ Test Runner Console\n[Run Custom Test] [Submit Solution]"]
-            Output["Terminal Output & Subtask Verdict Badges (e.g. 100/100 pts)"]
-        end
-    end
-    
-    Header --> SplitPane
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  [← Back to Problemset]  [PROB-042] Two Sum · Medium  [1420 2★]            [AI Copilot] [Bookmark] [Share]│
+├────────────────────────────────────────────────────┬───────────────────────────────────────────────────┤
+│  [Description] [Subtasks] [Submissions] [Editorial]│  Language: [ Python 3.12 ▾ ]  ⚙️  [Reset] [Expand] │
+├────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+│  ### Problem Statement                             │  1  def solve(nums: list[int], target: int):      │
+│  Given an array of integers nums and an integer    │  2      lookup = {}                               │
+│  target, return indices of the two numbers such    │  3      for idx, num in enumerate(nums):          │
+│  that they add up to target.                       │  4          diff = target - num                   │
+│                                                    │  5          if diff in lookup:                    │
+│  ### Constraints                                   │  6              return [lookup[diff], idx]        │
+│  • 2 <= nums.length <= 10^5                        │  7          lookup[num] = idx                     │
+│  • -10^9 <= nums[i] <= 10^9                        │                                                   │
+├────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+│  Sample Test Cases: [Case 1] [Case 2] [+]          │  Console: [Sample Output] [Raw Stdout]            │
+│  Input: [2, 7, 11, 15], target = 9                 │  Verdict: [ ACCEPTED ✅ (0.04s, 14.2MB) ]         │
+│  Output: [0, 1]                                    │  [ Run Sample Cases ▶ ]   [ Submit Solution 🚀 ]  │
+└────────────────────────────────────────────────────┴───────────────────────────────────────────────────┘
+```
+
+- **Split Workspace Options**:
+  - **Split View (Default)**: 45% Statement / Subtasks Tabs, 55% Monaco Code Editor & Test Console.
+  - **Wide IDE Mode**: 30% Statement, 70% Code Editor.
+  - **Focus Mode**: 100% Code Editor with a "Show Problem Description" button to restore split mode.
+  - **AI Copilot Drawer**: Right-anchored sliding assistant drawer with step-by-step hints and complexity estimation.
+
+---
+
+### 4.5 Problem of the Day (POTD) & Daily Streak Banner
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│  📅 PROBLEM OF THE DAY — 20 SEP 2026                 🔥 14-Day Streak  |  🪙 450 Coins │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  ⚡ [START256_B] Subarray XOR Minimum Equality      [Rating: 1420 2★]  [Solve +50 pts] │
+│  "Given an array A of N integers, find the count of non-empty subarrays whose XOR..."  │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  [⏮ Yesterday: Solved ✅]        [Solve Today's Challenge 🚀]        [View Calendar 🗓️] │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 4.6 Detailed Test Case Execution Matrix ($T_1 \dots T_N$)
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│  🧪 Execution Verdict: ACCEPTED (100/100 pts)                       ⏱️ 0.18s  |  💾 14.2MB│
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  Subtask 1: [1 ≤ N ≤ 100] (30 pts) — PASSED ✅                                         │
+│  [ T1: 0.02s 4MB ✅ ] [ T2: 0.03s 4MB ✅ ] [ T3: 0.02s 5MB ✅ ] [ T4: 0.04s 4MB ✅ ]   │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  Subtask 2: [1 ≤ N ≤ 10^5] (70 pts) — PASSED ✅                                        │
+│  [ T5: 0.12s 14MB ✅] [ T6: 0.15s 14MB ✅] [ T7: 0.18s 14MB ✅] [ T8: 0.14s 13MB ✅]  │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 4.7 Inter-College Standing Table (Rule #10 Standard)
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│  🏛️ National Inter-College Rankings                          [Search Institution...]   │
+├──────┬──────────────────────────────────┬──────────────┬──────────────┬────────────────┤
+│ Rank │ Institution Name                 │ Active Coders│ Top 10% Avg  │ Total Solves   │
+├──────┼──────────────────────────────────┼──────────────┼──────────────┼────────────────┤
+│  1   │ Indian Institute of Technology D.│ 1,420        │ 2410 (6★)    │ 48,920         │
+│  2   │ BITS Pilani                      │ 1,180        │ 2320 (6★)    │ 39,410         │
+│  3   │ National Institute of Technology │ 950          │ 2180 (5★)    │ 31,200         │
+├──────┴──────────────────────────────────┴──────────────┴──────────────┴────────────────┤
+│  Showing 1–10 of 180 Institutions                                   Page 1 of 18       │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 4.8 Profile Achievements & Badges
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│  🎖️ Competitive Achievements & Badges                                                  │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│  [ 🏆 Contest Crusader (25+ Contests) ]   [ 🔥 Streak Master (30-day POTD) ]          │
+│  [ ⚡ Speed Demon (AC in < 5 mins)   ]   [ 🌟 Div 1 Contender (Rating ≥ 2000) ]       │
+│  [ 🦉 Night Owl (AC at 2:00 AM)      ]   [ 🎯 Flawless AC (100% First Attempt) ]      │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
