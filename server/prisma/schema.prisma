@@ -439,6 +439,7 @@ model Problem {
   testCases       TestCase[]
   submissions     Submission[]
   contestProblems ContestProblem[]
+  potdAssignments ProblemOfTheDay[]
 
   @@index([difficulty, status])
   @@index([institutionId, status])
@@ -564,3 +565,18 @@ model LeaderboardEntry {
   @@index([userId])
   @@map("leaderboard_entries")
 }
+
+model ProblemOfTheDay {
+  id          String   @id @default(uuid())
+  date        String   @unique // Strict YYYY-MM-DD format
+  problemId   String
+  bonusPoints Int      @default(50)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([date])
+  @@map("problem_of_the_day")
+}
+

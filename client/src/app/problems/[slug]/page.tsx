@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { getProblemBySlug } from '@/lib/mock-problems-data';
 import { apiService } from '@/lib/api-service';
 import { ProblemDifficulty, ProblemEntity } from '@/types/problem';
 import ProblemSolverClient from '@/components/problems/ProblemSolverClient';
@@ -75,10 +74,10 @@ async function resolveProblem(slug: string): Promise<ProblemEntity | null> {
         sampleTestCases: extractSampleTestCases(liveProblem),
       };
     }
-  } catch {
-    // fallback to mock
+  } catch (err) {
+    console.warn('Failed to resolve problem by slug/id:', err);
   }
-  return getProblemBySlug(slug) || null;
+  return null;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

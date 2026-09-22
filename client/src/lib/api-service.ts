@@ -48,7 +48,7 @@ import {
   USERS_QUERY,
 } from './graphql';
 import type { BlogPost } from '@/types/blog';
-import { INITIAL_BLOG_POSTS } from '@/types/blog';
+import { apiClient } from './axios';
 
 // In-flight request deduplication map
 const inFlightRequests = new Map<string, Promise<any>>();
@@ -72,182 +72,73 @@ async function deduplicatedQuery<T>(query: string, variables: Record<string, any
   return promise;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-async function getAuthHeaders(explicitToken?: string): Promise<Record<string, string>> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  let token = explicitToken;
-
-  if (!token && typeof window !== 'undefined') {
-    const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]*)/);
-    if (match) {
-      token = decodeURIComponent(match[1]);
-    }
-  }
-
-  if (!token && typeof window === 'undefined') {
-    try {
-      const { cookies } = await import('next/headers');
-      const cookieStore = await cookies();
-      token = cookieStore.get('access_token')?.value;
-    } catch {
-      // Called outside request context
-    }
-  }
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  return headers;
-}
-
-function getClientAuthHeaders(): Record<string, string> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (typeof document !== 'undefined') {
-    const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]*)/);
-    if (match) {
-      headers['Authorization'] = `Bearer ${decodeURIComponent(match[1])}`;
-    }
-  }
-  return headers;
-}
-
 /**
- * Strongly-typed Platform API Service connecting Frontend to NestJS GraphQL Backend & REST Endpoints
+ * Strongly-typed Platform API Service connecting Frontend to NestJS GraphQL Backend & REST Endpoints via Axios
  */
 export const apiService = {
   // ----------------------------------------------------
   // AUTHENTICATION & IDENTITY (REST)
   // ----------------------------------------------------
   async login(email: string, password: string) {
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email, password }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: 'Invalid credentials' }));
-      throw new Error(err.message || 'Login failed');
-    }
-    return res.json();
+    const res = await apiClient.post('/auth/login', { email, password });
+    return res.data;
   },
 
   async register(name: string, email: string, password: string) {
-    const res = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ name, email, password }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: 'Registration failed' }));
-      throw new Error(err.message || 'Registration failed');
-    }
-    return res.json();
+    const res = await apiClient.post('/auth/register', { name, email, password });
+    return res.data;
   },
 
   async acceptInvitation(token: string, password: string) {
-    const res = await fetch(`${API_URL}/auth/accept-invitation`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ token, password }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: 'Unable to activate invitation' }));
-      throw new Error(err.message || 'Unable to activate invitation');
-    }
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.post('/auth/accept-invitation', { token, password });
+    return res.data?.data ?? res.data;
   },
 
   async getProfile() {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/auth/me`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Failed to fetch user profile');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.get('/auth/me');
+    return res.data?.data ?? res.data;
+  },
+
+  async getMe() {
+    return this.getProfile();
   },
 
   async changePassword(currentPassword: string, newPassword: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/auth/change-password`, {
-      method: 'POST',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify({ currentPassword, newPassword }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: 'Failed to change password' }));
-      throw new Error(err.message || 'Failed to change password');
-    }
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.post('/auth/change-password', { currentPassword, newPassword });
+    return res.data?.data ?? res.data;
   },
 
   async generate2FASecret() {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/auth/2fa/generate`, {
-      method: 'POST',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Failed to generate 2FA secret');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.post('/auth/2fa/generate');
+    return res.data?.data ?? res.data;
   },
 
   async enable2FA(secret: string, token: string, recoveryCodes: string[]) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/auth/2fa/enable`, {
-      method: 'POST',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify({ secret, token, recoveryCodes }),
-    });
-    if (!res.ok) throw new Error('Failed to enable 2FA');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.post('/auth/2fa/enable', { secret, token, recoveryCodes });
+    return res.data?.data ?? res.data;
   },
 
   async disable2FA(token: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/auth/2fa/disable`, {
-      method: 'POST',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify({ token }),
-    });
-    if (!res.ok) throw new Error('Failed to disable 2FA');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.post('/auth/2fa/disable', { token });
+    return res.data?.data ?? res.data;
   },
 
   async getPasskeys() {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/auth/passkeys`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) return [];
-    const json = await res.json();
-    return json.data ?? json;
+    try {
+      const res = await apiClient.get('/auth/passkeys');
+      return res.data?.data ?? res.data ?? [];
+    } catch {
+      return [];
+    }
   },
 
   async deletePasskey(id: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/auth/passkeys/${id}`, {
-      method: 'DELETE',
-      headers,
-      credentials: 'include',
-    });
-    return res.ok;
+    try {
+      await apiClient.delete(`/auth/passkeys/${id}`);
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   // ----------------------------------------------------
@@ -262,21 +153,13 @@ export const apiService = {
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
 
     try {
-      const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/institutions${queryString}`, {
-        method: 'GET',
-        headers,
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const items = json.data ?? json;
-        if (Array.isArray(items)) {
-          return { items, meta: { totalItems: items.length } };
-        }
-        if (items && Array.isArray(items.items)) {
-          return items;
-        }
+      const res = await apiClient.get(`/institutions${queryString}`);
+      const items = res.data?.data ?? res.data;
+      if (Array.isArray(items)) {
+        return { items, meta: { totalItems: items.length } };
+      }
+      if (items && Array.isArray(items.items)) {
+        return items;
       }
     } catch {
       // Fallback to GraphQL
@@ -305,16 +188,8 @@ export const apiService = {
 
   async getInstitutionById(id: string) {
     try {
-      const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/institutions/${id}`, {
-        method: 'GET',
-        headers,
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const json = await res.json();
-        return json.data ?? json;
-      }
+      const res = await apiClient.get(`/institutions/${id}`);
+      return res.data?.data ?? res.data;
     } catch {
       // Fallback to GraphQL
     }
@@ -341,29 +216,13 @@ export const apiService = {
     quota?: number;
     status?: string;
   }) {
-    let isNetworkError = false;
     try {
-      const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/institutions`, {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify(input),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        return json.data ?? json;
-      }
-      const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
-      throw new Error(err.message || 'Failed to create institution');
+      const res = await apiClient.post('/institutions', input);
+      return res.data?.data ?? res.data;
     } catch (err: any) {
-      if (err?.message && !err.message.includes('Failed to create institution') && !err.message.includes('HTTP')) {
-        isNetworkError = true;
-      } else {
+      if (err?.status) {
         throw err;
       }
-    }
-    if (isNetworkError) {
       const data = await fetchGraphQL<{ createInstitution: any }>(CREATE_INSTITUTION_MUTATION, { input });
       return data.createInstitution;
     }
@@ -393,26 +252,14 @@ export const apiService = {
     status?: string;
   }) {
     try {
-      const headers = await getAuthHeaders();
-      const res = await fetch(`${API_URL}/institutions/${id}`, {
-        method: 'PATCH',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify(input),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        return json.data ?? json;
-      }
-      const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
-      throw new Error(err.message || 'Failed to update institution');
+      const res = await apiClient.patch(`/institutions/${id}`, input);
+      return res.data?.data ?? res.data;
     } catch (err: any) {
-      if (err?.message && !err.message.includes('HTTP') && !err.message.includes('Failed to update institution')) {
-        // Fallback to GraphQL
-        const data = await fetchGraphQL<{ updateInstitution: any }>(UPDATE_INSTITUTION_MUTATION, { id, input });
-        return data.updateInstitution;
+      if (err?.status) {
+        throw err;
       }
-      throw err;
+      const data = await fetchGraphQL<{ updateInstitution: any }>(UPDATE_INSTITUTION_MUTATION, { id, input });
+      return data.updateInstitution;
     }
   },
 
@@ -430,29 +277,20 @@ export const apiService = {
   },
 
   async deleteInstitution(id: string, options?: { purgeUsers?: boolean }) {
-    let response: Response | null = null;
     try {
-      const headers = await getAuthHeaders();
       const query = options?.purgeUsers ? '?purgeUsers=true' : '';
-      response = await fetch(`${API_URL}/institutions/${id}${query}`, {
-        method: 'DELETE',
-        headers,
-        credentials: 'include',
-      });
-    } catch (networkErr) {
-      // Only fallback to GraphQL if purgeUsers is not requested (GraphQL mutation doesn't support purge query param)
+      await apiClient.delete(`/institutions/${id}${query}`);
+      return true;
+    } catch (networkErr: any) {
+      if (networkErr?.status) {
+        throw networkErr;
+      }
       if (!options?.purgeUsers) {
         const data = await fetchGraphQL<{ deleteInstitution: boolean }>(DELETE_INSTITUTION_MUTATION, { id });
         return data.deleteInstitution;
       }
       throw networkErr;
     }
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({ message: `HTTP ${response.status} error` }));
-      throw new Error(err.message || 'Failed to delete institution');
-    }
-    return true;
   },
 
   async deleteCollege(id: string, options?: { purgeUsers?: boolean }) {
@@ -469,24 +307,16 @@ export const apiService = {
   },
 
   async removeInstitutionMember(institutionId: string, userId: string) {
-    let response: Response | null = null;
     try {
-      const headers = await getAuthHeaders();
-      response = await fetch(`${API_URL}/institutions/${institutionId}/members/${userId}`, {
-        method: 'DELETE',
-        headers,
-        credentials: 'include',
-      });
-    } catch {
+      await apiClient.delete(`/institutions/${institutionId}/members/${userId}`);
+      return true;
+    } catch (err: any) {
+      if (err?.status) {
+        throw err;
+      }
       const data = await fetchGraphQL<{ removeInstitutionMember: boolean }>(REMOVE_INSTITUTION_MEMBER_MUTATION, { institutionId, userId });
       return data.removeInstitutionMember;
     }
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({ message: `HTTP ${response.status} error` }));
-      throw new Error(err.message || 'Failed to remove institution member');
-    }
-    return true;
   },
 
   async removeCollegeMember(collegeId: string, userId: string) {
@@ -512,17 +342,8 @@ export const apiService = {
   },
 
   async getInstitutionMembers(institutionId: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/institutions/${institutionId}/members`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      throw new Error(`Failed to fetch institution members: HTTP ${res.status}`);
-    }
-    const json = await res.json();
-    return json.data ?? json ?? [];
+    const res = await apiClient.get(`/institutions/${institutionId}/members`);
+    return res.data?.data ?? res.data ?? [];
   },
 
   async getCollegeMembers(collegeId: string) {
@@ -533,17 +354,8 @@ export const apiService = {
   // BATCHES & COHORTS (REST)
   // ----------------------------------------------------
   async getBatchesByInstitution(institutionId: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/batches/institution/${institutionId}`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      throw new Error(`Failed to fetch batches: HTTP ${res.status}`);
-    }
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.get(`/batches/institution/${institutionId}`);
+    return res.data?.data ?? res.data;
   },
 
   async getBatchesByCollege(collegeId: string) {
@@ -551,17 +363,8 @@ export const apiService = {
   },
 
   async getBatchById(id: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/batches/${id}`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      throw new Error(`Failed to fetch batch: HTTP ${res.status}`);
-    }
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.get(`/batches/${id}`);
+    return res.data?.data ?? res.data;
   },
 
   async createBatch(input: {
@@ -574,26 +377,15 @@ export const apiService = {
     endDate?: string;
   }) {
     const institutionId = input.institutionId || input.collegeId;
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/batches`, {
-      method: 'POST',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify({
-        name: input.name,
-        institutionId,
-        collegeId: institutionId,
-        maxCapacity: input.maxCapacity,
-        startDate: input.startDate,
-        endDate: input.endDate,
-      }),
+    const res = await apiClient.post('/batches', {
+      name: input.name,
+      institutionId,
+      collegeId: institutionId,
+      maxCapacity: input.maxCapacity,
+      startDate: input.startDate,
+      endDate: input.endDate,
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
-      throw new Error(err.message || 'Failed to create batch');
-    }
-    const json = await res.json();
-    return json.data ?? json;
+    return res.data?.data ?? res.data;
   },
 
   async updateBatch(id: string, input: {
@@ -603,79 +395,28 @@ export const apiService = {
     endDate?: string;
     status?: string;
   }) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/batches/${id}`, {
-      method: 'PATCH',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify(input),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
-      throw new Error(err.message || 'Failed to update batch');
-    }
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.patch(`/batches/${id}`, input);
+    return res.data?.data ?? res.data;
   },
 
   async deleteBatch(id: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/batches/${id}`, {
-      method: 'DELETE',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
-      throw new Error(err.message || 'Failed to delete batch');
-    }
-    const json = await res.json();
-    return json.data ?? json ?? true;
+    const res = await apiClient.delete(`/batches/${id}`);
+    return res.data?.data ?? res.data ?? true;
   },
 
   async assignStudentsToBatch(id: string, userIds: string[]) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/batches/${id}/students`, {
-      method: 'POST',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify({ userIds }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
-      throw new Error(err.message || 'Failed to assign students');
-    }
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.post(`/batches/${id}/students`, { userIds });
+    return res.data?.data ?? res.data;
   },
 
   async getStudentsInBatch(id: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/batches/${id}/students`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      throw new Error(`Failed to fetch students in batch: HTTP ${res.status}`);
-    }
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.get(`/batches/${id}/students`);
+    return res.data?.data ?? res.data;
   },
 
   async removeStudentFromBatch(id: string, userId: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/batches/${id}/students/${userId}`, {
-      method: 'DELETE',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
-      throw new Error(err.message || 'Failed to remove student from batch');
-    }
-    const json = await res.json();
-    return json.data ?? json ?? true;
+    const res = await apiClient.delete(`/batches/${id}/students/${userId}`);
+    return res.data?.data ?? res.data ?? true;
   },
 
   // ----------------------------------------------------
@@ -764,28 +505,17 @@ export const apiService = {
       ...(rollNo !== undefined ? { rollNo } : {}),
     };
 
-    let response: Response | null = null;
     try {
-      const headers = await getAuthHeaders();
-      response = await fetch(`${API_URL}/users/${id}`, {
-        method: 'PATCH',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-    } catch (networkErr) {
-      // Genuine network / transport failure (e.g. offline, connection refused, CORS, DNS)
+      const res = await apiClient.patch(`/users/${id}`, payload);
+      return res.data?.data ?? res.data;
+    } catch (err: any) {
+      if (err?.status) {
+        throw err;
+      }
+      // Genuine network / transport failure fallback to GraphQL
       const data = await fetchGraphQL<{ updateUser: any }>(UPDATE_USER_MUTATION, { id, input: payload });
       return data.updateUser;
     }
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({ message: `HTTP ${response.status} error` }));
-      throw new Error(err.message || 'Failed to update user');
-    }
-
-    const json = await response.json();
-    return json.data ?? json;
   },
 
   async getStudentProfile(handleOrId: string) {
@@ -1079,86 +809,38 @@ export const apiService = {
   },
 
   async createCourseModule(courseId: string, input: { title: string; description?: string; order?: number }) {
-    const res = await fetch(`${API_URL}/courses/${courseId}/modules`, {
-      method: 'POST',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(input),
-    });
-    if (!res.ok) throw new Error('Failed to create course module');
-    return res.json();
+    const res = await apiClient.post(`/courses/${courseId}/modules`, input);
+    return res.data?.data ?? res.data;
   },
 
   async createCourseLesson(moduleId: string, input: { title: string; content: string; order?: number }) {
-    const res = await fetch(`${API_URL}/courses/modules/${moduleId}/lessons`, {
-      method: 'POST',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(input),
-    });
-    if (!res.ok) throw new Error('Failed to create course lesson');
-    return res.json();
+    const res = await apiClient.post(`/courses/modules/${moduleId}/lessons`, input);
+    return res.data?.data ?? res.data;
   },
 
   async enrollInCourse(courseId: string) {
-    const res = await fetch(`${API_URL}/courses/${courseId}/enroll`, {
-      method: 'POST',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-      body: JSON.stringify({}),
-    });
-    if (!res.ok) throw new Error('Failed to enroll in course');
-    return res.json();
+    const res = await apiClient.post(`/courses/${courseId}/enroll`, {});
+    return res.data?.data ?? res.data;
   },
 
   async updateLessonProgress(lessonId: string, isCompleted: boolean = true) {
-    const res = await fetch(`${API_URL}/courses/lessons/${lessonId}/progress`, {
-      method: 'POST',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-      body: JSON.stringify({ isCompleted }),
-    });
-    if (!res.ok) throw new Error('Failed to update lesson progress');
-    return res.json();
+    const res = await apiClient.post(`/courses/lessons/${lessonId}/progress`, { isCompleted });
+    return res.data?.data ?? res.data;
   },
 
   async getBlogs(): Promise<BlogPost[]> {
-    const res = await fetch(`${API_URL}/blogs`, {
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      const errText = await res.text().catch(() => 'Failed to fetch blogs');
-      throw new Error(errText || 'Failed to fetch blogs');
-    }
-    const data = await res.json();
-    return Array.isArray(data) ? data : (data.items || []);
+    const res = await apiClient.get('/blogs');
+    const data = res.data?.data ?? res.data;
+    return Array.isArray(data) ? data : (data?.items || []);
   },
 
   async createBlog(blogData: Partial<BlogPost>): Promise<BlogPost> {
-    const res = await fetch(`${API_URL}/blogs`, {
-      method: 'POST',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(blogData),
-    });
-    if (!res.ok) {
-      const errText = await res.text().catch(() => 'Failed to create blog');
-      throw new Error(errText || 'Failed to create blog');
-    }
-    return res.json();
+    const res = await apiClient.post('/blogs', blogData);
+    return res.data?.data ?? res.data;
   },
 
   async deleteBlog(id: string): Promise<boolean> {
-    const res = await fetch(`${API_URL}/blogs/${id}`, {
-      method: 'DELETE',
-      headers: getClientAuthHeaders(),
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      const errText = await res.text().catch(() => 'Failed to delete blog');
-      throw new Error(errText || 'Failed to delete blog');
-    }
+    await apiClient.delete(`/blogs/${id}`);
     return true;
   },
 
@@ -1166,90 +848,45 @@ export const apiService = {
   // DAILY PROBLEM (POTD) & STREAKS
   // ----------------------------------------------------
   async getTodayPotd() {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/problems/potd/today`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Failed to fetch Problem of the Day');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.get('/problems/potd/today');
+    return res.data?.data ?? res.data;
+  },
+
+  async setPotd(input: { problemId: string; date?: string; bonusPoints?: number }) {
+    const res = await apiClient.post('/problems/potd/set', input);
+    return res.data?.data ?? res.data;
   },
 
   async getPotdHistory(days = 14) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/problems/potd/history?days=${days}`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Failed to fetch POTD history');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.get(`/problems/potd/history?days=${days}`);
+    return res.data?.data ?? res.data;
   },
 
   async getUserStreak() {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/problems/user/streak`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Failed to fetch user streak');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.get('/problems/user/streak');
+    return res.data?.data ?? res.data;
   },
 
   // ----------------------------------------------------
   // COMPARATIVE LEADERBOARDS & PLAGIARISM (REST)
   // ----------------------------------------------------
   async getCollegeLeaderboard() {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/contests/leaderboard/colleges`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Failed to fetch college leaderboard');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.get('/contests/leaderboard/colleges');
+    return res.data?.data ?? res.data;
   },
 
   async getBatchLeaderboard(institutionId: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/contests/leaderboard/batches/${institutionId}`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Failed to fetch batch leaderboard');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.get(`/contests/leaderboard/batches/${institutionId}`);
+    return res.data?.data ?? res.data;
   },
 
   async getContestMatrixLeaderboard(contestId: string) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/contests/${contestId}/matrix-leaderboard`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Failed to fetch contest matrix leaderboard');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.get(`/contests/${contestId}/matrix-leaderboard`);
+    return res.data?.data ?? res.data;
   },
 
   async runPlagiarismCheck(contestId: string, threshold = 80) {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/contests/${contestId}/plagiarism-check?threshold=${threshold}`, {
-      method: 'POST',
-      headers,
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Failed to run plagiarism check');
-    const json = await res.json();
-    return json.data ?? json;
+    const res = await apiClient.post(`/contests/${contestId}/plagiarism-check?threshold=${threshold}`);
+    return res.data?.data ?? res.data;
   },
 };
-

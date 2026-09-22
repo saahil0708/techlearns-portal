@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
 import { CreateProblemInput } from './dto/create-problem.input.js';
+import { SetPotdDto } from './dto/set-potd.dto.js';
 import { UpdateProblemInput } from './dto/update-problem.input.js';
 import { PotdService } from './potd.service.js';
 import { ProblemsService } from './problems.service.js';
@@ -30,10 +31,23 @@ export class ProblemsController {
   ) {}
 
   @Get('potd/today')
-  @ApiOperation({ summary: 'Get Problem of the Day for current date' })
-  @ApiResponse({ status: 200, description: 'POTD details and user solve status' })
+  @ApiOperation({ summary: 'Get current Problem of the Day with streak info' })
+  @ApiResponse({ status: 200, description: 'POTD problem details' })
   async getTodayPotd(@CurrentUser() user?: CurrentUserPayload) {
     return this.potdService.getPotd(undefined, user?.id);
+  }
+
+  @Post('potd/set')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Set or schedule Problem of the Day for a specific date' })
+  @ApiResponse({ status: 200, description: 'POTD set successfully' })
+  async setPotd(
+    @Body() input: SetPotdDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.potdService.setPotd(input.problemId, input.date, input.bonusPoints, user);
   }
 
   @Get('potd/history')

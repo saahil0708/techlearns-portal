@@ -51,7 +51,6 @@ import ViewListRoundedIcon from '@mui/icons-material/ViewListRounded';
 
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
 import CourseGridCard from './CourseGridCard';
-import { MOCK_COURSES } from '@/lib/mock-courses-data';
 import { CourseDirectoryEntity, CourseLevel, CourseCategory } from '@/types/course';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/lib/api-service';
@@ -66,7 +65,7 @@ export default function CourseCatalogClient() {
   const router = useRouter();
   const toast = useToast();
 
-  const [courses, setCourses] = useState<CourseDirectoryEntity[]>(MOCK_COURSES);
+  const [courses, setCourses] = useState<CourseDirectoryEntity[]>([]);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [levelFilter, setLevelFilter] = useState<string>('ALL');
@@ -76,60 +75,74 @@ export default function CourseCatalogClient() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Student progress state
-  const [enrolledMap, setEnrolledMap] = useState<Record<string, number>>({
-    'course-1': 75, // 75% completed
-    'course-2': 30, // 30% completed
-    'course-3': 100, // 100% completed
-  });
+  const [enrolledMap, setEnrolledMap] = useState<Record<string, number>>({});
 
   // Selected course for syllabus inspection dialog
   const [selectedCourse, setSelectedCourse] = useState<CourseDirectoryEntity | null>(null);
 
-  // Fetch live courses from API with fallback
+  // Fetch live courses from API
   useEffect(() => {
     let isMounted = true;
     async function loadCourses() {
       try {
-        const res = await apiService.getCourses({ limit: 50 });
-        if (isMounted && res?.items && res.items.length > 0) {
-          const mapped: CourseDirectoryEntity[] = res.items.map((c: any, idx: number) => {
-            const totalLessons = c.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 12;
-            return {
-              id: c.id,
-              code: c.code || `CS-${String(100 + idx * 10)}`,
-              slug: c.slug || c.id,
-              title: c.title,
-              description: c.description || 'Comprehensive interactive curriculum covering core fundamentals and hands-on projects.',
-              category: (c.category || 'Computer Science & DSA') as CourseCategory,
-              level: (c.level || 'Intermediate') as CourseLevel,
-              instructorName: c.instructorName || c.instructor?.name || 'Academic Faculty',
-              instructorTitle: c.instructorTitle || 'Senior Faculty Instructor',
-              institutionName: c.institutionName || c.institution?.name || c.college?.name || 'Academic Institution',
-              durationHours: c.durationHours || 40,
-              modulesCount: c.modules?.length || c._count?.modules || 6,
-              lessonsCount: totalLessons,
-              enrolledStudents: c.enrolledStudents || c._count?.enrollments || 120,
-              completionRate: c.completionRate || 78,
-              status: (c.status === 'Draft' || c.status === 'Archived' ? c.status : 'Published') as 'Published' | 'Draft' | 'Archived',
-              tags: Array.isArray(c.tags) ? c.tags : ['Core', 'Curriculum'],
-              accentColor: c.accentColor || '#2563EB',
-              moduleHighlights: Array.isArray(c.moduleHighlights) && c.moduleHighlights.length > 0
-                ? c.moduleHighlights
-                : (Array.isArray(c.modules) && c.modules.length > 0
-                  ? c.modules.map((m: any) => ({
-                    title: m.title || 'Course Module',
-                    lessons: m.lessons?.length || 4,
-                  }))
-                  : [
-                    { title: 'Core Foundations', lessons: 6 },
-                    { title: 'Applied Practice', lessons: 6 },
-                  ]),
-            };
-          });
-          setCourses(mapped);
+        const [res, meRes] = await Promise.all([
+          apiService.getCourses({ limit: 50 }),
+          apiService.getMe().catch(() => null),
+        ]);
+        if (isMounted) {
+          if (res?.items && res.items.length > 0) {
+            const mapped: CourseDirectoryEntity[] = res.items.map((c: any, idx: number) => {
+              const totalLessons = c.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 12;
+              return {
+                id: c.id,
+                code: c.code || `CS-${String(100 + idx * 10)}`,
+                slug: c.slug || c.id,
+                title: c.title,
+                description: c.description || 'Comprehensive interactive curriculum covering core fundamentals and hands-on projects.',
+                category: (c.category || 'Computer Science & DSA') as CourseCategory,
+                level: (c.level || 'Intermediate') as CourseLevel,
+                instructorName: c.instructorName || c.instructor?.name || 'Academic Faculty',
+                instructorTitle: c.instructorTitle || 'Senior Faculty Instructor',
+                institutionName: c.institutionName || c.institution?.name || c.college?.name || 'Academic Institution',
+                durationHours: c.durationHours || 40,
+                modulesCount: c.modules?.length || c._count?.modules || 6,
+                lessonsCount: totalLessons,
+                enrolledStudents: c.enrolledStudents || c._count?.enrollments || 0,
+                completionRate: c.completionRate || 0,
+                status: (c.status === 'Draft' || c.status === 'Archived' ? c.status : 'Published') as 'Published' | 'Draft' | 'Archived',
+                tags: Array.isArray(c.tags) ? c.tags : ['Core', 'Curriculum'],
+                accentColor: c.accentColor || '#2563EB',
+                moduleHighlights: Array.isArray(c.moduleHighlights) && c.moduleHighlights.length > 0
+                  ? c.moduleHighlights
+                  : (Array.isArray(c.modules) && c.modules.length > 0
+                    ? c.modules.map((m: any) => ({
+                      title: m.title || 'Course Module',
+                      lessons: m.lessons?.length || 4,
+                    }))
+                    : [
+                      { title: 'Core Foundations', lessons: 6 },
+                      { title: 'Applied Practice', lessons: 6 },
+                    ]),
+              };
+            });
+            setCourses(mapped);
+          } else {
+            setCourses([]);
+          }
+
+          if (meRes?.enrollments) {
+            const eMap: Record<string, number> = {};
+            meRes.enrollments.forEach((enr: any) => {
+              if (enr.courseId) {
+                eMap[enr.courseId] = enr.progressPct || 0;
+              }
+            });
+            setEnrolledMap(eMap);
+          }
         }
       } catch (err) {
-        console.warn('Live courses fetch fallback:', err);
+        console.warn('Live courses fetch failed:', err);
+        if (isMounted) setCourses([]);
       }
     }
     loadCourses();

@@ -41,29 +41,17 @@ interface RatingHistoryChartProps {
   data?: RatingDataPoint[];
 }
 
-const DEFAULT_RATING_HISTORY: RatingDataPoint[] = [
-  { contestCode: 'START180', contestName: 'CodeChef Starters 180 (Div 4)', date: 'Jan 2026', rating: 1320, delta: 0, rank: 412 },
-  { contestCode: 'START185', contestName: 'CodeChef Starters 185 (Div 4)', date: 'Feb 2026', rating: 1410, delta: 90, rank: 180 },
-  { contestCode: 'COOK130', contestName: 'CodeChef Cook-Off 130 (Div 3)', date: 'Mar 2026', rating: 1495, delta: 85, rank: 145 },
-  { contestCode: 'START192', contestName: 'CodeChef Starters 192 (Div 3)', date: 'Apr 2026', rating: 1580, delta: 85, rank: 98 },
-  { contestCode: 'LUNCH98', contestName: 'CodeChef Lunchtime 98 (Div 3)', date: 'May 2026', rating: 1640, delta: 60, rank: 74 },
-  { contestCode: 'START200', contestName: 'CodeChef Starters 200 (Div 2)', date: 'Jun 2026', rating: 1610, delta: -30, rank: 210 },
-  { contestCode: 'START215', contestName: 'CodeChef Starters 215 (Div 2)', date: 'Jul 2026', rating: 1720, delta: 110, rank: 45 },
-  { contestCode: 'COOK135', contestName: 'CodeChef Cook-Off 135 (Div 2)', date: 'Aug 2026', rating: 1790, delta: 70, rank: 32 },
-  { contestCode: 'START256', contestName: 'CodeChef Starters 256 (Div 2)', date: 'Sep 2026', rating: 1850, delta: 60, rank: 18 },
-];
-
 export default function RatingHistoryChart({
   currentRating,
   highestRating,
-  globalRank = 142,
-  data,
+  globalRank,
+  data = [],
 }: RatingHistoryChartProps) {
   const [filterRange, setFilterRange] = useState<'ALL' | '6M' | '1Y'>('ALL');
 
-  const historyData = data ?? DEFAULT_RATING_HISTORY;
+  const historyData = data ?? [];
 
-  // Derive rating values from the matching historyData source
+  // Derive rating values from real historyData or baseline rating
   const effectiveCurrentRating = currentRating ?? (historyData.length > 0 ? historyData[historyData.length - 1].rating : 1500);
   const effectiveHighestRating = highestRating ?? (historyData.length > 0 ? Math.max(...historyData.map((d) => d.rating)) : effectiveCurrentRating);
 
@@ -188,7 +176,7 @@ export default function RatingHistoryChart({
             Global Standing
           </Typography>
           <Typography sx={{ fontSize: '1.4rem', fontWeight: 900, color: '#38BDF8', mt: 0.5 }}>
-            #{globalRank}
+            {globalRank ? `#${globalRank}` : '—'}
           </Typography>
         </Box>
 
@@ -202,44 +190,70 @@ export default function RatingHistoryChart({
         </Box>
       </Box>
 
-      {/* Recharts Rating Line Graph with Division Bands */}
-      <Box sx={{ width: '100%', height: 320, pt: 1 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={filteredData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" vertical={false} />
+      {/* Recharts Rating Line Graph with Division Bands OR Empty State */}
+      <Box sx={{ width: '100%', minHeight: 220, pt: 1 }}>
+        {filteredData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={filteredData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.06)" vertical={false} />
 
-            {/* Division Threshold Reference Lines */}
-            <ReferenceLine y={1400} stroke="#16A34A" strokeDasharray="3 3" label={{ value: 'Div 3 (1400)', position: 'insideTopRight', fill: '#4ADE80', fontSize: 10, fontWeight: 700 }} />
-            <ReferenceLine y={1600} stroke="#2563EB" strokeDasharray="3 3" label={{ value: 'Div 2 (1600)', position: 'insideTopRight', fill: '#60A5FA', fontSize: 10, fontWeight: 700 }} />
-            <ReferenceLine y={2000} stroke="#D97706" strokeDasharray="3 3" label={{ value: 'Div 1 (2000)', position: 'insideTopRight', fill: '#FCD34D', fontSize: 10, fontWeight: 700 }} />
+              {/* Division Threshold Reference Lines */}
+              <ReferenceLine y={1400} stroke="#16A34A" strokeDasharray="3 3" label={{ value: 'Div 3 (1400)', position: 'insideTopRight', fill: '#4ADE80', fontSize: 10, fontWeight: 700 }} />
+              <ReferenceLine y={1600} stroke="#2563EB" strokeDasharray="3 3" label={{ value: 'Div 2 (1600)', position: 'insideTopRight', fill: '#60A5FA', fontSize: 10, fontWeight: 700 }} />
+              <ReferenceLine y={2000} stroke="#D97706" strokeDasharray="3 3" label={{ value: 'Div 1 (2000)', position: 'insideTopRight', fill: '#FCD34D', fontSize: 10, fontWeight: 700 }} />
 
-            <XAxis
-              dataKey="date"
-              stroke="#94A3B8"
-              fontSize={11}
-              fontWeight={600}
-              tickLine={false}
-              axisLine={{ stroke: 'rgba(59, 130, 246, 0.2)' }}
-            />
-            <YAxis
-              domain={['dataMin - 100', 'dataMax + 100']}
-              stroke="#94A3B8"
-              fontSize={11}
-              fontWeight={600}
-              tickLine={false}
-              axisLine={{ stroke: 'rgba(59, 130, 246, 0.2)' }}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Line
-              type="monotone"
-              dataKey="rating"
-              stroke="#38BDF8"
-              strokeWidth={3}
-              dot={{ fill: '#38BDF8', stroke: '#0F172A', strokeWidth: 2, r: 5 }}
-              activeDot={{ fill: '#60A5FA', stroke: '#FFFFFF', strokeWidth: 3, r: 8 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+              <XAxis
+                dataKey="date"
+                stroke="#94A3B8"
+                fontSize={11}
+                fontWeight={600}
+                tickLine={false}
+                axisLine={{ stroke: 'rgba(59, 130, 246, 0.2)' }}
+              />
+              <YAxis
+                domain={['dataMin - 100', 'dataMax + 100']}
+                stroke="#94A3B8"
+                fontSize={11}
+                fontWeight={600}
+                tickLine={false}
+                axisLine={{ stroke: 'rgba(59, 130, 246, 0.2)' }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Line
+                type="monotone"
+                dataKey="rating"
+                stroke="#38BDF8"
+                strokeWidth={3}
+                dot={{ fill: '#38BDF8', stroke: '#0F172A', strokeWidth: 2, r: 5 }}
+                activeDot={{ fill: '#60A5FA', stroke: '#FFFFFF', strokeWidth: 3, r: 8 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <Box
+            sx={{
+              width: '100%',
+              height: 200,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'rgba(30, 41, 59, 0.4)',
+              borderRadius: '14px',
+              border: '1px dashed rgba(59, 130, 246, 0.25)',
+              p: 3,
+              textAlign: 'center',
+            }}
+          >
+            <TrendingUpRoundedIcon sx={{ color: '#64748B', fontSize: 36, mb: 1, opacity: 0.6 }} />
+            <Typography sx={{ color: '#E2E8F0', fontWeight: 700, fontSize: '0.95rem', mb: 0.5 }}>
+              No rated contest participation recorded yet
+            </Typography>
+            <Typography sx={{ color: '#94A3B8', fontSize: '0.8rem', maxWidth: 440 }}>
+              Participate in official rated contests to establish your performance curve and track rating progression.
+            </Typography>
+          </Box>
+        )}
       </Box>
     </Card>
   );

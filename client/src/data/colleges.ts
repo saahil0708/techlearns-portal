@@ -1,8 +1,9 @@
 /**
- * Colleges & Higher Education Tenant Data Models & API Operations
+ * Colleges & Higher Education Tenant Data Models & API Operations (Axios)
  */
 
-import { API_URL, getAuthHeaders, deduplicatedQuery } from './client';
+import { deduplicatedQuery } from './client';
+import { apiClient } from '@/lib/axios';
 import {
   COLLEGES_QUERY,
   COLLEGE_BY_ID_QUERY,
@@ -86,21 +87,13 @@ export async function getCollegesApi(params?: { page?: number; limit?: number; s
   const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
 
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/colleges${queryString}`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (res.ok) {
-      const json = await res.json();
-      const items = json.data ?? json;
-      if (Array.isArray(items)) {
-        return { items, meta: { totalItems: items.length } };
-      }
-      if (items && Array.isArray(items.items)) {
-        return items;
-      }
+    const res = await apiClient.get(`/colleges${queryString}`);
+    const items = res.data?.data ?? res.data;
+    if (Array.isArray(items)) {
+      return { items, meta: { totalItems: items.length } };
+    }
+    if (items && Array.isArray(items.items)) {
+      return items;
     }
   } catch {
     // Fallback to GraphQL
@@ -125,16 +118,8 @@ export async function getCollegesApi(params?: { page?: number; limit?: number; s
 
 export async function getCollegeByIdApi(id: string) {
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/colleges/${id}`, {
-      method: 'GET',
-      headers,
-      credentials: 'include',
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json.data ?? json;
-    }
+    const res = await apiClient.get(`/colleges/${id}`);
+    return res.data?.data ?? res.data;
   } catch {
     // Fallback to GraphQL
   }
@@ -155,27 +140,16 @@ export async function createCollegeApi(input: {
   address?: string;
   status?: string;
 }) {
-  let responseError: Error | null = null;
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/colleges`, {
-      method: 'POST',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify(input),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json.data ?? json;
-    }
-    const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
-    responseError = new Error(err.message || 'Failed to create college');
+    const res = await apiClient.post('/colleges', input);
+    return res.data?.data ?? res.data;
   } catch (err: any) {
-    if (responseError) throw responseError;
+    if (err?.status) {
+      throw err;
+    }
     const data = await fetchGraphQL<{ createCollege: any }>(CREATE_COLLEGE_MUTATION, { input });
     return data.createCollege;
   }
-  if (responseError) throw responseError;
 }
 
 export async function updateCollegeApi(id: string, input: {
@@ -186,47 +160,29 @@ export async function updateCollegeApi(id: string, input: {
   address?: string;
   status?: string;
 }) {
-  let responseError: Error | null = null;
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/colleges/${id}`, {
-      method: 'PATCH',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify(input),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json.data ?? json;
-    }
-    const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
-    responseError = new Error(err.message || 'Failed to update college');
+    const res = await apiClient.patch(`/colleges/${id}`, input);
+    return res.data?.data ?? res.data;
   } catch (err: any) {
-    if (responseError) throw responseError;
+    if (err?.status) {
+      throw err;
+    }
     const data = await fetchGraphQL<{ updateCollege: any }>(UPDATE_COLLEGE_MUTATION, { id, input });
     return data.updateCollege;
   }
-  if (responseError) throw responseError;
 }
 
 export async function deleteCollegeApi(id: string) {
-  let responseError: Error | null = null;
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_URL}/colleges/${id}`, {
-      method: 'DELETE',
-      headers,
-      credentials: 'include',
-    });
-    if (res.ok) return true;
-    const err = await res.json().catch(() => ({ message: `HTTP ${res.status} error` }));
-    responseError = new Error(err.message || 'Failed to delete college');
+    await apiClient.delete(`/colleges/${id}`);
+    return true;
   } catch (err: any) {
-    if (responseError) throw responseError;
+    if (err?.status) {
+      throw err;
+    }
     const data = await fetchGraphQL<{ deleteCollege: boolean }>(DELETE_COLLEGE_MUTATION, { id });
     return data.deleteCollege;
   }
-  if (responseError) throw responseError;
 }
 
 export async function addCollegeMemberApi(collegeId: string, input: { userId: string; role?: string }) {

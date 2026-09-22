@@ -44,6 +44,7 @@ import { apiService } from '@/lib/api-service';
 import TopicMasteryRadialGrid from './TopicMasteryRadialGrid';
 import RatingHistoryChart from './RatingHistoryChart';
 import SubmissionActivityHeatmap from './SubmissionActivityHeatmap';
+import SkillOSDock from './SkillOSDock';
 
 const CERT_THEMES: Record<string, {
   tagBg: string;
@@ -322,7 +323,10 @@ export default function StudentOverviewTab({
           )}
         </Card>
 
-        {/* 2. Personal Information Card (Crisp White Card) */}
+        {/* 2. SkillOS™ Corporate Workspace & Credentials Dock */}
+        <SkillOSDock profile={profile} />
+
+        {/* 3. Personal Information Card (Crisp White Card) */}
         <Card
           elevation={0}
           sx={{
@@ -694,17 +698,19 @@ export default function StudentOverviewTab({
 
         {/* CodeChef-Style Contest Rating Progression Chart */}
         <RatingHistoryChart
-          currentRating={profile.contestRating ?? 1850}
-          highestRating={profile.highestRating ?? profile.contestRating ?? 1850}
-          globalRank={profile.globalRank ?? 142}
+          currentRating={profile.contestRating ?? 1500}
+          highestRating={profile.highestRating ?? profile.contestRating ?? 1500}
+          globalRank={profile.globalRank}
+          data={profile.ratingHistory ?? []}
         />
 
         {/* CodeChef-Style 365-Day Activity & Streak Calendar Heatmap */}
         <SubmissionActivityHeatmap
-          totalSubmissions={profile.totalSubmissions ?? 486}
-          currentStreak={profile.currentStreakDays ?? 14}
-          maxStreak={profile.maxStreakDays ?? 38}
-          activeDaysCount={profile.activeDaysCount ?? 178}
+          totalSubmissions={profile.totalSubmissions ?? 0}
+          currentStreak={profile.currentStreakDays ?? 0}
+          maxStreak={profile.maxStreakDays ?? 0}
+          activeDaysCount={profile.activeDaysCount}
+          activityData={profile.activityData}
         />
 
         {/* ========================================================================= */}
@@ -732,111 +738,43 @@ export default function StudentOverviewTab({
                   sx={{ bgcolor: 'rgba(245, 158, 11, 0.15)', color: '#FBBF24', fontWeight: 800, fontSize: '0.72rem' }}
                 />
                 <Typography sx={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 600 }}>
-                  🔥 {potd?.currentStreak ?? profile.currentStreakDays ?? 14}-Day Streak Active
+                  {potd?.currentStreak ?? profile.currentStreakDays ?? 0}-Day Streak Active
                 </Typography>
               </Box>
               <Typography sx={{ color: '#FFFFFF', fontWeight: 800, fontSize: '1.05rem', mb: 0.3 }}>
-                {potd ? `Today's Problem: ${potd.title}` : `Today's Problem: Subarray XOR Minimum Equality`}
+                {potd ? `Today's Problem: ${potd.title}` : 'No Problem of the Day Scheduled'}
               </Typography>
               <Typography sx={{ color: '#94A3B8', fontSize: '0.8rem' }}>
                 {potd?.isSolved
                   ? `You have completed today's problem! +${potd.bonusPoints} points added to your streak.`
-                  : `Solve before midnight to maintain your continuous streak and earn +${potd?.bonusPoints ?? 50} contest points.`}
+                  : potd
+                  ? `Solve before midnight to maintain your continuous streak and earn +${potd.bonusPoints ?? 50} contest points.`
+                  : 'Check back soon for new coding problems of the day.'}
               </Typography>
             </Box>
 
-            <Link href={potd ? `/problems/${potd.slug}` : '/problems'} style={{ textDecoration: 'none' }}>
-              <Button
-                variant="contained"
-                size="small"
-                sx={{
-                  bgcolor: '#38BDF8',
-                  color: '#0F172A',
-                  fontWeight: 800,
-                  fontSize: '0.82rem',
-                  textTransform: 'none',
-                  borderRadius: '10px',
-                  px: 2,
-                  py: 0.8,
-                  whiteSpace: 'nowrap',
-                  '&:hover': { bgcolor: '#0EA5E9' },
-                }}
-              >
-                Solve Challenge 🚀
-              </Button>
-            </Link>
-          </Box>
-        </Card>
-
-        {/* ========================================================================= */}
-        {/* COMPETITIVE BADGES & ACHIEVEMENTS CARD */}
-        {/* ========================================================================= */}
-        <Card
-          elevation={0}
-          sx={{
-            borderRadius: '20px',
-            bgcolor: '#FFFFFF',
-            border: '1px solid #E2E8F0',
-            p: { xs: 2.5, sm: 3 },
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
-          }}
-        >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <EmojiEventsRoundedIcon sx={{ color: '#F59E0B', fontSize: 22 }} />
-              <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem' }}>
-                Competitive Achievements & Badges
-              </Typography>
-            </Box>
-            <Chip label="5 of 6 Unlocked" size="small" sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 800, fontSize: '0.72rem' }} />
-          </Box>
-
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 1.5 }}>
-            {[
-              { title: 'Contest Crusader', desc: 'Participated in 25+ Rated Contests', icon: '🏆', status: 'Unlocked', color: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' },
-              { title: 'Streak Master', desc: 'Maintained a 30-day solving streak', icon: '🔥', status: 'Unlocked', color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.08)' },
-              { title: 'Speed Demon', desc: 'Submitted Accepted solution in < 5 mins', icon: '⚡', status: 'Unlocked', color: '#2563EB', bg: 'rgba(37, 99, 235, 0.08)' },
-              { title: 'Div 1 Contender', desc: 'Crossed 2000+ Contest Rating (5★)', icon: '🌟', status: 'Unlocked', color: '#9333EA', bg: 'rgba(147, 51, 234, 0.08)' },
-              { title: 'Night Owl', desc: 'Solved a hard problem past 2:00 AM', icon: '🦉', status: 'Unlocked', color: '#0D9488', bg: 'rgba(13, 148, 136, 0.08)' },
-              { title: 'Grandmaster Ascent', desc: 'Reach 2500+ Rating (7★)', icon: '👑', status: 'In Progress (74%)', color: '#DC2626', bg: 'rgba(220, 38, 38, 0.08)' },
-            ].map((badge) => (
-              <Box
-                key={badge.title}
-                sx={{
-                  p: 2,
-                  borderRadius: '12px',
-                  bgcolor: badge.bg,
-                  border: `1px solid ${badge.color}33`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 0.5,
-                  transition: 'transform 0.15s ease',
-                  '&:hover': { transform: 'translateY(-2px)' },
-                }}
-              >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography sx={{ fontSize: '1.4rem' }}>{badge.icon}</Typography>
-                  <Chip
-                    label={badge.status}
-                    size="small"
-                    sx={{
-                      height: 20,
-                      fontSize: '0.65rem',
-                      fontWeight: 800,
-                      color: badge.color,
-                      bgcolor: '#FFFFFF',
-                      border: `1px solid ${badge.color}44`,
-                    }}
-                  />
-                </Box>
-                <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#0F172A', mt: 0.5 }}>
-                  {badge.title}
-                </Typography>
-                <Typography sx={{ fontSize: '0.74rem', color: '#64748B', lineHeight: 1.4 }}>
-                  {badge.desc}
-                </Typography>
-              </Box>
-            ))}
+            {potd && (
+              <Link href={`/problems/${potd.slug}`} style={{ textDecoration: 'none' }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    bgcolor: '#38BDF8',
+                    color: '#0F172A',
+                    fontWeight: 800,
+                    fontSize: '0.82rem',
+                    textTransform: 'none',
+                    borderRadius: '10px',
+                    px: 2,
+                    py: 0.8,
+                    whiteSpace: 'nowrap',
+                    '&:hover': { bgcolor: '#0EA5E9' },
+                  }}
+                >
+                  Solve Challenge
+                </Button>
+              </Link>
+            )}
           </Box>
         </Card>
 

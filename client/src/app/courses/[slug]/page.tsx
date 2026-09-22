@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { getCourseBySlug } from '@/lib/mock-courses-data';
 import { apiService } from '@/lib/api-service';
 import { CourseDirectoryEntity } from '@/types/course';
 import CourseLearningWorkspace from '@/components/courses/CourseLearningWorkspace';
@@ -24,12 +23,12 @@ async function resolveCourse(slug: string): Promise<CourseDirectoryEntity | null
         level: liveCourse.level || 'Intermediate',
         instructorName: liveCourse.instructorName || liveCourse.instructor?.name || 'Academic Faculty',
         instructorTitle: liveCourse.instructorTitle || 'Senior Faculty Lead',
-        institutionName: liveCourse.institutionName || liveCourse.institution?.name || 'Academic Institution',
+        institutionName: liveCourse.institutionName || liveCourse.institution?.name || liveCourse.college?.name || 'Academic Institution',
         durationHours: liveCourse.durationHours ?? 40,
         modulesCount: liveCourse.modules?.length ?? liveCourse._count?.modules ?? 6,
         lessonsCount: 24,
-        enrolledStudents: liveCourse.enrolledStudents ?? liveCourse._count?.enrollments ?? 120,
-        completionRate: liveCourse.completionRate ?? 75,
+        enrolledStudents: liveCourse.enrolledStudents ?? liveCourse._count?.enrollments ?? 0,
+        completionRate: liveCourse.completionRate ?? 0,
         status: liveCourse.status === 'DRAFT' ? 'Draft' : 'Published',
         tags: Array.isArray(liveCourse.tags) ? liveCourse.tags : ['Curriculum', 'Computer Science'],
         description: liveCourse.description || 'Comprehensive interactive curriculum covering core fundamentals and hands-on projects.',
@@ -43,11 +42,11 @@ async function resolveCourse(slug: string): Promise<CourseDirectoryEntity | null
             ],
       };
     }
-  } catch {
-    // Fallback to mock
+  } catch (err) {
+    console.warn('Failed to resolve course by slug/id:', err);
   }
 
-  return getCourseBySlug(slug) || null;
+  return null;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

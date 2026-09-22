@@ -60,6 +60,7 @@ import { useToast } from '@/context/ToastContext';
 const ProblemQuickPeekDrawer = dynamic(() => import('@/components/superadmin/problems/ProblemQuickPeekDrawer'), { loading: () => null });
 const CreateProblemModal = dynamic(() => import('@/components/superadmin/problems/CreateProblemModal'), { loading: () => null });
 const BulkImportProblemsModal = dynamic(() => import('@/components/superadmin/problems/BulkImportProblemsModal'), { loading: () => null });
+const SetPotdModal = dynamic(() => import('@/components/superadmin/problems/SetPotdModal'), { loading: () => null });
 import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded';
 import StatsCard from '@/components/superadmin/shared/StatsCard';
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
@@ -157,6 +158,8 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
   // Modals & Drawers
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBulkImportModalOpen, setIsBulkImportModalOpen] = useState(false);
+  const [isSetPotdModalOpen, setIsSetPotdModalOpen] = useState(false);
+  const [potdSelectedProblem, setPotdSelectedProblem] = useState<ProblemEntity | null>(null);
   const [peekProblem, setPeekProblem] = useState<ProblemEntity | null>(null);
   const [downloadAnchorEl, setDownloadAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -563,6 +566,29 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
                   </Typography>
                 </MenuItem>
               </Menu>
+
+              <Button
+                variant="outlined"
+                startIcon={<WhatshotRoundedIcon sx={{ fontSize: 18, color: '#D97706' }} />}
+                onClick={() => {
+                  setPotdSelectedProblem(null);
+                  setIsSetPotdModalOpen(true);
+                }}
+                sx={{
+                  borderColor: '#FDE68A',
+                  bgcolor: '#FFFBEB',
+                  color: '#B45309',
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  px: 2,
+                  py: 0.75,
+                  '&:hover': { bgcolor: '#FEF3C7', borderColor: '#F59E0B' },
+                }}
+              >
+                Set Problem of the Day
+              </Button>
 
               <Button
                 variant="outlined"
@@ -1288,6 +1314,27 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
                                 </IconButton>
                               </Tooltip>
 
+                              <Tooltip title="Set as Problem of the Day">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => {
+                                    setPotdSelectedProblem(prob);
+                                    setIsSetPotdModalOpen(true);
+                                  }}
+                                  sx={{
+                                    color: '#D97706',
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '8px',
+                                    border: '1px solid #FEF3C7',
+                                    bgcolor: '#FFFBEB',
+                                    '&:hover': { color: '#B45309', bgcolor: '#FEF3C7', borderColor: '#FDE68A' },
+                                  }}
+                                >
+                                  <WhatshotRoundedIcon sx={{ fontSize: 18 }} />
+                                </IconButton>
+                              </Tooltip>
+
                               <Tooltip title="Delete Problem">
                                 <IconButton
                                   size="small"
@@ -1576,6 +1623,17 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
         onImportSuccess={(importedList) => {
           setProblems((prev) => [...importedList, ...prev]);
         }}
+      />
+
+      {/* 10. Set Problem of the Day Modal */}
+      <SetPotdModal
+        open={isSetPotdModalOpen}
+        onClose={() => {
+          setIsSetPotdModalOpen(false);
+          setPotdSelectedProblem(null);
+        }}
+        problems={problems}
+        initialSelectedProblem={potdSelectedProblem}
       />
     </Box>
   );

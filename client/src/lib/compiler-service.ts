@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 /**
  * Real-Time Code Compilation & Execution Service
  * Powered by Judge0 CE & Sandbox Engine
@@ -87,34 +89,26 @@ export class CompilerService {
     const startTime = performance.now();
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
-
-      const response = await fetch(JUDGE0_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
+      const response = await axios.post(
+        JUDGE0_ENDPOINT,
+        {
           language_id: config.judge0Id,
           source_code: sourceCode,
           stdin: stdin || '',
           cpu_time_limit: 5,
           memory_limit: 262144, // 256 MB
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          timeout: 15000,
+        }
+      );
 
       const elapsedMs = Math.round(performance.now() - startTime);
-
-      if (!response.ok) {
-        throw new Error(`Execution cluster responded with HTTP status ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = response.data;
       const statusId = data.status?.id || 0;
       const statusDescription = data.status?.description || 'Unknown';
 
@@ -163,7 +157,11 @@ export class CompilerService {
       };
     } catch (err: any) {
       const elapsedMs = Math.round(performance.now() - startTime);
-      const isTimeout = err.name === 'AbortError';
+      const isTimeout =
+        (axios.isAxiosError(err) && (err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT')) ||
+        err.name === 'AbortError' ||
+        err.code === 'ECONNABORTED' ||
+        err.code === 'ETIMEDOUT';
 
       return {
         success: false,

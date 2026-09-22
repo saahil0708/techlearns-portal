@@ -42,6 +42,7 @@ import NotificationsNoneRoundedIcon from '@mui/icons-material/NotificationsNoneR
 import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
 import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutUser } from '@/store/slices/authSlice';
@@ -627,6 +628,16 @@ export default function StudentNavbar({
             <PersonRoundedIcon fontSize="small" sx={{ color: '#2563EB' }} />
           </ListItemIcon>
           <ListItemText primary="My Profile" />
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => handleActionSelect('/students/skill-passport')}
+          sx={{ borderRadius: '6px', fontSize: '0.82rem', fontWeight: 600, py: 0.8 }}
+        >
+          <ListItemIcon>
+            <BadgeOutlinedIcon fontSize="small" sx={{ color: '#4F46E5' }} />
+          </ListItemIcon>
+          <ListItemText primary="Skill Passport & ID" />
         </MenuItem>
 
         <MenuItem

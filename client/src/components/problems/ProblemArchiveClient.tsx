@@ -42,7 +42,6 @@ import ShuffleRoundedIcon from '@mui/icons-material/ShuffleRounded';
 import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
 
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
-import { MOCK_PROBLEMS } from '@/lib/mock-problems-data';
 import { ProblemDifficulty, ProblemEntity } from '@/types/problem';
 import { apiService } from '@/lib/api-service';
 import { getRatingTier, getProblemRating } from '@/utils/codechefRating';
@@ -66,8 +65,8 @@ function sanitizeCsvField(value: string | number | null | undefined): string {
 
 export default function ProblemArchiveClient() {
   const router = useRouter();
-  const [problems, setProblems] = useState<ProblemEntity[]>(MOCK_PROBLEMS);
-  const [isLoading, setIsLoading] = useState(false);
+  const [problems, setProblems] = useState<ProblemEntity[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
@@ -116,42 +115,47 @@ export default function ProblemArchiveClient() {
           setAttemptedIds(attempted);
         }
 
-        if (isMounted && res?.items && res.items.length > 0) {
-          const mapped: ProblemEntity[] = res.items.map((item: any, idx: number) => {
-            const rawDiff = String(item.difficulty || '').toUpperCase();
-            const diff: ProblemDifficulty = rawDiff === 'EASY' ? 'Easy' : rawDiff === 'HARD' ? 'Hard' : 'Medium';
-            const subCount = item._count?.submissions || item.submissionsCount || 0;
-            const accepted = item.acceptedCount || 0;
-            const accRate = subCount > 0 ? Math.round((accepted / subCount) * 100) : 54;
-            return {
-              id: item.id,
-              code: item.code || `PROB-${String(idx + 1).padStart(3, '0')}`,
-              slug: item.slug || item.id,
-              title: item.title,
-              category: item.category || 'Dynamic Programming',
-              difficulty: diff,
-              acceptanceRate: accRate,
-              totalSubmissions: subCount,
-              acceptedSubmissions: accepted,
-              testCasesCount: item._count?.testCases || 10,
-              authorName: item.authorName || 'Platform Team',
-              tags: Array.isArray(item.tags) ? item.tags : ['Algorithms'],
-              status: item.status === 'PUBLISHED' ? 'Published' : 'Draft',
-              points: item.points || (diff === 'Easy' ? 100 : diff === 'Medium' ? 200 : 350),
-              timeLimitMs: item.timeLimit || 2000,
-              memoryLimitMb: item.memoryLimit || 256,
-              likes: 120 + idx * 7,
-              dislikes: 4 + (idx % 3),
-              premium: false,
-              companies: ['Google', 'Meta', 'Amazon'],
-              statementMarkdown: item.statement || '',
-              sampleTestCases: [],
-            };
-          });
-          setProblems(mapped);
+        if (isMounted) {
+          if (res?.items && res.items.length > 0) {
+            const mapped: ProblemEntity[] = res.items.map((item: any, idx: number) => {
+              const rawDiff = String(item.difficulty || '').toUpperCase();
+              const diff: ProblemDifficulty = rawDiff === 'EASY' ? 'Easy' : rawDiff === 'HARD' ? 'Hard' : 'Medium';
+              const subCount = item._count?.submissions || item.submissionsCount || 0;
+              const accepted = item.acceptedCount || 0;
+              const accRate = subCount > 0 ? Math.round((accepted / subCount) * 100) : 54;
+              return {
+                id: item.id,
+                code: item.code || `PROB-${String(idx + 1).padStart(3, '0')}`,
+                slug: item.slug || item.id,
+                title: item.title,
+                category: item.category || 'Dynamic Programming',
+                difficulty: diff,
+                acceptanceRate: accRate,
+                totalSubmissions: subCount,
+                acceptedSubmissions: accepted,
+                testCasesCount: item._count?.testCases || 10,
+                authorName: item.authorName || 'Platform Team',
+                tags: Array.isArray(item.tags) ? item.tags : ['Algorithms'],
+                status: item.status === 'PUBLISHED' ? 'Published' : 'Draft',
+                points: item.points || (diff === 'Easy' ? 100 : diff === 'Medium' ? 200 : 350),
+                timeLimitMs: item.timeLimit || 2000,
+                memoryLimitMb: item.memoryLimit || 256,
+                likes: 120 + idx * 7,
+                dislikes: 4 + (idx % 3),
+                premium: false,
+                companies: ['Google', 'Meta', 'Amazon'],
+                statementMarkdown: item.statement || '',
+                sampleTestCases: [],
+              };
+            });
+            setProblems(mapped);
+          } else {
+            setProblems([]);
+          }
         }
       } catch (err) {
-        console.warn('Live problems query failed, fallback to mock problems:', err);
+        console.warn('Live problems query failed:', err);
+        if (isMounted) setProblems([]);
       } finally {
         if (isMounted) setIsLoading(false);
       }

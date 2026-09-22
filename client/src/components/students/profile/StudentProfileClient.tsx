@@ -225,10 +225,32 @@ export default function StudentProfileClient({
       const handleOrId = initialProfile?.handle || initialProfile?.id || (currentUser?.email ? currentUser.email.split('@')[0] : 'me');
       const liveData = await apiService.getStudentProfile(handleOrId);
       if (liveData && liveData.name) {
+        let calculatedActivityData: Array<{ date: string; count: number }> | undefined = undefined;
+        if (Array.isArray(liveData.submissions)) {
+          setSubmissions(liveData.submissions);
+          const dateMap = new Map<string, number>();
+          liveData.submissions.forEach((sub: any) => {
+            const rawDate = sub.createdAt || sub.submittedAt;
+            if (rawDate) {
+              const d = new Date(rawDate);
+              if (!isNaN(d.getTime())) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const key = `${year}-${month}-${day}`;
+                dateMap.set(key, (dateMap.get(key) || 0) + 1);
+              }
+            }
+          });
+          calculatedActivityData = Array.from(dateMap.entries()).map(([date, count]) => ({ date, count }));
+        }
+
         setProfile((prev) => ({
           ...prev,
           ...liveData,
           role: liveData.role || prev.role,
+          activityData: calculatedActivityData || liveData.activityData || prev.activityData,
+          ratingHistory: Array.isArray(liveData.ratingHistory) ? liveData.ratingHistory : (Array.isArray(liveData.contests) ? liveData.contests : prev.ratingHistory),
           topicSkills: Array.isArray(liveData.topics)
             ? liveData.topics.map((t: any) => {
                 const solved = t.solved ?? t.solvedCount ?? 0;
@@ -244,9 +266,6 @@ export default function StudentProfileClient({
             : (Array.isArray(liveData.topicSkills) ? liveData.topicSkills : prev.topicSkills),
           cohortResult: liveData.cohortResult || prev.cohortResult,
         }));
-        if (Array.isArray(liveData.submissions)) {
-          setSubmissions(liveData.submissions);
-        }
         if (Array.isArray(liveData.contests)) {
           setContests(liveData.contests);
         }

@@ -103,4 +103,16 @@ export interface StudentProfileData {
   certifications?: StudentCertification[];
   topicSkills?: StudentTopicSkill[];
   cohortResult?: string;
+  ratingHistory?: Array<{
+    contestCode: string;
+    contestName: string;
+    date: string;
+    rating: number;
+    delta: number;
+    rank: number;
+  }>;
+  activityData?: Array<{
+    date: string;
+    count: number;
+  }>;
 }

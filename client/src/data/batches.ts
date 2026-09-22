@@ -1,8 +1,8 @@
 /**
- * Batches & Student Cohorts Data Models & API Operations
+ * Batches & Student Cohorts Data Models & API Operations (Axios)
  */
 
-import { API_URL, getAuthHeaders } from './client';
+import { apiClient } from '@/lib/axios';
 
 export interface BatchEntity {
   id: string;
@@ -20,31 +20,13 @@ export interface BatchEntity {
 }
 
 export async function getBatchesByCollegeApi(collegeId: string) {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`${API_URL}/batches/college/${collegeId}`, {
-    method: 'GET',
-    headers,
-    credentials: 'include',
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to fetch batches: HTTP ${res.status}`);
-  }
-  const json = await res.json();
-  return json.data ?? json;
+  const res = await apiClient.get(`/batches/college/${collegeId}`);
+  return res.data?.data ?? res.data;
 }
 
 export async function getBatchByIdApi(id: string) {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`${API_URL}/batches/${id}`, {
-    method: 'GET',
-    headers,
-    credentials: 'include',
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to fetch batch: HTTP ${res.status}`);
-  }
-  const json = await res.json();
-  return json.data ?? json;
+  const res = await apiClient.get(`/batches/${id}`);
+  return res.data?.data ?? res.data;
 }
 
 export async function createBatchApi(input: {
@@ -55,26 +37,15 @@ export async function createBatchApi(input: {
   startDate?: string;
   endDate?: string;
 }) {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`${API_URL}/batches`, {
-    method: 'POST',
-    headers,
-    credentials: 'include',
-    body: JSON.stringify({
-      name: input.name,
-      collegeId: input.collegeId,
-      code: input.code,
-      maxCapacity: input.maxCapacity,
-      startDate: input.startDate,
-      endDate: input.endDate,
-    }),
+  const res = await apiClient.post('/batches', {
+    name: input.name,
+    collegeId: input.collegeId,
+    code: input.code,
+    maxCapacity: input.maxCapacity,
+    startDate: input.startDate,
+    endDate: input.endDate,
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
-    throw new Error(err.message || 'Failed to create batch');
-  }
-  const json = await res.json();
-  return json.data ?? json;
+  return res.data?.data ?? res.data;
 }
 
 export async function updateBatchApi(id: string, input: {
@@ -84,48 +55,16 @@ export async function updateBatchApi(id: string, input: {
   endDate?: string;
   status?: string;
 }) {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`${API_URL}/batches/${id}`, {
-    method: 'PATCH',
-    headers,
-    credentials: 'include',
-    body: JSON.stringify(input),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
-    throw new Error(err.message || 'Failed to update batch');
-  }
-  const json = await res.json();
-  return json.data ?? json;
+  const res = await apiClient.patch(`/batches/${id}`, input);
+  return res.data?.data ?? res.data;
 }
 
 export async function deleteBatchApi(id: string) {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`${API_URL}/batches/${id}`, {
-    method: 'DELETE',
-    headers,
-    credentials: 'include',
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
-    throw new Error(err.message || 'Failed to delete batch');
-  }
-  const json = await res.json();
-  return json.data ?? json ?? true;
+  const res = await apiClient.delete(`/batches/${id}`);
+  return res.data?.data ?? res.data ?? true;
 }
 
 export async function assignStudentsToBatchApi(id: string, userIds: string[]) {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`${API_URL}/batches/${id}/students`, {
-    method: 'POST',
-    headers,
-    credentials: 'include',
-    body: JSON.stringify({ userIds }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
-    throw new Error(err.message || 'Failed to assign students');
-  }
-  const json = await res.json();
-  return json.data ?? json;
+  const res = await apiClient.post(`/batches/${id}/students`, { userIds });
+  return res.data?.data ?? res.data;
 }

@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { getContestByIdOrSlug } from '@/lib/mock-contests-data';
 import { apiService } from '@/lib/api-service';
 import { ContestEntity } from '@/types/contest';
 import ContestArenaWorkspace from '@/components/contests/ContestArenaWorkspace';
@@ -39,8 +38,8 @@ async function resolveContest(idOrSlug: string): Promise<ContestEntity | null> {
         startTime: liveContest.startTime || new Date().toISOString(),
         endTime: liveContest.endTime || new Date(Date.now() + 7200000).toISOString(),
         durationMinutes: durationMins,
-        problemsCount: liveContest._count?.problems || liveContest.problems?.length || 4,
-        registeredParticipants: liveContest._count?.registrations || 240,
+        problemsCount: liveContest._count?.problems || liveContest.problems?.length || 0,
+        registeredParticipants: liveContest._count?.registrations || 0,
         submissionsCount: liveContest._count?.submissions || 0,
         organizer: liveContest.organizer || 'Competitive Programming Council',
         bannerColor: '#2563EB',
@@ -48,11 +47,11 @@ async function resolveContest(idOrSlug: string): Promise<ContestEntity | null> {
         rated: liveContest.rated !== undefined ? Boolean(liveContest.rated) : true,
       };
     }
-  } catch {
-    // Fallback to mock
+  } catch (err) {
+    console.warn('Failed to resolve contest by id/slug:', err);
   }
 
-  return getContestByIdOrSlug(idOrSlug) || null;
+  return null;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

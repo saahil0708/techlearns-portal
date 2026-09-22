@@ -38,10 +38,28 @@ import { FluidArrowOutward } from '@/utils/fluid_arrow';
 import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
-import { MOCK_LEADERBOARD, LeaderboardRankEntity } from '@/lib/mock-leaderboard-data';
 import { apiService } from '@/lib/api-service';
 import StarRatingBadge from '@/components/shared/StarRatingBadge';
 import { getDivisionFromRating } from '@/utils/codechefRating';
+
+export interface LeaderboardRankEntity {
+  id: string;
+  rank: number;
+  handle: string;
+  name: string;
+  avatar: string;
+  country: string;
+  countryCode: string;
+  institution: string;
+  rating: number;
+  ratingTier: 'Grandmaster' | 'Master' | 'Candidate Master' | 'Expert' | 'Specialist';
+  tierColor: string;
+  problemsSolved: number;
+  contestsAttended: number;
+  globalPercentile: string;
+  streakDays: number;
+  badge: string;
+}
 
 const TIER_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   Grandmaster: { bg: 'rgba(239, 68, 68, 0.1)', text: '#EF4444', border: 'rgba(239, 68, 68, 0.25)' },
@@ -54,70 +72,75 @@ const TIER_COLORS: Record<string, { bg: string; text: string; border: string }> 
 export default function LeaderboardClient() {
   const router = useRouter();
 
-  const [ranks, setRanks] = useState<LeaderboardRankEntity[]>(MOCK_LEADERBOARD);
+  const [ranks, setRanks] = useState<LeaderboardRankEntity[]>([]);
   const [search, setSearch] = useState('');
   const [tierFilter, setTierFilter] = useState<string>('ALL');
   const [activeTab, setActiveTab] = useState<string>('GLOBAL');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Fetch live ranked users from database with fallback
+  // Fetch live ranked users from database
   useEffect(() => {
     let isMounted = true;
     async function loadLeaderboard() {
       try {
         const res = await apiService.getUsers({ limit: 100, role: 'STUDENT' });
-        if (isMounted && res?.items && res.items.length > 0) {
-          const sortedUsers = [...res.items].sort(
-            (a: any, b: any) => (b.contestRating || 1500) - (a.contestRating || 1500),
-          );
-          const mapped: LeaderboardRankEntity[] = sortedUsers.map((u: any, idx: number) => {
-            const rating = u.contestRating || 1500;
-            let tier: 'Grandmaster' | 'Master' | 'Candidate Master' | 'Expert' | 'Specialist' = 'Specialist';
-            let tierColor = '#10B981';
-            let badge = '⭐ Specialist';
-            if (rating >= 2400) {
-              tier = 'Grandmaster';
-              tierColor = '#EF4444';
-              badge = '🏆 Grandmaster';
-            } else if (rating >= 2100) {
-              tier = 'Master';
-              tierColor = '#F59E0B';
-              badge = '🥇 Master';
-            } else if (rating >= 1900) {
-              tier = 'Candidate Master';
-              tierColor = '#8B5CF6';
-              badge = '🥈 Candidate Master';
-            } else if (rating >= 1600) {
-              tier = 'Expert';
-              tierColor = '#3B82F6';
-              badge = '🥉 Expert';
-            }
-            const inst = u.institution || u.memberships?.[0]?.institution?.name || 'Academic Institute';
-            const handle = u.handle || u.username || u.rollNo || `coder_${idx + 1}`;
-            return {
-              id: u.id || `rank-${idx + 1}`,
-              rank: idx + 1,
-              handle,
-              name: u.name || 'Competitive Programmer',
-              avatar: u.avatar || u.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-              rating,
-              ratingTier: tier,
-              tierColor,
-              country: u.country || 'Global',
-              countryCode: u.countryCode || 'us',
-              institution: inst,
-              problemsSolved: u.problemsSolved || Math.round(rating / 10),
-              contestsAttended: u.contestsAttended || 12,
-              globalPercentile: u.globalPercentile || `Top ${Math.max(1, Math.round(((idx + 1) / sortedUsers.length) * 100))}%`,
-              streakDays: u.streakDays || 15,
-              badge,
-            };
-          });
-          setRanks(mapped);
+        if (isMounted) {
+          if (res?.items && res.items.length > 0) {
+            const sortedUsers = [...res.items].sort(
+              (a: any, b: any) => (b.contestRating || 1500) - (a.contestRating || 1500),
+            );
+            const mapped: LeaderboardRankEntity[] = sortedUsers.map((u: any, idx: number) => {
+              const rating = u.contestRating || 1500;
+              let tier: 'Grandmaster' | 'Master' | 'Candidate Master' | 'Expert' | 'Specialist' = 'Specialist';
+              let tierColor = '#10B981';
+              let badge = '⭐ Specialist';
+              if (rating >= 2400) {
+                tier = 'Grandmaster';
+                tierColor = '#EF4444';
+                badge = '🏆 Grandmaster';
+              } else if (rating >= 2100) {
+                tier = 'Master';
+                tierColor = '#F59E0B';
+                badge = '🥇 Master';
+              } else if (rating >= 1900) {
+                tier = 'Candidate Master';
+                tierColor = '#8B5CF6';
+                badge = '🥈 Candidate Master';
+              } else if (rating >= 1600) {
+                tier = 'Expert';
+                tierColor = '#3B82F6';
+                badge = '🥉 Expert';
+              }
+              const inst = u.institution || u.memberships?.[0]?.institution?.name || 'Academic Institute';
+              const handle = u.handle || u.username || u.rollNo || `coder_${idx + 1}`;
+              return {
+                id: u.id || `rank-${idx + 1}`,
+                rank: idx + 1,
+                handle,
+                name: u.name || 'Competitive Programmer',
+                avatar: u.avatar || u.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+                rating,
+                ratingTier: tier,
+                tierColor,
+                country: u.country || 'Global',
+                countryCode: u.countryCode || 'us',
+                institution: inst,
+                problemsSolved: u.problemsSolved || Math.round(rating / 10),
+                contestsAttended: u.contestsAttended || 12,
+                globalPercentile: u.globalPercentile || `Top ${Math.max(1, Math.round(((idx + 1) / sortedUsers.length) * 100))}%`,
+                streakDays: u.streakDays || 15,
+                badge,
+              };
+            });
+            setRanks(mapped);
+          } else {
+            setRanks([]);
+          }
         }
       } catch (err) {
-        console.warn('Live leaderboard fetch fallback:', err);
+        console.warn('Live leaderboard fetch failed:', err);
+        if (isMounted) setRanks([]);
       }
     }
     loadLeaderboard();

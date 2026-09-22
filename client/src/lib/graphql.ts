@@ -1,3 +1,6 @@
+import axios from 'axios';
+import { getAuthToken } from './axios';
+
 export interface GraphQLResponse<T> {
   data?: T;
   errors?: Array<{
@@ -19,63 +22,44 @@ export async function fetchGraphQL<T = any>(
     'Content-Type': 'application/json',
   };
 
-  let resolvedToken = token;
-
-  // 1. In browser environment -> read from document.cookie
-  if (!resolvedToken && typeof window !== 'undefined') {
-    const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]*)/);
-    if (match) {
-      resolvedToken = decodeURIComponent(match[1]);
-    }
-  }
-
-  // 2. In Next.js SSR Server Component environment -> read from next/headers
-  if (!resolvedToken && typeof window === 'undefined') {
-    try {
-      const { cookies } = await import('next/headers');
-      const cookieStore = await cookies();
-      resolvedToken = cookieStore.get('access_token')?.value;
-    } catch {
-      // Called outside incoming request context
-    }
-  }
-
+  const resolvedToken = token || (await getAuthToken());
   if (resolvedToken) {
     headers['Authorization'] = `Bearer ${resolvedToken}`;
   }
 
-  const response = await fetch(GRAPHQL_ENDPOINT, {
-    method: 'POST',
-    headers,
-    credentials: 'include', // Sends httpOnly secure cookie automatically
-    body: JSON.stringify({
-      query,
-      variables,
-    }),
-    cache: 'no-store',
-  });
-
-  let result: GraphQLResponse<T> | null = null;
   try {
-    result = await response.json();
-  } catch {
-    // Non-JSON response
-  }
+    const response = await axios.post<GraphQLResponse<T>>(
+      GRAPHQL_ENDPOINT,
+      { query, variables },
+      {
+        headers,
+        withCredentials: true,
+        timeout: 30000,
+      }
+    );
 
-  if (result?.errors && result.errors.length > 0) {
-    const errorMessages = result.errors.map((e) => e.message).join(', ');
-    throw new Error(errorMessages || `GraphQL error: ${response.status} ${response.statusText}`);
-  }
+    const result = response.data;
 
-  if (!response.ok) {
-    throw new Error(`GraphQL HTTP error: ${response.status} ${response.statusText}`);
-  }
+    if (result?.errors && result.errors.length > 0) {
+      const errorMessages = result.errors.map((e) => e.message).join(', ');
+      throw new Error(errorMessages || `GraphQL error from server`);
+    }
 
-  if (!result || result.data === undefined) {
-    throw new Error(`GraphQL transport error: Invalid or empty JSON response from server (status ${response.status})`);
-  }
+    if (!result || result.data === undefined) {
+      throw new Error(`GraphQL transport error: Invalid or empty response from server`);
+    }
 
-  return result.data as T;
+    return result.data as T;
+  } catch (error: any) {
+    if (error.response?.data?.errors && error.response.data.errors.length > 0) {
+      const errorMessages = error.response.data.errors.map((e: any) => e.message).join(', ');
+      throw new Error(errorMessages);
+    }
+    if (error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw error;
+  }
 }
 
 // ----------------------------------------------------

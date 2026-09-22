@@ -31,8 +31,8 @@ function parseLocalDate(dateStr: string): Date {
   return new Date(dateStr);
 }
 
-// Generates 52 weeks (364 days) of sample realistic submission activity
-function generateYearlyActivity(): DayActivity[] {
+// Generates 52 weeks (364 days) of calendar days initialized to 0
+function generateEmptyYearlyActivity(): DayActivity[] {
   const activity: DayActivity[] = [];
   const today = new Date();
   
@@ -42,22 +42,26 @@ function generateYearlyActivity(): DayActivity[] {
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
-    
-    // Deterministic realistic activity pattern with clusters
-    const dayOfWeek = d.getDay();
-    const dayOfMonth = d.getDate();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    
-    let count = 0;
-    if ((dayOfMonth % 3 === 0 || isWeekend) && dayOfMonth % 5 !== 0) {
-      count = ((i * 7 + dayOfMonth * 3) % 8) + 1;
-    } else if (i < 30) {
-      count = ((i * 3 + 2) % 6) + 1;
-    }
-    
-    activity.push({ date: dateStr, count });
+    activity.push({ date: dateStr, count: 0 });
   }
   return activity;
+}
+
+function mergeActivityData(activityData?: DayActivity[]): DayActivity[] {
+  const base = generateEmptyYearlyActivity();
+  if (!activityData || activityData.length === 0) return base;
+
+  const countMap = new Map<string, number>();
+  for (const item of activityData) {
+    if (item.date) {
+      countMap.set(item.date, (countMap.get(item.date) ?? 0) + (item.count ?? 1));
+    }
+  }
+
+  return base.map((b) => ({
+    date: b.date,
+    count: countMap.get(b.date) ?? 0,
+  }));
 }
 
 export default function SubmissionActivityHeatmap({
@@ -67,7 +71,7 @@ export default function SubmissionActivityHeatmap({
   maxStreak,
   activeDaysCount,
 }: SubmissionActivityHeatmapProps) {
-  const days = useMemo(() => activityData ?? generateYearlyActivity(), [activityData]);
+  const days = useMemo(() => mergeActivityData(activityData), [activityData]);
 
   // Derive stats from the activity array
   const derivedStats = useMemo(() => {

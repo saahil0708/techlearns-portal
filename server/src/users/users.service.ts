@@ -245,36 +245,48 @@ export class UsersService {
       throw new NotFoundException(`Student profile '${handleOrId}' not found`);
     }
 
-    // Compute problem stats
-    const totalSubmissionsCount = user.submissions.length;
-    const acceptedSubmissions = user.submissions.filter((s) => s.verdict === 'ACCEPTED');
-    const uniqueSolvedProblemIds = new Set(acceptedSubmissions.map((s) => s.problemId));
-    const solvedTotal = uniqueSolvedProblemIds.size;
+    // Compute problem stats across lifetime submissions
+    const [totalSubmissionsCount, totalAcceptedSubmissionsCount, acceptedProblems] = await Promise.all([
+      this.prisma.submission.count({
+        where: { userId: baseUser.id },
+      }),
+      this.prisma.submission.count({
+        where: { userId: baseUser.id, verdict: 'ACCEPTED' },
+      }),
+      this.prisma.problem.findMany({
+        where: {
+          submissions: {
+            some: {
+              userId: baseUser.id,
+              verdict: 'ACCEPTED',
+            },
+          },
+        },
+        select: {
+          id: true,
+          difficulty: true,
+        },
+      }),
+    ]);
 
+    const solvedTotal = acceptedProblems.length;
     let solvedEasy = 0;
     let solvedMedium = 0;
     let solvedHard = 0;
 
-    const seenEasy = new Set<string>();
-    const seenMed = new Set<string>();
-    const seenHard = new Set<string>();
-
-    for (const sub of acceptedSubmissions) {
-      if (sub.problem.difficulty === 'EASY' && !seenEasy.has(sub.problemId)) {
-        seenEasy.add(sub.problemId);
+    for (const problem of acceptedProblems) {
+      if (problem.difficulty === 'EASY') {
         solvedEasy++;
-      } else if (sub.problem.difficulty === 'MEDIUM' && !seenMed.has(sub.problemId)) {
-        seenMed.add(sub.problemId);
+      } else if (problem.difficulty === 'MEDIUM') {
         solvedMedium++;
-      } else if (sub.problem.difficulty === 'HARD' && !seenHard.has(sub.problemId)) {
-        seenHard.add(sub.problemId);
+      } else if (problem.difficulty === 'HARD') {
         solvedHard++;
       }
     }
 
     const accuracyRate =
       totalSubmissionsCount > 0
-        ? `${((acceptedSubmissions.length / totalSubmissionsCount) * 100).toFixed(1)}%`
+        ? `${((totalAcceptedSubmissionsCount / totalSubmissionsCount) * 100).toFixed(1)}%`
         : '0.0%';
 
     // Map formatted submissions

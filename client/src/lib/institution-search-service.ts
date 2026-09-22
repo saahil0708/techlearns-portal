@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { UniversitySearchResult } from '@/app/api/institutions/search/route';
 
 const cache = new Map<string, UniversitySearchResult[]>();
@@ -11,10 +12,11 @@ export async function searchUniversitiesLive(query: string): Promise<UniversityS
   }
 
   try {
-    const res = await fetch(`/api/institutions/search?q=${encodeURIComponent(trimmed)}`);
-    if (!res.ok) throw new Error('Search failed');
-    const json = await res.json();
-    const results: UniversitySearchResult[] = json.results || [];
+    const baseUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
+    const res = await axios.get<{ results: UniversitySearchResult[] }>(
+      `${baseUrl}/api/institutions/search?q=${encodeURIComponent(trimmed)}`
+    );
+    const results: UniversitySearchResult[] = res.data?.results || [];
     cache.set(cacheKey, results);
     return results;
   } catch (err) {

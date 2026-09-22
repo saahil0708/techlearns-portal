@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { apiClient } from '@/lib/axios';
 
 export interface UserMembership {
   collegeId?: string;
@@ -107,23 +108,12 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Sends & sets httpOnly cookies
-        body: JSON.stringify(credentials),
-      });
-
-      const responseData = await res.json();
-      if (!res.ok) {
-        return rejectWithValue(responseData?.message || 'Invalid email or password');
-      }
-
-      // Handle standard response envelope
+      const res = await apiClient.post('/auth/login', credentials);
+      const responseData = res.data;
       const data = responseData.data || responseData;
       return data;
     } catch (err: any) {
-      return rejectWithValue(err.message || 'Network error occurred during login');
+      return rejectWithValue(err.message || 'Invalid email or password');
     }
   },
 );
@@ -135,22 +125,12 @@ export const registerUser = createAsyncThunk(
   'auth/register',
   async (formData: { email: string; name: string; password: string }, { rejectWithValue }) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Sends & sets httpOnly cookies
-        body: JSON.stringify(formData),
-      });
-
-      const responseData = await res.json();
-      if (!res.ok) {
-        return rejectWithValue(responseData?.message || 'Registration failed');
-      }
-
+      const res = await apiClient.post('/auth/register', formData);
+      const responseData = res.data;
       const data = responseData.data || responseData;
       return data;
     } catch (err: any) {
-      return rejectWithValue(err.message || 'Network error occurred during registration');
+      return rejectWithValue(err.message || 'Registration failed');
     }
   },
 );
@@ -165,22 +145,12 @@ export const verify2faLogin = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const res = await fetch(`${BACKEND_URL}/auth/2fa/verify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
-      });
-
-      const responseData = await res.json();
-      if (!res.ok) {
-        return rejectWithValue(responseData?.message || 'Invalid 2FA verification code');
-      }
-
+      const res = await apiClient.post('/auth/2fa/verify', payload);
+      const responseData = res.data;
       const data = responseData.data || responseData;
       return data;
     } catch (err: any) {
-      return rejectWithValue(err.message || 'Verification failed');
+      return rejectWithValue(err.message || 'Invalid 2FA verification code');
     }
   },
 );
@@ -192,56 +162,30 @@ export const checkCurrentUser = createAsyncThunk(
   'auth/checkSession',
   async (_, { rejectWithValue }) => {
     try {
-      const getAuthHeaders = () => {
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (typeof document !== 'undefined') {
-          const match = document.cookie.match(/(?:^|;\s*)access_token=([^;]*)/);
-          if (match) {
-            headers['Authorization'] = `Bearer ${decodeURIComponent(match[1])}`;
-          }
-        }
-        return headers;
-      };
-
-      let res = await fetch(`${BACKEND_URL}/auth/me`, {
-        method: 'GET',
-        headers: getAuthHeaders(),
-        credentials: 'include',
-      });
-
-      // If unauthorized / token expired, attempt silent token refresh rotation
-      if (!res.ok) {
+      let res;
+      try {
+        res = await apiClient.get('/auth/me');
+      } catch {
+        // If unauthorized / token expired, attempt silent token refresh rotation
         try {
-          const refreshRes = await fetch(`${BACKEND_URL}/auth/refresh`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({}),
-          });
-
-          if (refreshRes.ok) {
-            const refreshData = await refreshRes.json();
-            const token = refreshData?.accessToken || refreshData?.data?.accessToken;
-            if (token) {
-              setClientAuthCookie(token);
-              // Retry fetching /auth/me with newly rotated access token
-              res = await fetch(`${BACKEND_URL}/auth/me`, {
-                method: 'GET',
-                headers: getAuthHeaders(),
-                credentials: 'include',
-              });
-            }
+          const refreshRes = await apiClient.post('/auth/refresh', {});
+          const refreshData = refreshRes.data;
+          const token = refreshData?.accessToken || refreshData?.data?.accessToken;
+          if (token) {
+            setClientAuthCookie(token);
+            // Retry fetching /auth/me with newly rotated access token
+            res = await apiClient.get('/auth/me');
           }
         } catch {
           // Silent refresh failed
         }
       }
 
-      if (!res.ok) {
+      if (!res || !res.data) {
         return rejectWithValue('No active session');
       }
 
-      const responseData = await res.json();
+      const responseData = res.data;
       const user = responseData.data || responseData;
       if (typeof window !== 'undefined' && user) {
         try {
@@ -264,12 +208,7 @@ export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
     try {
-      await fetch(`${BACKEND_URL}/auth/logout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({}),
-      });
+      await apiClient.post('/auth/logout', {});
       return true;
     } catch (err: any) {
       return rejectWithValue(err.message || 'Logout failed');

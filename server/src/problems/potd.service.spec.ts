@@ -75,4 +75,42 @@ describe('PotdService', () => {
     expect(streak.streakActiveToday).toBe(true);
     expect(streak.streakMultiplier).toBeGreaterThan(1.0);
   });
+
+  it('should reject setPotd when problem is not published or has institutionId', async () => {
+    (prisma.problem as any).findUnique = vi.fn().mockResolvedValue({
+      id: 'p-draft',
+      title: 'Draft Problem',
+      status: ProblemStatus.DRAFT,
+      institutionId: null,
+    });
+
+    await expect(service.setPotd('p-draft', '2026-09-22', 50)).rejects.toThrow(
+      'Only published global platform problems can be set as Problem of the Day',
+    );
+
+    (prisma.problem as any).findUnique = vi.fn().mockResolvedValue({
+      id: 'p-inst',
+      title: 'College Problem',
+      status: ProblemStatus.PUBLISHED,
+      institutionId: 'inst-123',
+    });
+
+    await expect(service.setPotd('p-inst', '2026-09-22', 50)).rejects.toThrow(
+      'Only published global platform problems can be set as Problem of the Day',
+    );
+  });
+
+  it('should successfully set POTD for a published global problem', async () => {
+    (prisma.problem as any).findUnique = vi.fn().mockResolvedValue({
+      id: 'p-valid',
+      title: 'Valid Global Problem',
+      status: ProblemStatus.PUBLISHED,
+      institutionId: null,
+    });
+
+    const result = await service.setPotd('p-valid', '2026-09-22', 75);
+    expect(result.success).toBe(true);
+    expect(result.date).toBe('2026-09-22');
+    expect(result.bonusPoints).toBe(75);
+  });
 });

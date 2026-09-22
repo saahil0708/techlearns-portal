@@ -39,7 +39,6 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
-import { MOCK_CONTESTS } from '@/lib/mock-contests-data';
 import { ContestEntity, ContestScope, ContestStatus, ScoringFormat } from '@/types/contest';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/lib/api-service';
@@ -48,14 +47,14 @@ export default function ContestsArenaClient() {
   const router = useRouter();
   const toast = useToast();
 
-  const [contests, setContests] = useState<ContestEntity[]>(MOCK_CONTESTS);
+  const [contests, setContests] = useState<ContestEntity[]>([]);
   const [search, setSearch] = useState('');
   const [statusTab, setStatusTab] = useState<string>('ALL');
   const [scopeFilter, setScopeFilter] = useState<string>('ALL');
   const [divisionFilter, setDivisionFilter] = useState<string>('ALL');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [registeredIds, setRegisteredIds] = useState<Set<string>>(new Set(['contest-1', 'contest-2']));
+  const [registeredIds, setRegisteredIds] = useState<Set<string>>(new Set());
 
   // Format countdown ticker (lazy mount to avoid SSR hydration mismatch)
   const [now, setNow] = useState<number | null>(null);
@@ -65,51 +64,67 @@ export default function ContestsArenaClient() {
     return () => clearInterval(timer);
   }, []);
 
-  // Fetch live contests from backend GraphQL API with fallback
+  // Fetch live contests from backend API
   useEffect(() => {
     let isMounted = true;
     async function loadContests() {
       try {
-        const res = await apiService.getContests({ limit: 50 });
-        if (isMounted && res?.items && res.items.length > 0) {
-          const mapped: ContestEntity[] = res.items.map((c: any, idx: number) => {
-            const rawStatus = String(c.status || '').toUpperCase();
-            const status: ContestStatus = rawStatus === 'RUNNING' ? 'LIVE' : rawStatus === 'ENDED' ? 'PAST' : 'UPCOMING';
-            const durationMins = c.startTime && c.endTime
-              ? Math.round((new Date(c.endTime).getTime() - new Date(c.startTime).getTime()) / 60000)
-              : 120;
-            return {
-              id: c.id,
-              code: c.code || `CONTEST-${String(101 + idx)}`,
-              slug: c.slug || c.id,
-              title: c.title,
-              description: c.description || 'Weekly competitive programming round featuring standard ICPC and ACM scoring formats.',
-              status,
-              scope: (c.scope || 'Global') as ContestScope,
-              scoringFormat: (c.scoringFormat || 'ICPC (Penalty Time)') as ScoringFormat,
-              startTime: c.startTime || new Date(Date.now() + 86400000).toISOString(),
-              endTime: c.endTime || new Date(Date.now() + 86400000 + 7200000).toISOString(),
-              durationMinutes: durationMins,
-              problemsCount: c._count?.problems || 4,
-              registeredParticipants: c._count?.registrations || 240,
-              submissionsCount: c._count?.submissions || 0,
-              organizer: c.organizer || 'Competitive Programming Council',
-              bannerColor: '#2563EB',
-              tags: Array.isArray(c.tags) ? c.tags : ['Rated', 'Standard'],
-              rated: c.rated !== undefined ? Boolean(c.rated) : true,
-            };
-          });
-          setContests(mapped);
+        const [res, meRes] = await Promise.all([
+          apiService.getContests({ limit: 50 }),
+          apiService.getMe().catch(() => null),
+        ]);
+        if (isMounted) {
+          if (res?.items && res.items.length > 0) {
+            const mapped: ContestEntity[] = res.items.map((c: any, idx: number) => {
+              const rawStatus = String(c.status || '').toUpperCase();
+              const status: ContestStatus = rawStatus === 'RUNNING' || rawStatus === 'ONGOING' ? 'LIVE' : rawStatus === 'ENDED' || rawStatus === 'COMPLETED' ? 'PAST' : 'UPCOMING';
+              const durationMins = c.startTime && c.endTime
+                ? Math.round((new Date(c.endTime).getTime() - new Date(c.startTime).getTime()) / 60000)
+                : 120;
+              return {
+                id: c.id,
+                code: c.code || `CONTEST-${String(101 + idx)}`,
+                slug: c.slug || c.id,
+                title: c.title,
+                description: c.description || 'Weekly competitive programming round featuring standard ICPC and ACM scoring formats.',
+                status,
+                scope: (c.scope || 'Global') as ContestScope,
+                scoringFormat: (c.scoringFormat || 'ICPC (Penalty Time)') as ScoringFormat,
+                startTime: c.startTime || new Date(Date.now() + 86400000).toISOString(),
+                endTime: c.endTime || new Date(Date.now() + 86400000 + 7200000).toISOString(),
+                durationMinutes: durationMins,
+                problemsCount: c.problems?.length || c._count?.problems || 0,
+                registeredParticipants: c._count?.registrations || 0,
+                submissionsCount: c._count?.submissions || 0,
+                organizer: c.organizer || 'Competitive Programming Council',
+                bannerColor: '#2563EB',
+                tags: Array.isArray(c.tags) ? c.tags : ['Rated', 'Standard'],
+                rated: c.rated !== undefined ? Boolean(c.rated) : true,
+              };
+            });
+            setContests(mapped);
+          } else {
+            setContests([]);
+          }
+
+          if (meRes?.contestRegistrations) {
+            const regSet = new Set<string>();
+            meRes.contestRegistrations.forEach((reg: any) => {
+              if (reg.contestId) regSet.add(reg.contestId);
+            });
+            setRegisteredIds(regSet);
+          }
         }
       } catch (err) {
-        console.warn('Live contests fetch fallback:', err);
+        console.warn('Live contests fetch failed:', err);
+        if (isMounted) setContests([]);
       }
     }
     loadContests();
     return () => {
       isMounted = false;
     };
-  }, [registeredIds]);
+  }, []);
 
   const formatCountdown = (targetIso: string, isLive: boolean) => {
     if (now === null) return '--:--:--';
