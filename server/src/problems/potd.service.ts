@@ -1,4 +1,4 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger, Optional, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ProblemStatus, SubmissionVerdict } from '@prisma/client';
 import { Redis } from 'ioredis';
@@ -152,11 +152,11 @@ export class PotdService {
     });
 
     if (!problem) {
-      throw new Error(`Problem with ID "${problemId}" not found`);
+      throw new NotFoundException(`Problem with ID "${problemId}" not found`);
     }
 
     if (problem.status !== ProblemStatus.PUBLISHED || problem.institutionId !== null) {
-      throw new Error(`Only published global platform problems can be set as Problem of the Day`);
+      throw new BadRequestException(`Only published global platform problems can be set as Problem of the Day`);
     }
 
     // Persist assignments through prisma.problemOfTheDay.upsert using unique date key before updating caches

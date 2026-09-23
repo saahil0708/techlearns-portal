@@ -40,6 +40,8 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import WhatshotRoundedIcon from '@mui/icons-material/WhatshotRounded';
 import ShuffleRoundedIcon from '@mui/icons-material/ShuffleRounded';
 import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
 import { ProblemDifficulty, ProblemEntity } from '@/types/problem';
@@ -78,6 +80,28 @@ export default function ProblemArchiveClient() {
   const [solvedIds, setSolvedIds] = useState<Set<string>>(new Set());
   const [attemptedIds, setAttemptedIds] = useState<Set<string>>(new Set());
   const [potdData, setPotdData] = useState<any>(null);
+  const [timeParts, setTimeParts] = useState({ hours: '08', minutes: '45', seconds: '20' });
+
+  // Live midnight reset countdown timer
+  useEffect(() => {
+    function updateCountdown() {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0);
+      const diff = midnight.getTime() - now.getTime();
+      if (diff <= 0) {
+        setTimeParts({ hours: '00', minutes: '00', seconds: '00' });
+        return;
+      }
+      const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
+      const mins = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+      const secs = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
+      setTimeParts({ hours, minutes: mins, seconds: secs });
+    }
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch live problems, POTD and user submissions from backend API
   useEffect(() => {
@@ -334,172 +358,490 @@ export default function ProblemArchiveClient() {
         </Box>
 
         {/* ========================================================================= */}
-        {/* PROBLEM OF THE DAY (POTD) HERO BANNER */}
+        {/* PREMIUM PROBLEM OF THE DAY (POTD) HERO BANNER WITH DIGITAL HUD TIMER */}
         {/* ========================================================================= */}
         <Card
+          elevation={0}
           sx={{
-            p: { xs: 2.5, sm: 3 },
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0F2A66 100%)',
-            border: '1px solid rgba(56, 189, 248, 0.25)',
-            boxShadow: '0 8px 32px rgba(15, 23, 42, 0.2)',
+            borderRadius: '24px',
+            background: 'linear-gradient(135deg, #070B14 0%, #0D1527 50%, #0F1E3D 100%)',
+            border: '1px solid rgba(56, 189, 248, 0.22)',
+            boxShadow: '0 24px 60px -15px rgba(15, 23, 42, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
             position: 'relative',
             overflow: 'hidden',
+            minHeight: { xs: 230, md: 240 },
+            py: { xs: 4, sm: 4.5, md: 5 },
+            px: { xs: 3, sm: 4, md: 4.5 },
+            display: 'flex',
+            alignItems: 'center',
           }}
         >
-          {/* Subtle background glowing accent */}
+          {/* 1. Visible Developer Tech Grid Background */}
           <Box
             sx={{
               position: 'absolute',
-              top: -40,
-              right: -40,
-              width: 200,
-              height: 200,
-              borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%)',
+              inset: 0,
+              backgroundImage: `
+                linear-gradient(to right, rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(56, 189, 248, 0.08) 1px, transparent 1px)
+              `,
+              backgroundSize: '28px 28px',
+              maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0.3) 85%)',
+              WebkitMaskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0.3) 85%)',
               pointerEvents: 'none',
             }}
           />
 
+          {/* 2. Genuine Geometric SVG Shapes in Background (Isometric Hexagons, Circuit Lines, Angled Brackets) */}
+          <svg
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* Hexagon & Concentric Polygonal Shapes (Left side behind flame) */}
+            <polygon
+              points="140,20 185,45 185,95 140,120 95,95 95,45"
+              fill="none"
+              stroke="rgba(245, 158, 11, 0.15)"
+              strokeWidth="1.5"
+              strokeDasharray="4 4"
+            />
+            <polygon
+              points="140,5 200,38 200,102 140,135 80,102 80,38"
+              fill="none"
+              stroke="rgba(245, 158, 11, 0.08)"
+              strokeWidth="1"
+            />
+
+            {/* Geometric Circuit Traces (Clean angular lines without dots) */}
+            <path
+              d="M 220,70 L 320,70 L 360,110 L 520,110"
+              fill="none"
+              stroke="rgba(56, 189, 248, 0.16)"
+              strokeWidth="1.5"
+              strokeDasharray="6 6"
+            />
+            <path
+              d="M 600,30 L 680,30 L 720,70 L 850,70"
+              fill="none"
+              stroke="rgba(56, 189, 248, 0.12)"
+              strokeWidth="1.5"
+            />
+
+            {/* Geometric Octagonal Tech Wireframes on Right side */}
+            <polygon
+              points="820,120 860,80 910,80 950,120 950,170 910,210 860,210 820,170"
+              fill="none"
+              stroke="rgba(56, 189, 248, 0.12)"
+              strokeWidth="1.5"
+              strokeDasharray="8 6"
+            />
+            <polygon
+              points="790,120 840,70 930,70 980,120 980,170 930,220 840,220 790,170"
+              fill="none"
+              stroke="rgba(56, 189, 248, 0.06)"
+              strokeWidth="1"
+            />
+
+            {/* Tech Crosshair Markers */}
+            <path d="M 40,30 L 50,30 M 45,25 L 45,35" stroke="rgba(56, 189, 248, 0.25)" strokeWidth="1.5" />
+            <path d="M 580,180 L 590,180 M 585,175 L 585,185" stroke="rgba(245, 158, 11, 0.3)" strokeWidth="1.5" />
+          </svg>
+
+          {/* 3. Multi-layer Ambient Glows */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '-25%',
+              left: '-8%',
+              width: '450px',
+              height: '450px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, rgba(239, 68, 68, 0.08) 50%, transparent 70%)',
+              filter: 'blur(55px)',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+          />
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: '-30%',
+              right: '-5%',
+              width: '500px',
+              height: '500px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.14) 50%, transparent 70%)',
+              filter: 'blur(60px)',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+          />
+
+          {/* 4. Top-Right Slanted Geometric Tag */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: 160,
+              height: 36,
+              background: 'linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.18))',
+              clipPath: 'polygon(18% 0, 100% 0, 100% 100%, 0% 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              pr: 2.5,
+              borderBottom: '1px solid rgba(56, 189, 248, 0.35)',
+              zIndex: 3,
+              pointerEvents: 'none',
+            }}
+          >
+            <Typography sx={{ color: '#38BDF8', fontSize: '0.68rem', fontWeight: 900, letterSpacing: '0.12em' }}>
+              POTD // SPRINT
+            </Typography>
+          </Box>
+
+          {/* 5. Main Content Layout */}
           <Box
             sx={{
               display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
+              flexDirection: { xs: 'column', lg: 'row' },
               justifyContent: 'space-between',
-              alignItems: { xs: 'flex-start', md: 'center' },
-              gap: 2.5,
+              alignItems: { xs: 'flex-start', lg: 'center' },
+              gap: 4,
               position: 'relative',
-              zIndex: 1,
+              zIndex: 2,
+              width: '100%',
             }}
           >
-            {/* Left: POTD Badge & Title */}
-            <Box sx={{ maxWidth: { xs: '100%', md: '65%' } }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1, flexWrap: 'wrap' }}>
-                <Chip
-                  icon={<WhatshotRoundedIcon sx={{ fontSize: 16, color: '#F59E0B !important' }} />}
-                  label="Problem of the Day"
-                  size="small"
-                  sx={{
-                    bgcolor: 'rgba(245, 158, 11, 0.15)',
-                    color: '#FBBF24',
-                    fontWeight: 800,
-                    fontSize: '0.75rem',
-                    border: '1px solid rgba(245, 158, 11, 0.3)',
-                  }}
-                />
-                <Chip
-                  label={
-                    potdData?.userStreak?.currentStreak
-                      ? `🔥 ${potdData.userStreak.currentStreak}-Day Active Streak (${potdData.userStreak.streakMultiplier}x)`
-                      : '🔥 Daily Challenge'
-                  }
-                  size="small"
-                  sx={{
-                    bgcolor: 'rgba(239, 68, 68, 0.15)',
-                    color: '#F87171',
-                    fontWeight: 700,
-                    fontSize: '0.72rem',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                  }}
-                />
-                {potdData?.isSolved && (
-                  <Chip
-                    label="✓ Solved Today"
-                    size="small"
-                    sx={{
-                      bgcolor: 'rgba(16, 185, 129, 0.15)',
-                      color: '#34D399',
-                      fontWeight: 700,
-                      fontSize: '0.72rem',
-                      border: '1px solid rgba(16, 185, 129, 0.3)',
-                    }}
-                  />
-                )}
-                <Typography sx={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 600 }}>
-                  Date: {potdData?.date || new Date().toISOString().slice(0, 10)}
-                </Typography>
-              </Box>
-
-              <Typography
-                variant="h6"
+            {/* Left Section: 3D Flame Shield + Problem Details */}
+            <Box sx={{ display: 'flex', gap: { xs: 2.5, sm: 3 }, alignItems: 'center', maxWidth: { xs: '100%', lg: '62%' } }}>
+              {/* Geometric Flame Shield Icon Box */}
+              <Box
                 sx={{
-                  color: '#FFFFFF',
-                  fontWeight: 800,
-                  fontSize: { xs: '1.05rem', sm: '1.2rem' },
-                  letterSpacing: '-0.01em',
-                  mb: 0.5,
-                }}
-              >
-                {potdData?.problem?.title || problems[0]?.title || 'Chef and String Minimization'}
-              </Typography>
-
-              <Typography
-                variant="body2"
-                sx={{
-                  color: '#CBD5E1',
-                  fontSize: '0.84rem',
-                  lineHeight: 1.5,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
+                  width: { xs: 60, sm: 72 },
+                  height: { xs: 60, sm: 72 },
+                  flexShrink: 0,
+                  borderRadius: '18px',
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(239, 68, 68, 0.22) 100%)',
+                  border: '1px solid rgba(245, 158, 11, 0.45)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 10px 28px rgba(245, 158, 11, 0.3)',
+                  position: 'relative',
                   overflow: 'hidden',
                 }}
               >
-                {(
-                  potdData?.problem?.statement ||
-                  potdData?.problem?.statementMarkdown ||
-                  problems[0]?.statementMarkdown
-                )?.slice(0, 140) ||
-                  'Given a binary string S of length N, determine the minimum operations to sort the string.'}
-                ...
-              </Typography>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'radial-gradient(circle, rgba(254, 240, 138, 0.35) 0%, transparent 70%)',
+                  }}
+                />
+                <WhatshotRoundedIcon
+                  sx={{
+                    fontSize: { xs: 32, sm: 38 },
+                    color: '#F59E0B',
+                    filter: 'drop-shadow(0 0 12px rgba(245, 158, 11, 0.9))',
+                  }}
+                />
+              </Box>
+
+              {/* Title, Badges & Problem Summary */}
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                {/* Top Badges Row */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 1.2, flexWrap: 'wrap' }}>
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.6,
+                      bgcolor: 'rgba(245, 158, 11, 0.16)',
+                      border: '1px solid rgba(245, 158, 11, 0.4)',
+                      px: 1.3,
+                      py: 0.4,
+                      borderRadius: '8px',
+                    }}
+                  >
+                    <Typography sx={{ color: '#FBBF24', fontWeight: 900, fontSize: '0.74rem', letterSpacing: '0.04em' }}>
+                      DAILY ARENA
+                    </Typography>
+                  </Box>
+
+                  {potdData?.problem && (
+                    potdData?.userStreak?.currentStreak ? (
+                      <Box
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          bgcolor: 'rgba(239, 68, 68, 0.15)',
+                          border: '1px solid rgba(239, 68, 68, 0.3)',
+                          px: 1.3,
+                          py: 0.4,
+                          borderRadius: '8px',
+                        }}
+                      >
+                        <Typography sx={{ color: '#FCA5A5', fontWeight: 800, fontSize: '0.74rem' }}>
+                          🔥 {potdData.userStreak.currentStreak}-Day Streak ({potdData.userStreak.streakMultiplier}x XP)
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Box
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          bgcolor: 'rgba(37, 99, 235, 0.15)',
+                          border: '1px solid rgba(59, 130, 246, 0.3)',
+                          px: 1.3,
+                          py: 0.4,
+                          borderRadius: '8px',
+                        }}
+                      >
+                        <Typography sx={{ color: '#93C5FD', fontWeight: 800, fontSize: '0.74rem' }}>
+                          ⚡ 1.5x Multiplier Active
+                        </Typography>
+                      </Box>
+                    )
+                  )}
+
+                  {potdData?.problem && potdData?.isSolved && (
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.5,
+                        bgcolor: 'rgba(16, 185, 129, 0.15)',
+                        border: '1px solid rgba(16, 185, 129, 0.35)',
+                        px: 1.3,
+                        py: 0.4,
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <CheckCircleRoundedIcon sx={{ fontSize: 14, color: '#34D399' }} />
+                      <Typography sx={{ color: '#34D399', fontWeight: 800, fontSize: '0.74rem' }}>
+                        Solved Today
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Problem Title */}
+                <Typography
+                  variant="h4"
+                  sx={{
+                    color: '#FFFFFF',
+                    fontWeight: 900,
+                    fontSize: { xs: '1.35rem', sm: '1.65rem' },
+                    letterSpacing: '-0.025em',
+                    lineHeight: 1.25,
+                    mb: 0.8,
+                  }}
+                >
+                  {potdData?.problem?.title || 'No challenge scheduled today'}
+                </Typography>
+
+                {/* Problem Statement Snippet */}
+                {potdData?.problem && (
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: '#94A3B8',
+                      fontSize: '0.88rem',
+                      lineHeight: 1.55,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {(potdData.problem.statement || potdData.problem.statementMarkdown)?.slice(0, 150)}
+                    ...
+                  </Typography>
+                )}
+              </Box>
             </Box>
 
-            {/* Right: Points, Rating Tier & CTA */}
+            {/* Right Section: Digital Segmented Countdown HUD & Rewards CTA */}
             <Box
               sx={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                flexWrap: 'wrap',
-                width: { xs: '100%', md: 'auto' },
-                justifyContent: { xs: 'flex-start', md: 'flex-end' },
+                flexDirection: { xs: 'column', sm: 'row', lg: 'row' },
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 3,
+                bgcolor: 'rgba(15, 23, 42, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                backdropFilter: 'blur(16px)',
+                py: { xs: 2.5, sm: 2.8 },
+                px: { xs: 2.5, sm: 3 },
+                borderRadius: '20px',
+                boxShadow: '0 10px 35px rgba(0, 0, 0, 0.3)',
+                width: { xs: '100%', lg: 'auto' },
+                justifyContent: 'space-between',
               }}
             >
-              <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                <Typography sx={{ color: '#38BDF8', fontWeight: 800, fontSize: '0.95rem' }}>
-                  +{potdData?.bonusPoints || 50} Contest Pts
-                </Typography>
-                <Typography sx={{ color: '#94A3B8', fontSize: '0.75rem', fontWeight: 600 }}>
-                  Rating: {getProblemRating(potdData?.problem || problems[0] || ({} as any))}
-                </Typography>
+              {/* Digital HUD Countdown Clock */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                  <AccessTimeRoundedIcon sx={{ fontSize: 14, color: '#38BDF8' }} />
+                  <Typography sx={{ color: '#94A3B8', fontSize: '0.74rem', fontWeight: 800, letterSpacing: '0.06em' }}>
+                    ENDS IN
+                  </Typography>
+                </Box>
+
+                {/* Digital Segmented Timer Digits */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.7 }}>
+                  {/* Hours Box */}
+                  <Box
+                    sx={{
+                      bgcolor: '#0B1120',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      borderRadius: '10px',
+                      px: 1.2,
+                      py: 0.6,
+                      textAlign: 'center',
+                      minWidth: 42,
+                    }}
+                  >
+                    <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '1.12rem', fontFamily: 'monospace' }}>
+                      {timeParts.hours}
+                    </Typography>
+                    <Typography sx={{ color: '#64748B', fontSize: '0.6rem', fontWeight: 800, mt: -0.3 }}>
+                      HRS
+                    </Typography>
+                  </Box>
+
+                  <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '1.2rem' }}>
+                    :
+                  </Typography>
+
+                  {/* Minutes Box */}
+                  <Box
+                    sx={{
+                      bgcolor: '#0B1120',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      borderRadius: '10px',
+                      px: 1.2,
+                      py: 0.6,
+                      textAlign: 'center',
+                      minWidth: 42,
+                    }}
+                  >
+                    <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '1.12rem', fontFamily: 'monospace' }}>
+                      {timeParts.minutes}
+                    </Typography>
+                    <Typography sx={{ color: '#64748B', fontSize: '0.6rem', fontWeight: 800, mt: -0.3 }}>
+                      MIN
+                    </Typography>
+                  </Box>
+
+                  <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '1.2rem' }}>
+                    :
+                  </Typography>
+
+                  {/* Seconds Box */}
+                  <Box
+                    sx={{
+                      bgcolor: '#0B1120',
+                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      borderRadius: '10px',
+                      px: 1.2,
+                      py: 0.6,
+                      textAlign: 'center',
+                      minWidth: 42,
+                    }}
+                  >
+                    <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '1.12rem', fontFamily: 'monospace' }}>
+                      {timeParts.seconds}
+                    </Typography>
+                    <Typography sx={{ color: '#64748B', fontSize: '0.6rem', fontWeight: 800, mt: -0.3 }}>
+                      SEC
+                    </Typography>
+                  </Box>
+                </Box>
               </Box>
 
-              <Button
-                variant="contained"
-                size="medium"
-                startIcon={<PlayArrowRoundedIcon />}
-                onClick={() => {
-                  const targetSlug = potdData?.problem?.slug || problems[0]?.slug;
-                  if (targetSlug) {
-                    router.push(`/problems/${targetSlug}`);
-                  }
-                }}
-                sx={{
-                  bgcolor: '#38BDF8',
-                  color: '#0F172A',
-                  fontWeight: 800,
-                  fontSize: '0.86rem',
-                  textTransform: 'none',
-                  borderRadius: '10px',
-                  px: 2.5,
-                  py: 1,
-                  boxShadow: '0 4px 14px rgba(56, 189, 248, 0.4)',
-                  '&:hover': { bgcolor: '#0EA5E9', boxShadow: '0 6px 20px rgba(56, 189, 248, 0.6)' },
-                }}
-              >
-                Solve Challenge 🚀
-              </Button>
+              {/* Vertical Divider */}
+              <Box sx={{ width: 1, height: 56, bgcolor: 'rgba(255, 255, 255, 0.12)', display: { xs: 'none', sm: 'block' } }} />
+
+              {/* Reward Points & CTA */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.4 }}>
+                {potdData?.problem && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <BoltRoundedIcon sx={{ fontSize: 20, color: '#FBBF24' }} />
+                      <Typography sx={{ color: '#FBBF24', fontWeight: 900, fontSize: '0.98rem' }}>
+                        +{potdData?.bonusPoints || 50} Pts
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ color: '#94A3B8', fontSize: '0.76rem', fontWeight: 700 }}>
+                      {getRatingTier(getProblemRating(potdData.problem)).division}
+                    </Typography>
+                  </Box>
+                )}
+
+                <Button
+                  variant="contained"
+                  disabled={!potdData?.problem}
+                  startIcon={<PlayArrowRoundedIcon sx={{ fontSize: 18 }} />}
+                  onClick={() => {
+                    const targetSlug = potdData?.problem?.slug;
+                    if (targetSlug) {
+                      router.push(`/problems/${targetSlug}`);
+                    }
+                  }}
+                  sx={{
+                    background: !potdData?.problem
+                      ? '#334155'
+                      : potdData?.isSolved
+                      ? 'linear-gradient(135deg, #059669 0%, #10B981 100%)'
+                      : 'linear-gradient(135deg, #0284C7 0%, #2563EB 100%)',
+                    color: '#FFFFFF',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
+                    textTransform: 'none',
+                    borderRadius: '12px',
+                    px: 3,
+                    py: 1.15,
+                    boxShadow: !potdData?.problem
+                      ? 'none'
+                      : potdData?.isSolved
+                      ? '0 4px 18px rgba(16, 185, 129, 0.4)'
+                      : '0 4px 20px rgba(37, 99, 235, 0.45)',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.22s ease',
+                    '&:hover': {
+                      transform: !potdData?.problem ? 'none' : 'translateY(-2px)',
+                      boxShadow: !potdData?.problem
+                        ? 'none'
+                        : potdData?.isSolved
+                        ? '0 8px 26px rgba(16, 185, 129, 0.55)'
+                        : '0 8px 28px rgba(37, 99, 235, 0.65)',
+                    },
+                    '&.Mui-disabled': {
+                      color: '#94A3B8',
+                      bgcolor: '#1E293B',
+                    },
+                  }}
+                >
+                  {!potdData?.problem
+                    ? 'No Challenge Active'
+                    : potdData?.isSolved
+                    ? 'Review Solution'
+                    : 'Solve Challenge ⚡'}
+                </Button>
+              </Box>
             </Box>
           </Box>
         </Card>

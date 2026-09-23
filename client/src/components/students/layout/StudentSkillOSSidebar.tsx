@@ -77,11 +77,11 @@ const SIDEBAR_SECTIONS: NavSection[] = [
         icon: <FaDesktop size={15} />,
         path: '/students/projects',
       },
-      {
-        label: 'Corporate Simulation',
-        icon: <FaBuildingColumns size={15} />,
-        path: '/students/simulations',
-      },
+      // {
+      //   label: 'Corporate Simulation',
+      //   icon: <FaBuildingColumns size={15} />,
+      //   path: '/students/simulations',
+      // },
       {
         label: 'Bootcamps',
         icon: <FaClock size={15} />,
@@ -102,11 +102,11 @@ const SIDEBAR_SECTIONS: NavSection[] = [
   {
     title: 'OPPORTUNITY',
     items: [
-      {
-        label: 'Career Hub',
-        icon: <FaBriefcase size={15} />,
-        path: '/students/career-hub',
-      },
+      // {
+      //   label: 'Career Hub',
+      //   icon: <FaBriefcase size={15} />,
+      //   path: '/students/career-hub',
+      // },
       {
         label: 'Jobs / Placements',
         icon: <FaLocationDot size={15} />,

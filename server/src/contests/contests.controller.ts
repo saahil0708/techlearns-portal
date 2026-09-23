@@ -8,8 +8,10 @@ import {
   Patch,
   Post,
   Query,
+  Sse,
   UseGuards,
 } from '@nestjs/common';
+import { Observable } from 'rxjs';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ContestStatus, Role } from '@prisma/client';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
@@ -82,6 +84,16 @@ export class ContestsController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.comparativeLeaderboardService.getContestMatrixLeaderboard(id, user);
+  }
+
+  @Sse(':id/live')
+  @ApiOperation({ summary: 'Real-time Server-Sent Events (SSE) live contest leaderboard stream' })
+  async streamContestLeaderboard(
+    @Param('id') id: string,
+    @CurrentUser() user?: CurrentUserPayload,
+  ): Promise<Observable<{ data: any }>> {
+    await this.contestsService.findById(id, user);
+    return this.contestsService.getContestLiveStream(id);
   }
 
   @Get()

@@ -1,53 +1,65 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  // Return structured SkillOS workspace specification data with icon identifiers (no emojis)
-  const workspaceData = {
-    success: true,
-    workspace: {
-      corporateId: 'TL-2026-DEV-8492',
-      corporateEmail: 'ronit.j@techlearns.corp',
-      track: 'Generative AI & Full Stack CEL Sprint',
-      status: 'active',
-      passportScore: 88,
-      prsMerged: 14,
-      jiraPointsBurned: 42,
-      tools: [
-        {
-          name: 'GitHub Enterprise Team',
-          iconType: 'github',
-          url: 'https://github.com/techlearns-cel/genai-live-sprint',
-          badge: '@techlearns-cel/sprint-alpha',
-          status: 'active',
-          description: 'Starter Repo + CI/CD + Mentor PR Reviews',
-        },
-        {
-          name: 'Jira Agile Sprint Board',
-          iconType: 'jira',
-          url: 'https://jira.techlearns.in/secure/RapidBoard.jspa?rapidView=14',
-          badge: 'Active Sprint 04',
-          status: 'active',
-          description: 'Live Backlog & Standup Epics',
-        },
-        {
-          name: 'Cloud Web IDE Sandbox',
-          iconType: 'ide',
-          url: 'https://ide.techlearns.in/?workspace=TL-2026-DEV-8492',
-          badge: 'VSCode Container Ready',
-          status: 'ready',
-          description: '1-Click Cloud Runtime with Docker & Node 20',
-        },
-        {
-          name: 'Verified Skill Passport',
-          iconType: 'passport',
-          url: '/students/skill-passport',
-          badge: 'Score: 88/100 · Verified',
-          status: 'verified',
-          description: 'Cryptographic Skill Verification Transcript',
-        },
-      ],
-    },
-  };
+  const token = request.cookies.get('access_token')?.value;
+  if (!token) {
+    return NextResponse.json({ success: false, message: 'Unauthorized session' }, { status: 401 });
+  }
 
-  return NextResponse.json(workspaceData, { status: 200 });
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  // 1. Fetch persistent workspace from NestJS backend
+  try {
+    const wsRes = await fetch(`${API_URL}/skillos/workspace`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (wsRes.ok) {
+      const data = await wsRes.json();
+      return NextResponse.json(data, { status: 200 });
+    } else if (wsRes.status === 401 || wsRes.status === 403) {
+      return NextResponse.json({ success: false, message: 'Unauthorized session' }, { status: 401 });
+    } else if (wsRes.status === 404) {
+      return NextResponse.json({ success: false, message: 'Workspace not found', workspace: null }, { status: 404 });
+    } else if (wsRes.status >= 500) {
+      return NextResponse.json({ success: false, message: 'Upstream workspace service error' }, { status: wsRes.status });
+    } else {
+      return NextResponse.json({ success: false, message: 'Failed to retrieve workspace' }, { status: wsRes.status });
+    }
+  } catch {
+    return NextResponse.json({ success: false, message: 'Upstream workspace service unavailable' }, { status: 503 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  const token = request.cookies.get('access_token')?.value;
+  if (!token) {
+    return NextResponse.json({ success: false, message: 'Unauthorized session' }, { status: 401 });
+  }
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  try {
+    const body = await request.json().catch(() => ({}));
+    const res = await fetch(`${API_URL}/skillos/provision`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return NextResponse.json(data, { status: 201 });
+    }
+
+    const errData = await res.json().catch(() => ({}));
+    return NextResponse.json(
+      { success: false, message: errData.message || 'Provisioning failed' },
+      { status: res.status },
+    );
+  } catch (err: any) {
+    return NextResponse.json({ success: false, message: err.message || 'Provisioning service unavailable' }, { status: 503 });
+  }
 }

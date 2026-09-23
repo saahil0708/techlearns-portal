@@ -135,6 +135,7 @@ model User {
   refreshTokens        RefreshToken[]
   twoFactorChallenges  TwoFactorChallenge[]
   auditLogs            AuditLog[]
+  skillOsWorkspace     SkillOsWorkspace?
 
   @@index([globalRole, status])
   @@index([status, createdAt])
@@ -578,5 +579,43 @@ model ProblemOfTheDay {
 
   @@index([date])
   @@map("problem_of_the_day")
+}
+
+model SkillOsWorkspace {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  corporateId        String   @unique
+  corporateEmail     String   @unique
+  trackCode          String   @default("DEV")
+  trackName          String   @default("Generative AI & Full Stack CEL Sprint")
+  
+  // GitHub Integration State
+  githubUsername     String?
+  githubTeamName     String?  @default("@techlearns-cel/sprint-alpha")
+  githubAssignedRepo String?  @default("https://github.com/techlearns-cel/genai-live-sprint")
+  githubInviteStatus String   @default("invited") // invited, accepted, active
+  
+  // Jira Integration State
+  jiraAccountId      String?
+  jiraBoardUrl       String?  @default("https://jira.techlearns.in/secure/RapidBoard.jspa?rapidView=14")
+  jiraActiveSprint   String?  @default("Active Sprint 04")
+  
+  // Cloud Web IDE & Sandbox
+  webIdeUrl          String?
+  containerStatus    String   @default("ready") // ready, starting, stopped
+  
+  // Skill Passport Telemetry
+  passportScore      Int      @default(0)
+  prsMerged          Int      @default(0)
+  jiraPointsBurned   Int      @default(0)
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([corporateId])
+  @@map("skillos_workspaces")
 }
 

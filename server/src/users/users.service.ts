@@ -246,7 +246,7 @@ export class UsersService {
     }
 
     // Compute problem stats across lifetime submissions
-    const [totalSubmissionsCount, totalAcceptedSubmissionsCount, acceptedProblems] = await Promise.all([
+    const [totalSubmissionsCount, totalAcceptedSubmissionsCount, acceptedProblems, allUserSubmissions] = await Promise.all([
       this.prisma.submission.count({
         where: { userId: baseUser.id },
       }),
@@ -267,7 +267,28 @@ export class UsersService {
           difficulty: true,
         },
       }),
+      this.prisma.submission.findMany({
+        where: { userId: baseUser.id },
+        select: { createdAt: true },
+      }),
     ]);
+
+    const activityMap = new Map<string, number>();
+    for (const sub of allUserSubmissions) {
+      const d = new Date(sub.createdAt);
+      if (!isNaN(d.getTime())) {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const key = `${year}-${month}-${day}`;
+        activityMap.set(key, (activityMap.get(key) || 0) + 1);
+      }
+    }
+
+    const activityData = Array.from(activityMap.entries()).map(([date, count]) => ({
+      date,
+      count,
+    }));
 
     const solvedTotal = acceptedProblems.length;
     let solvedEasy = 0;
@@ -422,6 +443,7 @@ export class UsersService {
       currentStreakDays: 0,
       maxStreakDays: 0,
       topics: [],
+      activityData,
       submissions: mappedSubmissions,
       contests: mappedContests,
       courses: mappedCourses,

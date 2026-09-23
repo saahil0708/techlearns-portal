@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getAuthToken } from './axios';
+import { getAuthToken, GRAPHQL_ENDPOINT } from './axios';
 
 export interface GraphQLResponse<T> {
   data?: T;
@@ -10,8 +10,6 @@ export interface GraphQLResponse<T> {
     extensions?: Record<string, unknown>;
   }>;
 }
-
-const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:8000/graphql';
 
 export async function fetchGraphQL<T = any>(
   query: string,

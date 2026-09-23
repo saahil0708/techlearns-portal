@@ -245,12 +245,25 @@ export default function StudentProfileClient({
           calculatedActivityData = Array.from(dateMap.entries()).map(([date, count]) => ({ date, count }));
         }
 
+        const normalizedContestsHistory = Array.isArray(liveData.contests)
+          ? liveData.contests.map((c: any) => ({
+              contestId: c.contestId || c.id || '',
+              contestName: c.contestName || c.contest?.title || c.title || 'Rated Contest',
+              date: c.date || c.contestDate || c.createdAt || '',
+              delta: c.delta ?? c.ratingDelta ?? 0,
+              rating: c.rating ?? c.newRating ?? c.userRating ?? 1500,
+              rank: c.rank ?? c.userRank ?? 0,
+            }))
+          : undefined;
+
         setProfile((prev) => ({
           ...prev,
           ...liveData,
           role: liveData.role || prev.role,
-          activityData: calculatedActivityData || liveData.activityData || prev.activityData,
-          ratingHistory: Array.isArray(liveData.ratingHistory) ? liveData.ratingHistory : (Array.isArray(liveData.contests) ? liveData.contests : prev.ratingHistory),
+          activityData: liveData.activityData ?? calculatedActivityData ?? prev.activityData,
+          ratingHistory: Array.isArray(liveData.ratingHistory)
+            ? liveData.ratingHistory
+            : (normalizedContestsHistory ?? prev.ratingHistory),
           topicSkills: Array.isArray(liveData.topics)
             ? liveData.topics.map((t: any) => {
                 const solved = t.solved ?? t.solvedCount ?? 0;

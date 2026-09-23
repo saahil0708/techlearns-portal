@@ -401,7 +401,7 @@ export const apiService = {
 
   async deleteBatch(id: string) {
     const res = await apiClient.delete(`/batches/${id}`);
-    return res.data?.data ?? res.data ?? true;
+    return res.data?.data ?? (res.data || true);
   },
 
   async assignStudentsToBatch(id: string, userIds: string[]) {
@@ -416,7 +416,7 @@ export const apiService = {
 
   async removeStudentFromBatch(id: string, userId: string) {
     const res = await apiClient.delete(`/batches/${id}/students/${userId}`);
-    return res.data?.data ?? res.data ?? true;
+    return res.data?.data ?? (res.data || true);
   },
 
   // ----------------------------------------------------

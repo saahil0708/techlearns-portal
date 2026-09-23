@@ -61,7 +61,7 @@ export async function updateBatchApi(id: string, input: {
 
 export async function deleteBatchApi(id: string) {
   const res = await apiClient.delete(`/batches/${id}`);
-  return res.data?.data ?? res.data ?? true;
+  return res.data?.data ?? (res.data || true);
 }
 
 export async function assignStudentsToBatchApi(id: string, userIds: string[]) {

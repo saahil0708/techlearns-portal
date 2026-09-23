@@ -1,4 +1,6 @@
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import type { Request, Response, NextFunction } from 'express';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory, Reflector } from '@nestjs/core';
@@ -22,6 +24,22 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('port') || 8000;
+
+  // Security Headers via Helmet (Content Security Policy enabled globally)
+  app.use(
+    helmet({
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
+
+  // Dedicated Content Security Policy specifically for Swagger UI documentation
+  app.use('/api/docs', (_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;",
+    );
+    next();
+  });
 
   // Enable Cookie Parser for secure httpOnly tokens
   app.use(cookieParser());

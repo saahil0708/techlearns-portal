@@ -1314,25 +1314,33 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
                                 </IconButton>
                               </Tooltip>
 
-                              <Tooltip title="Set as Problem of the Day">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => {
-                                    setPotdSelectedProblem(prob);
-                                    setIsSetPotdModalOpen(true);
-                                  }}
-                                  sx={{
-                                    color: '#D97706',
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: '8px',
-                                    border: '1px solid #FEF3C7',
-                                    bgcolor: '#FFFBEB',
-                                    '&:hover': { color: '#B45309', bgcolor: '#FEF3C7', borderColor: '#FDE68A' },
-                                  }}
-                                >
-                                  <WhatshotRoundedIcon sx={{ fontSize: 18 }} />
-                                </IconButton>
+                              <Tooltip title={prob.status === 'Published' ? 'Set as Problem of the Day' : 'Only published problems can be set as POTD'}>
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    disabled={prob.status !== 'Published'}
+                                    onClick={() => {
+                                      setPotdSelectedProblem(prob);
+                                      setIsSetPotdModalOpen(true);
+                                    }}
+                                    sx={{
+                                      color: '#D97706',
+                                      width: 32,
+                                      height: 32,
+                                      borderRadius: '8px',
+                                      border: '1px solid #FEF3C7',
+                                      bgcolor: '#FFFBEB',
+                                      '&:hover': { color: '#B45309', bgcolor: '#FEF3C7', borderColor: '#FDE68A' },
+                                      '&.Mui-disabled': {
+                                        color: '#9CA3AF',
+                                        bgcolor: '#F3F4F6',
+                                        borderColor: '#E5E7EB',
+                                      },
+                                    }}
+                                  >
+                                    <WhatshotRoundedIcon sx={{ fontSize: 18 }} />
+                                  </IconButton>
+                                </span>
                               </Tooltip>
 
                               <Tooltip title="Delete Problem">

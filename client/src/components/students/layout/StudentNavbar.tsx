@@ -48,6 +48,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutUser } from '@/store/slices/authSlice';
 import { apiService } from '@/lib/api-service';
 import LogoutConfirmModal from '@/components/shared/LogoutConfirmModal';
+import { SkillOSDockModal } from '@/components/students/skillos/SkillOSDock';
 
 interface StudentNavbarProps {
   searchQuery?: string;
@@ -85,6 +86,8 @@ export default function StudentNavbar({
 
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const isUserMenuOpen = Boolean(userMenuAnchor);
+
+  const [skillOsModalOpen, setSkillOsModalOpen] = useState(false);
 
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
   const isNotifOpen = Boolean(notifAnchorEl);
@@ -461,6 +464,30 @@ export default function StudentNavbar({
               </IconButton>
             </Tooltip>
 
+            {/* SkillOS Command Dock Quick Action */}
+            <Tooltip title="SkillOS™ Corporate Workspace & Tools" arrow>
+              <Button
+                size="small"
+                onClick={() => setSkillOsModalOpen(true)}
+                startIcon={<TerminalRoundedIcon sx={{ fontSize: 16, color: '#6366F1' }} />}
+                sx={{
+                  height: 34,
+                  px: 1.2,
+                  borderRadius: '8px',
+                  bgcolor: '#EEF2FF',
+                  border: '1px solid #E0E7FF',
+                  color: '#4338CA',
+                  fontWeight: 800,
+                  fontSize: '0.76rem',
+                  textTransform: 'none',
+                  display: { xs: 'none', md: 'inline-flex' },
+                  '&:hover': { bgcolor: '#E0E7FF', borderColor: '#C7D2FE' },
+                }}
+              >
+                SkillOS™
+              </Button>
+            </Tooltip>
+
             {/* User Profile Avatar Dropdown */}
             <Tooltip title="Profile & Account" arrow>
               <IconButton
@@ -756,6 +783,12 @@ export default function StudentNavbar({
         open={logoutDialogOpen}
         onClose={() => setLogoutDialogOpen(false)}
         onConfirm={handleConfirmLogout}
+      />
+
+      {/* SkillOS Command Dock Modal */}
+      <SkillOSDockModal
+        open={skillOsModalOpen}
+        onClose={() => setSkillOsModalOpen(false)}
       />
     </>
   );

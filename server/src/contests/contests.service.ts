@@ -8,9 +8,31 @@ import { AddContestProblemInput } from './dto/add-contest-problem.input.js';
 import { CreateContestInput } from './dto/create-contest.input.js';
 import { UpdateContestInput } from './dto/update-contest.input.js';
 
+import { Subject, Observable, map, filter, interval, merge } from 'rxjs';
+
 @Injectable()
 export class ContestsService {
+  private readonly contestEvents$ = new Subject<{ contestId: string; type: string; data: any }>();
+
   constructor(private prisma: PrismaService) {}
+
+  public broadcastContestUpdate(contestId: string, type = 'LEADERBOARD_UPDATE', data: any = {}) {
+    this.contestEvents$.next({ contestId, type, data: { ...data, timestamp: new Date().toISOString() } });
+  }
+
+  public getContestLiveStream(contestId: string): Observable<{ data: any }> {
+    const liveEvents$ = this.contestEvents$.pipe(
+      filter((event) => event.contestId === contestId),
+      map((event) => ({ data: { type: event.type, payload: event.data } })),
+    );
+
+    // Heartbeat ping every 15s to keep connection alive
+    const heartbeat$ = interval(15000).pipe(
+      map(() => ({ data: { type: 'HEARTBEAT', payload: { contestId, time: new Date().toISOString() } } })),
+    );
+
+    return merge(liveEvents$, heartbeat$);
+  }
 
   async create(input: CreateContestInput, creatorId: string, user?: CurrentUserPayload) {
     const institutionId = input.institutionId || input.collegeId;

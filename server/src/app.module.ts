@@ -23,6 +23,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
 import { ProblemsModule } from './problems/problems.module.js';
 import { SubmissionsModule } from './submissions/submissions.module.js';
 import { UsersModule } from './users/users.module.js';
+import { SkillOsModule } from './skillos/skillos.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -92,6 +93,7 @@ const dynamicObserveImports = hasValidObserveKeys
     ContestsModule,
     SubmissionsModule,
     JudgeModule,
+    SkillOsModule,
   ],
   controllers: [AppController],
   providers: [

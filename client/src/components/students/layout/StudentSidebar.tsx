@@ -47,13 +47,13 @@ const STUDENT_NAV_ITEMS = [
 
   // Build & Prove
   { label: 'Project Workspace', icon: <LaptopMacOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/projects' },
-  { label: 'Corporate Simulation', icon: <DomainOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/simulations' },
+  // { label: 'Corporate Simulation', icon: <DomainOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/simulations' },
   { label: 'Bootcamps', icon: <TimerOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/bootcamps' },
   { label: 'Competitions', icon: <EmojiEventsRoundedIcon sx={{ fontSize: 19 }} />, path: '/contests' },
   { label: 'Interview Prep', icon: <DescriptionOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/interview-prep' },
 
   // Opportunity
-  { label: 'Career Hub', icon: <WorkOutlineRoundedIcon sx={{ fontSize: 19 }} />, path: '/students/career-hub' },
+  // { label: 'Career Hub', icon: <WorkOutlineRoundedIcon sx={{ fontSize: 19 }} />, path: '/students/career-hub' },
   { label: 'Jobs / Placements', icon: <LocationOnOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/placements' },
   { label: 'Certifications', icon: <WorkspacePremiumOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/certifications' },
   { label: 'Skill Passport', icon: <BadgeOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/skill-passport' },
