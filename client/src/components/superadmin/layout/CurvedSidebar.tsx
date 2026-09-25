@@ -16,6 +16,7 @@ import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import AnalyticsRoundedIcon from '@mui/icons-material/AnalyticsRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import TerminalRoundedIcon from '@mui/icons-material/TerminalRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
@@ -29,7 +30,7 @@ const NAV_ITEMS = [
   { label: 'Users', icon: <PeopleAltRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/users' },
   { label: 'Courses', icon: <MenuBookRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/courses' },
   { label: 'Problems', icon: <CodeRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/problems' },
-  { label: 'Contests', icon: <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/contests' },
+  { label: 'Contests & Bootcamps', icon: <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/contests' },
   { label: 'Analytics', icon: <AnalyticsRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/analytics' },
   { label: 'Settings', icon: <SettingsRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/settings' },
 ];
@@ -151,6 +152,8 @@ export default function CurvedSidebar() {
         {NAV_ITEMS.map((item) => {
           const isActive = item.path === '/superadmin'
             ? pathname === '/superadmin'
+            : item.path === '/superadmin/contests'
+            ? pathname.startsWith('/superadmin/contests') || pathname.startsWith('/superadmin/bootcamps')
             : pathname.startsWith(item.path) || (item.path === '/superadmin/institutions' && pathname.startsWith('/superadmin/colleges'));
 
           return (

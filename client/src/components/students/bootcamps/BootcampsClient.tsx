@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -46,6 +46,7 @@ import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 
 import BootcampGridCard, { StudentBootcamp } from './BootcampGridCard';
 import { useToast } from '@/context/ToastContext';
+import { apiService } from '@/lib/api-service';
 
 const INITIAL_BOOTCAMPS: StudentBootcamp[] = [
   {
@@ -172,8 +173,53 @@ const INITIAL_BOOTCAMPS: StudentBootcamp[] = [
 
 export default function BootcampsClient() {
   const toast = useToast();
-  const [bootcamps, setBootcamps] = useState<StudentBootcamp[]>(INITIAL_BOOTCAMPS);
+  const [bootcamps, setBootcamps] = useState<StudentBootcamp[]>([]);
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
   const [selectedBootcamp, setSelectedBootcamp] = useState<StudentBootcamp | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [hasFetched, setHasFetched] = useState<boolean>(false);
+
+  // Fetch live bootcamps from backend API across all pages
+  const fetchLiveBootcamps = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      setFetchError(null);
+      let curPage = 1;
+      let totalPages = 1;
+      const allItems: StudentBootcamp[] = [];
+
+      do {
+        const data = await apiService.getBootcamps({ page: curPage, limit: 100 });
+        if (data?.items) {
+          allItems.push(...data.items);
+          totalPages = data.totalPages || 1;
+        }
+        curPage++;
+      } while (curPage <= totalPages && curPage <= 10);
+
+      setBootcamps(allItems);
+      setHasFetched(true);
+    } catch (err: any) {
+      setFetchError(err?.message || 'Failed to connect to bootcamp server');
+      setHasFetched(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLiveBootcamps();
+  }, [fetchLiveBootcamps]);
+
+  const [demoBootcamps, setDemoBootcamps] = useState<StudentBootcamp[]>(INITIAL_BOOTCAMPS);
+
+  // Active dataset (demo mode fallback if explicitly requested)
+  const activeDataset = useMemo(() => {
+    if (bootcamps.length > 0) return bootcamps;
+    if (isDemoMode) return demoBootcamps;
+    return [];
+  }, [bootcamps, isDemoMode, demoBootcamps]);
 
   // Filters & State
   const [search, setSearch] = useState('');
@@ -186,13 +232,13 @@ export default function BootcampsClient() {
   // Tracks list
   const tracks = useMemo(() => {
     const set = new Set<string>();
-    bootcamps.forEach((b) => set.add(b.track));
+    activeDataset.forEach((b) => set.add(b.track));
     return Array.from(set);
-  }, [bootcamps]);
+  }, [activeDataset]);
 
   // Filtered dataset
   const filteredBootcamps = useMemo(() => {
-    return bootcamps.filter((bc) => {
+    return activeDataset.filter((bc) => {
       const matchesSearch =
         bc.title.toLowerCase().includes(search.toLowerCase()) ||
         bc.instructor.toLowerCase().includes(search.toLowerCase()) ||
@@ -208,14 +254,58 @@ export default function BootcampsClient() {
 
       return matchesSearch && matchesTrack && matchesTab;
     });
-  }, [bootcamps, search, trackFilter, activeTab]);
+  }, [activeDataset, search, trackFilter, activeTab]);
 
-  const handleEnroll = (bc: StudentBootcamp) => {
-    setBootcamps((prev) =>
-      prev.map((b) => (b.id === bc.id ? { ...b, status: 'Enrolled', progressPct: 0, sessionsCompleted: 0 } : b))
-    );
-    toast.success(`You have successfully enrolled in "${bc.title}"!`, 'Enrollment Confirmed');
-    setSelectedBootcamp(null);
+  const handleEnroll = async (bc: StudentBootcamp) => {
+    // If running in demo mode without server connection
+    if (isDemoMode && bootcamps.length === 0) {
+      setDemoBootcamps((prev) =>
+        prev.map((b) =>
+          b.id === bc.id
+            ? {
+                ...b,
+                status: 'Enrolled',
+                progressPct: 0,
+                sessionsCompleted: 0,
+                enrolledStudents: (b.enrolledStudents || 0) + 1,
+              }
+            : b,
+        ),
+      );
+      toast.success(`You have successfully enrolled in "${bc.title}" (Demo Mode)!`, 'Enrollment Confirmed');
+      setSelectedBootcamp(null);
+      return;
+    }
+
+    try {
+      const res = await apiService.enrollBootcamp(bc.id);
+      const isAlreadyEnrolled = res?.message?.toLowerCase().includes('already enrolled');
+      setBootcamps((prev) =>
+        prev.map((b) =>
+          b.id === bc.id
+            ? {
+                ...b,
+                status: 'Enrolled',
+                progressPct: isAlreadyEnrolled ? b.progressPct : 0,
+                sessionsCompleted: isAlreadyEnrolled ? b.sessionsCompleted : 0,
+                enrolledStudents: isAlreadyEnrolled ? b.enrolledStudents : (b.enrolledStudents || 0) + 1,
+              }
+            : b,
+        ),
+      );
+      toast.success(
+        isAlreadyEnrolled
+          ? `You are already enrolled in "${bc.title}".`
+          : `You have successfully enrolled in "${bc.title}"!`,
+        'Enrollment Confirmed',
+      );
+      setSelectedBootcamp(null);
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message || err?.message || 'Enrollment failed. Please try again.',
+        'Enrollment Error',
+      );
+    }
   };
 
   const handleJoinClass = (bc: StudentBootcamp) => {
@@ -271,7 +361,7 @@ export default function BootcampsClient() {
               sx={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 0.8,
+                gap: 0.6,
                 bgcolor: 'rgba(37, 99, 235, 0.08)',
                 border: '1px solid rgba(37, 99, 235, 0.18)',
                 px: 1.2,
@@ -279,21 +369,7 @@ export default function BootcampsClient() {
                 borderRadius: '9999px',
               }}
             >
-              <Box
-                sx={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  bgcolor: '#10B981',
-                  boxShadow: '0 0 6px #10B981',
-                  animation: 'pulse 1.8s infinite',
-                  '@keyframes pulse': {
-                    '0%': { opacity: 1 },
-                    '50%': { opacity: 0.3 },
-                    '100%': { opacity: 1 },
-                  },
-                }}
-              />
+              <BoltRoundedIcon sx={{ fontSize: 14, color: '#10B981', filter: 'drop-shadow(0 0 3px rgba(16, 185, 129, 0.6))' }} />
               <Typography sx={{ color: '#2563EB', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.02em' }}>
                 LIVE SPRINTS
               </Typography>
@@ -492,12 +568,37 @@ export default function BootcampsClient() {
           <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, bgcolor: '#F8FAFC' }}>
             {filteredBootcamps.length === 0 ? (
               <Box sx={{ py: 10, textAlign: 'center', color: '#94A3B8' }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', color: '#64748B', mb: 0.5 }}>
-                  No bootcamps found
+                <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', color: fetchError ? '#EF4444' : '#64748B', mb: 0.5 }}>
+                  {fetchError ? `Connection Error: ${fetchError}` : 'No bootcamps found'}
                 </Typography>
-                <Typography sx={{ fontSize: '0.85rem', color: '#94A3B8' }}>
-                  Try changing your search query or adjusting the track filters.
+                <Typography sx={{ fontSize: '0.85rem', color: '#94A3B8', mb: 2 }}>
+                  {fetchError
+                    ? 'Unable to reach the bootcamp server. Please verify your connection and retry.'
+                    : 'Try changing your search query or adjusting the track filters.'}
                 </Typography>
+                {fetchError ? (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={fetchLiveBootcamps}
+                    disabled={loading}
+                    sx={{ textTransform: 'none', fontWeight: 700, color: '#2563EB', borderColor: '#2563EB' }}
+                  >
+                    {loading ? 'Retrying...' : 'Retry Connection'}
+                  </Button>
+                ) : (
+                  !isDemoMode &&
+                  bootcamps.length === 0 && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setIsDemoMode(true)}
+                      sx={{ textTransform: 'none', fontWeight: 700, color: '#2563EB', borderColor: '#2563EB' }}
+                    >
+                      Load Sample Demo Cohorts
+                    </Button>
+                  )
+                )}
               </Box>
             ) : (
               <Box

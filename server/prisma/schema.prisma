@@ -136,6 +136,8 @@ model User {
   twoFactorChallenges  TwoFactorChallenge[]
   auditLogs            AuditLog[]
   skillOsWorkspace     SkillOsWorkspace?
+  createdBootcamps     Bootcamp[]            @relation("BootcampCreator")
+  bootcampEnrollments  BootcampEnrollment[]
 
   @@index([globalRole, status])
   @@index([status, createdAt])
@@ -276,6 +278,7 @@ model Institution {
   courses     Course[]
   problems    Problem[]
   contests    Contest[]
+  bootcamps   Bootcamp[]
 
   @@index([status, createdAt])
   @@map("institutions")
@@ -617,5 +620,85 @@ model SkillOsWorkspace {
   @@index([userId])
   @@index([corporateId])
   @@map("skillos_workspaces")
+}
+
+model Bootcamp {
+  id               String               @id @default(uuid())
+  slug             String               @unique
+  title            String
+  subtitle         String?              @db.Text
+  description      String?              @db.Text
+  track            String               @default("GenAI & LLMs") // "GenAI & LLMs", "Full Stack", "System Design", "Cloud & DevOps", "Cybersecurity", "Data Engineering"
+  instructor       String
+  instructorRole   String?              @default("Principal Architect")
+  instructorAvatar String?
+  duration         String               @default("6 Weeks")
+  level            String               @default("Intermediate") // "Beginner", "Intermediate", "Advanced"
+  badge            String?              // "Top Rated", "CEL Featured", "Industry Flagship", "Live Sprint"
+  rating           Float                @default(4.9)
+  maxSeats         Int                  @default(100)
+  enrolledCount    Int                  @default(0)
+  totalSessions    Int                  @default(12)
+  status           String               @default("PUBLISHED") // "DRAFT", "PUBLISHED", "UPCOMING", "ONGOING", "COMPLETED", "ARCHIVED"
+  startDate        DateTime?
+  endDate          DateTime?
+  nextSessionDate  DateTime?
+  nextSessionTopic String?
+  syllabus         Json?                // Array of { week, topic, deliverables }
+  institutionId    String?
+  createdById      String
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  institution      Institution?         @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  createdBy        User                 @relation("BootcampCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  sessions         BootcampSession[]
+  enrollments      BootcampEnrollment[]
+
+  @@index([track, status])
+  @@index([institutionId, status])
+  @@index([createdById, status])
+  @@index([status, createdAt])
+  @@map("bootcamps")
+}
+
+model BootcampSession {
+  id            String    @id @default(uuid())
+  bootcampId    String
+  title         String
+  description   String?   @db.Text
+  sessionNumber Int       @default(1)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  meetUrl       String?
+  recordingUrl  String?
+  isLive        Boolean   @default(false)
+  order         Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  bootcamp      Bootcamp  @relation(fields: [bootcampId], references: [id], onDelete: Cascade)
+
+  @@index([bootcampId, order])
+  @@map("bootcamp_sessions")
+}
+
+model BootcampEnrollment {
+  id                String    @id @default(uuid())
+  userId            String
+  bootcampId        String
+  status            String    @default("ACTIVE") // "ACTIVE", "COMPLETED", "DROPPED"
+  progressPct       Int       @default(0)
+  sessionsCompleted Int       @default(0)
+  enrolledAt        DateTime  @default(now())
+  completedAt       DateTime?
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bootcamp          Bootcamp  @relation(fields: [bootcampId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bootcampId])
+  @@index([userId, status])
+  @@index([bootcampId, status])
+  @@map("bootcamp_enrollments")
 }
 

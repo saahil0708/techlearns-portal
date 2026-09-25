@@ -30,6 +30,7 @@ import Link from 'next/link';
 import SearchIcon from '@mui/icons-material/Search';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import FirstPageRoundedIcon from '@mui/icons-material/FirstPageRounded';
@@ -454,6 +455,48 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
         >
           {/* 2. Top Header Navbar */}
           <Navbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+
+          {/* Section Navigation Tabs: Contests vs Bootcamps */}
+          <Box sx={{ display: 'inline-flex', p: 0.5, bgcolor: '#FFFFFF', borderRadius: '12px', border: '1px solid #E2E8F0', width: 'fit-content', boxShadow: '0 1px 3px rgba(0,0,0,0.03)' }}>
+            <Link href="/superadmin/contests" style={{ textDecoration: 'none' }}>
+              <Button
+                size="small"
+                startIcon={<EmojiEventsRoundedIcon sx={{ fontSize: 16 }} />}
+                sx={{
+                  bgcolor: '#2563EB',
+                  backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  px: 2,
+                  py: 0.6,
+                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
+                }}
+              >
+                Contests & Tournaments
+              </Button>
+            </Link>
+            <Link href="/superadmin/bootcamps" style={{ textDecoration: 'none' }}>
+              <Button
+                size="small"
+                startIcon={<BoltRoundedIcon sx={{ fontSize: 16 }} />}
+                sx={{
+                  color: '#64748B',
+                  fontWeight: 600,
+                  fontSize: '0.82rem',
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  px: 2,
+                  py: 0.6,
+                  '&:hover': { bgcolor: '#F8FAFC', color: '#0F172A' },
+                }}
+              >
+                Live Bootcamps & Sprints
+              </Button>
+            </Link>
+          </Box>
 
           {/* Header Summary & Actions */}
           <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
