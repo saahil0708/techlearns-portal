@@ -31,6 +31,8 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 
 import { useAppSelector } from '@/store/hooks';
 import { apiService } from '@/lib/api-service';
+import { useNotifications } from '@/context/NotificationContext';
+import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 
 interface InstitutionAdminNavbarProps {
   collegeName?: string;
@@ -39,15 +41,6 @@ interface InstitutionAdminNavbarProps {
   onSearchChange?: (value: string) => void;
   onInviteFacultyClick?: () => void;
   onCreateBatchClick?: () => void;
-}
-
-interface NotificationItem {
-  id: string;
-  title: string;
-  desc: string;
-  time: string;
-  unread: boolean;
-  type: 'info' | 'success' | 'warning';
 }
 
 function extractInstitutionDetails(u: any) {
@@ -96,37 +89,35 @@ export default function InstitutionAdminNavbar({
   const [createAnchorEl, setCreateAnchorEl] = useState<null | HTMLElement>(null);
   const isCreateOpen = Boolean(createAnchorEl);
 
-  // Notifications Popover state
+  // Notifications state from Global Notification Context (Persistent)
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
   const isNotifOpen = Boolean(notifAnchorEl);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
 
-  useEffect(() => {
-    async function loadLiveNotifications() {
-      try {
-        const subs = await apiService.getLiveSubmissions(5);
-        if (subs && subs.length > 0) {
-          const liveNotifs: NotificationItem[] = subs.slice(0, 4).map((s: any, idx: number) => ({
-            id: s.id || `notif-${idx}`,
-            title: s.verdict === 'ACCEPTED' ? 'Campus Challenge Solved' : 'Submission Evaluated',
-            desc: `${s.user?.name || s.user?.email || 'Student'} on ${s.problem?.title || 'Problem'} (${s.language || 'Code'})`,
-            time: 'Just now',
-            unread: idx < 2,
-            type: s.verdict === 'ACCEPTED' ? 'success' : 'info',
-          }));
-          setNotifications(liveNotifs);
-        }
-      } catch (err) {
-        console.warn('Institution navbar notification feed:', err);
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllAsRead();
+    } catch (err) {
+      console.warn('Error marking all read:', err);
+    }
+  };
+
+  const handleNotificationClick = async (id: string, actionUrl?: string) => {
+    try {
+      await markAsRead(id);
+    } catch (err) {
+      console.warn('Error marking notification read:', err);
+    } finally {
+      if (actionUrl) {
+        setNotifAnchorEl(null);
+        router.push(actionUrl);
       }
     }
-    loadLiveNotifications();
-  }, []);
-
-  const unreadCount = notifications.filter((n) => n.unread).length;
-
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
   };
 
   const handleActionSelect = (path: string, callback?: () => void) => {
@@ -438,6 +429,7 @@ export default function InstitutionAdminNavbar({
               notifications.map((n) => (
                 <Box
                   key={n.id}
+                  onClick={() => handleNotificationClick(n.id, n.actionUrl)}
                   sx={{
                     p: 1.5,
                     borderBottom: '1px solid #F1F5F9',

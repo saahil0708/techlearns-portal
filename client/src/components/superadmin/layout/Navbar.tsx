@@ -39,18 +39,10 @@ interface NavbarProps {
   primaryBlue?: string;
 }
 
-interface NotificationItem {
-  id: string;
-  title: string;
-  desc: string;
-  time: string;
-  unread: boolean;
-  type: 'info' | 'success' | 'warning';
-}
-
 import { apiService } from '@/lib/api-service';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store';
+import { useNotifications } from '@/context/NotificationContext';
 
 export default function Navbar({
   searchQuery = '',
@@ -68,34 +60,15 @@ export default function Navbar({
   const isCreateOpen = Boolean(createAnchorEl);
   const [sendNotifOpen, setSendNotifOpen] = useState(false);
 
-  // Notifications Popover state
+  // Notifications state from Global Notification Context (Persistent)
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
   const isNotifOpen = Boolean(notifAnchorEl);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-
-  useEffect(() => {
-    async function loadLiveNotifications() {
-      try {
-        const subs = await apiService.getLiveSubmissions(5);
-        if (subs && subs.length > 0) {
-          const liveNotifs: NotificationItem[] = subs.slice(0, 4).map((s: any, idx: number) => ({
-            id: s.id || `notif-${idx}`,
-            title: s.verdict === 'ACCEPTED' ? 'Solution Accepted' : 'Submission Evaluated',
-            desc: `${s.user?.name || s.user?.email || 'Coder'} on ${s.problem?.title || 'Problem'} (${s.language || 'Code'})`,
-            time: 'Just now',
-            unread: idx < 2,
-            type: s.verdict === 'ACCEPTED' ? 'success' : 'info',
-          }));
-          setNotifications(liveNotifs);
-        }
-      } catch (err) {
-        console.warn('Navbar notification feed:', err);
-      }
-    }
-    loadLiveNotifications();
-  }, []);
-
-  const unreadCount = notifications.filter((n) => n.unread).length;
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
 
   // Keyboard shortcut listener for Ctrl+K / Cmd+K
   useEffect(() => {
@@ -109,14 +82,25 @@ export default function Navbar({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllAsRead();
+    } catch (err) {
+      console.warn('Error marking all read:', err);
+    }
   };
 
-  const handleNotificationClick = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
-    );
+  const handleNotificationClick = async (id: string, actionUrl?: string) => {
+    try {
+      await markAsRead(id);
+    } catch (err) {
+      console.warn('Error marking notification read:', err);
+    } finally {
+      if (actionUrl) {
+        setNotifAnchorEl(null);
+        router.push(actionUrl);
+      }
+    }
   };
 
   const handleCreateSelect = (route: string) => {
@@ -323,33 +307,45 @@ export default function Navbar({
           </Box>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1.5, maxHeight: 300, overflowY: 'auto' }}>
-            {notifications.map((notif) => (
-              <Box
-                key={notif.id}
-                onClick={() => handleNotificationClick(notif.id)}
-                sx={{
-                  p: 1.25,
-                  borderRadius: '10px',
-                  bgcolor: notif.unread ? '#F8FAFC' : '#FFFFFF',
-                  border: notif.unread ? '1px solid #DBEAFE' : '1px solid #F1F5F9',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  '&:hover': { bgcolor: '#F1F5F9' },
-                }}
-              >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
-                  <Typography variant="caption" sx={{ fontWeight: notif.unread ? 800 : 600, color: '#0F172A', fontSize: '0.82rem' }}>
-                    {notif.title}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.7rem', flexShrink: 0 }}>
-                    {notif.time}
-                  </Typography>
-                </Box>
-                <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.75rem', mt: 0.25, display: 'block', lineHeight: 1.35 }}>
-                  {notif.desc}
+            {notifications.length === 0 ? (
+              <Box sx={{ p: 3, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                <CheckCircleOutlineRoundedIcon sx={{ fontSize: 28, color: '#10B981' }} />
+                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>
+                  All caught up!
+                </Typography>
+                <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>
+                  No new unread alerts or notifications
                 </Typography>
               </Box>
-            ))}
+            ) : (
+              notifications.map((notif) => (
+                <Box
+                  key={notif.id}
+                  onClick={() => handleNotificationClick(notif.id, notif.actionUrl)}
+                  sx={{
+                    p: 1.25,
+                    borderRadius: '10px',
+                    bgcolor: notif.unread ? '#F8FAFC' : '#FFFFFF',
+                    border: notif.unread ? '1px solid #DBEAFE' : '1px solid #F1F5F9',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    '&:hover': { bgcolor: '#F1F5F9' },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: notif.unread ? 800 : 600, color: '#0F172A', fontSize: '0.82rem' }}>
+                      {notif.title}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: '0.7rem', flexShrink: 0 }}>
+                      {notif.time}
+                    </Typography>
+                  </Box>
+                  <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.75rem', mt: 0.25, display: 'block', lineHeight: 1.35 }}>
+                    {notif.desc}
+                  </Typography>
+                </Box>
+              ))
+            )}
           </Box>
         </Popover>
 
