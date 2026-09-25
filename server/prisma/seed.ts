@@ -186,7 +186,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 128,
       createdById: facultyTuring.id,
-      institutionId: institutions['STAN-CS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '4 9\n2 7 11 15', expectedOutput: '0 1', isHidden: false, explanation: 'nums[0] + nums[1] == 9 (2 + 7 = 9)', order: 1 },
@@ -206,7 +206,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 256,
       createdById: facultyCormen.id,
-      institutionId: institutions['MIT-EECS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: 'abcabcbb', expectedOutput: '3', isHidden: false, explanation: 'The answer is "abc", with the length of 3.', order: 1 },
@@ -226,7 +226,7 @@ async function main() {
       timeLimit: 1500,
       memoryLimit: 256,
       createdById: facultyTuring.id,
-      institutionId: institutions['STAN-CS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '2 1\n1 3\n2', expectedOutput: '2.00000', isHidden: false, explanation: 'merged array = [1,2,3] and median is 2.', order: 1 },
@@ -245,7 +245,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 256,
       createdById: facultyCormen.id,
-      institutionId: institutions['MIT-EECS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '2\nput 1 1\nput 2 2\nget 1\nput 3 3\nget 2\nput 4 4\nget 1\nget 3\nget 4', expectedOutput: '1 -1 -1 3 4', isHidden: false, explanation: 'LRU Cache operations simulation.', order: 1 },
@@ -263,7 +263,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 256,
       createdById: facultyTuring.id,
-      institutionId: institutions['STAN-CS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '12\n0 1 0 2 1 0 1 3 2 1 2 1', expectedOutput: '6', isHidden: false, explanation: '6 units of rain water are being trapped.', order: 1 },
@@ -282,7 +282,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 128,
       createdById: facultyTuring.id,
-      institutionId: institutions['STAN-CS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '()[]{}', expectedOutput: 'true', isHidden: false, explanation: '', order: 1 },
