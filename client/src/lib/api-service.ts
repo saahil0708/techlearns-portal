@@ -46,6 +46,14 @@ import {
   UPDATE_USER_MUTATION,
   USER_BY_ID_QUERY,
   USERS_QUERY,
+  INTERVIEW_COMPANIES_QUERY,
+  INTERVIEW_COMPANY_BY_SLUG_QUERY,
+  MOCK_ASSESSMENTS_QUERY,
+  MOCK_ASSESSMENT_BY_ID_QUERY,
+  INTERVIEW_GUIDES_QUERY,
+  USER_INTERVIEW_READINESS_QUERY,
+  START_MOCK_ASSESSMENT_MUTATION,
+  SUBMIT_MOCK_ASSESSMENT_MUTATION,
 } from './graphql';
 import type { BlogPost } from '@/types/blog';
 import { apiClient } from './axios';
@@ -945,6 +953,104 @@ export const apiService = {
 
   async registerFcmToken(fcmToken: string) {
     const res = await apiClient.post('/notifications/fcm-token', { fcmToken });
+    return res.data?.data ?? res.data;
+  },
+
+  // ----------------------------------------------------
+  // INTERVIEW PREP & COMPANY TRACKS (GRAPHQL & REST)
+  // ----------------------------------------------------
+  async getInterviewCompanies(params?: { tier?: string; search?: string }) {
+    try {
+      const data = await deduplicatedQuery<{ interviewCompanies: any[] }>(INTERVIEW_COMPANIES_QUERY, params || {});
+      if (data?.interviewCompanies) return data.interviewCompanies;
+    } catch {}
+    const res = await apiClient.get('/interview-prep/companies', { params });
+    return res.data?.data ?? res.data;
+  },
+
+  async getInterviewCompanyBySlug(slug: string) {
+    try {
+      const data = await deduplicatedQuery<{ interviewCompanyBySlug: any }>(INTERVIEW_COMPANY_BY_SLUG_QUERY, { slug });
+      if (data?.interviewCompanyBySlug) return data.interviewCompanyBySlug;
+    } catch {}
+    const res = await apiClient.get(`/interview-prep/companies/${slug}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async getMockAssessments(companySlug?: string) {
+    try {
+      const data = await deduplicatedQuery<{ mockAssessments: any[] }>(MOCK_ASSESSMENTS_QUERY, { companySlug });
+      if (data?.mockAssessments) return data.mockAssessments;
+    } catch {}
+    const res = await apiClient.get('/interview-prep/assessments', {
+      params: companySlug ? { company: companySlug } : undefined,
+    });
+    return res.data?.data ?? res.data;
+  },
+
+  async getMockAssessmentById(id: string) {
+    try {
+      const data = await deduplicatedQuery<{ mockAssessmentById: any }>(MOCK_ASSESSMENT_BY_ID_QUERY, { id });
+      if (data?.mockAssessmentById) return data.mockAssessmentById;
+    } catch {}
+    const res = await apiClient.get(`/interview-prep/assessments/${id}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async startMockAssessment(id: string, notes?: string) {
+    try {
+      const data = await fetchGraphQL<{ startMockAssessment: any }>(START_MOCK_ASSESSMENT_MUTATION, { assessmentId: id });
+      if (data?.startMockAssessment) return data.startMockAssessment;
+    } catch (err: unknown) {
+      const errorObj = err as { message?: string; isAxiosError?: boolean; response?: unknown; code?: string } | undefined;
+      const isTransportError =
+        errorObj?.message?.includes('GraphQL transport error') ||
+        (errorObj?.isAxiosError && !errorObj?.response) ||
+        (errorObj?.code && ['ECONNREFUSED', 'ERR_NETWORK', 'ETIMEDOUT', 'ECONNABORTED'].includes(errorObj.code));
+      if (!isTransportError) {
+        throw err;
+      }
+    }
+    const res = await apiClient.post(`/interview-prep/assessments/${id}/start`, { notes });
+    return res.data?.data ?? res.data;
+  },
+
+  async submitMockAssessment(sessionId: string, data: { answers: any[]; reflectionNotes?: string }) {
+    try {
+      const gqlRes = await fetchGraphQL<{ submitMockAssessment: any }>(SUBMIT_MOCK_ASSESSMENT_MUTATION, {
+        sessionId,
+        input: data,
+      });
+      if (gqlRes?.submitMockAssessment) return gqlRes.submitMockAssessment;
+    } catch (err: unknown) {
+      const errorObj = err as { message?: string; isAxiosError?: boolean; response?: unknown; code?: string } | undefined;
+      const isTransportError =
+        errorObj?.message?.includes('GraphQL transport error') ||
+        (errorObj?.isAxiosError && !errorObj?.response) ||
+        (errorObj?.code && ['ECONNREFUSED', 'ERR_NETWORK', 'ETIMEDOUT', 'ECONNABORTED'].includes(errorObj.code));
+      if (!isTransportError) {
+        throw err;
+      }
+    }
+    const res = await apiClient.post(`/interview-prep/assessments/session/${sessionId}/submit`, data);
+    return res.data?.data ?? res.data;
+  },
+
+  async getInterviewGuides() {
+    try {
+      const data = await deduplicatedQuery<{ interviewGuides: any[] }>(INTERVIEW_GUIDES_QUERY, {});
+      if (data?.interviewGuides) return data.interviewGuides;
+    } catch {}
+    const res = await apiClient.get('/interview-prep/guides');
+    return res.data?.data ?? res.data;
+  },
+
+  async getUserInterviewReadiness() {
+    try {
+      const data = await fetchGraphQL<{ userInterviewReadiness: any }>(USER_INTERVIEW_READINESS_QUERY, {});
+      if (data?.userInterviewReadiness) return data.userInterviewReadiness;
+    } catch {}
+    const res = await apiClient.get('/interview-prep/readiness');
     return res.data?.data ?? res.data;
   },
 };

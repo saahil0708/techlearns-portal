@@ -82,14 +82,15 @@ importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js'
 importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js');
 
 // 3. Initialize the Firebase app in the service worker by passing in the messagingSenderId
+const urlParams = new URLSearchParams(self.location.search);
 const firebaseConfig = {
-  apiKey: "AIzaSyBFRj_9qjfrHdm28q-YB6xW2MnScL3uVOg",
-  authDomain: "techlearns-portal-22ff4.firebaseapp.com",
-  projectId: "techlearns-portal-22ff4",
-  storageBucket: "techlearns-portal-22ff4.firebasestorage.app",
-  messagingSenderId: "1069154861661",
-  appId: "1:1069154861661:web:ef2a1136595763aeafc3b4",
-  measurementId: "G-W0VB2L52RD"
+  apiKey: urlParams.get('apiKey') || "AIzaSyBFRj_9qjfrHdm28q-YB6xW2MnScL3uVOg",
+  authDomain: urlParams.get('authDomain') || "techlearns-portal-22ff4.firebaseapp.com",
+  projectId: urlParams.get('projectId') || "techlearns-portal-22ff4",
+  storageBucket: urlParams.get('storageBucket') || "techlearns-portal-22ff4.firebasestorage.app",
+  messagingSenderId: urlParams.get('messagingSenderId') || "1069154861661",
+  appId: urlParams.get('appId') || "1:1069154861661:web:ef2a1136595763aeafc3b4",
+  measurementId: urlParams.get('measurementId') || "G-W0VB2L52RD"
 };
 
 if (firebase.apps.length === 0) {

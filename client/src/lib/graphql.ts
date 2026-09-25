@@ -1013,3 +1013,195 @@ export const ADMIN_AUDIT_LOGS_QUERY = `
     }
   }
 `;
+
+// ----------------------------------------------------
+// INTERVIEW PREP & COMPANY TRACKS GRAPHQL
+// ----------------------------------------------------
+
+export const INTERVIEW_COMPANIES_QUERY = `
+  query GetInterviewCompanies($tier: CompanyTier, $search: String) {
+    interviewCompanies(tier: $tier, search: $search) {
+      id
+      name
+      slug
+      tier
+      logo
+      overview
+      difficulty
+      acceptanceRate
+      focusTopics
+      totalQuestions
+      rounds {
+        stage
+        name
+        description
+        duration
+      }
+      questions {
+        id
+        slug
+        title
+        difficulty
+        topic
+        frequency
+        interviewStage
+        expectedMinutes
+        hints
+      }
+    }
+  }
+`;
+
+export const INTERVIEW_COMPANY_BY_SLUG_QUERY = `
+  query GetInterviewCompanyBySlug($slug: String!) {
+    interviewCompanyBySlug(slug: $slug) {
+      id
+      name
+      slug
+      tier
+      logo
+      overview
+      difficulty
+      acceptanceRate
+      focusTopics
+      totalQuestions
+      rounds {
+        stage
+        name
+        description
+        duration
+      }
+      questions {
+        id
+        slug
+        title
+        difficulty
+        topic
+        frequency
+        interviewStage
+        expectedMinutes
+        hints
+      }
+    }
+  }
+`;
+
+export const MOCK_ASSESSMENTS_QUERY = `
+  query GetMockAssessments($companySlug: String) {
+    mockAssessments(companySlug: $companySlug) {
+      id
+      title
+      companySlug
+      companyName
+      tier
+      durationMinutes
+      passingScore
+      description
+      problemIds
+      problems {
+        id
+        slug
+        title
+        difficulty
+        topic
+        points
+      }
+    }
+  }
+`;
+
+export const MOCK_ASSESSMENT_BY_ID_QUERY = `
+  query GetMockAssessmentById($id: String!) {
+    mockAssessmentById(id: $id) {
+      id
+      title
+      companySlug
+      companyName
+      tier
+      durationMinutes
+      passingScore
+      description
+      problemIds
+      problems {
+        id
+        slug
+        title
+        difficulty
+        topic
+        points
+      }
+    }
+  }
+`;
+
+export const INTERVIEW_GUIDES_QUERY = `
+  query GetInterviewGuides {
+    interviewGuides {
+      id
+      title
+      category
+      readingTimeMinutes
+      summary
+      content
+      tags
+    }
+  }
+`;
+
+export const USER_INTERVIEW_READINESS_QUERY = `
+  query GetUserInterviewReadiness {
+    userInterviewReadiness {
+      overallReadinessPct
+      totalSolvedProblems
+      targetCompany
+      strengths
+      weaknesses
+      companyBreakdowns {
+        companySlug
+        companyName
+        readinessPct
+        solvedCount
+        totalCount
+        recommendedTopic
+      }
+    }
+  }
+`;
+
+export const START_MOCK_ASSESSMENT_MUTATION = `
+  mutation StartMockAssessment($assessmentId: String!) {
+    startMockAssessment(assessmentId: $assessmentId) {
+      sessionId
+      expiresAt
+      assessment {
+        id
+        title
+        companyName
+        durationMinutes
+        passingScore
+        problems {
+          id
+          slug
+          title
+          difficulty
+          topic
+          points
+        }
+      }
+    }
+  }
+`;
+
+export const SUBMIT_MOCK_ASSESSMENT_MUTATION = `
+  mutation SubmitMockAssessment($sessionId: String!, $input: SubmitAssessmentInput!) {
+    submitMockAssessment(sessionId: $sessionId, input: $input) {
+      success
+      score
+      verdict
+      totalPoints
+      earnedPoints
+      feedback
+    }
+  }
+`;
+
