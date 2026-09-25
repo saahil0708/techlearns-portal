@@ -6,6 +6,7 @@ import { makeStore, type AppStore } from './index';
 import { checkCurrentUser } from './slices/authSlice';
 
 import { ToastProvider } from '@/context/ToastContext';
+import { NotificationProvider } from '@/context/NotificationContext';
 
 export default function StoreProvider({
   children,
@@ -21,7 +22,9 @@ export default function StoreProvider({
 
   return (
     <Provider store={store}>
-      <ToastProvider>{children}</ToastProvider>
+      <ToastProvider>
+        <NotificationProvider>{children}</NotificationProvider>
+      </ToastProvider>
     </Provider>
   );
 }

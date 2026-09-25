@@ -889,4 +889,62 @@ export const apiService = {
     const res = await apiClient.post(`/contests/${contestId}/plagiarism-check?threshold=${threshold}`);
     return res.data?.data ?? res.data;
   },
+
+  // ----------------------------------------------------
+  // NOTIFICATIONS (REST)
+  // ----------------------------------------------------
+  async sendNotification(payload: {
+    title: string;
+    body: string;
+    category?: string;
+    actionUrl?: string;
+    target?: {
+      institutionId?: string;
+      batchId?: string;
+      courseId?: string;
+      targetRole?: string;
+      userIds?: string[];
+    };
+  }) {
+    const res = await apiClient.post('/notifications/send', payload);
+    return res.data?.data ?? res.data;
+  },
+
+  async getNotifications() {
+    const res = await apiClient.get('/notifications');
+    return res.data?.data ?? res.data;
+  },
+
+  async markNotificationRead(id: string) {
+    const res = await apiClient.patch(`/notifications/${id}/read`);
+    return res.data?.data ?? res.data;
+  },
+
+  async markAllNotificationsRead() {
+    const res = await apiClient.patch('/notifications/read-all');
+    return res.data?.data ?? res.data;
+  },
+
+  async deleteNotification(id: string) {
+    const res = await apiClient.delete(`/notifications/${id}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async clearAllNotifications() {
+    try {
+      const res = await apiClient.delete('/notifications/clear-all');
+      return res.data?.data ?? res.data;
+    } catch (err: any) {
+      if (err?.response?.status === 404 || err?.response?.status === 405) {
+        const res = await apiClient.delete('/notifications');
+        return res.data?.data ?? res.data;
+      }
+      throw err;
+    }
+  },
+
+  async registerFcmToken(fcmToken: string) {
+    const res = await apiClient.post('/notifications/fcm-token', { fcmToken });
+    return res.data?.data ?? res.data;
+  },
 };

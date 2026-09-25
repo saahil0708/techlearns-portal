@@ -59,6 +59,7 @@ describe('AuthService', () => {
             findById: vi.fn(),
             getProfile: vi.fn(),
             createUser: vi.fn(),
+            updateUser: vi.fn(),
           },
         },
         {
@@ -197,6 +198,56 @@ describe('AuthService', () => {
         undefined,
         undefined,
       );
+    });
+  });
+
+  describe('oauthLogin', () => {
+    it('should log in existing user via valid OAuth token', async () => {
+      vi.spyOn(service, 'verifyFirebaseToken').mockResolvedValue({
+        email: 'test@example.com',
+        name: 'Test User',
+        picture: 'https://example.com/avatar.png',
+        uid: 'firebase-uid-123',
+      } as any);
+      vi.spyOn(usersService, 'findByEmail').mockResolvedValue(mockUser as any);
+      vi.spyOn(usersService, 'findById').mockResolvedValue(mockSanitizedUser as any);
+
+      const result = await service.oauthLogin('valid-firebase-token', 'google');
+
+      expect(result.tokens).toEqual(mockTokens);
+      expect(result.user).toEqual(mockSanitizedUser);
+      expect(tokenService.generateTokenPair).toHaveBeenCalled();
+    });
+
+    it('should create new student user if not found during OAuth login', async () => {
+      vi.spyOn(service, 'verifyFirebaseToken').mockResolvedValue({
+        email: 'newuser@example.com',
+        name: 'New Student',
+        picture: 'https://example.com/new.png',
+        uid: 'firebase-uid-456',
+      } as any);
+      vi.spyOn(usersService, 'findByEmail')
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          ...mockUser,
+          email: 'newuser@example.com',
+          name: 'New Student',
+        } as any);
+      vi.spyOn(usersService, 'createUser').mockResolvedValue(mockSanitizedUser as any);
+      vi.spyOn(usersService, 'findById').mockResolvedValue(mockSanitizedUser as any);
+
+      const result = await service.oauthLogin('valid-firebase-token', 'github');
+
+      expect(usersService.createUser).toHaveBeenCalled();
+      expect(result.tokens).toEqual(mockTokens);
+    });
+
+    it('should throw UnauthorizedException if Firebase token verification fails', async () => {
+      vi.spyOn(service, 'verifyFirebaseToken').mockRejectedValue(new Error('Invalid token'));
+
+      await expect(
+        service.oauthLogin('invalid-token', 'google'),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 });

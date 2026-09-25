@@ -29,6 +29,9 @@ import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
+import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded';
+
+import SendNotificationModal from '@/components/shared/SendNotificationModal';
 
 interface NavbarProps {
   searchQuery?: string;  
@@ -63,6 +66,7 @@ export default function Navbar({
   // Quick Create Menu state
   const [createAnchorEl, setCreateAnchorEl] = useState<null | HTMLElement>(null);
   const isCreateOpen = Boolean(createAnchorEl);
+  const [sendNotifOpen, setSendNotifOpen] = useState(false);
 
   // Notifications Popover state
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
@@ -457,7 +461,30 @@ export default function Navbar({
               primary="Host Contest / Tournament"
             />
           </MenuItem>
+
+          <Divider sx={{ my: 0.75 }} />
+
+          <MenuItem
+            onClick={() => {
+              setCreateAnchorEl(null);
+              setSendNotifOpen(true);
+            }}
+            sx={{ borderRadius: '10px', py: 1, bgcolor: '#EFF6FF', color: '#2563EB', '&:hover': { bgcolor: '#DBEAFE' } }}
+          >
+            <ListItemIcon sx={{ color: '#2563EB', minWidth: 32 }}>
+              <CampaignRoundedIcon sx={{ fontSize: 18 }} />
+            </ListItemIcon>
+            <ListItemText
+              slotProps={{ primary: { sx: { fontSize: '0.84rem', fontWeight: 700 } } }}
+              primary="Broadcast Push Alert"
+            />
+          </MenuItem>
         </Menu>
+
+        <SendNotificationModal
+          open={sendNotifOpen}
+          onClose={() => setSendNotifOpen(false)}
+        />
       </Box>
     </Box>
   );

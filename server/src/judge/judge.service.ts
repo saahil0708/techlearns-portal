@@ -1,15 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ProgrammingLanguage,
   SubmissionStatus,
   SubmissionVerdict,
 } from '@prisma/client';
-import { spawn } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
-import * as fs from 'node:fs/promises';
-import * as os from 'node:os';
-import * as path from 'node:path';
+import { AppEvents, SubmissionEvaluatedEvent } from '../common/events/app-events.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { DockerSandboxProvider } from './sandbox/docker-sandbox.provider.js';
+import { FallbackSandboxProvider } from './sandbox/fallback-sandbox.provider.js';
+import { ISandboxProvider } from './sandbox/sandbox.interface.js';
 
 export interface EvaluationResult {
   verdict: SubmissionVerdict;
@@ -23,8 +23,25 @@ export interface EvaluationResult {
 @Injectable()
 export class JudgeService {
   private readonly logger = new Logger(JudgeService.name);
+  private sandboxProvider: ISandboxProvider;
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private dockerSandbox?: DockerSandboxProvider,
+    @Optional() private fallbackSandbox?: FallbackSandboxProvider,
+    @Optional() private eventEmitter?: EventEmitter2,
+  ) {
+    this.dockerSandbox = this.dockerSandbox || new DockerSandboxProvider();
+    this.fallbackSandbox = this.fallbackSandbox || new FallbackSandboxProvider();
+    this.sandboxProvider = this.dockerSandbox;
+  }
+
+  /**
+   * Pluggable sandbox provider switcher (supports local, docker, or remote serverless runners)
+   */
+  public setSandboxProvider(provider: ISandboxProvider) {
+    this.sandboxProvider = provider;
+  }
 
   async evaluateSubmission(submissionId: string): Promise<void> {
     const submission = await this.prisma.submission.findUnique({
@@ -76,6 +93,22 @@ export class JudgeService {
       this.logger.log(
         `Submission ${submissionId} evaluated: verdict=${result.verdict}, passed=${result.passedTestCases}/${result.totalTestCases}`,
       );
+
+      // Decoupled asynchronous domain event emission
+      if (this.eventEmitter) {
+        this.eventEmitter.emit(
+          AppEvents.SUBMISSION_EVALUATED,
+          new SubmissionEvaluatedEvent(
+            submission.id,
+            submission.userId,
+            submission.problemId,
+            result.verdict,
+            result.passedTestCases,
+            result.totalTestCases,
+            submission.contestId,
+          ),
+        );
+      }
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : 'Internal evaluation failure';
@@ -91,6 +124,19 @@ export class JudgeService {
         },
       });
     }
+  }
+
+  private async executeInSandbox(
+    sourceCode: string,
+    language: ProgrammingLanguage,
+    input: string,
+    timeLimitMs: number,
+    memoryLimitMb: number,
+  ) {
+    return this.sandboxProvider.execute(sourceCode, language, input, {
+      timeLimitMs,
+      memoryLimitMb,
+    });
   }
 
   private async runTestCases(
@@ -143,6 +189,16 @@ export class JudgeService {
           passedTestCases,
           totalTestCases: testCases.length,
           errorMessage: 'Execution exceeded the problem memory limit',
+        };
+      }
+      if (execution.outputLimitExceeded) {
+        return {
+          verdict: SubmissionVerdict.RUNTIME_ERROR,
+          runtime,
+          memory: execution.memory,
+          passedTestCases,
+          totalTestCases: testCases.length,
+          errorMessage: execution.runtimeError || 'Execution exceeded output limit (512KB)',
         };
       }
       if (execution.compilationError) {
@@ -199,87 +255,5 @@ export class JudgeService {
 
   private normalizeOutput(output: string): string {
     return output.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map((line) => line.trimEnd()).join('\n').trim();
-  }
-
-  private async executeInSandbox(
-    sourceCode: string,
-    language: ProgrammingLanguage,
-    input: string,
-    timeLimitMs: number,
-    memoryLimitMb: number,
-  ): Promise<{ output?: string; compilationError?: string; runtimeError?: string; systemError?: string; timedOut?: boolean; memoryLimitExceeded?: boolean; memory: number }> {
-    const extensions: Record<ProgrammingLanguage, string> = {
-      [ProgrammingLanguage.PYTHON]: 'py',
-      [ProgrammingLanguage.JAVASCRIPT]: 'mjs',
-      [ProgrammingLanguage.C]: 'c',
-      [ProgrammingLanguage.CPP]: 'cpp',
-      [ProgrammingLanguage.JAVA]: 'java',
-    };
-    const image = process.env.JUDGE_IMAGE;
-    if (!image) {
-      return {
-        systemError: 'JUDGE_IMAGE is not configured; isolated submission execution is unavailable',
-        memory: 0,
-      };
-    }
-    const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codeplatform-judge-'));
-    const sourcePath = path.join(workDir, `solution.${extensions[language]}`);
-    const containerName = `codeplatform-judge-${randomUUID()}`;
-    const args = [
-      'run', '-i', '--rm', '--name', containerName, '--network', 'none', '--read-only',
-      '--tmpfs', '/tmp:rw,size=64m', '--memory', `${Math.max(16, memoryLimitMb)}m`,
-      '--memory-swap', `${Math.max(16, memoryLimitMb)}m`,
-      '--cpus', '1', '--pids-limit', '64', '--cap-drop', 'ALL',
-      '--security-opt', 'no-new-privileges', '--user', '1000:1000',
-      '-v', `${sourcePath.replace(/\\/g, '/')}:/workspace/${language === ProgrammingLanguage.JAVA ? 'Solution.java' : `solution.${extensions[language]}`}:ro`,
-      image, language,
-    ];
-
-    try {
-      await fs.writeFile(sourcePath, sourceCode, 'utf8');
-      return await new Promise((resolve) => {
-        const child = spawn('docker', args, { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
-        let output = '';
-        let error = '';
-        let timedOut = false;
-        const maxOutput = 512 * 1024;
-        // Host safety timeout accounts for container startup overhead + CPU execution limit
-        const timer = setTimeout(() => {
-          timedOut = true;
-          child.kill('SIGKILL');
-          spawn('docker', ['rm', '-f', containerName], { windowsHide: true, stdio: 'ignore' });
-        }, Math.max(4000, timeLimitMs + 5000));
-        child.stdout.on('data', (chunk: Buffer) => {
-          output += chunk.toString();
-          if (Buffer.byteLength(output) > maxOutput) child.kill('SIGKILL');
-        });
-        child.stderr.on('data', (chunk: Buffer) => {
-          error += chunk.toString();
-          if (Buffer.byteLength(error) > maxOutput) child.kill('SIGKILL');
-        });
-        child.on('error', (spawnError: Error) => {
-          clearTimeout(timer);
-          resolve({ systemError: `Judge container unavailable: ${spawnError.message}`, memory: 0 });
-        });
-        child.on('close', (exitCode) => {
-          clearTimeout(timer);
-          if (timedOut) {
-            resolve({ timedOut: true, memory: memoryLimitMb });
-          } else if (exitCode === 0) {
-            resolve({ output, memory: memoryLimitMb });
-          } else if (exitCode === 137) {
-            resolve({ memoryLimitExceeded: !timedOut, memory: memoryLimitMb });
-          } else if (exitCode === 2) {
-            resolve({ compilationError: error.trim() || 'Compilation failed', memory: memoryLimitMb });
-          } else {
-            resolve({ runtimeError: error.trim() || 'Program exited with a non-zero status', memory: memoryLimitMb });
-          }
-        });
-        child.stdin.on('error', () => {});
-        child.stdin.end(input || '');
-      });
-    } finally {
-      await fs.rm(workDir, { recursive: true, force: true });
-    }
   }
 }

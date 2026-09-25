@@ -6,6 +6,9 @@ import { JudgeService } from './judge.service.js';
 import { PlagiarismService } from './plagiarism.service.js';
 import { JudgeProcessor } from './processors/judge.processor.js';
 
+import { DockerSandboxProvider } from './sandbox/docker-sandbox.provider.js';
+import { FallbackSandboxProvider } from './sandbox/fallback-sandbox.provider.js';
+
 @Module({
   imports: [
     PrismaModule,
@@ -26,10 +29,14 @@ import { JudgeProcessor } from './processors/judge.processor.js';
     JudgeService,
     JudgeProcessor,
     PlagiarismService,
+    DockerSandboxProvider,
+    FallbackSandboxProvider,
   ],
   exports: [
     JudgeService,
     PlagiarismService,
+    DockerSandboxProvider,
+    FallbackSandboxProvider,
     BullModule,
   ],
 })

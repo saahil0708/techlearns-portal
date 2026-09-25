@@ -234,7 +234,21 @@ export default function StudentOverviewTab({
       {/* ========================================================================= */}
       {/* LEFT COLUMN: User Card, Personal Information, My Resume */}
       {/* ========================================================================= */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2.5,
+          position: { md: 'sticky' },
+          top: { md: 20 },
+          alignSelf: 'start',
+          maxHeight: { md: 'calc(100vh - 40px)' },
+          overflowY: { md: 'auto' },
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
+          zIndex: 5,
+        }}
+      >
         {/* 1. User Identity Card (Crisp White Card) */}
         <Card
           elevation={0}

@@ -49,6 +49,7 @@ import { logoutUser } from '@/store/slices/authSlice';
 import { apiService } from '@/lib/api-service';
 import LogoutConfirmModal from '@/components/shared/LogoutConfirmModal';
 import { SkillOSDockModal } from '@/components/students/skillos/SkillOSDock';
+import { useNotifications } from '@/context/NotificationContext';
 
 interface StudentNavbarProps {
   searchQuery?: string;
@@ -56,14 +57,6 @@ interface StudentNavbarProps {
   streakDays?: number;
   contestRating?: number;
   ratingTier?: string;
-}
-
-interface NotificationItem {
-  id: string;
-  title: string;
-  desc: string;
-  time: string;
-  unread: boolean;
 }
 
 export default function StudentNavbar({
@@ -91,23 +84,16 @@ export default function StudentNavbar({
 
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
   const isNotifOpen = Boolean(notifAnchorEl);
+  const [notifCategoryTab, setNotifCategoryTab] = useState<'all' | 'contests' | 'submissions' | 'courses' | 'cel'>('all');
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: 'n-1',
-      title: 'Submission Accepted',
-      desc: 'Problem #407 Trapping Rain Water II passed all 42 test cases!',
-      time: '12m ago',
-      unread: true,
-    },
-    {
-      id: 'n-2',
-      title: 'Upcoming Contest',
-      desc: 'Weekly Grand Arena #108 starts in 2 hours.',
-      time: '1h ago',
-      unread: true,
-    },
-  ]);
+  const {
+    notifications,
+    unreadCount,
+    permissionStatus,
+    requestPushPermission,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
 
   useEffect(() => {
     setActiveUser(user || null);
@@ -174,8 +160,6 @@ export default function StudentNavbar({
     await dispatch(logoutUser());
     router.push('/login');
   };
-
-  const unreadCount = notifications.filter((n) => n.unread).length;
 
   const isLinkActive = (itemPath: string) => {
     if (itemPath === '/problems') return pathname.startsWith('/problems');
@@ -720,61 +704,215 @@ export default function StudentNavbar({
         slotProps={{
           paper: {
             sx: {
-              width: 320,
-              borderRadius: '14px',
-              p: 1.75,
-              boxShadow: '0 10px 30px rgba(15, 23, 42, 0.1)',
+              width: 360,
+              borderRadius: '16px',
+              p: 2,
+              boxShadow: '0 12px 35px rgba(15, 23, 42, 0.12)',
               border: '1px solid #E2E8F0',
               mt: 1,
             },
           },
         }}
       >
+        {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1, borderBottom: '1px solid #F1F5F9' }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.84rem' }}>
-            Notifications
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem' }}>
+              Notifications
+            </Typography>
+            {unreadCount > 0 && (
+              <Chip
+                label={`${unreadCount} new`}
+                size="small"
+                sx={{
+                  height: 18,
+                  fontSize: '0.66rem',
+                  fontWeight: 800,
+                  bgcolor: '#EFF6FF',
+                  color: '#2563EB',
+                  borderRadius: '4px',
+                }}
+              />
+            )}
+          </Box>
           {unreadCount > 0 && (
             <Button
               size="small"
               startIcon={<DoneAllRoundedIcon sx={{ fontSize: 13 }} />}
-              onClick={() => setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })))}
-              sx={{ textTransform: 'none', fontSize: '0.7rem', fontWeight: 600, color: '#64748B', p: 0 }}
+              onClick={markAllAsRead}
+              sx={{ textTransform: 'none', fontSize: '0.7rem', fontWeight: 700, color: '#64748B', p: 0 }}
             >
               Mark all read
             </Button>
           )}
         </Box>
 
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mt: 1, maxHeight: 260, overflowY: 'auto' }}>
-          {notifications.map((n) => (
-            <Box
-              key={n.id}
-              component="button"
-              type="button"
-              onClick={() => setNotifications((prev) => prev.map((item) => (item.id === n.id ? { ...item, unread: false } : item)))}
-              sx={{
-                p: 1,
-                borderRadius: '8px',
-                bgcolor: n.unread ? '#F8FAFC' : '#FFFFFF',
-                border: n.unread ? '1px solid #DBEAFE' : '1px solid #F1F5F9',
-                cursor: 'pointer',
-                textAlign: 'left',
-                width: '100%',
-                fontFamily: 'inherit',
-                display: 'block',
-                '&:hover': { bgcolor: '#F1F5F9' },
-                '&:focus-visible': { outline: '2px solid #2563EB' },
-              }}
-            >
-              <Typography variant="caption" sx={{ fontWeight: n.unread ? 700 : 600, color: '#0F172A', fontSize: '0.78rem', display: 'block' }}>
-                {n.title}
+        {/* Firebase Web Push Activation Banner */}
+        {permissionStatus !== 'granted' && permissionStatus !== 'unsupported' && (
+          <Box
+            sx={{
+              mt: 1.2,
+              p: 1.2,
+              borderRadius: '10px',
+              bgcolor: '#F0FDF4',
+              border: '1px solid #BBF7D0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 1,
+            }}
+          >
+            <Box>
+              <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#166534' }}>
+                🔔 Enable Firebase Push Alerts
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.72rem', display: 'block', mt: 0.25 }}>
-                {n.desc}
+              <Typography sx={{ fontSize: '0.68rem', color: '#15803D' }}>
+                Get live contest & verdict updates on your desktop
               </Typography>
             </Box>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={requestPushPermission}
+              sx={{
+                height: 26,
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                textTransform: 'none',
+                bgcolor: '#16A34A',
+                '&:hover': { bgcolor: '#15803D' },
+                px: 1.2,
+                borderRadius: '6px',
+                flexShrink: 0,
+              }}
+            >
+              Enable
+            </Button>
+          </Box>
+        )}
+
+        {/* Filter Categories Chips */}
+        <Box sx={{ display: 'flex', gap: 0.6, my: 1.2, overflowX: 'auto', pb: 0.2 }}>
+          {[
+            { id: 'all', label: 'All' },
+            { id: 'contests', label: 'Contests' },
+            { id: 'submissions', label: 'Verdicts' },
+            { id: 'courses', label: 'Courses' },
+            { id: 'cel', label: 'CEL' },
+          ].map((cat) => (
+            <Chip
+              key={cat.id}
+              label={cat.label}
+              size="small"
+              onClick={() => setNotifCategoryTab(cat.id as any)}
+              sx={{
+                height: 22,
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                bgcolor: notifCategoryTab === cat.id ? '#0F172A' : '#F1F5F9',
+                color: notifCategoryTab === cat.id ? '#FFFFFF' : '#64748B',
+                '&:hover': { bgcolor: notifCategoryTab === cat.id ? '#1E293B' : '#E2E8F0' },
+              }}
+            />
           ))}
+        </Box>
+
+        {/* Notification List */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.8, maxHeight: 300, overflowY: 'auto' }}>
+          {notifications
+            .filter((n) => notifCategoryTab === 'all' || n.category === notifCategoryTab)
+            .map((n) => (
+              <Box
+                key={n.id}
+                component="button"
+                type="button"
+                onClick={() => {
+                  markAsRead(n.id);
+                  if (n.actionUrl) {
+                    setNotifAnchorEl(null);
+                    router.push(n.actionUrl);
+                  }
+                }}
+                sx={{
+                  p: 1.2,
+                  borderRadius: '10px',
+                  bgcolor: n.unread ? '#F8FAFC' : '#FFFFFF',
+                  border: n.unread ? '1px solid #BFDBFE' : '1px solid #F1F5F9',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  width: '100%',
+                  fontFamily: 'inherit',
+                  fontSize: 'inherit',
+                  display: 'block',
+                  transition: 'all 0.15s ease',
+                  '&:hover': { bgcolor: '#F1F5F9', borderColor: '#CBD5E1' },
+                  '&:focus-visible': { outline: '2px solid #2563EB', outlineOffset: '1px' },
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+                    {n.unread && (
+                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#2563EB', flexShrink: 0 }} />
+                    )}
+                    <Typography sx={{ fontWeight: n.unread ? 800 : 700, color: '#0F172A', fontSize: '0.8rem' }}>
+                      {n.title}
+                    </Typography>
+                  </Box>
+                  {n.badge && (
+                    <Chip
+                      label={n.badge}
+                      size="small"
+                      sx={{
+                        height: 16,
+                        fontSize: '0.62rem',
+                        fontWeight: 800,
+                        bgcolor: n.category === 'submissions' ? '#ECFDF5' : '#EFF6FF',
+                        color: n.category === 'submissions' ? '#059669' : '#2563EB',
+                        borderRadius: '3px',
+                      }}
+                    />
+                  )}
+                </Box>
+                <Typography sx={{ color: '#64748B', fontSize: '0.74rem', lineHeight: 1.35 }}>
+                  {n.desc}
+                </Typography>
+                <Typography sx={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: 600, mt: 0.5 }}>
+                  {n.time}
+                </Typography>
+              </Box>
+            ))}
+
+          {notifications.filter((n) => notifCategoryTab === 'all' || n.category === notifCategoryTab).length === 0 && (
+            <Box sx={{ py: 3, textAlign: 'center' }}>
+              <Typography sx={{ fontSize: '0.82rem', color: '#94A3B8', fontWeight: 600 }}>
+                No notifications in this category.
+              </Typography>
+            </Box>
+          )}
+        </Box>
+
+        <Divider sx={{ my: 1 }} />
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Button
+            size="small"
+            onClick={() => {
+              setNotifAnchorEl(null);
+              router.push('/notifications');
+            }}
+            sx={{
+              width: '100%',
+              fontSize: '0.76rem',
+              fontWeight: 700,
+              textTransform: 'none',
+              color: '#2563EB',
+              borderRadius: '8px',
+              py: 0.6,
+              '&:hover': { bgcolor: '#EFF6FF' },
+            }}
+          >
+            View all in Notification Center ↗
+          </Button>
         </Box>
       </Popover>
 

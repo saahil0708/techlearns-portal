@@ -28,9 +28,11 @@ import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded';
 import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded';
 
 import { useAppSelector } from '@/store/hooks';
 import { apiService } from '@/lib/api-service';
+import SendNotificationModal from '@/components/shared/SendNotificationModal';
 
 interface FacultyNavbarProps {
   collegeName?: string;
@@ -109,6 +111,7 @@ export default function FacultyNavbar({
   // Quick Action Menu state
   const [createAnchorEl, setCreateAnchorEl] = useState<null | HTMLElement>(null);
   const isCreateOpen = Boolean(createAnchorEl);
+  const [sendNotifOpen, setSendNotifOpen] = useState(false);
 
   // Notifications Popover state
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
@@ -520,7 +523,31 @@ export default function FacultyNavbar({
               primary="Global Leaderboard"
             />
           </MenuItem>
+
+          <Divider sx={{ my: 0.75 }} />
+
+          <MenuItem
+            onClick={() => {
+              setCreateAnchorEl(null);
+              setSendNotifOpen(true);
+            }}
+            sx={{ borderRadius: '10px', py: 1, bgcolor: '#EFF6FF', color: '#2563EB', '&:hover': { bgcolor: '#DBEAFE' } }}
+          >
+            <ListItemIcon sx={{ color: '#2563EB', minWidth: 32 }}>
+              <CampaignRoundedIcon sx={{ fontSize: 18 }} />
+            </ListItemIcon>
+            <ListItemText
+              slotProps={{ primary: { sx: { fontSize: '0.84rem', fontWeight: 700 } } }}
+              primary="Broadcast Push Alert"
+            />
+          </MenuItem>
         </Menu>
+
+        <SendNotificationModal
+          open={sendNotifOpen}
+          onClose={() => setSendNotifOpen(false)}
+          defaultInstitutionId={primaryMembership?.institutionId || primaryMembership?.collegeId}
+        />
       </Box>
     </Box>
   );

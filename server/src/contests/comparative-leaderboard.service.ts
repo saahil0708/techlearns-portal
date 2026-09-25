@@ -1,5 +1,6 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { Role, SubmissionVerdict } from '@prisma/client';
+import { AppCacheService } from '../common/cache/app-cache.service.js';
 import { CurrentUserPayload } from '../common/types/current-user.interface.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -42,12 +43,24 @@ export interface ContestMatrixRow {
 
 @Injectable()
 export class ComparativeLeaderboardService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private cacheService?: AppCacheService,
+  ) {}
 
   /**
    * Global Inter-College Leaderboard ranking institutions by top student ratings and volume
    */
   async getCollegeLeaderboard(): Promise<CollegeLeaderboardRow[]> {
+    if (this.cacheService) {
+      return this.cacheService.getOrSet('leaderboard:college:global', 30, () =>
+        this.computeCollegeLeaderboard(),
+      );
+    }
+    return this.computeCollegeLeaderboard();
+  }
+
+  private async computeCollegeLeaderboard(): Promise<CollegeLeaderboardRow[]> {
     const institutions = await this.prisma.institution.findMany({
       where: { status: 'ACTIVE' },
       include: {
@@ -248,7 +261,7 @@ export class ComparativeLeaderboardService {
         problems: {
           select: {
             problemId: true,
-            orderIndex: true,
+            order: true,
             points: true,
           },
         },

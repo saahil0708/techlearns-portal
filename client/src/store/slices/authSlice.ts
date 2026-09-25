@@ -136,6 +136,26 @@ export const registerUser = createAsyncThunk(
 );
 
 /**
+ * Async thunk for Firebase OAuth login (Google & GitHub)
+ */
+export const oauthLogin = createAsyncThunk(
+  'auth/oauthLogin',
+  async (
+    payload: { idToken: string; provider?: string },
+    { rejectWithValue },
+  ) => {
+    try {
+      const res = await apiClient.post('/auth/oauth', payload);
+      const responseData = res.data;
+      const data = responseData.data || responseData;
+      return data;
+    } catch (err: any) {
+      return rejectWithValue(err.message || 'OAuth authentication failed');
+    }
+  },
+);
+
+/**
  * Async thunk for verifying 2FA login challenge code
  */
 export const verify2faLogin = createAsyncThunk(
@@ -307,6 +327,35 @@ export const authSlice = createSlice({
         state.isLoading = false;
         state.isCheckingSession = false;
         state.error = (action.payload as string) || 'Registration failed';
+      });
+
+    // OAUTH LOGIN
+    builder
+      .addCase(oauthLogin.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(oauthLogin.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isCheckingSession = false;
+        state.user = action.payload?.user || action.payload;
+        state.isAuthenticated = true;
+        state.requires2FA = false;
+        state.challengeToken = null;
+        state.challengeUserId = null;
+        if (action.payload?.tokens?.accessToken) {
+          setClientAuthCookie(action.payload.tokens.accessToken);
+        }
+        if (typeof window !== 'undefined' && state.user) {
+          try {
+            localStorage.setItem('codeplatform_user', JSON.stringify(state.user));
+          } catch {}
+        }
+      })
+      .addCase(oauthLogin.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isCheckingSession = false;
+        state.error = (action.payload as string) || 'OAuth authentication failed';
       });
 
     // 2FA VERIFY

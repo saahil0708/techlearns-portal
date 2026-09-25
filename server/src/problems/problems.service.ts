@@ -1,5 +1,6 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { Prisma, ProblemDifficulty, ProblemStatus, Role } from '@prisma/client';
+import { AppCacheService } from '../common/cache/app-cache.service.js';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import { CurrentUserPayload } from '../common/types/current-user.interface.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -9,7 +10,10 @@ import { UpdateProblemInput } from './dto/update-problem.input.js';
 
 @Injectable()
 export class ProblemsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private cacheService?: AppCacheService,
+  ) {}
 
   private slugify(title: string): string {
     return title
@@ -251,7 +255,7 @@ export class ProblemsService {
 
     this.assertProblemAuthorOrAdmin(existing, user);
 
-    return this.prisma.problem.update({
+    const problem = await this.prisma.problem.update({
       where: { id },
       data: input,
       include: {
@@ -264,6 +268,12 @@ export class ProblemsService {
         },
       },
     });
+
+    if (this.cacheService) {
+      await this.cacheService.invalidatePrefix('problems:');
+    }
+
+    return problem;
   }
 
   async delete(id: string, user?: CurrentUserPayload) {
@@ -281,6 +291,10 @@ export class ProblemsService {
       where: { id },
     });
 
+    if (this.cacheService) {
+      await this.cacheService.invalidatePrefix('problems:');
+    }
+
     return true;
   }
 
@@ -295,7 +309,7 @@ export class ProblemsService {
 
     this.assertProblemAuthorOrAdmin(problem, user);
 
-    return this.prisma.testCase.create({
+    const tc = await this.prisma.testCase.create({
       data: {
         problemId,
         input: input.input,
@@ -305,6 +319,12 @@ export class ProblemsService {
         order: input.order ?? 0,
       },
     });
+
+    if (this.cacheService) {
+      await this.cacheService.invalidatePrefix('problems:');
+    }
+
+    return tc;
   }
 
   async getTestCases(problemId: string, user?: CurrentUserPayload) {

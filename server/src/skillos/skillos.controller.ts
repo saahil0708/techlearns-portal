@@ -53,8 +53,16 @@ export class SkillOsController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: UpdateSkillOsTelemetryDto,
   ) {
-    const userWs = await this.skillOsService.getWorkspaceForUser(user.id);
-    const updated = await this.skillOsService.updateTelemetry(userWs.corporateId, dto);
+    let targetCorporateId = dto.corporateId;
+    if (!targetCorporateId && dto.userId) {
+      const targetWs = await this.skillOsService.getWorkspaceForUser(dto.userId);
+      targetCorporateId = targetWs.corporateId;
+    }
+    if (!targetCorporateId) {
+      const userWs = await this.skillOsService.getWorkspaceForUser(user.id);
+      targetCorporateId = userWs.corporateId;
+    }
+    const updated = await this.skillOsService.updateTelemetry(targetCorporateId, dto);
     return {
       success: true,
       workspace: updated,

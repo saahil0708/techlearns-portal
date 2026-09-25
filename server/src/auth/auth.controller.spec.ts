@@ -48,6 +48,7 @@ describe('AuthController', () => {
           useValue: {
             register: vi.fn().mockResolvedValue(mockAuthResponse),
             login: vi.fn().mockResolvedValue(mockAuthResponse),
+            oauthLogin: vi.fn().mockResolvedValue(mockAuthResponse),
             getProfile: vi.fn().mockResolvedValue(mockAuthResponse.user),
             refreshToken: vi.fn(),
             revokeToken: vi.fn(),
@@ -111,6 +112,23 @@ describe('AuthController', () => {
     const result = await controller.login(dto, mockReq, mockRes);
     expect(result).toEqual(mockAuthResponse);
     expect(authService.login).toHaveBeenCalledWith(dto, 'Mozilla/5.0', '127.0.0.1');
+    expect(mockRes.cookie).toHaveBeenCalled();
+  });
+
+  it('should authenticate via Firebase oauth and set cookies', async () => {
+    const dto = {
+      idToken: 'mock-firebase-id-token',
+      provider: 'google',
+    };
+
+    const result = await controller.oauthLogin(dto, mockReq, mockRes);
+    expect(result).toEqual(mockAuthResponse);
+    expect(authService.oauthLogin).toHaveBeenCalledWith(
+      'mock-firebase-id-token',
+      'google',
+      'Mozilla/5.0',
+      '127.0.0.1',
+    );
     expect(mockRes.cookie).toHaveBeenCalled();
   });
 

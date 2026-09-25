@@ -26,7 +26,8 @@ import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { loginUser, registerUser, verify2faLogin, clearError } from '@/store/slices/authSlice';
+import { loginUser, registerUser, oauthLogin, verify2faLogin, clearError } from '@/store/slices/authSlice';
+import { signInWithOAuthPopup } from '@/lib/firebase';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import { useToast } from '@/context/ToastContext';
 import { extractRole, getLoginRedirectUrl } from '@/utils/role-routing';
@@ -143,11 +144,40 @@ export default function AuthPageClient() {
     }
   };
 
-  const handleOAuthLogin = (provider: 'google' | 'github') => {
-    toast.success(`Authenticating via ${provider === 'google' ? 'Google' : 'GitHub'} SSO...`, 'OAuth Login');
-    setIsRedirecting(true);
-    const targetUrl = getLoginRedirectUrl(null, rawRedirectParam);
-    router.push(targetUrl);
+  const handleOAuthLogin = async (provider: 'google' | 'github') => {
+    setLocalError(null);
+    setSuccessMessage(null);
+    dispatch(clearError());
+    const providerName = provider === 'google' ? 'Google' : 'GitHub';
+
+    try {
+      toast.info(`Connecting to ${providerName}...`, 'SSO Authentication');
+      const { idToken } = await signInWithOAuthPopup(provider);
+
+      const resultAction = await dispatch(oauthLogin({ idToken, provider }));
+
+      if (oauthLogin.fulfilled.match(resultAction)) {
+        const payload = resultAction.payload;
+        const userRole = extractRole(payload?.user || payload?.tokens?.accessToken);
+        const targetUrl = getLoginRedirectUrl(userRole, rawRedirectParam);
+
+        toast.success(`Welcome, ${payload?.user?.name || 'User'}! Signed in via ${providerName}.`, 'Authenticated');
+        setIsRedirecting(true);
+        router.push(targetUrl);
+      } else {
+        const errPayload = resultAction.payload as string;
+        toast.error(errPayload || `${providerName} authentication failed.`, 'Sign In Failed');
+        setLocalError(errPayload || `${providerName} authentication failed.`);
+      }
+    } catch (err: any) {
+      if (err?.code === 'auth/popup-closed-by-user' || err?.message?.includes('closed-by-user')) {
+        toast.info('Sign in popup was closed.', 'Cancelled');
+        return;
+      }
+      const msg = err?.message || `Failed to sign in with ${providerName}.`;
+      setLocalError(msg);
+      toast.error(msg, 'OAuth Error');
+    }
   };
 
   return (

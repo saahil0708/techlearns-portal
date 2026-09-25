@@ -1,9 +1,16 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcryptjs';
+import { randomBytes } from 'node:crypto';
+import { cert, getApps, initializeApp, type App } from 'firebase-admin/app';
+import { getAuth, type DecodedIdToken } from 'firebase-admin/auth';
 import { UsersService } from '../users/users.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
@@ -13,12 +20,131 @@ import { WebAuthnService } from './services/webauthn.service.js';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+  private firebaseApp: App | null = null;
+
   constructor(
     private usersService: UsersService,
     private tokenService: TokenService,
     private totpService: TotpService,
     private webAuthnService: WebAuthnService,
+    @Optional() private configService?: ConfigService,
   ) {}
+
+  private getFirebaseAdmin(): App {
+    const apps = getApps();
+    if (apps.length > 0 && apps[0]) {
+      return apps[0];
+    }
+
+    const projectId =
+      this.configService?.get<string>('FIREBASE_PROJECT_ID') ||
+      process.env.FIREBASE_PROJECT_ID ||
+      'techlearns-portal-22ff4';
+    const clientEmail =
+      this.configService?.get<string>('FIREBASE_CLIENT_EMAIL') ||
+      process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey =
+      this.configService?.get<string>('FIREBASE_PRIVATE_KEY') ||
+      process.env.FIREBASE_PRIVATE_KEY;
+
+    if (clientEmail && privateKey) {
+      this.firebaseApp = initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey: privateKey.replace(/\\n/g, '\n'),
+        }),
+      });
+    } else {
+      this.firebaseApp = initializeApp({
+        projectId,
+      });
+    }
+
+    return this.firebaseApp;
+  }
+
+  async verifyFirebaseToken(idToken: string): Promise<DecodedIdToken> {
+    const app = this.getFirebaseAdmin();
+    return getAuth(app).verifyIdToken(idToken);
+  }
+
+  /**
+   * Authenticate user via Firebase OAuth (Google, GitHub, etc.)
+   */
+  async oauthLogin(
+    idToken: string,
+    provider?: string,
+    deviceInfo?: string,
+    ipAddress?: string,
+  ) {
+    let email: string | undefined;
+    let name: string | undefined;
+    let picture: string | undefined;
+
+    try {
+      const decoded = await this.verifyFirebaseToken(idToken);
+      email = decoded.email;
+      name = decoded.name;
+      picture = decoded.picture;
+    } catch (err: any) {
+      this.logger.warn(`Firebase token verification failed for provider ${provider}: ${err.message}`);
+      throw new UnauthorizedException(`OAuth token verification failed: ${err.message}`);
+    }
+
+    if (!email) {
+      throw new BadRequestException('Email was not provided by the OAuth provider');
+    }
+
+    const normalizedEmail = email.toLowerCase();
+    let user = await this.usersService.findByEmail(normalizedEmail);
+
+    if (user) {
+      if (user.status !== 'ACTIVE') {
+        throw new UnauthorizedException('Your account is inactive or suspended');
+      }
+
+      // If user has no avatar and picture exists, update avatar
+      if (!user.avatarUrl && picture) {
+        await this.usersService.updateUser(user.id, { avatarUrl: picture });
+      }
+    } else {
+      // Create new user account with high-entropy randomized password hash
+      const randomSecret = randomBytes(32).toString('hex');
+      const saltRounds = 12;
+      const passwordHash = await bcrypt.hash(randomSecret, saltRounds);
+      const displayName = name || normalizedEmail.split('@')[0] || 'User';
+
+      await this.usersService.createUser({
+        email: normalizedEmail,
+        name: displayName,
+        passwordHash,
+        avatarUrl: picture,
+      });
+
+      user = await this.usersService.findByEmail(normalizedEmail);
+      if (!user) {
+        throw new UnauthorizedException('Failed to initialize user from OAuth profile');
+      }
+    }
+
+    const tokens = await this.tokenService.generateTokenPair(
+      user.id,
+      user.email,
+      user.globalRole,
+      undefined,
+      deviceInfo,
+      ipAddress,
+    );
+
+    const sanitizedUser = await this.usersService.findById(user.id);
+
+    return {
+      user: sanitizedUser,
+      tokens,
+    };
+  }
 
   /**
    * Register a new user with strong password hashing and initial token pair

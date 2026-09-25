@@ -14,6 +14,16 @@ export class ProvisionWorkspaceDto {
 }
 
 export class UpdateSkillOsTelemetryDto {
+  @ApiProperty({ description: 'Target corporate ID to update', example: 'TL-2026-DEV-S101', required: false })
+  @IsOptional()
+  @IsString()
+  corporateId?: string;
+
+  @ApiProperty({ description: 'Target user ID to update', required: false })
+  @IsOptional()
+  @IsString()
+  userId?: string;
+
   @ApiProperty({ description: 'Increment PRs merged count', required: false })
   @IsOptional()
   @IsInt()

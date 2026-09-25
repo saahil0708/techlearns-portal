@@ -23,6 +23,7 @@ import { AuthService } from './auth.service.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { AcceptInvitationDto } from './dto/accept-invitation.dto.js';
 import { LoginDto } from './dto/login.dto.js';
+import { OAuthDto } from './dto/oauth.dto.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { RefreshTokenDto, RevokeTokenDto } from './dto/refresh-token.dto.js';
 import { Disable2faDto, Enable2faDto, Verify2faDto } from './dto/totp.dto.js';
@@ -141,6 +142,32 @@ export class AuthController {
     const ipAddress = req.ip;
     const result = await this.authService.login(dto, deviceInfo, ipAddress);
     if ('tokens' in result && result.tokens) {
+      this.setAuthCookies(res, result.tokens);
+    }
+    return result;
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('oauth')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Authenticate or sign up via Firebase OAuth (Google or GitHub)' })
+  @ApiResponse({ status: 200, description: 'Authenticated successfully with user and token pair' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired Firebase ID token' })
+  async oauthLogin(
+    @Body() dto: OAuthDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const deviceInfo = req.headers['user-agent'];
+    const ipAddress = req.ip;
+    const result = await this.authService.oauthLogin(
+      dto.idToken,
+      dto.provider,
+      deviceInfo,
+      ipAddress,
+    );
+    if (result.tokens) {
       this.setAuthCookies(res, result.tokens);
     }
     return result;

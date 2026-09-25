@@ -604,6 +604,7 @@ export class UsersService {
     globalRole?: Role;
     status?: UserStatus;
     rollNo?: string;
+    avatarUrl?: string;
   }): Promise<SanitizedUser> {
     const existing = await this.prisma.user.findUnique({
       where: { email: data.email.toLowerCase() },
@@ -621,6 +622,7 @@ export class UsersService {
         globalRole: data.globalRole || Role.STUDENT,
         status: data.status || UserStatus.ACTIVE,
         rollNo: data.rollNo,
+        avatarUrl: data.avatarUrl,
       },
       select: userSanitizedSelect,
     });

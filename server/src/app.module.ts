@@ -6,6 +6,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { createObserveModule } from '@nestjs/observe';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { AppCacheModule } from './common/cache/app-cache.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -24,6 +26,7 @@ import { ProblemsModule } from './problems/problems.module.js';
 import { SubmissionsModule } from './submissions/submissions.module.js';
 import { UsersModule } from './users/users.module.js';
 import { SkillOsModule } from './skillos/skillos.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -55,6 +58,13 @@ const dynamicObserveImports = hasValidObserveKeys
       validate: validateEnvironment,
       envFilePath: ['.env'],
     }),
+    EventEmitterModule.forRoot({
+      wildcard: true,
+      delimiter: '.',
+      maxListeners: 20,
+      verboseMemoryLeak: true,
+    }),
+    AppCacheModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60_000,
@@ -94,6 +104,7 @@ const dynamicObserveImports = hasValidObserveKeys
     SubmissionsModule,
     JudgeModule,
     SkillOsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [
