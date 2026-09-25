@@ -12,10 +12,14 @@ import {
 import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
+import CalendarTodayRoundedIcon from '@mui/icons-material/CalendarTodayRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
 import LayersRoundedIcon from '@mui/icons-material/LayersRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import RocketLaunchRoundedIcon from '@mui/icons-material/RocketLaunchRounded';
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 
 export interface StudentBootcamp {
   id: string;
@@ -42,60 +46,121 @@ interface BootcampGridCardProps {
   onJoin: (bootcamp: StudentBootcamp) => void;
 }
 
-function getBootcampThemeConfig(track: string) {
-  switch (track) {
-    case 'Systems & Backend':
-    case 'Quant & Low Latency':
-      return {
-        image: '/images/courses/system.jpg',
-        fallbackBg: '#F3E8FF',
-        accentColor: '#7C3AED',
-        tagBg: 'rgba(124, 58, 237, 0.08)',
-        tagText: '#7C3AED',
-        btnBg: '#7C3AED',
-        btnHover: '#6D28D9',
-      };
-    case 'Competitive Programming':
-      return {
-        image: '/images/courses/cp.jpg',
-        fallbackBg: '#DCFCE7',
-        accentColor: '#059669',
-        tagBg: 'rgba(5, 150, 105, 0.08)',
-        tagText: '#059669',
-        btnBg: '#059669',
-        btnHover: '#047857',
-      };
-    case 'AI / Deep Learning':
-      return {
-        image: '/images/courses/ai.jpg',
-        fallbackBg: '#FEF3C7',
-        accentColor: '#D97706',
-        tagBg: 'rgba(217, 119, 6, 0.08)',
-        tagText: '#D97706',
-        btnBg: '#D97706',
-        btnHover: '#B45309',
-      };
-    case 'DevOps & SRE':
-      return {
-        image: '/images/courses/dsa.jpg',
-        fallbackBg: '#E0F2FE',
-        accentColor: '#0284C7',
-        tagBg: 'rgba(2, 132, 199, 0.08)',
-        tagText: '#0284C7',
-        btnBg: '#0284C7',
-        btnHover: '#0369A1',
-      };
-    case 'Web & Full-Stack':
-    default:
-      return {
-        image: '/images/courses/web.jpg',
-        fallbackBg: '#EFF6FF',
-        accentColor: '#2563EB',
-        tagBg: 'rgba(37, 99, 235, 0.08)',
-        tagText: '#2563EB',
-        btnBg: '#2563EB',
-        btnHover: '#1D4ED8',
-      };
+export function getBootcampThemeConfig(track: string = '') {
+  const t = track.toLowerCase();
+
+  // AI / GenAI / LLM / Deep Learning
+  if (
+    /\b(ai|llm|ml|genai)\b/i.test(t) ||
+    t.includes('deep learning') ||
+    t.includes('machine learning') ||
+    t.includes('artificial intelligence')
+  ) {
+    return {
+      image: '/images/courses/ai.jpg',
+      fallbackBg: '#FEF3C7',
+      accentColor: '#D97706',
+      tagBg: 'rgba(217, 119, 6, 0.08)',
+      tagText: '#D97706',
+      btnBg: '#D97706',
+      btnHover: '#B45309',
+    };
+  }
+
+  // System Design / Distributed Systems / Backend / Architecture
+  if (
+    /\b(systems?|backend|distributed|quant|architecture)\b/i.test(t) ||
+    t.includes('system design') ||
+    t.includes('distributed systems') ||
+    t.includes('low latency')
+  ) {
+    return {
+      image: '/images/courses/system.jpg',
+      fallbackBg: '#F3E8FF',
+      accentColor: '#7C3AED',
+      tagBg: 'rgba(124, 58, 237, 0.08)',
+      tagText: '#7C3AED',
+      btnBg: '#7C3AED',
+      btnHover: '#6D28D9',
+    };
+  }
+
+  // Cloud & DevOps / SRE / Kubernetes / Platform Infra
+  if (
+    /\b(devops|cloud|kubernetes|sre|infra(?:structure)?)\b/i.test(t) ||
+    t.includes('platform engineering') ||
+    t.includes('cloud native')
+  ) {
+    return {
+      image: '/images/courses/dsa.jpg',
+      fallbackBg: '#E0F2FE',
+      accentColor: '#0284C7',
+      tagBg: 'rgba(2, 132, 199, 0.08)',
+      tagText: '#0284C7',
+      btnBg: '#0284C7',
+      btnHover: '#0369A1',
+    };
+  }
+
+  // Competitive Programming / Algorithms
+  if (
+    /\b(cp|dsa|algo)\b/i.test(t) ||
+    t.includes('algorithm') ||
+    t.includes('competitive') ||
+    t.includes('data structure')
+  ) {
+    return {
+      image: '/images/courses/cp.jpg',
+      fallbackBg: '#DCFCE7',
+      accentColor: '#059669',
+      tagBg: 'rgba(5, 150, 105, 0.08)',
+      tagText: '#059669',
+      btnBg: '#059669',
+      btnHover: '#047857',
+    };
+  }
+
+  // UI/UX / Frontend / Design
+  if (
+    /\b(ui|ux|frontend)\b/i.test(t) ||
+    t.includes('ui/ux') ||
+    t.includes('design') ||
+    t.includes('product design')
+  ) {
+    return {
+      image: '/images/courses/uiux.jpg',
+      fallbackBg: '#FDF2F8',
+      accentColor: '#DB2777',
+      tagBg: 'rgba(219, 39, 119, 0.08)',
+      tagText: '#DB2777',
+      btnBg: '#DB2777',
+      btnHover: '#BE185D',
+    };
+  }
+
+  // Web & Full-Stack default
+  return {
+    image: '/images/courses/web.jpg',
+    fallbackBg: '#EFF6FF',
+    accentColor: '#2563EB',
+    tagBg: 'rgba(37, 99, 235, 0.08)',
+    tagText: '#2563EB',
+    btnBg: '#2563EB',
+    btnHover: '#1D4ED8',
+  };
+}
+
+function formatBootcampDate(dateStr?: string) {
+  if (!dateStr || dateStr === 'TBA') return 'Starts Soon';
+  if (!dateStr.includes('T') && isNaN(Date.parse(dateStr))) {
+    return dateStr;
+  }
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch {
+    return dateStr;
   }
 }
 
@@ -107,6 +172,7 @@ export default function BootcampGridCard({
 }: BootcampGridCardProps) {
   const theme = getBootcampThemeConfig(bootcamp.track);
   const isEnrolled = bootcamp.status === 'Enrolled';
+  const isCompleted = bootcamp.status === 'Completed';
   const isAvailable = bootcamp.status === 'Available';
 
   return (
@@ -173,34 +239,65 @@ export default function BootcampGridCard({
             top: 14,
             left: 14,
             zIndex: 3,
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
-            gap: 0.8,
-            bgcolor: 'rgba(15, 23, 42, 0.85)',
-            backdropFilter: 'blur(8px)',
-            px: 1.4,
-            py: 0.45,
+            gap: 0.75,
+            background: isCompleted
+              ? 'linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)'
+              : isEnrolled
+              ? 'linear-gradient(135deg, rgba(6, 78, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)'
+              : 'linear-gradient(135deg, rgba(120, 53, 15, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
+            backdropFilter: 'blur(12px)',
+            px: 1.3,
+            py: 0.5,
             borderRadius: '9999px',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            border: isCompleted
+              ? '1px solid rgba(56, 189, 248, 0.45)'
+              : isEnrolled
+              ? '1px solid rgba(52, 211, 153, 0.45)'
+              : '1px solid rgba(251, 191, 36, 0.45)',
+            boxShadow: isCompleted
+              ? '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(56, 189, 248, 0.25)'
+              : isEnrolled
+              ? '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(16, 185, 129, 0.25)'
+              : '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(245, 158, 11, 0.25)',
           }}
         >
-          <Box
+          {isCompleted ? (
+            <CheckCircleRoundedIcon
+              sx={{
+                fontSize: 14,
+                color: '#38BDF8',
+                filter: 'drop-shadow(0 0 4px rgba(56, 189, 248, 0.9))',
+              }}
+            />
+          ) : isEnrolled ? (
+            <BoltRoundedIcon
+              sx={{
+                fontSize: 14,
+                color: '#34D399',
+                filter: 'drop-shadow(0 0 4px rgba(52, 211, 153, 0.9))',
+              }}
+            />
+          ) : (
+            <RocketLaunchRoundedIcon
+              sx={{
+                fontSize: 13,
+                color: '#FBBF24',
+                filter: 'drop-shadow(0 0 4px rgba(251, 191, 36, 0.9))',
+              }}
+            />
+          )}
+
+          <Typography
             sx={{
-              width: 7,
-              height: 7,
-              borderRadius: '50%',
-              bgcolor: isEnrolled ? '#10B981' : '#F59E0B',
-              boxShadow: isEnrolled ? '0 0 8px #10B981' : '0 0 8px #F59E0B',
-              animation: 'pulse 2s infinite',
-              '@keyframes pulse': {
-                '0%': { opacity: 1 },
-                '50%': { opacity: 0.4 },
-                '100%': { opacity: 1 },
-              },
+              color: isCompleted ? '#F0F9FF' : isEnrolled ? '#ECFDF5' : '#FFFBEB',
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              letterSpacing: '0.05em',
             }}
-          />
-          <Typography sx={{ color: '#FFFFFF', fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.03em' }}>
-            {isEnrolled ? 'ACTIVE COHORT' : 'UPCOMING SPRINT'}
+          >
+            {isCompleted ? 'COMPLETED' : isEnrolled ? 'ACTIVE COHORT' : 'UPCOMING SPRINT'}
           </Typography>
         </Box>
 
@@ -444,19 +541,32 @@ export default function BootcampGridCard({
           />
         </svg>
 
-        {/* Left Side Duration */}
+        {/* Left Side Date */}
         <Box
           sx={{
             position: 'relative',
             zIndex: 2,
             display: 'flex',
             alignItems: 'center',
-            gap: 0.8,
+            gap: 0.6,
+            minWidth: 0,
+            maxWidth: 'calc(100% - 132px)',
+            pr: 0.5,
           }}
         >
-          <AccessTimeRoundedIcon sx={{ fontSize: 15, color: '#94A3B8' }} />
-          <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748B' }}>
-            {bootcamp.duration}
+          <CalendarTodayRoundedIcon sx={{ fontSize: 13.5, color: '#94A3B8', flexShrink: 0 }} />
+          <Typography
+            noWrap
+            sx={{
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              color: '#64748B',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {formatBootcampDate(bootcamp.nextSessionDate || bootcamp.duration)}
           </Typography>
         </Box>
 
@@ -476,14 +586,14 @@ export default function BootcampGridCard({
                 e.stopPropagation();
                 onEnroll(bootcamp);
               }}
-              endIcon={<OpenInNewRoundedIcon sx={{ fontSize: 15 }} />}
+              endIcon={<OpenInNewRoundedIcon sx={{ fontSize: 14 }} />}
               sx={{
-                height: 40,
+                height: 38,
                 borderRadius: '9999px',
                 textTransform: 'none',
                 fontWeight: 700,
-                fontSize: '0.86rem',
-                px: 2.8,
+                fontSize: '0.82rem',
+                px: 2.2,
                 bgcolor: theme.btnBg,
                 color: '#FFFFFF',
                 boxShadow: `0 4px 12px ${theme.btnBg}40`,
@@ -508,14 +618,14 @@ export default function BootcampGridCard({
                   onJoin(bootcamp);
                 }
               }}
-              startIcon={<PlayArrowRoundedIcon sx={{ fontSize: 16 }} />}
+              startIcon={<PlayArrowRoundedIcon sx={{ fontSize: 15 }} />}
               sx={{
-                height: 40,
+                height: 38,
                 borderRadius: '9999px',
                 textTransform: 'none',
                 fontWeight: 700,
-                fontSize: '0.86rem',
-                px: 2.8,
+                fontSize: '0.82rem',
+                px: 2.2,
                 bgcolor: '#0F172A',
                 boxShadow: '0 4px 12px rgba(15, 23, 42, 0.25)',
                 transition: 'all 0.2s ease',

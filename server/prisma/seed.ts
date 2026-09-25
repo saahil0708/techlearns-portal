@@ -186,7 +186,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 128,
       createdById: facultyTuring.id,
-      institutionId: institutions['STAN-CS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '4 9\n2 7 11 15', expectedOutput: '0 1', isHidden: false, explanation: 'nums[0] + nums[1] == 9 (2 + 7 = 9)', order: 1 },
@@ -206,7 +206,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 256,
       createdById: facultyCormen.id,
-      institutionId: institutions['MIT-EECS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: 'abcabcbb', expectedOutput: '3', isHidden: false, explanation: 'The answer is "abc", with the length of 3.', order: 1 },
@@ -226,7 +226,7 @@ async function main() {
       timeLimit: 1500,
       memoryLimit: 256,
       createdById: facultyTuring.id,
-      institutionId: institutions['STAN-CS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '2 1\n1 3\n2', expectedOutput: '2.00000', isHidden: false, explanation: 'merged array = [1,2,3] and median is 2.', order: 1 },
@@ -245,7 +245,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 256,
       createdById: facultyCormen.id,
-      institutionId: institutions['MIT-EECS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '2\nput 1 1\nput 2 2\nget 1\nput 3 3\nget 2\nput 4 4\nget 1\nget 3\nget 4', expectedOutput: '1 -1 -1 3 4', isHidden: false, explanation: 'LRU Cache operations simulation.', order: 1 },
@@ -263,7 +263,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 256,
       createdById: facultyTuring.id,
-      institutionId: institutions['STAN-CS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '12\n0 1 0 2 1 0 1 3 2 1 2 1', expectedOutput: '6', isHidden: false, explanation: '6 units of rain water are being trapped.', order: 1 },
@@ -282,7 +282,7 @@ async function main() {
       timeLimit: 1000,
       memoryLimit: 128,
       createdById: facultyTuring.id,
-      institutionId: institutions['STAN-CS'].id,
+      institutionId: null,
       status: ProblemStatus.PUBLISHED,
       testCases: [
         { input: '()[]{}', expectedOutput: 'true', isHidden: false, explanation: '', order: 1 },
@@ -396,11 +396,149 @@ async function main() {
     skipDuplicates: true,
   });
 
+  // 12. Create Bootcamps
+  const bootcampsData = [
+    {
+      slug: 'genai-rag-agentic-systems',
+      title: 'GenAI & Autonomous Agentic Workflows',
+      subtitle: 'Build production-ready LLM pipelines with LangGraph, LlamaIndex, and Vector RAG engines.',
+      description: 'An elite 6-week hands-on sprint for building production AI agents, tool-calling pipelines, RAG indexing, and deployment on Kubernetes.',
+      track: 'GenAI & LLMs',
+      instructor: 'Dr. Sarah Chen',
+      instructorRole: 'Staff AI Research Scientist',
+      instructorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      duration: '6 Weeks (Live Sprints)',
+      level: 'Advanced',
+      badge: 'Industry Flagship',
+      rating: 4.95,
+      maxSeats: 1500,
+      enrolledCount: 1420,
+      totalSessions: 12,
+      status: 'PUBLISHED',
+      nextSessionDate: new Date('2026-10-02T18:30:00.000Z'),
+      nextSessionTopic: 'Autonomous Tool Calling with LangGraph & Hybrid Vector Search',
+      syllabus: [
+        { week: 'Week 1-2', topic: 'Vector Embeddings, Hybrid Search & Pinecone Pipeline', deliverables: 'Real-time Document Intelligence Microservice' },
+        { week: 'Week 3-4', topic: 'LangGraph State Machines & Agentic Tool Execution', deliverables: 'Multi-Agent Code Review & Debugging Pipeline' },
+        { week: 'Week 5-6', topic: 'Fine-Tuning, LoRA & Production Evaluation Sandboxes', deliverables: 'Enterprise GenAI Gateway with Observability' },
+      ],
+      createdById: superAdmin.id,
+    },
+    {
+      slug: 'high-frequency-system-design',
+      title: 'Ultra-Scale Distributed Systems & Low Latency',
+      subtitle: 'Architect globally distributed systems handling 1M+ RPS with Kafka, Redis, and Raft consensus.',
+      description: 'Master low latency distributed system design, distributed transaction consistency, lock-free queues, and fault-tolerant architecture.',
+      track: 'System Design',
+      instructor: 'Marcus Vance',
+      instructorRole: 'Principal Infrastructure Architect',
+      instructorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+      duration: '8 Weeks (Deep Dive)',
+      level: 'Advanced',
+      badge: 'CEL Featured',
+      rating: 4.92,
+      maxSeats: 1200,
+      enrolledCount: 980,
+      totalSessions: 16,
+      status: 'PUBLISHED',
+      nextSessionDate: new Date('2026-10-04T19:00:00.000Z'),
+      nextSessionTopic: 'Raft Consensus, LSM Trees & Write-Ahead Logging',
+      syllabus: [
+        { week: 'Week 1-3', topic: 'Distributed Consensus & Replication Mechanisms', deliverables: 'Custom Distributed Key-Value Store' },
+        { week: 'Week 4-6', topic: 'Event Streaming, Partitioning & Idempotency', deliverables: 'Real-time Global Financial Ledger Engine' },
+        { week: 'Week 7-8', topic: 'Disaster Recovery, Sharding & Chaos Engineering', deliverables: 'Production Multi-Region Load-Tested System' },
+      ],
+      createdById: superAdmin.id,
+    },
+    {
+      slug: 'full-stack-nextjs-cloud-native',
+      title: 'Full Stack Next.js 15 & Cloud Native Microservices',
+      subtitle: 'Modern SSR architecture, React Server Components, tRPC, NestJS, and Docker orchestrations.',
+      description: 'Comprehensive full-stack bootcamp mastering full-lifecycle software engineering from frontend design systems to distributed backend microservices.',
+      track: 'Full Stack',
+      instructor: 'Elena Rostova',
+      instructorRole: 'Senior Frontend Architect',
+      instructorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+      duration: '5 Weeks (Hands-on)',
+      level: 'Intermediate',
+      badge: 'Top Rated',
+      rating: 4.88,
+      maxSeats: 2500,
+      enrolledCount: 2150,
+      totalSessions: 10,
+      status: 'PUBLISHED',
+      nextSessionDate: new Date('2026-10-06T17:00:00.000Z'),
+      nextSessionTopic: 'Server Actions, Streaming SSR & Zero-Layout-Shift Design',
+      syllabus: [
+        { week: 'Week 1-2', topic: 'React 19, Server Components & Fluid UI Systems', deliverables: 'Glassmorphic Modern Analytics Workspace' },
+        { week: 'Week 3-4', topic: 'NestJS REST/GraphQL Services & Prisma Relational Schemas', deliverables: 'High-Throughput Collaborative Workspace API' },
+        { week: 'Week 5', topic: 'Docker Sandboxes, CI/CD Pipeline & Edge Deployments', deliverables: 'Production-Deployed Scalable Web Platform' },
+      ],
+      createdById: superAdmin.id,
+    },
+    {
+      slug: 'cloud-devops-kubernetes-sprint',
+      title: 'Cloud DevOps, Kubernetes & GitOps Platform Engineering',
+      subtitle: 'Terraform IaC, Helm charts, ArgoCD, Prometheus telemetry, and zero-downtime blue/green rollouts.',
+      description: 'Master platform engineering, cloud infrastructure automation, container orchestration, and observability stack.',
+      track: 'Cloud & DevOps',
+      instructor: 'David Kim',
+      instructorRole: 'Lead SRE & Platform Engineer',
+      instructorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+      duration: '6 Weeks (Live Labs)',
+      level: 'Intermediate',
+      badge: 'Popular',
+      rating: 4.9,
+      maxSeats: 1000,
+      enrolledCount: 860,
+      totalSessions: 12,
+      status: 'PUBLISHED',
+      nextSessionDate: new Date('2026-10-08T18:00:00.000Z'),
+      nextSessionTopic: 'Kubernetes Custom Resource Definitions & Operator SDK',
+      syllabus: [
+        { week: 'Week 1-2', topic: 'Terraform Multi-Cloud Provisioning & Security Groups', deliverables: 'Automated Multi-Zone Cloud Infrastructure' },
+        { week: 'Week 3-4', topic: 'Kubernetes Cluster Architecture, Ingress & Helm', deliverables: 'Self-Healing Microservices Deployment on K8s' },
+        { week: 'Week 5-6', topic: 'ArgoCD GitOps, OpenTelemetry & Grafana Dashboards', deliverables: 'Zero-Downtime Continuous Deployment Pipeline' },
+      ],
+      createdById: superAdmin.id,
+    },
+  ];
+
+  for (const bData of bootcampsData) {
+    await prisma.bootcamp.upsert({
+      where: { slug: bData.slug },
+      update: bData,
+      create: bData,
+    });
+  }
+
+  // Create initial student enrollments for first 2 bootcamps
+  if (students.length > 0) {
+    const firstBootcamp = await prisma.bootcamp.findUnique({ where: { slug: 'genai-rag-agentic-systems' } });
+    if (firstBootcamp) {
+      await prisma.bootcampEnrollment.upsert({
+        where: { userId_bootcampId: { userId: students[0].id, bootcampId: firstBootcamp.id } },
+        update: { progressPct: 35, sessionsCompleted: 4, status: 'ACTIVE' },
+        create: { userId: students[0].id, bootcampId: firstBootcamp.id, progressPct: 35, sessionsCompleted: 4, status: 'ACTIVE' },
+      });
+    }
+
+    const thirdBootcamp = await prisma.bootcamp.findUnique({ where: { slug: 'full-stack-nextjs-cloud-native' } });
+    if (thirdBootcamp) {
+      await prisma.bootcampEnrollment.upsert({
+        where: { userId_bootcampId: { userId: students[0].id, bootcampId: thirdBootcamp.id } },
+        update: { progressPct: 100, sessionsCompleted: 10, status: 'COMPLETED', completedAt: new Date() },
+        create: { userId: students[0].id, bootcampId: thirdBootcamp.id, progressPct: 100, sessionsCompleted: 10, status: 'COMPLETED', completedAt: new Date() },
+      });
+    }
+  }
+
   console.log('✅ Database seeded successfully with real-world entities:');
   console.log(` - Super Admin: ${superAdmin.email}`);
   console.log(` - Institutions: ${Object.keys(institutions).join(', ')}`);
   console.log(` - Problems: ${createdProblems.map((p) => p.title).join(', ')}`);
   console.log(` - Contests: ${contest1.title}, ${contest2.title}`);
+  console.log(` - Bootcamps: ${bootcampsData.map((b) => b.title).join(', ')}`);
 }
 
 main()

@@ -1053,4 +1053,43 @@ export const apiService = {
     const res = await apiClient.get('/interview-prep/readiness');
     return res.data?.data ?? res.data;
   },
+
+  // ----------------------------------------------------
+  // BOOTCAMPS & COHORTS (REST)
+  // ----------------------------------------------------
+  async getBootcamps(params?: { search?: string; track?: string; status?: string; page?: number; limit?: number }) {
+    const res = await apiClient.get('/bootcamps', { params });
+    return res.data?.data ?? res.data;
+  },
+
+  async getBootcampBySlug(slug: string) {
+    const res = await apiClient.get(`/bootcamps/${slug}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async createBootcamp(data: any) {
+    const res = await apiClient.post('/bootcamps', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async updateBootcamp(id: string, data: any) {
+    const res = await apiClient.patch(`/bootcamps/${id}`, data);
+    return res.data?.data ?? res.data;
+  },
+
+  async deleteBootcamp(id: string) {
+    const res = await apiClient.delete(`/bootcamps/${id}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async enrollBootcamp(id: string) {
+    const res = await apiClient.post(`/bootcamps/${id}/enroll`);
+    return res.data?.data ?? res.data;
+  },
+
+  async updateBootcampProgress(id: string, data: { progressPct: number; sessionsCompleted?: number }) {
+    const res = await apiClient.post(`/bootcamps/${id}/progress`, data);
+    return res.data?.data ?? res.data;
+  },
 };
+

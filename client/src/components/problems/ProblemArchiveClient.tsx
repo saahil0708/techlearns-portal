@@ -147,19 +147,82 @@ export default function ProblemArchiveClient() {
               const subCount = item._count?.submissions || item.submissionsCount || 0;
               const accepted = item.acceptedCount || 0;
               const accRate = subCount > 0 ? Math.round((accepted / subCount) * 100) : 54;
+              const titleLower = String(item.title || '').toLowerCase();
+              let category = item.category;
+              let tags = Array.isArray(item.tags) && item.tags.length > 0 ? [...item.tags] : [];
+              let inferredTags: string[] = [];
+
+              if (!category) {
+                if (titleLower.includes('tree') || titleLower.includes('bst')) {
+                  category = 'Trees & Binary Search Trees';
+                  inferredTags = ['Trees', 'Binary Tree'];
+                } else if (titleLower.includes('median') || titleLower.includes('divide')) {
+                  category = 'Binary Search & Divide and Conquer';
+                  inferredTags = ['Binary Search', 'Divide & Conquer'];
+                } else if (titleLower.includes('cache') || titleLower.includes('lru') || titleLower.includes('design')) {
+                  category = 'System Design & Data Structures';
+                  inferredTags = ['Hash Map', 'Doubly Linked List', 'Design'];
+                } else if (titleLower.includes('substring') || titleLower.includes('parentheses') || titleLower.includes('string') || titleLower.includes('trie')) {
+                  category = 'Strings & Tries';
+                  inferredTags = ['Strings', 'Stack', 'Parsing'];
+                } else if (titleLower.includes('coin') || titleLower.includes('knapsack') || titleLower.includes('subsequence') || titleLower.includes('dynamic programming')) {
+                  category = 'Dynamic Programming';
+                  inferredTags = ['Dynamic Programming', 'Optimization'];
+                } else if (titleLower.includes('graph') || titleLower.includes('bfs') || titleLower.includes('dfs')) {
+                  category = 'Graph Theory & BFS/DFS';
+                  inferredTags = ['Graph Theory', 'BFS/DFS'];
+                } else if (titleLower.includes('even') || titleLower.includes('odd') || titleLower.includes('math') || titleLower.includes('prime')) {
+                  category = 'Math & Number Theory';
+                  inferredTags = ['Math', 'Number Theory'];
+                } else if (titleLower.includes('binary search')) {
+                  category = 'Binary Search & Divide and Conquer';
+                  inferredTags = ['Binary Search', 'Divide & Conquer'];
+                } else if (titleLower.includes('two sum') || titleLower.includes('pointer') || titleLower.includes('water') || titleLower.includes('array') || titleLower.includes('sort')) {
+                  category = 'Arrays & Two Pointers';
+                  inferredTags = ['Arrays', 'Two Pointers', 'Prefix Sum'];
+                } else if (tags.length > 0) {
+                  const tagsLower = tags.map((t: string) => String(t).toLowerCase());
+                  if (tagsLower.some((t: string) => t.includes('tree') || t.includes('bst'))) {
+                    category = 'Trees & Binary Search Trees';
+                  } else if (tagsLower.some((t: string) => t.includes('graph') || t.includes('bfs') || t.includes('dfs'))) {
+                    category = 'Graph Theory & BFS/DFS';
+                  } else if (tagsLower.some((t: string) => t.includes('dynamic') || t.includes('dp'))) {
+                    category = 'Dynamic Programming';
+                  } else if (tagsLower.some((t: string) => t.includes('median') || t.includes('divide') || t.includes('binary search'))) {
+                    category = 'Binary Search & Divide and Conquer';
+                  } else if (tagsLower.some((t: string) => t.includes('string') || t.includes('trie') || t.includes('stack') || t.includes('parsing'))) {
+                    category = 'Strings & Tries';
+                  } else if (tagsLower.some((t: string) => t.includes('math') || t.includes('number') || t.includes('prime'))) {
+                    category = 'Math & Number Theory';
+                  } else if (tagsLower.some((t: string) => t.includes('design') || t.includes('cache') || t.includes('hash map') || t.includes('linked list'))) {
+                    category = 'System Design & Data Structures';
+                  } else if (tagsLower.some((t: string) => t.includes('array') || t.includes('two pointer') || t.includes('prefix sum'))) {
+                    category = 'Arrays & Two Pointers';
+                  } else {
+                    category = 'Uncategorized';
+                  }
+                } else {
+                  category = 'Uncategorized';
+                }
+              }
+
+              if (tags.length === 0) {
+                tags = inferredTags.length > 0 ? inferredTags : ['Algorithms', 'Data Structures'];
+              }
+
               return {
                 id: item.id,
                 code: item.code || `PROB-${String(idx + 1).padStart(3, '0')}`,
                 slug: item.slug || item.id,
                 title: item.title,
-                category: item.category || 'Dynamic Programming',
+                category,
                 difficulty: diff,
                 acceptanceRate: accRate,
                 totalSubmissions: subCount,
                 acceptedSubmissions: accepted,
                 testCasesCount: item._count?.testCases || 10,
                 authorName: item.authorName || 'Platform Team',
-                tags: Array.isArray(item.tags) ? item.tags : ['Algorithms'],
+                tags,
                 status: item.status === 'PUBLISHED' ? 'Published' : 'Draft',
                 points: item.points || (diff === 'Easy' ? 100 : diff === 'Medium' ? 200 : 350),
                 timeLimitMs: item.timeLimit || 2000,
