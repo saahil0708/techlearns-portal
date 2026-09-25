@@ -153,7 +153,7 @@ export default function ProblemArchiveClient() {
               let inferredTags: string[] = [];
 
               if (!category) {
-                if (titleLower.includes('tree') || titleLower.includes('bst')) {
+                if (/\btree(s)?\b/i.test(titleLower) || titleLower.includes('bst')) {
                   category = 'Trees & Binary Search Trees';
                   inferredTags = ['Trees', 'Binary Tree'];
                 } else if (titleLower.includes('median') || titleLower.includes('divide')) {
@@ -162,9 +162,15 @@ export default function ProblemArchiveClient() {
                 } else if (titleLower.includes('cache') || titleLower.includes('lru') || titleLower.includes('design')) {
                   category = 'System Design & Data Structures';
                   inferredTags = ['Hash Map', 'Doubly Linked List', 'Design'];
-                } else if (titleLower.includes('substring') || titleLower.includes('parentheses') || titleLower.includes('string') || titleLower.includes('trie')) {
+                } else if (titleLower.includes('parentheses')) {
                   category = 'Strings & Tries';
-                  inferredTags = ['Strings', 'Stack', 'Parsing'];
+                  inferredTags = ['Stack', 'Parsing', 'Strings'];
+                } else if (titleLower.includes('substring')) {
+                  category = 'Strings & Tries';
+                  inferredTags = ['Strings', 'Sliding Window', 'Two Pointers'];
+                } else if (titleLower.includes('string') || titleLower.includes('trie')) {
+                  category = 'Strings & Tries';
+                  inferredTags = ['Strings', 'Trie'];
                 } else if (titleLower.includes('coin') || titleLower.includes('knapsack') || titleLower.includes('subsequence') || titleLower.includes('dynamic programming')) {
                   category = 'Dynamic Programming';
                   inferredTags = ['Dynamic Programming', 'Optimization'];
