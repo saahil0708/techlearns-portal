@@ -108,6 +108,7 @@ module backendAppModule 'modules/container-app.bicep' = {
     containerImage: backendImage
     targetPort: 8000
     isExternalIngress: true
+    healthCheckPath: '/health'
     cpu: environment == 'prod' ? '1.0' : '0.5'
     memory: environment == 'prod' ? '2.0Gi' : '1.0Gi'
     minReplicas: environment == 'prod' ? 2 : 1
@@ -176,6 +177,7 @@ module frontendAppModule 'modules/container-app.bicep' = {
     containerImage: frontendImage
     targetPort: 3000
     isExternalIngress: true
+    healthCheckPath: '/'
     cpu: environment == 'prod' ? '1.0' : '0.5'
     memory: environment == 'prod' ? '2.0Gi' : '1.0Gi'
     minReplicas: environment == 'prod' ? 2 : 1
@@ -198,8 +200,6 @@ module frontendAppModule 'modules/container-app.bicep' = {
       }
     ]
   }
-}
-
 // Outputs
 output acrLoginServer string = acrModule.outputs.acrLoginServer
 output keyVaultName string = keyVaultModule.outputs.keyVaultName

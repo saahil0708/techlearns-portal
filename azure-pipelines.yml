@@ -89,3 +89,49 @@ stages:
               csmFile: '$(Build.SourcesDirectory)/infra/main.bicep'
               csmParametersFile: '$(Build.SourcesDirectory)/infra/main.parameters.json'
               deploymentMode: 'Incremental'
+
+  # ----------------------------------------------------------------------------
+  # STAGE 3: BUILD & DEPLOY CONTAINERS (DOCKER + CONTAINER APPS)
+  # ----------------------------------------------------------------------------
+  - stage: DeployContainers
+    displayName: '3. Build & Deploy Docker Containers'
+    dependsOn: DeployInfra
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: BuildAndPushContainers
+        displayName: 'Build Docker Images & Update Container Apps'
+        steps:
+          - task: AzureCLI@2
+            displayName: 'Build & Push Docker Containers to ACR'
+            inputs:
+              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                # 1. Retrieve ACR login server
+                ACR_NAME=$(az acr list --resource-group $(RESOURCE_GROUP_NAME) --query "[0].name" -o tsv)
+                ACR_LOGIN_SERVER=$(az acr show --name $ACR_NAME --query "loginServer" -o tsv)
+                
+                # 2. Login to Azure Container Registry
+                az acr login --name $ACR_NAME
+                
+                # 3. Build & Push Backend Docker Image
+                docker build --target backend -t $ACR_LOGIN_SERVER/codeplatform-backend:$(Build.BuildId) -t $ACR_LOGIN_SERVER/codeplatform-backend:latest .
+                docker push $ACR_LOGIN_SERVER/codeplatform-backend:$(Build.BuildId)
+                docker push $ACR_LOGIN_SERVER/codeplatform-backend:latest
+                
+                # 4. Build & Push Frontend Docker Image
+                docker build --target frontend -t $ACR_LOGIN_SERVER/codeplatform-frontend:$(Build.BuildId) -t $ACR_LOGIN_SERVER/codeplatform-frontend:latest .
+                docker push $ACR_LOGIN_SERVER/codeplatform-frontend:$(Build.BuildId)
+                docker push $ACR_LOGIN_SERVER/codeplatform-frontend:latest
+                
+                # 5. Update Azure Container Apps to use newly published image tags
+                az containerapp update \
+                  --name "codeplatform-backend-prod" \
+                  --resource-group $(RESOURCE_GROUP_NAME) \
+                  --image "$ACR_LOGIN_SERVER/codeplatform-backend:$(Build.BuildId)"
+                
+                az containerapp update \
+                  --name "codeplatform-frontend-prod" \
+                  --resource-group $(RESOURCE_GROUP_NAME) \
+                  --image "$ACR_LOGIN_SERVER/codeplatform-frontend:$(Build.BuildId)"
