@@ -28,6 +28,9 @@ param minReplicas int = 1
 @description('Maximum replica count')
 param maxReplicas int = 5
 
+@description('Path for HTTP health probes (e.g. /health or /)')
+param healthCheckPath string = ''
+
 @description('Environment variables to pass to the container')
 param envVars array = []
 
@@ -60,6 +63,42 @@ var allSecrets = !empty(registryPassword) ? concat(secrets, [
   }
 ]) : secrets
 
+var probes = !empty(healthCheckPath) ? [
+  {
+    type: 'Liveness'
+    httpGet: {
+      path: healthCheckPath
+      port: targetPort
+    }
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    failureThreshold: 3
+    timeoutSeconds: 3
+  }
+  {
+    type: 'Readiness'
+    httpGet: {
+      path: healthCheckPath
+      port: targetPort
+    }
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 3
+    timeoutSeconds: 3
+  }
+  {
+    type: 'Startup'
+    httpGet: {
+      path: healthCheckPath
+      port: targetPort
+    }
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 10
+    timeoutSeconds: 3
+  }
+] : []
+
 resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
   name: appName
   location: location
@@ -72,6 +111,22 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
         targetPort: targetPort
         transport: 'auto'
         allowInsecure: false
+        corsPolicy: {
+          allowedOrigins: [
+            '*'
+          ]
+          allowedMethods: [
+            'GET'
+            'POST'
+            'PUT'
+            'DELETE'
+            'PATCH'
+            'OPTIONS'
+          ]
+          allowedHeaders: [
+            '*'
+          ]
+        }
       }
       registries: registries
       secrets: allSecrets
@@ -86,11 +141,22 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
             memory: memory
           }
           env: envVars
+          probes: probes
         }
       ]
       scale: {
         minReplicas: minReplicas
         maxReplicas: maxReplicas
+        rules: [
+          {
+            name: 'http-scaling'
+            http: {
+              metadata: {
+                concurrentRequests: '100'
+              }
+            }
+          }
+        ]
       }
     }
   }

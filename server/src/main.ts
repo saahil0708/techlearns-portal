@@ -110,6 +110,9 @@ async function bootstrap() {
     },
   });
 
+  // Enable graceful shutdown hooks for cloud container lifecycle
+  app.enableShutdownHooks();
+
   await app.listen(port);
   console.log(`Application running on http://localhost:${port}`);
   console.log(`Swagger docs available at http://localhost:${port}/api/docs`);
