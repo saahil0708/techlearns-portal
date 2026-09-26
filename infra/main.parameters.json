@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "environment": {
+      "value": "dev"
+    },
+    "appPrefix": {
+      "value": "techlearns"
+    },
+    "dbAdminUsername": {
+      "value": "techlearns_admin"
+    },
+    "dbAdminPassword": {
+      "value": "ReplaceWithSecurePassword123!"
+    },
+    "jwtSecret": {
+      "value": "ReplaceWithStrongRandomJwtSecretKey456!"
+    }
+  }
+}
