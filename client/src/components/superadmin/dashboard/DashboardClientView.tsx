@@ -130,9 +130,9 @@ export default function DashboardClientView({
           radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
-        p: { xs: 1.5, sm: 2, md: 2.5 },
-        pl: { xs: '82px', sm: '90px', md: '102px' },
-        gap: { xs: 2, md: 3 },
+        py: { xs: 2, sm: 2.5, md: 3 },
+        pr: { xs: 2, sm: 3, md: 4 },
+        pl: { xs: '88px', sm: '100px', md: '116px' },
       }}
     >
       {/* 1. Left Floating Capsule Sidebar (Fixed) */}
@@ -141,7 +141,7 @@ export default function DashboardClientView({
       {/* Main Content Area */}
       <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {/* Unified Layout Container: Navbar + Dashboard Grid */}
-        <Box sx={{ maxWidth: 1400, width: '100%', mx: 'auto', px: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <Box sx={{ width: '100%', maxWidth: '100%', px: { xs: 2, sm: 3, md: 4 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
           {/* 2. Top Header / Navbar Component */}
           <Navbar
             searchQuery={searchQuery}

@@ -12,6 +12,7 @@ export interface BlogAuthor {
 export interface BlogComment {
   id: string;
   author: string;
+  authorId?: string;
   avatarBg: string;
   time: string;
   text: string;
@@ -52,7 +53,25 @@ export function formatBlogDate(dateStr: string): string {
   if (!dateStr) return '';
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return dateStr;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHours = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSec >= 0 && diffSec < 60) return 'Just now';
+  if (diffMin >= 1 && diffMin < 60) return `${diffMin}m ago`;
+  if (diffHours >= 1 && diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays > 1 && diffDays < 7) return `${diffDays}d ago`;
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: date.getFullYear() === now.getFullYear() ? undefined : 'numeric',
+  });
 }
 
 export const INITIAL_BLOG_POSTS: BlogPost[] = [

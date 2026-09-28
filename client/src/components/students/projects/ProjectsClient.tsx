@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { apiService } from '@/lib/api-service';
 import {
   Box,
   Typography,
@@ -281,6 +282,46 @@ export default function ProjectsClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'terminal' | 'services'>('overview');
 
+  useEffect(() => {
+    let isMounted = true;
+    apiService
+      .getProjects()
+      .then((data: any) => {
+        const items = Array.isArray(data) ? data : data?.items;
+        if (isMounted && Array.isArray(items) && items.length > 0) {
+          const normalized: StudentProject[] = items.map((it: any) => ({
+            id: it.id,
+            title: it.title || 'Untitled Project',
+            category: it.category || 'Distributed Systems',
+            difficulty: it.difficulty || 'Intermediate',
+            status: it.status || 'In Progress',
+            progressPct: it.progressPct ?? 0,
+            techStack: it.techStack || [],
+            iconType: it.iconType || 'kv',
+            accentColor: it.accentColor || '#7C3AED',
+            bgColor: it.bgColor || '#F5F3FF',
+            repoUrl: it.repoUrl || 'https://github.com/techlearns/project',
+            liveUrl: it.liveUrl || 'https://sandbox.techlearns.io',
+            milestonesCompleted: it.milestonesCompleted ?? 0,
+            totalMilestones: it.totalMilestones ?? 0,
+            description: it.description || '',
+            ports: it.ports || [],
+            services: Array.isArray(it.services) ? it.services : [],
+            terminalLogs: it.terminalLogs || [],
+            milestones: Array.isArray(it.milestones) ? it.milestones : [],
+          }));
+          setProjects(normalized);
+          if (normalized[0]?.id) {
+            setActiveProjectId(normalized[0].id);
+          }
+        }
+      })
+      .catch((err) => console.warn('Projects fetch fallback:', err));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const activeProject = projects.find((p) => p.id === activeProjectId) || projects[0];
 
   const handleToggleCategory = (catId: string) => {
@@ -290,21 +331,44 @@ export default function ProjectsClient() {
     }));
   };
 
-  const handleToggleMilestone = (milestoneId: string) => {
+  const handleToggleMilestone = async (milestoneId: string) => {
+    const isBackendProject = Boolean(activeProject.id && !activeProject.id.startsWith('proj-'));
+    let serverRes: any = null;
+    if (isBackendProject) {
+      try {
+        serverRes = await apiService.toggleProjectMilestone(activeProject.id, milestoneId);
+      } catch (err) {
+        console.error('Backend milestone toggle error:', err);
+        toast.error('Failed to update milestone on server. Please try again.', 'Update Failed');
+        return;
+      }
+    }
+
     setProjects((prev) =>
       prev.map((proj) => {
         if (proj.id !== activeProject.id) return proj;
-        const updatedMilestones = proj.milestones.map((m) =>
-          m.id === milestoneId ? { ...m, done: !m.done } : m
+        const updatedMilestones = (proj.milestones || []).map((m) =>
+          m.id === milestoneId
+            ? { ...m, done: serverRes?.done !== undefined ? serverRes.done : !m.done }
+            : m
         );
-        const completedCount = updatedMilestones.filter((m) => m.done).length;
-        const pct = Math.round((completedCount / updatedMilestones.length) * 100);
+        const completedCount =
+          serverRes?.milestonesCompleted ??
+          updatedMilestones.filter((m) => m.done).length;
+        const pct =
+          serverRes?.progressPct ??
+          (updatedMilestones.length > 0
+            ? Math.round((completedCount / updatedMilestones.length) * 100)
+            : 0);
+        const status =
+          serverRes?.projectStatus ||
+          (pct === 100 ? 'Completed' : pct > 0 ? 'In Progress' : 'Available');
         return {
           ...proj,
           milestones: updatedMilestones,
           milestonesCompleted: completedCount,
           progressPct: pct,
-          status: pct === 100 ? 'Completed' : pct > 0 ? 'In Progress' : 'Available',
+          status,
         };
       })
     );

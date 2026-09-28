@@ -30,6 +30,11 @@ import { NotificationsModule } from './notifications/notifications.module.js';
 import { InterviewPrepModule } from './interview-prep/interview-prep.module.js';
 import { BootcampsModule } from './bootcamps/bootcamps.module.js';
 import { StorageModule } from './storage/storage.module.js';
+import { BlogsModule } from './blogs/blogs.module.js';
+import { ProjectsModule } from './projects/projects.module.js';
+import { CommunityModule } from './community/community.module.js';
+import { SimulationsModule } from './simulations/simulations.module.js';
+import { AICoachModule } from './ai-coach/ai-coach.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -111,6 +116,11 @@ const dynamicObserveImports = hasValidObserveKeys
     InterviewPrepModule,
     BootcampsModule,
     StorageModule,
+    BlogsModule,
+    ProjectsModule,
+    CommunityModule,
+    SimulationsModule,
+    AICoachModule,
   ],
   controllers: [AppController],
   providers: [

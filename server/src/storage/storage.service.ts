@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException, InternalServerErrorException, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   BlobServiceClient,
@@ -17,7 +17,7 @@ export interface SasUploadResult {
 }
 
 @Injectable()
-export class StorageService {
+export class StorageService implements OnModuleInit {
   private readonly logger = new Logger(StorageService.name);
   private blobServiceClient: BlobServiceClient | null = null;
   private containerName: string;
@@ -32,12 +32,12 @@ export class StorageService {
     this.containerName =
       this.configService.get<string>('AZURE_STORAGE_CONTAINER_NAME') ||
       this.configService.get<string>('azureStorage.containerName') ||
-      'techlearns-uploads';
+      'cnt-techlearns-skillos-uploads-prod';
 
     this.accountName =
       this.configService.get<string>('AZURE_STORAGE_ACCOUNT_NAME') ||
       this.configService.get<string>('azureStorage.accountName') ||
-      'techlearnsstorage01';
+      'sttechlearnsskillosprod1';
 
     if (connStr) {
       try {
@@ -57,6 +57,18 @@ export class StorageService {
       }
     } else {
       this.logger.warn('AZURE_STORAGE_CONNECTION_STRING is not set. Storage service is disabled.');
+    }
+  }
+
+  async onModuleInit() {
+    if (this.blobServiceClient) {
+      try {
+        const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
+        await containerClient.createIfNotExists({ access: 'blob' });
+        this.logger.log(`Azure Blob container "${this.containerName}" verified and ready (access: blob).`);
+      } catch (err: any) {
+        this.logger.warn(`Could not automatically create Azure Blob container "${this.containerName}": ${err.message}`);
+      }
     }
   }
 

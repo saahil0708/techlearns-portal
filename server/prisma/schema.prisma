@@ -138,6 +138,14 @@ model User {
   skillOsWorkspace     SkillOsWorkspace?
   createdBootcamps     Bootcamp[]            @relation("BootcampCreator")
   bootcampEnrollments  BootcampEnrollment[]
+  blogPosts            BlogPost[]
+  blogComments         BlogComment[]
+  blogClaps            BlogPostClap[]
+  studentProjects      StudentProject[]
+  communityPosts       CommunityPost[]
+  communityReplies     CommunityReply[]
+  assignedTickets      SprintTicket[]
+  aiCoachMessages      AICoachMessage[]
 
   @@index([globalRole, status])
   @@index([status, createdAt])
@@ -279,6 +287,10 @@ model Institution {
   problems    Problem[]
   contests    Contest[]
   bootcamps   Bootcamp[]
+  blogPosts   BlogPost[]
+  projects    StudentProject[]
+  community   CommunityPost[]
+  tickets     SprintTicket[]
 
   @@index([status, createdAt])
   @@map("institutions")
@@ -700,5 +712,196 @@ model BootcampEnrollment {
   @@index([userId, status])
   @@index([bootcampId, status])
   @@map("bootcamp_enrollments")
+}
+
+model BlogPost {
+  id            String         @id @default(uuid())
+  title         String
+  subtitle      String?        @db.Text
+  slug          String?        @unique
+  category      String         @default("System Architecture")
+  readTime      String         @default("5 min read")
+  coverImage    String?        @db.Text
+  content       String         @db.Text
+  tags          String[]       @default([])
+  claps         Int            @default(0)
+  views         Int            @default(0)
+  status        String         @default("Published") // "Published", "Draft", "Archived"
+  authorId      String
+  institutionId String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  author        User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  institution   Institution?   @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  comments      BlogComment[]
+  clapsList     BlogPostClap[]
+
+  @@index([authorId, status])
+  @@index([institutionId, status])
+  @@index([category, status])
+  @@index([status, createdAt])
+  @@map("blog_posts")
+}
+
+model BlogPostClap {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  count     Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+  @@map("blog_post_claps")
+}
+
+model BlogComment {
+  id        String   @id @default(uuid())
+  postId    String
+  authorId  String
+  text      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+  @@map("blog_comments")
+}
+
+model StudentProject {
+  id                  String             @id @default(uuid())
+  title               String
+  category            String             @default("Distributed Systems")
+  difficulty          String             @default("Intermediate") // "Beginner", "Intermediate", "Advanced"
+  status              String             @default("In Progress") // "In Progress", "Completed", "Available"
+  progressPct         Int                @default(0)
+  techStack           String[]           @default([])
+  iconType            String             @default("kv")
+  accentColor         String             @default("#7C3AED")
+  bgColor             String             @default("#F5F3FF")
+  repoUrl             String?            @db.Text
+  liveUrl             String?            @db.Text
+  milestonesCompleted Int                @default(0)
+  totalMilestones     Int                @default(0)
+  description         String             @db.Text
+  ports               String[]           @default([])
+  services            Json?              // Array of { name, runtime, port, status }
+  terminalLogs        String[]           @default([])
+  userId              String
+  institutionId       String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institution         Institution?       @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  milestones          ProjectMilestone[]
+
+  @@index([userId, status])
+  @@index([institutionId, status])
+  @@index([category])
+  @@map("student_projects")
+}
+
+model ProjectMilestone {
+  id        String         @id @default(uuid())
+  projectId String
+  title     String
+  phase     String         @default("Phase 1")
+  done      Boolean        @default(false)
+  order     Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  project   StudentProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, order])
+  @@map("project_milestones")
+}
+
+model CommunityPost {
+  id            String           @id @default(uuid())
+  title         String
+  channel       String           @default("General")
+  content       String           @db.Text
+  tags          String[]         @default([])
+  upvotes       Int              @default(0)
+  repliesCount  Int              @default(0)
+  authorId      String
+  institutionId String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  author        User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  institution   Institution?     @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  replies       CommunityReply[]
+
+  @@index([authorId])
+  @@index([institutionId, channel])
+  @@index([channel, createdAt])
+  @@map("community_posts")
+}
+
+model CommunityReply {
+  id        String        @id @default(uuid())
+  postId    String
+  authorId  String
+  content   String        @db.Text
+  upvotes   Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+  @@map("community_replies")
+}
+
+model SprintTicket {
+  id               String       @id @default(uuid())
+  key              String       @unique
+  title            String
+  domain           String       @default("Engineering")
+  priority         String       @default("P1 - High") // "P0 - Blocker" | "P1 - High" | "P2 - Medium"
+  storyPoints      Int          @default(3)
+  status           String       @default("Backlog") // "Backlog" | "In Progress" | "In Review" | "Merged"
+  assigneeId       String
+  institutionId    String?
+  prNumber         String?
+  techLeadFeedback String?      @db.Text
+  description      String       @db.Text
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  assignee         User         @relation(fields: [assigneeId], references: [id], onDelete: Cascade)
+  institution      Institution? @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@index([assigneeId, status])
+  @@index([institutionId, status])
+  @@index([status, priority])
+  @@map("sprint_tickets")
+}
+
+model AICoachMessage {
+  id          String   @id @default(uuid())
+  userId      String
+  sender      String   // "ai" | "user"
+  text        String   @db.Text
+  codeSnippet String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_coach_messages")
 }
 
