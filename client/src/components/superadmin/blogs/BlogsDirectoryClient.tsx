@@ -380,6 +380,7 @@ export default function BlogsDirectoryClient({
       toast.error(err?.message || 'Failed to upload cover picture. Please try again.', 'Upload Failed');
     } finally {
       setIsUploadingEditCover(false);
+      if (editFileInputRef.current) editFileInputRef.current.value = '';
     }
   };
 
