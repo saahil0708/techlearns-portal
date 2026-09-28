@@ -10,12 +10,6 @@
     },
     "dbAdminUsername": {
       "value": "techlearns_admin"
-    },
-    "dbAdminPassword": {
-      "value": "ReplaceWithSecurePassword123!"
-    },
-    "jwtSecret": {
-      "value": "ReplaceWithStrongRandomJwtSecretKey456!"
     }
   }
 }

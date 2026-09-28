@@ -35,4 +35,9 @@ export default () => ({
     from: process.env.MAIL_FROM || '"CodePlatform" <no-reply@codeplatform.local>',
     devMode: process.env.MAIL_DEV_MODE === 'true' || (process.env.NODE_ENV === 'development' && process.env.MAIL_DEV_MODE !== 'false'),
   },
+  azureStorage: {
+    connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
+    containerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'techlearns-uploads',
+    accountName: process.env.AZURE_STORAGE_ACCOUNT_NAME || 'techlearnsstorage01',
+  },
 });

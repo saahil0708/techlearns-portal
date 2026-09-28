@@ -42,7 +42,13 @@ var containerAppEnvName = '${appPrefix}-cae-${uniqueSuffix}'
 var backendAppName = '${appPrefix}-backend-${environment}'
 var frontendAppName = '${appPrefix}-frontend-${environment}'
 
-// 1. Azure Container Registry (ACR)
+// 1. User-Assigned Managed Identity for Container Apps to pull from ACR
+resource acrPullIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: '${appPrefix}-acrpull-id-${uniqueSuffix}'
+  location: location
+}
+
+// 2. Azure Container Registry (ACR)
 module acrModule 'modules/acr.bicep' = {
   name: 'acrDeployment'
   params: {
@@ -52,7 +58,25 @@ module acrModule 'modules/acr.bicep' = {
   }
 }
 
-// 2. Azure Key Vault
+resource acrExisting 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
+  name: acrName
+  dependsOn: [
+    acrModule
+  ]
+}
+
+// Assign AcrPull role (7f951dda-4ed3-4680-a7ca-43fe172d538d) to the managed identity on the specific ACR
+resource acrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(acrExisting.id, acrPullIdentity.properties.principalId, 'AcrPull')
+  scope: acrExisting
+  properties: {
+    principalId: acrPullIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+  }
+}
+
+// 3. Azure Key Vault
 module keyVaultModule 'modules/keyvault.bicep' = {
   name: 'keyVaultDeployment'
   params: {
@@ -61,7 +85,7 @@ module keyVaultModule 'modules/keyvault.bicep' = {
   }
 }
 
-// 3. Azure Database for PostgreSQL (Flexible Server)
+// 4. Azure Database for PostgreSQL (Flexible Server)
 module databaseModule 'modules/database.bicep' = {
   name: 'databaseDeployment'
   params: {
@@ -76,7 +100,7 @@ module databaseModule 'modules/database.bicep' = {
   }
 }
 
-// 4. Azure Cache for Redis
+// 5. Azure Cache for Redis
 module redisModule 'modules/redis.bicep' = {
   name: 'redisDeployment'
   params: {
@@ -88,7 +112,15 @@ module redisModule 'modules/redis.bicep' = {
   }
 }
 
-// 5. Container Apps Managed Environment & Log Analytics
+// Retrieve Redis keys without exposing primaryKey as a module output
+resource redisExisting 'Microsoft.Cache/redis@2023-08-01' existing = {
+  name: redisName
+  dependsOn: [
+    redisModule
+  ]
+}
+
+// 6. Container Apps Managed Environment & Log Analytics
 module containerEnvModule 'modules/container-app-env.bicep' = {
   name: 'containerEnvDeployment'
   params: {
@@ -98,9 +130,12 @@ module containerEnvModule 'modules/container-app-env.bicep' = {
   }
 }
 
-// 6. NestJS Backend Container App (API & GraphQL on Port 8000)
+// 7. NestJS Backend Container App (API & GraphQL on Port 8000)
 module backendAppModule 'modules/container-app.bicep' = {
   name: 'backendAppDeployment'
+  dependsOn: [
+    acrPullRoleAssignment
+  ]
   params: {
     location: location
     appName: backendAppName
@@ -114,16 +149,15 @@ module backendAppModule 'modules/container-app.bicep' = {
     minReplicas: environment == 'prod' ? 2 : 1
     maxReplicas: 10
     registryServer: acrModule.outputs.acrLoginServer
-    registryUsername: acrModule.outputs.acrAdminUsername
-    registryPassword: acrModule.outputs.acrAdminPassword
+    userAssignedIdentityId: acrPullIdentity.id
     secrets: [
       {
         name: 'db-connection-string'
-        value: databaseModule.outputs.postgresConnectionString
+        value: 'postgresql://${dbAdminUsername}:${uriComponent(dbAdminPassword)}@${databaseModule.outputs.postgresFqdn}:5432/codeplatform?schema=public&sslmode=require'
       }
       {
         name: 'redis-password'
-        value: redisModule.outputs.redisPrimaryKey
+        value: redisExisting.listKeys().primaryKey
       }
       {
         name: 'jwt-secret'
@@ -167,9 +201,12 @@ module backendAppModule 'modules/container-app.bicep' = {
   }
 }
 
-// 7. Next.js Frontend Container App (SSR & Web Client on Port 3000)
+// 8. Next.js Frontend Container App (SSR & Web Client on Port 3000)
 module frontendAppModule 'modules/container-app.bicep' = {
   name: 'frontendAppDeployment'
+  dependsOn: [
+    acrPullRoleAssignment
+  ]
   params: {
     location: location
     appName: frontendAppName
@@ -183,8 +220,7 @@ module frontendAppModule 'modules/container-app.bicep' = {
     minReplicas: environment == 'prod' ? 2 : 1
     maxReplicas: 10
     registryServer: acrModule.outputs.acrLoginServer
-    registryUsername: acrModule.outputs.acrAdminUsername
-    registryPassword: acrModule.outputs.acrAdminPassword
+    userAssignedIdentityId: acrPullIdentity.id
     envVars: [
       {
         name: 'NODE_ENV'
@@ -200,10 +236,14 @@ module frontendAppModule 'modules/container-app.bicep' = {
       }
     ]
   }
+}
+
 // Outputs
 output acrLoginServer string = acrModule.outputs.acrLoginServer
 output keyVaultName string = keyVaultModule.outputs.keyVaultName
 output postgresFqdn string = databaseModule.outputs.postgresFqdn
 output redisHost string = redisModule.outputs.redisHostName
+output backendAppName string = backendAppName
+output frontendAppName string = frontendAppName
 output backendApiUrl string = backendAppModule.outputs.url
 output frontendWebUrl string = frontendAppModule.outputs.url

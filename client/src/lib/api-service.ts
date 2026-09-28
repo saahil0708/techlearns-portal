@@ -1091,5 +1091,33 @@ export const apiService = {
     const res = await apiClient.post(`/bootcamps/${id}/progress`, data);
     return res.data?.data ?? res.data;
   },
+
+  // ----------------------------------------------------
+  // AZURE BLOB STORAGE & ASSETS
+  // ----------------------------------------------------
+  async getStorageSasUrl(data: {
+    fileName: string;
+    fileType: string;
+    folder: 'avatars' | 'institutions' | 'courses' | 'blogs' | 'problems' | 'attachments';
+    entityId?: string;
+  }) {
+    const res = await apiClient.post('/storage/sas-url', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async uploadStorageFileDirect(file: File, folder: string = 'attachments') {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await apiClient.post('/storage/upload', formData, {
+      params: { folder },
+    });
+    return res.data?.data ?? res.data;
+  },
+
+  async deleteStorageFile(path: string) {
+    const res = await apiClient.delete(`/storage/file?path=${encodeURIComponent(path)}`);
+    return res.data?.data ?? res.data;
+  },
 };
+
 

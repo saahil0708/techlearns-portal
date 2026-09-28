@@ -21,6 +21,8 @@ variables:
   AZURE_SERVICE_CONNECTION: 'Azure-DevOps-Service-Connection'
   RESOURCE_GROUP_NAME: 'rg-techlearns-prod'
   AZURE_LOCATION: 'East US'
+  APP_PREFIX: 'techlearns'
+  ENVIRONMENT: 'prod'
 
 stages:
   # ----------------------------------------------------------------------------
@@ -88,6 +90,7 @@ stages:
               templateLocation: 'Linked artifact'
               csmFile: '$(Build.SourcesDirectory)/infra/main.bicep'
               csmParametersFile: '$(Build.SourcesDirectory)/infra/main.parameters.json'
+              overrideParameters: '-environment $(ENVIRONMENT) -appPrefix $(APP_PREFIX) -dbAdminPassword $(DB_ADMIN_PASSWORD) -jwtSecret $(JWT_SECRET)'
               deploymentMode: 'Incremental'
 
   # ----------------------------------------------------------------------------
@@ -127,11 +130,11 @@ stages:
                 
                 # 5. Update Azure Container Apps to use newly published image tags
                 az containerapp update \
-                  --name "codeplatform-backend-prod" \
+                  --name "$(APP_PREFIX)-backend-$(ENVIRONMENT)" \
                   --resource-group $(RESOURCE_GROUP_NAME) \
                   --image "$ACR_LOGIN_SERVER/codeplatform-backend:$(Build.BuildId)"
                 
                 az containerapp update \
-                  --name "codeplatform-frontend-prod" \
+                  --name "$(APP_PREFIX)-frontend-$(ENVIRONMENT)" \
                   --resource-group $(RESOURCE_GROUP_NAME) \
                   --image "$ACR_LOGIN_SERVER/codeplatform-frontend:$(Build.BuildId)"

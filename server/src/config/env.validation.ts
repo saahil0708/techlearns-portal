@@ -63,6 +63,18 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   JUDGE_IMAGE?: string;
+
+  @IsString()
+  @IsOptional()
+  AZURE_STORAGE_CONNECTION_STRING?: string;
+
+  @IsString()
+  @IsOptional()
+  AZURE_STORAGE_CONTAINER_NAME?: string;
+
+  @IsString()
+  @IsOptional()
+  AZURE_STORAGE_ACCOUNT_NAME?: string;
 }
 
 export function validateEnvironment(config: Record<string, unknown>) {

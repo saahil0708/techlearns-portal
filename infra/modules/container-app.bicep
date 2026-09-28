@@ -48,15 +48,21 @@ param registryUsername string = ''
 @secure()
 param registryPassword string = ''
 
+@description('User Assigned Managed Identity Resource ID for ACR Pull')
+param userAssignedIdentityId string = ''
+
 var registries = !empty(registryServer) ? [
-  {
+  !empty(userAssignedIdentityId) ? {
+    server: registryServer
+    identity: userAssignedIdentityId
+  } : {
     server: registryServer
     username: registryUsername
     passwordSecretRef: 'acr-password'
   }
 ] : []
 
-var allSecrets = !empty(registryPassword) ? concat(secrets, [
+var allSecrets = !empty(registryPassword) && empty(userAssignedIdentityId) ? concat(secrets, [
   {
     name: 'acr-password'
     value: registryPassword
@@ -102,6 +108,12 @@ var probes = !empty(healthCheckPath) ? [
 resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
   name: appName
   location: location
+  identity: !empty(userAssignedIdentityId) ? {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
+  } : null
   properties: {
     managedEnvironmentId: environmentId
     configuration: {
@@ -111,22 +123,6 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
         targetPort: targetPort
         transport: 'auto'
         allowInsecure: false
-        corsPolicy: {
-          allowedOrigins: [
-            '*'
-          ]
-          allowedMethods: [
-            'GET'
-            'POST'
-            'PUT'
-            'DELETE'
-            'PATCH'
-            'OPTIONS'
-          ]
-          allowedHeaders: [
-            '*'
-          ]
-        }
       }
       registries: registries
       secrets: allSecrets

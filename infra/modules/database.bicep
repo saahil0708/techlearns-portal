@@ -82,4 +82,4 @@ resource database 'Microsoft.DBforPostgreSQL/flexibleServers/databases@2023-03-0
 output postgresFqdn string = postgresServer.properties.fullyQualifiedDomainName
 output postgresDatabaseName string = database.name
 output postgresAdminUser string = administratorLogin
-output postgresConnectionString string = 'postgresql://${administratorLogin}:${administratorLoginPassword}@${postgresServer.properties.fullyQualifiedDomainName}:5432/${databaseName}?schema=public&sslmode=require'
+

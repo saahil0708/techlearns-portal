@@ -29,6 +29,7 @@ import { SkillOsModule } from './skillos/skillos.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { InterviewPrepModule } from './interview-prep/interview-prep.module.js';
 import { BootcampsModule } from './bootcamps/bootcamps.module.js';
+import { StorageModule } from './storage/storage.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -109,6 +110,7 @@ const dynamicObserveImports = hasValidObserveKeys
     NotificationsModule,
     InterviewPrepModule,
     BootcampsModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [
