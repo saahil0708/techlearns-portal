@@ -130,6 +130,7 @@ export default function SuperAdminBlogReaderClient({
       toast.error(err?.message || 'Failed to upload cover image', 'Upload Error');
     } finally {
       setIsUploadingCover(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
