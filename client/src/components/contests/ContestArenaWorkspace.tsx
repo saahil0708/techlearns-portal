@@ -24,6 +24,7 @@ import {
 
 // Icons
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import TimerRoundedIcon from '@mui/icons-material/TimerRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
@@ -295,13 +296,34 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
           }}
         >
           <Box>
-            <Button
-              startIcon={<ArrowBackRoundedIcon />}
-              onClick={() => router.push('/contests')}
-              sx={{ color: '#64748B', fontWeight: 700, fontSize: '0.8rem', textTransform: 'none', px: 0, mb: 1, '&:hover': { bgcolor: 'transparent', color: '#0F172A' } }}
-            >
-              Back to Contests Arena
-            </Button>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 1, flexWrap: 'wrap' }}>
+              <Typography
+                onClick={() => router.push('/contests')}
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '0.86rem',
+                  color: '#64748B',
+                  cursor: 'pointer',
+                  transition: 'color 0.15s ease',
+                  '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                }}
+              >
+                Contests
+              </Typography>
+              <ChevronRightRoundedIcon sx={{ color: '#94A3B8', fontSize: 16 }} />
+              <Typography
+                noWrap
+                title={contest.title}
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '0.86rem',
+                  color: '#0F172A',
+                  maxWidth: { xs: 240, sm: 380, md: 500 },
+                }}
+              >
+                {contest.title}
+              </Typography>
+            </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-0.01em' }}>
                 {contest.title}
@@ -462,16 +484,35 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
             ) : (
               /* Split Problem View & Monaco Runner */
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Button
-                    startIcon={<ArrowBackRoundedIcon />}
-                    onClick={() => setSelectedProblemIdx(null)}
-                    sx={{ color: '#64748B', fontWeight: 700, textTransform: 'none', px: 0 }}
-                  >
-                    Back to Problem List
-                  </Button>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A' }}>
-                    {activeProblem?.code}: {activeProblem?.title} ({activeProblem?.points} pts)
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                    <Typography
+                      onClick={() => setSelectedProblemIdx(null)}
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: '0.86rem',
+                        color: '#64748B',
+                        cursor: 'pointer',
+                        transition: 'color 0.15s ease',
+                        '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                      }}
+                    >
+                      Problems
+                    </Typography>
+                    <ChevronRightRoundedIcon sx={{ color: '#94A3B8', fontSize: 16 }} />
+                    <Typography
+                      noWrap
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: '0.86rem',
+                        color: '#0F172A',
+                      }}
+                    >
+                      {activeProblem?.code}: {activeProblem?.title}
+                    </Typography>
+                  </Box>
+                  <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1rem' }}>
+                    {activeProblem?.points} pts
                   </Typography>
                 </Box>
 

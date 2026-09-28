@@ -6,10 +6,13 @@
       "value": "dev"
     },
     "appPrefix": {
-      "value": "techlearns"
+      "value": "techlearns-skillos"
     },
     "dbAdminUsername": {
-      "value": "techlearns_admin"
+      "value": "skillos_admin"
+    },
+    "customStorageAccountName": {
+      "value": "sttechlearnsskillosprod1"
     }
   }
 }

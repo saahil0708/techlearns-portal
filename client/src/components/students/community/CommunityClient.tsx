@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { apiService } from '@/lib/api-service';
 import {
   Box,
   Typography,
@@ -92,40 +93,97 @@ export default function CommunityClient() {
   const [newContent, setNewContent] = useState('');
   const [newTags, setNewTags] = useState('Algorithms, C++');
 
+  useEffect(() => {
+    let isMounted = true;
+    apiService
+      .getCommunityPosts()
+      .then((data: any) => {
+        const items = Array.isArray(data) ? data : data?.items;
+        if (isMounted && Array.isArray(items) && items.length > 0) {
+          setPosts(
+            items.map((it: any) => ({
+              id: it.id,
+              title: it.title,
+              channel: it.channel,
+              author: {
+                name: it.author?.name || 'Community Member',
+                avatarBg: '#2563EB',
+                handle: it.author?.email?.split('@')[0] || 'member',
+              },
+              upvotes: it.upvotes ?? 0,
+              repliesCount: it.repliesCount ?? 0,
+              lastActivity: new Date(it.createdAt).toLocaleDateString(),
+              tags: it.tags || [],
+              content: it.content,
+            }))
+          );
+        }
+      })
+      .catch((err) => console.warn('Community posts fetch fallback:', err));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const filtered = posts.filter((p) => {
     const matchChannel = selectedChannel === 'All Channels' || p.channel === selectedChannel;
     const matchSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p.content.toLowerCase().includes(searchQuery.toLowerCase());
     return matchChannel && matchSearch;
   });
 
-  const handleUpvote = (postId: string) => {
+  const handleUpvote = async (postId: string) => {
+    try {
+      if (postId && !postId.startsWith('post-')) {
+        await apiService.upvoteCommunityPost(postId);
+      }
+    } catch (err) {
+      console.warn('Backend upvote warning:', err);
+    }
     setPosts((prev) =>
       prev.map((p) => (p.id === postId ? { ...p, upvotes: p.upvotes + 1 } : p))
     );
     toast.success('Post upvoted!', 'Upvote Registered');
   };
 
-  const handleCreatePost = (e: React.FormEvent) => {
+  const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newContent.trim()) return;
 
-    const post: ForumPost = {
-      id: `post-${Date.now()}`,
-      title: newTitle.trim(),
-      channel: newChannel,
-      author: { name: 'You (Student)', avatarBg: '#2563EB', handle: 'student_coder' },
-      upvotes: 1,
-      repliesCount: 0,
-      lastActivity: 'Just now',
-      tags: newTags.split(',').map((t) => t.trim()).filter(Boolean),
-      content: newContent.trim(),
-    };
+    const tagsArr = newTags.split(',').map((t) => t.trim()).filter(Boolean);
 
-    setPosts([post, ...posts]);
-    setCreateModalOpen(false);
-    setNewTitle('');
-    setNewContent('');
-    toast.success('Discussion thread published to the community!', 'Thread Created');
+    try {
+      const created = await apiService.createCommunityPost({
+        title: newTitle.trim(),
+        channel: newChannel,
+        content: newContent.trim(),
+        tags: tagsArr,
+      });
+
+      const formatted: ForumPost = {
+        id: created.id,
+        title: created.title,
+        channel: created.channel,
+        author: {
+          name: created.author?.name || 'You (Student)',
+          avatarBg: '#2563EB',
+          handle: 'student_coder',
+        },
+        upvotes: created.upvotes ?? 1,
+        repliesCount: 0,
+        lastActivity: 'Just now',
+        tags: created.tags || tagsArr,
+        content: created.content,
+      };
+
+      setPosts((prev) => [formatted, ...prev]);
+      setCreateModalOpen(false);
+      setNewTitle('');
+      setNewContent('');
+      toast.success('Discussion thread published to the community!', 'Thread Created');
+    } catch (err: any) {
+      console.error('Community post creation error:', err);
+      toast.error(err?.response?.data?.message || 'Failed to create discussion thread. Please try again.', 'Post Failed');
+    }
   };
 
   return (

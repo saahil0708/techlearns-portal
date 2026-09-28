@@ -31,6 +31,9 @@ import {
   DialogActions,
   Avatar,
   Divider,
+  CircularProgress,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import Link from 'next/link';
 import SearchIcon from '@mui/icons-material/Search';
@@ -54,6 +57,11 @@ import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
+import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded';
+import ImageRoundedIcon from '@mui/icons-material/ImageRounded';
+import LinkRoundedIcon from '@mui/icons-material/LinkRounded';
 
 import CurvedSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
@@ -64,7 +72,19 @@ import { BlogPost, BLOG_CATEGORIES, INITIAL_BLOG_POSTS, formatBlogDate } from '@
 import { useToast } from '@/context/ToastContext';
 import { usePolling } from '@/utils/usePolling';
 import { apiService } from '@/lib/api-service';
+import { uploadFileToAzureBlob } from '@/lib/storage';
 import { formatArticleMarkdown } from '@/utils/markdown';
+import MarkdownViewer from '@/components/shared/MarkdownViewer';
+import TipTapEditor from '@/components/shared/TipTapEditor';
+
+const CURATED_BLOG_COVERS = [
+  'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
+  'https://images.unsplash.com/photo-1516116211227-bbc03a089025?auto=format&fit=crop&w=1000&q=80',
+  'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=1000&q=80',
+  'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1000&q=80',
+  'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=1000&q=80',
+  'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1000&q=80',
+];
 
 export default function BlogsDirectoryClient({
   initialBlogs = INITIAL_BLOG_POSTS,
@@ -85,22 +105,70 @@ export default function BlogsDirectoryClient({
   // Modals state
   const [readBlog, setReadBlog] = useState<BlogPost | null>(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [blogToEdit, setBlogToEdit] = useState<BlogPost | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [blogToDelete, setBlogToDelete] = useState<BlogPost | null>(null);
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+
+  // Edit Blog form state
+  const [editBlogForm, setEditBlogForm] = useState({
+    title: '',
+    subtitle: '',
+    category: 'System Architecture',
+    status: 'Published',
+    coverImage: CURATED_BLOG_COVERS[0],
+    tags: '',
+    authorName: '',
+    authorCollege: '',
+    content: '',
+  });
+  const [editCoverSelectionMode, setEditCoverSelectionMode] = useState<'upload' | 'preset' | 'url'>('preset');
+  const [isUploadingEditCover, setIsUploadingEditCover] = useState(false);
+  const editFileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // New Blog form state
   const [newBlog, setNewBlog] = useState({
     title: '',
     subtitle: '',
     category: 'System Architecture',
-    readTime: '6 min read',
     coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
     tags: 'SystemDesign, Architecture',
     authorName: 'Platform Administrator',
     authorCollege: 'CodePlatform HQ',
     content: '',
   });
+
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [coverSelectionMode, setCoverSelectionMode] = useState<'upload' | 'preset' | 'url'>('upload');
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file (PNG, JPG, WebP, SVG).', 'Invalid File');
+      return;
+    }
+
+    try {
+      setIsUploadingCover(true);
+      const res = await uploadFileToAzureBlob(file, {
+        folder: 'blogs',
+        allowedTypes: ['image/*'],
+      });
+      setNewBlog((prev) => ({ ...prev, coverImage: res.blobUrl }));
+      toast.success('Cover image uploaded successfully to storage!', 'Image Uploaded');
+    } catch (err: any) {
+      console.error('Failed to upload image to Azure Storage:', err);
+      toast.error(err?.message || 'Failed to upload cover picture. Please try again.', 'Upload Failed');
+    } finally {
+      setIsUploadingCover(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   // Export menu
   const [downloadAnchorEl, setDownloadAnchorEl] = useState<null | HTMLElement>(null);
@@ -221,15 +289,24 @@ export default function BlogsDirectoryClient({
       toast.error('Article title is required.', 'Validation Error');
       return;
     }
+
+    const safeCoverImage =
+      newBlog.coverImage && !newBlog.coverImage.startsWith('blob:')
+        ? newBlog.coverImage
+        : CURATED_BLOG_COVERS[0];
+
+    const wordCount = (newBlog.content.trim().split(/\s+/).filter(Boolean).length) || 120;
+    const computedReadTime = `${Math.max(1, Math.ceil(wordCount / 180))} min read`;
+
     try {
       const created = await apiService.createBlog({
         title: newBlog.title,
         subtitle: newBlog.subtitle || 'Technical post-mortem and system analysis.',
         category: newBlog.category,
-        readTime: newBlog.readTime || '5 min read',
+        readTime: computedReadTime,
         publishedAt: new Date().toISOString(),
         status: 'Published',
-        coverImage: newBlog.coverImage || 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
+        coverImage: safeCoverImage,
         author: {
           name: newBlog.authorName || 'Super Administrator',
           avatarBg: '#2563EB',
@@ -252,7 +329,6 @@ export default function BlogsDirectoryClient({
         title: '',
         subtitle: '',
         category: 'System Architecture',
-        readTime: '6 min read',
         coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
         tags: 'SystemDesign, Architecture',
         authorName: 'Platform Administrator',
@@ -262,6 +338,111 @@ export default function BlogsDirectoryClient({
       toast.success('Technical article published successfully!', 'Article Published');
     } catch (err: any) {
       toast.error(err?.message || 'Failed to publish article', 'Publish Failed');
+    }
+  };
+
+  // Open Edit Modal handler
+  const handleOpenEditModal = (b: BlogPost) => {
+    setBlogToEdit(b);
+    setEditBlogForm({
+      title: b.title,
+      subtitle: b.subtitle || '',
+      category: b.category || 'System Architecture',
+      status: b.status || 'Published',
+      coverImage: b.coverImage || CURATED_BLOG_COVERS[0],
+      tags: (b.tags || []).join(', '),
+      authorName: b.author?.name || 'Platform Administrator',
+      authorCollege: b.author?.college || 'CodePlatform HQ',
+      content: b.content || '',
+    });
+    setEditCoverSelectionMode('preset');
+    setEditModalOpen(true);
+  };
+
+  const handleEditCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file (PNG, JPG, WebP, SVG).', 'Invalid File');
+      return;
+    }
+
+    try {
+      setIsUploadingEditCover(true);
+      const res = await uploadFileToAzureBlob(file, {
+        folder: 'blogs',
+        allowedTypes: ['image/*'],
+      });
+      setEditBlogForm((prev) => ({ ...prev, coverImage: res.blobUrl }));
+      toast.success('Cover image uploaded successfully to storage!', 'Image Uploaded');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to upload cover picture. Please try again.', 'Upload Failed');
+    } finally {
+      setIsUploadingEditCover(false);
+    }
+  };
+
+  const handleSaveEditBlog = async () => {
+    if (!blogToEdit) return;
+    if (!editBlogForm.title.trim()) {
+      toast.error('Article title is required.', 'Validation Error');
+      return;
+    }
+
+    setIsSavingEdit(true);
+    const wordCount = editBlogForm.content.trim().split(/\s+/).filter(Boolean).length || 120;
+    const computedReadTime = `${Math.max(1, Math.ceil(wordCount / 180))} min read`;
+
+    const payload: Partial<BlogPost> = {
+      title: editBlogForm.title.trim(),
+      subtitle: editBlogForm.subtitle.trim(),
+      category: editBlogForm.category,
+      status: editBlogForm.status as 'Published' | 'Draft' | 'Archived',
+      readTime: computedReadTime,
+      coverImage: editBlogForm.coverImage,
+      tags: editBlogForm.tags.split(',').map((t) => t.trim()).filter(Boolean),
+      content: editBlogForm.content,
+      author: {
+        ...blogToEdit.author,
+        name: editBlogForm.authorName || blogToEdit.author.name,
+        college: editBlogForm.authorCollege || blogToEdit.author.college,
+      },
+    };
+
+    try {
+      if (blogToEdit.id && !blogToEdit.id.startsWith('blog-') && !blogToEdit.id.startsWith('client-')) {
+        await apiService.updateBlog(blogToEdit.id, payload);
+      }
+
+      setBlogs((prev) =>
+        prev.map((item) =>
+          item.id === blogToEdit.id
+            ? ({
+                ...item,
+                ...payload,
+                tags: payload.tags || item.tags,
+                author: {
+                  ...item.author,
+                  name: editBlogForm.authorName || item.author.name,
+                  college: editBlogForm.authorCollege || item.author.college,
+                },
+              } as BlogPost)
+            : item
+        )
+      );
+
+      if (readBlog && readBlog.id === blogToEdit.id) {
+        setReadBlog((prev) => (prev ? ({ ...prev, ...payload } as BlogPost) : null));
+      }
+
+      setEditModalOpen(false);
+      setBlogToEdit(null);
+      toast.success('Article updated successfully!', 'Changes Saved');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update article', 'Update Failed');
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -400,9 +581,9 @@ export default function BlogsDirectoryClient({
           radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
-        p: { xs: 1.5, sm: 2, md: 2.5 },
-        pl: { xs: '82px', sm: '90px', md: '102px' },
-        gap: { xs: 2, md: 3 },
+        py: { xs: 2, sm: 2.5, md: 3 },
+        pr: { xs: 2, sm: 3, md: 4 },
+        pl: { xs: '88px', sm: '100px', md: '116px' },
       }}
     >
       <CurvedSidebar />
@@ -410,7 +591,7 @@ export default function BlogsDirectoryClient({
       {/* Main Content Area */}
       <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {/* Unified Layout Container: Navbar + Page Content */}
-        <Box sx={{ maxWidth: 1400, width: '100%', mx: 'auto', px: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 4, pb: { xs: 4, md: 6 } }}>
+        <Box sx={{ width: '100%', maxWidth: '100%', px: { xs: 2, sm: 3, md: 4 }, display: 'flex', flexDirection: 'column', gap: 4, pb: { xs: 4, md: 6 } }}>
           <Navbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
           {/* Header Row */}
@@ -813,9 +994,23 @@ export default function BlogsDirectoryClient({
                           {/* Actions */}
                           <TableCell align="right" sx={{ pr: 2.5 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
-                              <Tooltip title="Read Article">
+                              <Tooltip title="Read Article (Modal Preview)">
                                 <IconButton size="small" onClick={() => setReadBlog(b)} sx={{ color: '#2563EB', '&:hover': { bgcolor: '#EFF6FF' } }}>
                                   <VisibilityRoundedIcon sx={{ fontSize: 18 }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Open Dynamic Reading & Editing Page">
+                                <IconButton component={Link} href={`/superadmin/blogs/${b.id}`} size="small" sx={{ color: '#0F172A', '&:hover': { bgcolor: '#F1F5F9' } }}>
+                                  <OpenInNewRoundedIcon sx={{ fontSize: 17 }} />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Edit Article (TipTap Editor)">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleOpenEditModal(b)}
+                                  sx={{ color: '#2563EB', '&:hover': { bgcolor: '#EFF6FF' } }}
+                                >
+                                  <EditRoundedIcon sx={{ fontSize: 18 }} />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip title="Delete Article">
@@ -920,15 +1115,18 @@ export default function BlogsDirectoryClient({
       >
         {readBlog && (
           <>
-            <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pb: 1 }}>
-              <Box>
-                <Chip size="small" label={readBlog.category} sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700, mb: 1 }} />
-                <Typography sx={{ fontSize: '1.35rem', fontWeight: 800, color: '#0F172A', lineHeight: 1.3 }}>
+            <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', pb: 1.5 }}>
+              <Box sx={{ flex: 1, pr: 2 }}>
+                <Typography sx={{ fontSize: '1.4rem', fontWeight: 900, color: '#0F172A', lineHeight: 1.3, mb: 1 }}>
                   {readBlog.title}
                 </Typography>
-                <Typography sx={{ fontSize: '0.88rem', color: '#64748B', mt: 0.5 }}>
-                  {readBlog.subtitle}
-                </Typography>
+                <Divider sx={{ borderColor: '#00000015', mb: 1.5 }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                  <Chip size="small" label={readBlog.category} sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700 }} />
+                  {readBlog.tags && readBlog.tags.map((tag) => (
+                    <Chip key={tag} size="small" label={`#${tag}`} sx={{ bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', fontWeight: 600, fontSize: '0.74rem' }} />
+                  ))}
+                </Box>
               </Box>
               <IconButton onClick={() => setReadBlog(null)} sx={{ color: '#94A3B8' }}>
                 <CloseRoundedIcon />
@@ -969,12 +1167,9 @@ export default function BlogsDirectoryClient({
               </Box>
 
               {/* Article Content */}
-              <Box
-                dangerouslySetInnerHTML={{ __html: formatArticleMarkdown(readBlog.content) }}
-                sx={{ color: '#1E293B', lineHeight: 1.8, fontSize: '0.95rem' }}
-              />
+              <MarkdownViewer content={readBlog.content} />
             </DialogContent>
-            <DialogActions sx={{ px: 3, py: 2, justifyContent: 'space-between' }}>
+            <DialogActions sx={{ px: 3, py: 2, justifyContent: 'space-between', borderTop: '1px solid #E2E8F0', flexWrap: 'wrap', gap: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B' }}>
                   <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
@@ -985,9 +1180,32 @@ export default function BlogsDirectoryClient({
                   <Typography sx={{ fontSize: '0.84rem', fontWeight: 700 }}>{readBlog.claps} Claps</Typography>
                 </Box>
               </Box>
-              <Button onClick={() => setReadBlog(null)} variant="outlined" sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600 }}>
-                Close Reader
-              </Button>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Button
+                  component={Link}
+                  href={`/superadmin/blogs/${readBlog.id}`}
+                  variant="outlined"
+                  startIcon={<OpenInNewRoundedIcon sx={{ fontSize: 16 }} />}
+                  sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 700, fontSize: '0.84rem' }}
+                >
+                  Full Page View
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<EditRoundedIcon sx={{ fontSize: 16 }} />}
+                  onClick={() => {
+                    const target = readBlog;
+                    setReadBlog(null);
+                    handleOpenEditModal(target);
+                  }}
+                  sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 700, fontSize: '0.84rem', bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}
+                >
+                  Edit Article
+                </Button>
+                <Button onClick={() => setReadBlog(null)} variant="outlined" sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 600, color: '#64748B', borderColor: '#CBD5E1' }}>
+                  Close
+                </Button>
+              </Box>
             </DialogActions>
           </>
         )}
@@ -1025,32 +1243,225 @@ export default function BlogsDirectoryClient({
             onChange={(e) => setNewBlog({ ...newBlog, subtitle: e.target.value })}
           />
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-            <Select
-              value={newBlog.category}
-              onChange={(e) => setNewBlog({ ...newBlog, category: e.target.value })}
-              fullWidth
-            >
-              {BLOG_CATEGORIES.filter((c) => c !== 'All Stories').map((cat) => (
-                <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-              ))}
-            </Select>
-
-            <TextField
-              label="Read Time"
-              placeholder="e.g. 8 min read"
-              value={newBlog.readTime}
-              onChange={(e) => setNewBlog({ ...newBlog, readTime: e.target.value })}
-            />
-          </Box>
-
-          <TextField
-            label="Cover Image URL"
+          <Select
+            value={newBlog.category}
+            onChange={(e) => setNewBlog({ ...newBlog, category: e.target.value })}
             fullWidth
-            placeholder="https://images.unsplash.com/..."
-            value={newBlog.coverImage}
-            onChange={(e) => setNewBlog({ ...newBlog, coverImage: e.target.value })}
-          />
+          >
+            {BLOG_CATEGORIES.filter((c) => c !== 'All Stories').map((cat) => (
+              <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+            ))}
+          </Select>
+
+          {/* Cover Picture Selector */}
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: '12px',
+              border: '1px solid #E2E8F0',
+              bgcolor: '#F8FAFC',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.5,
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+              <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155' }}>
+                Cover Picture
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 0.8 }}>
+                <Button
+                  size="small"
+                  variant={coverSelectionMode === 'upload' ? 'contained' : 'outlined'}
+                  onClick={() => setCoverSelectionMode('upload')}
+                  startIcon={<CloudUploadRoundedIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    ...(coverSelectionMode === 'upload'
+                      ? { bgcolor: '#2563EB', color: '#fff', '&:hover': { bgcolor: '#1D4ED8' } }
+                      : { color: '#475569', borderColor: '#CBD5E1', bgcolor: '#FFFFFF' }),
+                  }}
+                >
+                  Choose Picture
+                </Button>
+                <Button
+                  size="small"
+                  variant={coverSelectionMode === 'preset' ? 'contained' : 'outlined'}
+                  onClick={() => setCoverSelectionMode('preset')}
+                  startIcon={<ImageRoundedIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    ...(coverSelectionMode === 'preset'
+                      ? { bgcolor: '#2563EB', color: '#fff', '&:hover': { bgcolor: '#1D4ED8' } }
+                      : { color: '#475569', borderColor: '#CBD5E1', bgcolor: '#FFFFFF' }),
+                  }}
+                >
+                  Presets
+                </Button>
+                <Button
+                  size="small"
+                  variant={coverSelectionMode === 'url' ? 'contained' : 'outlined'}
+                  onClick={() => setCoverSelectionMode('url')}
+                  startIcon={<LinkRoundedIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    borderRadius: '8px',
+                    ...(coverSelectionMode === 'url'
+                      ? { bgcolor: '#2563EB', color: '#fff', '&:hover': { bgcolor: '#1D4ED8' } }
+                      : { color: '#475569', borderColor: '#CBD5E1', bgcolor: '#FFFFFF' }),
+                  }}
+                >
+                  Image URL
+                </Button>
+              </Box>
+            </Box>
+
+            {/* Mode 1: Choose / Upload File from Device */}
+            {coverSelectionMode === 'upload' && (
+              <Box>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleCoverUpload}
+                />
+                <Box
+                  role="button"
+                  tabIndex={isUploadingCover ? -1 : 0}
+                  aria-disabled={isUploadingCover}
+                  aria-label="Choose cover picture from device"
+                  onClick={() => !isUploadingCover && fileInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if ((e.key === 'Enter' || e.key === ' ') && !isUploadingCover) {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
+                  sx={{
+                    border: '2px dashed #CBD5E1',
+                    borderRadius: '10px',
+                    p: 2.5,
+                    textAlign: 'center',
+                    bgcolor: '#FFFFFF',
+                    cursor: isUploadingCover ? 'wait' : 'pointer',
+                    transition: 'all 0.15s ease',
+                    outline: 'none',
+                    '&:hover, &:focus-visible': {
+                      borderColor: '#2563EB',
+                      bgcolor: '#F0F7FF',
+                      boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.15)',
+                    },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 0.8,
+                  }}
+                >
+                  {isUploadingCover ? (
+                    <>
+                      <CircularProgress size={26} sx={{ color: '#2563EB' }} />
+                      <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#2563EB' }}>
+                        Uploading picture to cloud storage...
+                      </Typography>
+                    </>
+                  ) : (
+                    <>
+                      <CloudUploadRoundedIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                      <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#0F172A' }}>
+                        Click to choose a picture from your device
+                      </Typography>
+                      <Typography sx={{ fontSize: '0.75rem', color: '#64748B' }}>
+                        PNG, JPG, WebP, SVG (Max 10MB)
+                      </Typography>
+                    </>
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            {/* Mode 2: Presets */}
+            {coverSelectionMode === 'preset' && (
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 1 }}>
+                {CURATED_BLOG_COVERS.map((imgUrl, i) => (
+                  <Box
+                    key={i}
+                    component="button"
+                    type="button"
+                    aria-label={`Select preset cover ${i + 1}`}
+                    onClick={() => setNewBlog((prev) => ({ ...prev, coverImage: imgUrl }))}
+                    sx={{
+                      height: 56,
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      border: newBlog.coverImage === imgUrl ? '2.5px solid #2563EB' : '1px solid #CBD5E1',
+                      transform: newBlog.coverImage === imgUrl ? 'scale(1.04)' : 'scale(1)',
+                      transition: 'all 0.15s ease',
+                      p: 0,
+                      background: 'none',
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={imgUrl}
+                      alt={`Preset ${i + 1}`}
+                      sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </Box>
+                ))}
+              </Box>
+            )}
+
+            {/* Mode 3: Image URL fallback */}
+            {coverSelectionMode === 'url' && (
+              <TextField
+                size="small"
+                fullWidth
+                placeholder="https://images.unsplash.com/..."
+                value={newBlog.coverImage}
+                onChange={(e) => setNewBlog({ ...newBlog, coverImage: e.target.value })}
+                sx={{ bgcolor: '#FFFFFF' }}
+              />
+            )}
+
+            {/* Preview Banner */}
+            {newBlog.coverImage && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, pt: 0.5, borderTop: '1px solid #E2E8F0' }}>
+                <Box
+                  component="img"
+                  src={newBlog.coverImage}
+                  alt="Cover Preview"
+                  onError={(e: any) => {
+                    e.currentTarget.src = CURATED_BLOG_COVERS[0];
+                  }}
+                  sx={{
+                    width: 88,
+                    height: 50,
+                    objectFit: 'cover',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                  }}
+                />
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#10B981', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <CheckCircleRoundedIcon sx={{ fontSize: 15 }} /> Current Cover Picture
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#64748B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {newBlog.coverImage}
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          </Box>
 
           <TextField
             label="Tags (comma-separated)"
@@ -1060,15 +1471,18 @@ export default function BlogsDirectoryClient({
             onChange={(e) => setNewBlog({ ...newBlog, tags: e.target.value })}
           />
 
-          <TextField
-            label="Article Markdown Content"
-            multiline
-            rows={8}
-            fullWidth
-            placeholder="## Technical Breakdown\n\nExplain architecture, code snippets, benchmarks..."
-            value={newBlog.content}
-            onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
-          />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155' }}>
+              Article Content (Rich TipTap Editor)
+            </Typography>
+            <TipTapEditor
+              content={newBlog.content}
+              onChange={(html) => setNewBlog({ ...newBlog, content: html })}
+              placeholder="Write your technical article here... Use the toolbar for bold, italic, underline, strike, code blocks, tables, lists, links, and images."
+              minHeight={260}
+              maxHeight={420}
+            />
+          </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
           <Button onClick={() => setCreateModalOpen(false)} sx={{ textTransform: 'none', color: '#64748B', fontWeight: 600 }}>
@@ -1080,6 +1494,270 @@ export default function BlogsDirectoryClient({
             sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 3, '&:hover': { bgcolor: '#1D4ED8' } }}
           >
             Publish Article
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ========================================================================= */}
+      {/* EDIT ARTICLE MODAL (TIPTAP EDITOR)                                        */}
+      {/* ========================================================================= */}
+      <Dialog
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+        slotProps={{ paper: { sx: { borderRadius: '18px' } } }}
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: 800,
+            fontSize: '1.25rem',
+            color: '#0F172A',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderBottom: '1px solid #E2E8F0',
+            pb: 2,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: '10px',
+                bgcolor: '#EFF6FF',
+                color: '#2563EB',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <EditRoundedIcon sx={{ fontSize: 20 }} />
+            </Box>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1.15rem', color: '#0F172A' }}>
+                Edit Technical Article
+              </Typography>
+              <Typography sx={{ fontSize: '0.78rem', color: '#64748B' }}>
+                Update title, content, status, tags, and cover assets
+              </Typography>
+            </Box>
+          </Box>
+          <IconButton onClick={() => setEditModalOpen(false)} sx={{ color: '#94A3B8' }}>
+            <CloseRoundedIcon />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, py: 3 }}>
+          <TextField
+            label="Article Title"
+            fullWidth
+            required
+            value={editBlogForm.title}
+            onChange={(e) => setEditBlogForm({ ...editBlogForm, title: e.target.value })}
+          />
+
+          <TextField
+            label="Subtitle / Summary"
+            fullWidth
+            multiline
+            rows={2}
+            value={editBlogForm.subtitle}
+            onChange={(e) => setEditBlogForm({ ...editBlogForm, subtitle: e.target.value })}
+          />
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel id="superadmin-edit-category-label">Category</InputLabel>
+              <Select
+                labelId="superadmin-edit-category-label"
+                label="Category"
+                value={editBlogForm.category}
+                onChange={(e) => setEditBlogForm({ ...editBlogForm, category: e.target.value })}
+              >
+                {BLOG_CATEGORIES.filter((c) => c !== 'All Stories').map((cat) => (
+                  <MenuItem key={cat} value={cat}>
+                    {cat}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel id="superadmin-edit-status-label">Publication Status</InputLabel>
+              <Select
+                labelId="superadmin-edit-status-label"
+                label="Publication Status"
+                value={editBlogForm.status}
+                onChange={(e) => setEditBlogForm({ ...editBlogForm, status: e.target.value as any })}
+              >
+                <MenuItem value="Published">Published</MenuItem>
+                <MenuItem value="Draft">Draft</MenuItem>
+                <MenuItem value="Archived">Archived</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          {/* Cover Picture Selector */}
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: '12px',
+              border: '1px solid #E2E8F0',
+              bgcolor: '#F8FAFC',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1.5,
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+              <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155' }}>
+                Cover Picture
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 0.8 }}>
+                <Button
+                  size="small"
+                  variant={editCoverSelectionMode === 'upload' ? 'contained' : 'outlined'}
+                  onClick={() => setEditCoverSelectionMode('upload')}
+                  startIcon={<CloudUploadRoundedIcon sx={{ fontSize: 16 }} />}
+                  sx={{ textTransform: 'none', fontSize: '0.75rem', fontWeight: 700, borderRadius: '8px' }}
+                >
+                  Upload
+                </Button>
+                <Button
+                  size="small"
+                  variant={editCoverSelectionMode === 'preset' ? 'contained' : 'outlined'}
+                  onClick={() => setEditCoverSelectionMode('preset')}
+                  startIcon={<ImageRoundedIcon sx={{ fontSize: 16 }} />}
+                  sx={{ textTransform: 'none', fontSize: '0.75rem', fontWeight: 700, borderRadius: '8px' }}
+                >
+                  Presets
+                </Button>
+                <Button
+                  size="small"
+                  variant={editCoverSelectionMode === 'url' ? 'contained' : 'outlined'}
+                  onClick={() => setEditCoverSelectionMode('url')}
+                  startIcon={<LinkRoundedIcon sx={{ fontSize: 16 }} />}
+                  sx={{ textTransform: 'none', fontSize: '0.75rem', fontWeight: 700, borderRadius: '8px' }}
+                >
+                  Image URL
+                </Button>
+              </Box>
+            </Box>
+
+            {/* Mode 1: Upload */}
+            {editCoverSelectionMode === 'upload' && (
+              <Box sx={{ p: 2, border: '2px dashed #CBD5E1', borderRadius: '8px', textAlign: 'center', bgcolor: '#FFFFFF' }}>
+                <input
+                  type="file"
+                  ref={editFileInputRef}
+                  onChange={handleEditCoverUpload}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                />
+                <Button
+                  variant="outlined"
+                  disabled={isUploadingEditCover}
+                  onClick={() => editFileInputRef.current?.click()}
+                  startIcon={<CloudUploadRoundedIcon />}
+                  sx={{ textTransform: 'none', fontWeight: 700, borderRadius: '8px' }}
+                >
+                  {isUploadingEditCover ? 'Uploading to Azure Storage...' : 'Select Image File'}
+                </Button>
+              </Box>
+            )}
+
+            {/* Mode 2: Presets */}
+            {editCoverSelectionMode === 'preset' && (
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 1 }}>
+                {CURATED_BLOG_COVERS.map((imgUrl, i) => (
+                  <Box
+                    key={i}
+                    onClick={() => setEditBlogForm({ ...editBlogForm, coverImage: imgUrl })}
+                    sx={{
+                      height: 52,
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      border: editBlogForm.coverImage === imgUrl ? '2px solid #2563EB' : '1px solid #CBD5E1',
+                    }}
+                  >
+                    <Box component="img" src={imgUrl} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </Box>
+                ))}
+              </Box>
+            )}
+
+            {/* Mode 3: URL */}
+            {editCoverSelectionMode === 'url' && (
+              <TextField
+                size="small"
+                fullWidth
+                placeholder="https://images.unsplash.com/..."
+                value={editBlogForm.coverImage}
+                onChange={(e) => setEditBlogForm({ ...editBlogForm, coverImage: e.target.value })}
+                sx={{ bgcolor: '#FFFFFF' }}
+              />
+            )}
+
+            {/* Preview */}
+            {editBlogForm.coverImage && (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, pt: 1, borderTop: '1px solid #E2E8F0' }}>
+                <Box
+                  component="img"
+                  src={editBlogForm.coverImage}
+                  alt="Preview"
+                  sx={{ width: 80, height: 48, objectFit: 'cover', borderRadius: '8px', border: '1px solid #CBD5E1' }}
+                />
+                <Typography sx={{ fontSize: '0.78rem', color: '#10B981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <CheckCircleRoundedIcon sx={{ fontSize: 16 }} /> Current Cover Picture
+                </Typography>
+              </Box>
+            )}
+          </Box>
+
+          <TextField
+            label="Tags (comma-separated)"
+            fullWidth
+            placeholder="TypeScript, NextJS, NestJS, Azure"
+            value={editBlogForm.tags}
+            onChange={(e) => setEditBlogForm({ ...editBlogForm, tags: e.target.value })}
+          />
+
+          {/* TipTap Rich Editor */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155' }}>
+              Article Body (TipTap Visual Rich Editor)
+            </Typography>
+            <TipTapEditor
+              content={editBlogForm.content}
+              onChange={(html) => setEditBlogForm({ ...editBlogForm, content: html })}
+              placeholder="Edit your technical article here..."
+              minHeight={280}
+              maxHeight={440}
+            />
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid #E2E8F0' }}>
+          <Button onClick={() => setEditModalOpen(false)} sx={{ textTransform: 'none', color: '#64748B', fontWeight: 600 }}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            disabled={isSavingEdit}
+            onClick={handleSaveEditBlog}
+            sx={{
+              bgcolor: '#2563EB',
+              textTransform: 'none',
+              fontWeight: 700,
+              borderRadius: '8px',
+              px: 3,
+              '&:hover': { bgcolor: '#1D4ED8' },
+            }}
+          >
+            {isSavingEdit ? 'Saving Changes...' : 'Save & Publish Updates'}
           </Button>
         </DialogActions>
       </Dialog>

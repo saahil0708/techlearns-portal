@@ -836,10 +836,89 @@ export const apiService = {
     return res.data?.data ?? res.data;
   },
 
-  async getBlogs(): Promise<BlogPost[]> {
-    const res = await apiClient.get('/blogs');
+  // ----------------------------------------------------
+  // BLOGS & ARTICLES (REST)
+  // ----------------------------------------------------
+  async getBlogs(params?: { search?: string; category?: string; status?: string; page?: number; limit?: number }): Promise<BlogPost[]> {
+    const res = await apiClient.get('/blogs', { params });
     const data = res.data?.data ?? res.data;
-    return Array.isArray(data) ? data : (data?.items || []);
+    const rawList: any[] = Array.isArray(data) ? data : (data?.items || []);
+    return rawList.map((raw: any): BlogPost => ({
+      id: raw.id,
+      title: raw.title || 'Untitled Article',
+      subtitle: raw.subtitle || '',
+      category: raw.category || 'System Architecture',
+      readTime: raw.readTime || '5 min read',
+      publishedAt: raw.createdAt ? new Date(raw.createdAt).toISOString() : new Date().toISOString(),
+      coverImage: raw.coverImage || 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
+      author: {
+        name: raw.author?.name || 'Platform Author',
+        avatarBg: raw.author?.avatarBg || '#2563EB',
+        avatarImg: raw.author?.avatarUrl || raw.author?.avatarImg || undefined,
+        role: raw.author?.globalRole || raw.author?.role || 'Engineer',
+        college: raw.author?.college || raw.institution?.name || 'CodePlatform',
+        handle: raw.author?.handle || (raw.author?.email ? `@${raw.author.email.split('@')[0]}` : '@author'),
+        isVerified: Boolean(raw.author?.isVerified ?? true),
+      },
+      tags: Array.isArray(raw.tags) ? raw.tags : [],
+      claps: raw.claps ?? 0,
+      commentsCount: raw.commentsCount ?? raw._count?.comments ?? (Array.isArray(raw.comments) ? raw.comments.length : 0),
+      views: raw.views ?? 0,
+      isBookmarked: Boolean(raw.isBookmarked),
+      hasLiked: Boolean(raw.hasLiked),
+      status: raw.status || 'Published',
+      content: raw.content || '',
+      comments: Array.isArray(raw.comments)
+        ? raw.comments.map((c: any) => ({
+            id: c.id,
+            author: c.author?.name || 'Commenter',
+            avatarBg: c.author?.avatarBg || '#2563EB',
+            time: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Recently',
+            text: c.text || '',
+          }))
+        : [],
+    }));
+  },
+
+  async getBlogByIdOrSlug(idOrSlug: string): Promise<BlogPost> {
+    const res = await apiClient.get(`/blogs/${idOrSlug}`);
+    const raw = res.data?.data ?? res.data;
+    return {
+      id: raw.id,
+      title: raw.title || 'Untitled Article',
+      subtitle: raw.subtitle || '',
+      category: raw.category || 'System Architecture',
+      readTime: raw.readTime || '5 min read',
+      publishedAt: raw.createdAt ? new Date(raw.createdAt).toISOString() : new Date().toISOString(),
+      coverImage: raw.coverImage || 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
+      author: {
+        name: raw.author?.name || 'Platform Author',
+        avatarBg: raw.author?.avatarBg || '#2563EB',
+        avatarImg: raw.author?.avatarUrl || raw.author?.avatarImg || undefined,
+        role: raw.author?.globalRole || raw.author?.role || 'Engineer',
+        college: raw.author?.college || raw.institution?.name || 'CodePlatform',
+        handle: raw.author?.handle || (raw.author?.email ? `@${raw.author.email.split('@')[0]}` : '@author'),
+        isVerified: Boolean(raw.author?.isVerified ?? true),
+      },
+      tags: Array.isArray(raw.tags) ? raw.tags : [],
+      claps: raw.claps ?? 0,
+      commentsCount: raw.commentsCount ?? raw._count?.comments ?? (Array.isArray(raw.comments) ? raw.comments.length : 0),
+      views: raw.views ?? 0,
+      isBookmarked: Boolean(raw.isBookmarked),
+      hasLiked: Boolean(raw.hasLiked),
+      status: raw.status || 'Published',
+      content: raw.content || '',
+      comments: Array.isArray(raw.comments)
+        ? raw.comments.map((c: any) => ({
+            id: c.id,
+            author: c.author?.name || 'Commenter',
+            authorId: c.authorId || c.author?.id,
+            avatarBg: c.author?.avatarBg || '#2563EB',
+            time: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Recently',
+            text: c.text || '',
+          }))
+        : [],
+    };
   },
 
   async createBlog(blogData: Partial<BlogPost>): Promise<BlogPost> {
@@ -847,9 +926,156 @@ export const apiService = {
     return res.data?.data ?? res.data;
   },
 
+  async updateBlog(id: string, blogData: Partial<BlogPost>): Promise<BlogPost> {
+    const res = await apiClient.patch(`/blogs/${id}`, blogData);
+    return res.data?.data ?? res.data;
+  },
+
   async deleteBlog(id: string): Promise<boolean> {
     await apiClient.delete(`/blogs/${id}`);
     return true;
+  },
+
+  async clapBlog(id: string): Promise<BlogPost> {
+    const res = await apiClient.post(`/blogs/${id}/clap`);
+    return res.data?.data ?? res.data;
+  },
+
+  async addBlogComment(id: string, text: string): Promise<any> {
+    const res = await apiClient.post(`/blogs/${id}/comments`, { text });
+    return res.data?.data ?? res.data;
+  },
+
+  async updateBlogComment(postId: string, commentId: string, text: string): Promise<any> {
+    const res = await apiClient.patch(`/blogs/${postId}/comments/${commentId}`, { text });
+    return res.data?.data ?? res.data;
+  },
+
+  async deleteBlogComment(postId: string, commentId: string): Promise<boolean> {
+    await apiClient.delete(`/blogs/${postId}/comments/${commentId}`);
+    return true;
+  },
+
+  // ----------------------------------------------------
+  // STUDENT PROJECTS & SANDBOXES (REST)
+  // ----------------------------------------------------
+  async getProjects(params?: { search?: string; category?: string; status?: string; page?: number; limit?: number }) {
+    const res = await apiClient.get('/projects', { params });
+    return res.data?.data ?? res.data;
+  },
+
+  async getProjectById(id: string) {
+    const res = await apiClient.get(`/projects/${id}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async createProject(data: any) {
+    const res = await apiClient.post('/projects', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async updateProject(id: string, data: any) {
+    const res = await apiClient.patch(`/projects/${id}`, data);
+    return res.data?.data ?? res.data;
+  },
+
+  async deleteProject(id: string) {
+    const res = await apiClient.delete(`/projects/${id}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async toggleProjectMilestone(projectId: string, milestoneId: string) {
+    const res = await apiClient.patch(`/projects/${projectId}/milestones/${milestoneId}/toggle`);
+    return res.data?.data ?? res.data;
+  },
+
+  // ----------------------------------------------------
+  // COMMUNITY FORUM (REST)
+  // ----------------------------------------------------
+  async getCommunityPosts(params?: { search?: string; channel?: string; page?: number; limit?: number }) {
+    const res = await apiClient.get('/community', { params });
+    return res.data?.data ?? res.data;
+  },
+
+  async getCommunityPostById(id: string) {
+    const res = await apiClient.get(`/community/${id}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async createCommunityPost(data: { title: string; channel?: string; content: string; tags?: string[] }) {
+    const res = await apiClient.post('/community', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async deleteCommunityPost(id: string) {
+    const res = await apiClient.delete(`/community/${id}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async upvoteCommunityPost(id: string) {
+    const res = await apiClient.post(`/community/${id}/upvote`);
+    return res.data?.data ?? res.data;
+  },
+
+  async addCommunityReply(postId: string, content: string) {
+    const res = await apiClient.post(`/community/${postId}/replies`, { content });
+    return res.data?.data ?? res.data;
+  },
+
+  async upvoteCommunityReply(replyId: string) {
+    const res = await apiClient.post(`/community/replies/${replyId}/upvote`);
+    return res.data?.data ?? res.data;
+  },
+
+  // ----------------------------------------------------
+  // SPRINT SIMULATIONS & TICKETS (REST)
+  // ----------------------------------------------------
+  async getSprintTickets(params?: { search?: string; domain?: string; status?: string; page?: number; limit?: number }) {
+    const res = await apiClient.get('/simulations/tickets', { params });
+    return res.data?.data ?? res.data;
+  },
+
+  async getSprintTicketById(idOrKey: string) {
+    const res = await apiClient.get(`/simulations/tickets/${idOrKey}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async createSprintTicket(data: any) {
+    const res = await apiClient.post('/simulations/tickets', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async updateSprintTicket(id: string, data: any) {
+    const res = await apiClient.patch(`/simulations/tickets/${id}`, data);
+    return res.data?.data ?? res.data;
+  },
+
+  async submitSprintTicketPr(id: string, prNumber: string) {
+    const res = await apiClient.post(`/simulations/tickets/${id}/submit-pr`, { prNumber });
+    return res.data?.data ?? res.data;
+  },
+
+  async deleteSprintTicket(id: string) {
+    const res = await apiClient.delete(`/simulations/tickets/${id}`);
+    return res.data?.data ?? res.data;
+  },
+
+  // ----------------------------------------------------
+  // AI COACH (REST)
+  // ----------------------------------------------------
+  async getAICoachHistory() {
+    const res = await apiClient.get('/ai-coach/history');
+    return res.data?.data ?? res.data;
+  },
+
+  async sendAICoachMessage(message: string, codeSnippet?: string) {
+    const res = await apiClient.post('/ai-coach/message', { message, codeSnippet });
+    return res.data?.data ?? res.data;
+  },
+
+  async clearAICoachHistory() {
+    const res = await apiClient.delete('/ai-coach/history');
+    return res.data?.data ?? res.data;
   },
 
   // ----------------------------------------------------

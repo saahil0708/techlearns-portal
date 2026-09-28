@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { apiService } from '@/lib/api-service';
 import {
   Box,
   Typography,
@@ -56,10 +57,38 @@ export default function AICoachClient() {
   };
 
   useEffect(() => {
+    let isMounted = true;
+    apiService
+      .getAICoachHistory()
+      .then((history: any) => {
+        if (isMounted && Array.isArray(history) && history.length > 0) {
+          const loaded: ChatMessage[] = history.map((m: any) => ({
+            id: m.id,
+            sender: m.sender as 'ai' | 'user',
+            text: m.text,
+            codeSnippet: m.codeSnippet,
+            timestamp: new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          }));
+          setMessages((prev) => {
+            const loadedIds = new Set(loaded.map((m) => m.id));
+            const inFlight = prev.filter(
+              (m) => !loadedIds.has(m.id) && m.id !== 'm-1'
+            );
+            return [...loaded, ...inFlight];
+          });
+        }
+      })
+      .catch((err) => console.warn('AI Coach history fallback:', err));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSendMessage = (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string) => {
     const text = textToSend || inputText;
     if (!text.trim()) return;
 
@@ -74,30 +103,67 @@ export default function AICoachClient() {
     setInputText('');
     setIsTyping(true);
 
-    // AI Response simulation
-    setTimeout(() => {
+    try {
+      const response = await apiService.sendAICoachMessage(text.trim());
       setIsTyping(false);
-      let replyText = "Here is the key breakdown:";
-      let snippet: string | undefined = undefined;
+      if (response) {
+        setMessages((prev) => {
+          const updated = response.userMessage
+            ? prev.map((m) =>
+                m.id === userMsg.id
+                  ? {
+                      id: response.userMessage.id,
+                      sender: 'user' as const,
+                      text: response.userMessage.text,
+                      codeSnippet: response.userMessage.codeSnippet,
+                      timestamp: 'Just now',
+                    }
+                  : m
+              )
+            : prev;
 
-      if (text.toLowerCase().includes('dijkstra') || text.toLowerCase().includes('a*')) {
-        replyText = "Dijkstra explores all uniform-cost paths (O((V + E) log V) with a Min-Heap), whereas A* guides the search using a heuristic function h(n) <= true_cost to prune subtrees, achieving significantly faster convergence on spatial search trees.";
-        snippet = `// Dijkstra Priority Queue Extraction\npriority_queue<pair<int, int>, vector<pair<int,int>>, greater<>> pq;\npq.push({0, startNode});`;
-      } else if (text.toLowerCase().includes('plan') || text.toLowerCase().includes('google')) {
-        replyText = "Here is your 3-Day Tailored High-Yield Practice Plan based on your historical error patterns:\n\nDay 1: Monotonic Deque & Interval Scheduling (4 Problems)\nDay 2: Tree DP & Bitmask State Compression (3 Problems)\nDay 3: Low-Level Rate Limiter & Concurrency Primitives";
-      } else {
-        replyText = `Great question regarding ${text}. When designing such systems, remember to decouple the write path using an asynchronous buffer (e.g. BullMQ / Redis) and apply idempotency tokens on incoming RPC payloads.`;
+          if (response.aiMessage && !updated.some((m) => m.id === response.aiMessage.id)) {
+            const aiMsg: ChatMessage = {
+              id: response.aiMessage.id,
+              sender: 'ai',
+              text: response.aiMessage.text,
+              codeSnippet: response.aiMessage.codeSnippet,
+              timestamp: 'Just now',
+            };
+            return [...updated, aiMsg];
+          }
+          return updated;
+        });
       }
+    } catch {
+      setIsTyping(false);
+      toast.error('Failed to send message to AI Coach. Reconnecting to local offline coach simulation.');
+      setInputText((curr) => (!curr ? text : curr));
 
-      const aiReply: ChatMessage = {
-        id: `ai-${Date.now()}`,
-        sender: 'ai',
-        text: replyText,
-        codeSnippet: snippet,
-        timestamp: 'Just now',
-      };
-      setMessages((prev) => [...prev, aiReply]);
-    }, 1200);
+      // Graceful fallback simulation labeled clearly as simulated
+      setTimeout(() => {
+        let replyText = "[Simulated Offline Response] Here is the key breakdown:";
+        let snippet: string | undefined = undefined;
+
+        if (text.toLowerCase().includes('dijkstra') || text.toLowerCase().includes('a*')) {
+          replyText = "[Simulated Offline Response] Dijkstra explores all uniform-cost paths (O((V + E) log V) with a Min-Heap), whereas A* guides the search using a heuristic function h(n) <= true_cost to prune subtrees, achieving significantly faster convergence on spatial search trees.";
+          snippet = `// Dijkstra Priority Queue Extraction\npriority_queue<pair<int, int>, vector<pair<int,int>>, greater<>> pq;\npq.push({0, startNode});`;
+        } else if (text.toLowerCase().includes('plan') || text.toLowerCase().includes('google')) {
+          replyText = "[Simulated Offline Response] Here is your 3-Day Tailored High-Yield Practice Plan based on your historical error patterns:\n\nDay 1: Monotonic Deque & Interval Scheduling (4 Problems)\nDay 2: Tree DP & Bitmask State Compression (3 Problems)\nDay 3: Low-Level Rate Limiter & Concurrency Primitives";
+        } else {
+          replyText = `[Simulated Offline Response] Great question regarding ${text}. When designing such systems, remember to decouple the write path using an asynchronous buffer (e.g. BullMQ / Redis) and apply idempotency tokens on incoming RPC payloads.`;
+        }
+
+        const aiReply: ChatMessage = {
+          id: `ai-simulated-${Date.now()}`,
+          sender: 'ai',
+          text: replyText,
+          codeSnippet: snippet,
+          timestamp: 'Just now',
+        };
+        setMessages((prev) => [...prev, aiReply]);
+      }, 900);
+    }
   };
 
   return (

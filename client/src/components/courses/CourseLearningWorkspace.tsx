@@ -161,13 +161,34 @@ export default function CourseLearningWorkspace({ course }: CourseLearningWorksp
     <Box sx={{ width: { xs: 280, md: 320 }, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF', borderRight: '1px solid #E2E8F0' }}>
       {/* Course Info Header */}
       <Box sx={{ p: 2.5, borderBottom: '1px solid #F1F5F9' }}>
-        <Button
-          startIcon={<ArrowBackRoundedIcon />}
-          onClick={() => router.push('/courses')}
-          sx={{ color: '#64748B', fontWeight: 700, fontSize: '0.8rem', textTransform: 'none', px: 0, mb: 1.5, '&:hover': { bgcolor: 'transparent', color: '#0F172A' } }}
-        >
-          Back to Catalog
-        </Button>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 1.5, flexWrap: 'wrap' }}>
+          <Typography
+            onClick={() => router.push('/courses')}
+            sx={{
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              color: '#64748B',
+              cursor: 'pointer',
+              transition: 'color 0.15s ease',
+              '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+            }}
+          >
+            Courses
+          </Typography>
+          <NavigateNextRoundedIcon sx={{ color: '#94A3B8', fontSize: 16 }} />
+          <Typography
+            noWrap
+            title={course.title}
+            sx={{
+              fontWeight: 700,
+              fontSize: '0.82rem',
+              color: '#0F172A',
+              maxWidth: { xs: 160, md: 190 },
+            }}
+          >
+            {course.title}
+          </Typography>
+        </Box>
         <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0F172A', lineHeight: 1.3, mb: 1 }}>
           {course.title}
         </Typography>

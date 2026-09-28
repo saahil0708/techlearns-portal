@@ -60,7 +60,7 @@ export default function StudentAppLayout({
       >
         <FacultySidebar />
         <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <Box sx={{ maxWidth: 1400, width: '100%', mx: 'auto', px: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 4, pb: { xs: 4, md: 6 } }}>
+          <Box sx={{ maxWidth: 1800, width: '100%', mx: 'auto', px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 4, pb: { xs: 4, md: 6 } }}>
             {!hideNavbar && (
               <FacultyNavbar
                 collegeName={activeUser?.memberships?.[0]?.college?.name}
@@ -96,7 +96,7 @@ export default function StudentAppLayout({
       >
         <CurvedSidebar />
         <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <Box sx={{ maxWidth: 1400, width: '100%', mx: 'auto', px: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 4, pb: { xs: 4, md: 6 } }}>
+          <Box sx={{ maxWidth: 1800, width: '100%', mx: 'auto', px: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 4, pb: { xs: 4, md: 6 } }}>
             {!hideNavbar && (
               <Navbar
                 searchQuery={searchQuery}
@@ -135,10 +135,10 @@ export default function StudentAppLayout({
       <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Box
           sx={{
-            maxWidth: 1400,
+            maxWidth: 1800,
             width: '100%',
             mx: 'auto',
-            px: { xs: 2, sm: 3, md: 4 },
+            px: { xs: 1.5, sm: 2, md: 3 },
             display: 'flex',
             flexDirection: 'column',
             gap: 3.5,

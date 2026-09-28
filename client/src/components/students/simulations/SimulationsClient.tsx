@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { apiService } from '@/lib/api-service';
 import {
   Box,
   Typography,
@@ -43,6 +44,7 @@ interface SprintTicket {
   prNumber?: string;
   techLeadFeedback?: string;
   description: string;
+  isDemo?: boolean;
 }
 
 const INITIAL_TICKETS: SprintTicket[] = [
@@ -58,6 +60,7 @@ const INITIAL_TICKETS: SprintTicket[] = [
     prNumber: '#142',
     techLeadFeedback: 'Solid implementation of Redis distributed setnx key locks. Ensure retry-after header is formatted in seconds.',
     description: 'Avoid double billing by ensuring incoming webhooks check deduplication keys before dispatching balance top-up jobs.',
+    isDemo: true,
   },
   {
     id: 't-2',
@@ -69,6 +72,7 @@ const INITIAL_TICKETS: SprintTicket[] = [
     status: 'In Progress',
     assignee: { name: 'You (Software Engineer)', avatarBg: '#2563EB' },
     description: 'Optimize auth token lookup performance across cluster nodes with TTL expiry event listeners.',
+    isDemo: true,
   },
   {
     id: 't-3',
@@ -82,6 +86,7 @@ const INITIAL_TICKETS: SprintTicket[] = [
     prNumber: '#138',
     techLeadFeedback: 'LGTM! Benchmarks show 42ms p99 latency drop under 10k RPS load tests. Merging.',
     description: 'Add edge n-gram analyzer to problem indexing pipeline to reduce memory footprint by 35%.',
+    isDemo: true,
   },
   {
     id: 't-4',
@@ -93,6 +98,7 @@ const INITIAL_TICKETS: SprintTicket[] = [
     status: 'Backlog',
     assignee: { name: 'DevOps Lead', avatarBg: '#8B5CF6' },
     description: 'Alert on Slack if DLQ queue volume exceeds 50 failed judge container jobs in a 5-minute rolling window.',
+    isDemo: true,
   },
 ];
 
@@ -104,9 +110,43 @@ export default function SimulationsClient() {
   const [prBranch, setPrBranch] = useState('feat/PAY-8921-idempotency');
   const [prNotes, setPrNotes] = useState('');
 
+  useEffect(() => {
+    let isMounted = true;
+    apiService
+      .getSprintTickets()
+      .then((data: any) => {
+        const items = Array.isArray(data) ? data : data?.items;
+        if (isMounted && Array.isArray(items) && items.length > 0) {
+          setTickets(
+            items.map((it: any) => ({
+              id: it.id,
+              key: it.key,
+              title: it.title,
+              domain: it.domain,
+              priority: it.priority,
+              storyPoints: it.storyPoints,
+              status: it.status,
+              assignee: {
+                name: it.assignee?.name || 'Assigned Engineer',
+                avatarBg: '#2563EB',
+              },
+              prNumber: it.prNumber,
+              techLeadFeedback: it.techLeadFeedback,
+              description: it.description,
+              isDemo: false,
+            }))
+          );
+        }
+      })
+      .catch((err) => console.warn('Sprint tickets fetch fallback:', err));
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const completedPoints = tickets.filter((t) => t.status === 'Merged').reduce((acc, t) => acc + t.storyPoints, 0);
   const totalPoints = tickets.reduce((acc, t) => acc + t.storyPoints, 0);
-  const sprintPct = Math.round((completedPoints / totalPoints) * 100);
+  const sprintPct = totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0;
 
   const handleOpenPR = (ticket: SprintTicket) => {
     setSelectedTicket(ticket);
@@ -114,24 +154,52 @@ export default function SimulationsClient() {
     setPrModalOpen(true);
   };
 
-  const handleSubmitPR = (e: React.FormEvent) => {
+  const handleSubmitPR = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTicket) return;
 
-    setTickets((prev) =>
-      prev.map((t) =>
-        t.id === selectedTicket.id
-          ? {
-              ...t,
-              status: 'In Review',
-              prNumber: `#${Math.floor(Math.random() * 800) + 100}`,
-              techLeadFeedback: 'Automated CI build passed 42/42 tests. Assigned to Senior Staff Engineer for code review.',
-            }
-          : t
-      )
-    );
-    setPrModalOpen(false);
-    toast.success(`Pull Request opened for ${selectedTicket.key}. CI pipeline running!`, 'PR Submitted');
+    const prNumber = `#${Math.floor(Math.random() * 800) + 100}`;
+
+    if (!selectedTicket.isDemo) {
+      try {
+        const updated = await apiService.submitSprintTicketPr(selectedTicket.id, prNumber);
+        setTickets((prev) =>
+          prev.map((t) =>
+            t.id === selectedTicket.id
+              ? {
+                  ...t,
+                  status: updated?.status || 'In Review',
+                  prNumber: updated?.prNumber || prNumber,
+                  techLeadFeedback:
+                    updated?.techLeadFeedback ||
+                    'Automated CI build passed 42/42 tests. Assigned to Senior Staff Engineer for code review.',
+                }
+              : t
+          )
+        );
+        setPrModalOpen(false);
+        toast.success(`Pull Request opened for ${selectedTicket.key}. CI pipeline running!`, 'PR Submitted');
+      } catch (err) {
+        console.error('Backend PR submit error:', err);
+        toast.error('Failed to submit pull request to server. Please try again.', 'PR Error');
+      }
+    } else {
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === selectedTicket.id
+            ? {
+                ...t,
+                status: 'In Review',
+                prNumber,
+                techLeadFeedback:
+                  'Automated CI build passed 42/42 tests. Assigned to Senior Staff Engineer for code review.',
+              }
+            : t
+        )
+      );
+      setPrModalOpen(false);
+      toast.success(`Pull Request opened for ${selectedTicket.key}. CI pipeline running!`, 'PR Submitted');
+    }
   };
 
   return (
