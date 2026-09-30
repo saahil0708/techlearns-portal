@@ -37,14 +37,16 @@ import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartm
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
+import PsychologyRoundedIcon from '@mui/icons-material/PsychologyRounded';
 
 import { StudentProfileData, StudentCertification } from '@/types/student-profile';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/lib/api-service';
-import TopicMasteryRadialGrid from './TopicMasteryRadialGrid';
-import RatingHistoryChart from './RatingHistoryChart';
-import SubmissionActivityHeatmap from './SubmissionActivityHeatmap';
-import SkillOSDock from './SkillOSDock';
+import TopicMasteryRadialGrid from '@/components/students/profile/TopicMasteryRadialGrid';
+import RatingHistoryChart from '@/components/students/profile/RatingHistoryChart';
+import SubmissionActivityHeatmap from '@/components/students/profile/SubmissionActivityHeatmap';
+import SkillOSDock from '@/components/students/profile/SkillOSDock';
+import GrowthMetricsAndRoleReadiness from '@/components/students/profile/GrowthMetricsAndRoleReadiness';
 
 const CERT_THEMES: Record<string, {
   tagBg: string;
@@ -663,6 +665,29 @@ export default function StudentOverviewTab({
             >
               This data will be helpful to auto-fill your competitive profile & job applications
             </Typography>
+
+            <Box sx={{ display: 'flex', gap: 1.5, mt: 1.5, flexWrap: 'wrap' }}>
+              <Link href="/students/diagnostic" style={{ textDecoration: 'none' }}>
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<PsychologyRoundedIcon sx={{ fontSize: 16 }} />}
+                  sx={{
+                    bgcolor: '#FFFFFF',
+                    color: '#1E3A8A',
+                    fontWeight: 800,
+                    textTransform: 'none',
+                    borderRadius: '10px',
+                    fontSize: '0.78rem',
+                    py: 0.6,
+                    px: 1.8,
+                    '&:hover': { bgcolor: '#F0F9FF' },
+                  }}
+                >
+                  Run Baseline Diagnostic & Set Goals
+                </Button>
+              </Link>
+            </Box>
           </Box>
 
           {/* Right Circular Progress Ring with Percentage */}
@@ -709,6 +734,9 @@ export default function StudentOverviewTab({
             </Typography>
           </Box>
         </Card>
+
+        {/* 10.1 & 10.2: Growth Telemetry & Target Role Readiness Gap Engine */}
+        <GrowthMetricsAndRoleReadiness profile={profile} />
 
         {/* CodeChef-Style Contest Rating Progression Chart */}
         <RatingHistoryChart

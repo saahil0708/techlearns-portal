@@ -9,6 +9,8 @@ import {
   SubmissionVerdict,
   SubmissionStatus,
   ProgrammingLanguage,
+  CourseStatus,
+  EnrollmentStatus,
 } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
@@ -504,33 +506,291 @@ async function main() {
     },
   ];
 
-  for (const bData of bootcampsData) {
-    await prisma.bootcamp.upsert({
-      where: { slug: bData.slug },
-      update: bData,
-      create: bData,
+  // 8. Create Courses, Modules, Lessons & Student Enrollments
+  const course1 = await prisma.course.upsert({
+    where: { id: 'crs-fullstack-architecture' },
+    update: {
+      title: 'Full-Stack Web Architecture & Cloud Microservices',
+      description: 'Master enterprise full-stack development with Next.js 15, SSR, NestJS APIs, PostgreSQL, Redis BullMQ queues, and Docker container security.',
+      status: CourseStatus.PUBLISHED,
+      institutionId: null,
+      createdById: facultyTuring.id,
+    },
+    create: {
+      id: 'crs-fullstack-architecture',
+      title: 'Full-Stack Web Architecture & Cloud Microservices',
+      description: 'Master enterprise full-stack development with Next.js 15, SSR, NestJS APIs, PostgreSQL, Redis BullMQ queues, and Docker container security.',
+      status: CourseStatus.PUBLISHED,
+      institutionId: null,
+      createdById: facultyTuring.id,
+    },
+  });
+
+  const c1Mod1 = await prisma.module.upsert({
+    where: { id: 'mod-fstack-1' },
+    update: { title: 'Foundations of SSR & Next.js App Router', order: 1, courseId: course1.id },
+    create: { id: 'mod-fstack-1', title: 'Foundations of SSR & Next.js App Router', order: 1, courseId: course1.id },
+  });
+  const c1L1 = await prisma.lesson.upsert({
+    where: { id: 'les-fstack-101' },
+    update: { title: 'React Server Components vs Client Leaf Boundaries', content: 'In-depth guide to server execution boundaries.', order: 1, moduleId: c1Mod1.id },
+    create: { id: 'les-fstack-101', title: 'React Server Components vs Client Leaf Boundaries', content: 'In-depth guide to server execution boundaries.', order: 1, moduleId: c1Mod1.id },
+  });
+  const c1L2 = await prisma.lesson.upsert({
+    where: { id: 'les-fstack-102' },
+    update: { title: 'Streaming SSR & Zero-Layout-Shift Suspense', content: 'Optimizing First Contentful Paint with Suspense streams.', order: 2, moduleId: c1Mod1.id },
+    create: { id: 'les-fstack-102', title: 'Streaming SSR & Zero-Layout-Shift Suspense', content: 'Optimizing First Contentful Paint with Suspense streams.', order: 2, moduleId: c1Mod1.id },
+  });
+
+  const c1Mod2 = await prisma.module.upsert({
+    where: { id: 'mod-fstack-2' },
+    update: { title: 'Production API Design with NestJS & TypeScript', order: 2, courseId: course1.id },
+    create: { id: 'mod-fstack-2', title: 'Production API Design with NestJS & TypeScript', order: 2, courseId: course1.id },
+  });
+  const c1L3 = await prisma.lesson.upsert({
+    where: { id: 'les-fstack-201' },
+    update: { title: 'Modular Architecture, DTO Validation & Guards', content: 'Building robust enterprise APIs with class-validator.', order: 1, moduleId: c1Mod2.id },
+    create: { id: 'les-fstack-201', title: 'Modular Architecture, DTO Validation & Guards', content: 'Building robust enterprise APIs with class-validator.', order: 1, moduleId: c1Mod2.id },
+  });
+  const c1L4 = await prisma.lesson.upsert({
+    where: { id: 'les-fstack-202' },
+    update: { title: 'JWT Authentication & Multi-Tenant RBAC Guards', content: 'Securing endpoints with role-based access control.', order: 2, moduleId: c1Mod2.id },
+    create: { id: 'les-fstack-202', title: 'JWT Authentication & Multi-Tenant RBAC Guards', content: 'Securing endpoints with role-based access control.', order: 2, moduleId: c1Mod2.id },
+  });
+
+  const c1Mod3 = await prisma.module.upsert({
+    where: { id: 'mod-fstack-3' },
+    update: { title: 'PostgreSQL Relational Schema Design & Redis BullMQ Queues', order: 3, courseId: course1.id },
+    create: { id: 'mod-fstack-3', title: 'PostgreSQL Relational Schema Design & Redis BullMQ Queues', order: 3, courseId: course1.id },
+  });
+  const c1L5 = await prisma.lesson.upsert({
+    where: { id: 'les-fstack-301' },
+    update: { title: 'Database Indexing, B-Trees & Query Optimization', content: 'Optimizing complex joins and transaction isolation.', order: 1, moduleId: c1Mod3.id },
+    create: { id: 'les-fstack-301', title: 'Database Indexing, B-Trees & Query Optimization', content: 'Optimizing complex joins and transaction isolation.', order: 1, moduleId: c1Mod3.id },
+  });
+  const c1L6 = await prisma.lesson.upsert({
+    where: { id: 'les-fstack-302' },
+    update: { title: 'Distributed Job Queue Execution with BullMQ & Redis', content: 'Asynchronous sandboxed task execution pipelines.', order: 2, moduleId: c1Mod3.id },
+    create: { id: 'les-fstack-302', title: 'Distributed Job Queue Execution with BullMQ & Redis', content: 'Asynchronous sandboxed task execution pipelines.', order: 2, moduleId: c1Mod3.id },
+  });
+
+  // Course 2: DSA & Competitive Problem Solving
+  const course2 = await prisma.course.upsert({
+    where: { id: 'crs-dsa-advanced' },
+    update: {
+      title: 'Advanced Data Structures & Algorithmic Problem Solving',
+      description: 'Master dynamic programming, graph algorithms, segment trees, and competitive programming techniques for high-tier tech interviews.',
+      status: CourseStatus.PUBLISHED,
+      institutionId: null,
+      createdById: facultyCormen.id,
+    },
+    create: {
+      id: 'crs-dsa-advanced',
+      title: 'Advanced Data Structures & Algorithmic Problem Solving',
+      description: 'Master dynamic programming, graph algorithms, segment trees, and competitive programming techniques for high-tier tech interviews.',
+      status: CourseStatus.PUBLISHED,
+      institutionId: null,
+      createdById: facultyCormen.id,
+    },
+  });
+
+  const c2Mod1 = await prisma.module.upsert({
+    where: { id: 'mod-dsa-1' },
+    update: { title: 'Dynamic Programming Patterns', order: 1, courseId: course2.id },
+    create: { id: 'mod-dsa-1', title: 'Dynamic Programming Patterns', order: 1, courseId: course2.id },
+  });
+  const c2L1 = await prisma.lesson.upsert({
+    where: { id: 'les-dsa-101' },
+    update: { title: '2D Grid DP & Space Optimization', content: 'Mastering state transitions on 2D matrices.', order: 1, moduleId: c2Mod1.id },
+    create: { id: 'les-dsa-101', title: '2D Grid DP & Space Optimization', content: 'Mastering state transitions on 2D matrices.', order: 1, moduleId: c2Mod1.id },
+  });
+  const c2L2 = await prisma.lesson.upsert({
+    where: { id: 'les-dsa-102' },
+    update: { title: 'DP on Trees & Subtree Aggregations', content: 'Rerooting techniques and subtree diameter calculation.', order: 2, moduleId: c2Mod1.id },
+    create: { id: 'les-dsa-102', title: 'DP on Trees & Subtree Aggregations', content: 'Rerooting techniques and subtree diameter calculation.', order: 2, moduleId: c2Mod1.id },
+  });
+
+  // Course 3: Docker & Cloud DevOps
+  const course3 = await prisma.course.upsert({
+    where: { id: 'crs-cloud-devops' },
+    update: {
+      title: 'Cloud DevOps, Docker Sandboxing & CI/CD Pipelines',
+      description: 'Container orchestration, multi-stage builds, isolated runtime sandboxes, and automated testing deployments.',
+      status: CourseStatus.PUBLISHED,
+      institutionId: null,
+      createdById: facultyTuring.id,
+    },
+    create: {
+      id: 'crs-cloud-devops',
+      title: 'Cloud DevOps, Docker Sandboxing & CI/CD Pipelines',
+      description: 'Container orchestration, multi-stage builds, isolated runtime sandboxes, and automated testing deployments.',
+      status: CourseStatus.PUBLISHED,
+      institutionId: null,
+      createdById: facultyTuring.id,
+    },
+  });
+
+  const c3Mod1 = await prisma.module.upsert({
+    where: { id: 'mod-devops-1' },
+    update: { title: 'Docker Multi-Stage Builds & Isolation', order: 1, courseId: course3.id },
+    create: { id: 'mod-devops-1', title: 'Docker Multi-Stage Builds & Isolation', order: 1, courseId: course3.id },
+  });
+  const c3L1 = await prisma.lesson.upsert({
+    where: { id: 'les-devops-101' },
+    update: { title: 'Container Security & Resource Quotas', content: 'Restricting memory and CPU for unprivileged sandbox execution.', order: 1, moduleId: c3Mod1.id },
+    create: { id: 'les-devops-101', title: 'Container Security & Resource Quotas', content: 'Restricting memory and CPU for unprivileged sandbox execution.', order: 1, moduleId: c3Mod1.id },
+  });
+
+  // Course 4: Python 3 Fundamentals for Beginners
+  const course4 = await prisma.course.upsert({
+    where: { id: 'crs-python-fundamentals' },
+    update: {
+      title: 'Python 3 Programming: From Fundamentals to Algorithmic Problem Solving',
+      description: 'Master Python 3 fundamentals from variables, conditionals, loops, and data structures to OOP, file I/O, and coding interview challenges.',
+      status: CourseStatus.PUBLISHED,
+      institutionId: null,
+      createdById: facultyTuring.id,
+    },
+    create: {
+      id: 'crs-python-fundamentals',
+      title: 'Python 3 Programming: From Fundamentals to Algorithmic Problem Solving',
+      description: 'Master Python 3 fundamentals from variables, conditionals, loops, and data structures to OOP, file I/O, and coding interview challenges.',
+      status: CourseStatus.PUBLISHED,
+      institutionId: null,
+      createdById: facultyTuring.id,
+    },
+  });
+
+  // Python Module 1: Basics & Syntax
+  const pyMod1 = await prisma.module.upsert({
+    where: { id: 'mod-py-1' },
+    update: { title: 'Python Basics, Syntax & Expressions', order: 1, courseId: course4.id },
+    create: { id: 'mod-py-1', title: 'Python Basics, Syntax & Expressions', order: 1, courseId: course4.id },
+  });
+  const pyL1 = await prisma.lesson.upsert({
+    where: { id: 'les-py-101' },
+    update: { title: 'Variables, Dynamic Typing & Standard I/O', content: 'Explore how Python executes code, allocates memory for variables, handles dynamic types, and formats outputs with f-strings.', order: 1, moduleId: pyMod1.id },
+    create: { id: 'les-py-101', title: 'Variables, Dynamic Typing & Standard I/O', content: 'Explore how Python executes code, allocates memory for variables, handles dynamic types, and formats outputs with f-strings.', order: 1, moduleId: pyMod1.id },
+  });
+  const pyL2 = await prisma.lesson.upsert({
+    where: { id: 'les-py-102' },
+    update: { title: 'Operators, Arithmetic Precedence & Expressions', content: 'Master integer and float operations, modulo arithmetic, floor division, and mathematical expressions.', order: 2, moduleId: pyMod1.id },
+    create: { id: 'les-py-102', title: 'Operators, Arithmetic Precedence & Expressions', content: 'Master integer and float operations, modulo arithmetic, floor division, and mathematical expressions.', order: 2, moduleId: pyMod1.id },
+  });
+
+  // Python Module 2: Control Flow & Iterations
+  const pyMod2 = await prisma.module.upsert({
+    where: { id: 'mod-py-2' },
+    update: { title: 'Control Flow, Conditionals & Loops', order: 2, courseId: course4.id },
+    create: { id: 'mod-py-2', title: 'Control Flow, Conditionals & Loops', order: 2, courseId: course4.id },
+  });
+  const pyL3 = await prisma.lesson.upsert({
+    where: { id: 'les-py-201' },
+    update: { title: 'Branching Logic with if, elif & else', content: 'Decision making with boolean operators, truthy/falsy evaluation, and short-circuit conditions.', order: 1, moduleId: pyMod2.id },
+    create: { id: 'les-py-201', title: 'Branching Logic with if, elif & else', content: 'Decision making with boolean operators, truthy/falsy evaluation, and short-circuit conditions.', order: 1, moduleId: pyMod2.id },
+  });
+  const pyL4 = await prisma.lesson.upsert({
+    where: { id: 'les-py-202' },
+    update: { title: 'Iteration with for & while Loops', content: 'Definite traversal using range(), sequence iteration, break/continue controls, and nested loop patterns.', order: 2, moduleId: pyMod2.id },
+    create: { id: 'les-py-202', title: 'Iteration with for & while Loops', content: 'Definite traversal using range(), sequence iteration, break/continue controls, and nested loop patterns.', order: 2, moduleId: pyMod2.id },
+  });
+
+  // Python Module 3: Functions & Modular Programming
+  const pyMod3 = await prisma.module.upsert({
+    where: { id: 'mod-py-3' },
+    update: { title: 'Functions, Scoping & Modular Design', order: 3, courseId: course4.id },
+    create: { id: 'mod-py-3', title: 'Functions, Scoping & Modular Design', order: 3, courseId: course4.id },
+  });
+  const pyL5 = await prisma.lesson.upsert({
+    where: { id: 'les-py-301' },
+    update: { title: 'Defining Functions, Parameters & Return Values', content: 'Function signatures, default arguments, return statements, variable scope, and pure functions.', order: 1, moduleId: pyMod3.id },
+    create: { id: 'les-py-301', title: 'Defining Functions, Parameters & Return Values', content: 'Function signatures, default arguments, return statements, variable scope, and pure functions.', order: 1, moduleId: pyMod3.id },
+  });
+
+  // Python Module 4: Core Data Structures
+  const pyMod4 = await prisma.module.upsert({
+    where: { id: 'mod-py-4' },
+    update: { title: 'Lists, Dictionaries, Sets & Tuples', order: 4, courseId: course4.id },
+    create: { id: 'mod-py-4', title: 'Lists, Dictionaries, Sets & Tuples', order: 4, courseId: course4.id },
+  });
+  const pyL6 = await prisma.lesson.upsert({
+    where: { id: 'les-py-401' },
+    update: { title: 'List Manipulation & List Comprehensions', content: 'Indexing, slicing, in-place list methods, and concise list comprehensions.', order: 1, moduleId: pyMod4.id },
+    create: { id: 'les-py-401', title: 'List Manipulation & List Comprehensions', content: 'Indexing, slicing, in-place list methods, and concise list comprehensions.', order: 1, moduleId: pyMod4.id },
+  });
+  const pyL7 = await prisma.lesson.upsert({
+    where: { id: 'les-py-402' },
+    update: { title: 'Hash Maps (Dicts) & Set Operations', content: 'O(1) key-value lookups, dictionary iterations, and unique set operations.', order: 2, moduleId: pyMod4.id },
+    create: { id: 'les-py-402', title: 'Hash Maps (Dicts) & Set Operations', content: 'O(1) key-value lookups, dictionary iterations, and unique set operations.', order: 2, moduleId: pyMod4.id },
+  });
+
+  // Enroll students in courses and seed lesson progress
+  const targetStudents = [superAdmin, ...students];
+  for (const sUser of targetStudents) {
+    // Enroll in Course 1
+    await prisma.enrollment.upsert({
+      where: { userId_courseId: { userId: sUser.id, courseId: course1.id } },
+      update: { status: EnrollmentStatus.ACTIVE },
+      create: { userId: sUser.id, courseId: course1.id, status: EnrollmentStatus.ACTIVE },
     });
-  }
 
-  // Create initial student enrollments for first 2 bootcamps
-  if (students.length > 0) {
-    const firstBootcamp = await prisma.bootcamp.findUnique({ where: { slug: 'genai-rag-agentic-systems' } });
-    if (firstBootcamp) {
-      await prisma.bootcampEnrollment.upsert({
-        where: { userId_bootcampId: { userId: students[0].id, bootcampId: firstBootcamp.id } },
-        update: { progressPct: 35, sessionsCompleted: 4, status: 'ACTIVE' },
-        create: { userId: students[0].id, bootcampId: firstBootcamp.id, progressPct: 35, sessionsCompleted: 4, status: 'ACTIVE' },
-      });
-    }
+    // Complete Module 1 lessons (both c1L1 and c1L2) + c1L3 for realistic ~50% progress
+    await prisma.lessonProgress.upsert({
+      where: { userId_lessonId: { userId: sUser.id, lessonId: c1L1.id } },
+      update: { completed: true, completedAt: new Date() },
+      create: { userId: sUser.id, lessonId: c1L1.id, completed: true, completedAt: new Date() },
+    });
+    await prisma.lessonProgress.upsert({
+      where: { userId_lessonId: { userId: sUser.id, lessonId: c1L2.id } },
+      update: { completed: true, completedAt: new Date() },
+      create: { userId: sUser.id, lessonId: c1L2.id, completed: true, completedAt: new Date() },
+    });
+    await prisma.lessonProgress.upsert({
+      where: { userId_lessonId: { userId: sUser.id, lessonId: c1L3.id } },
+      update: { completed: true, completedAt: new Date() },
+      create: { userId: sUser.id, lessonId: c1L3.id, completed: true, completedAt: new Date() },
+    });
 
-    const thirdBootcamp = await prisma.bootcamp.findUnique({ where: { slug: 'full-stack-nextjs-cloud-native' } });
-    if (thirdBootcamp) {
-      await prisma.bootcampEnrollment.upsert({
-        where: { userId_bootcampId: { userId: students[0].id, bootcampId: thirdBootcamp.id } },
-        update: { progressPct: 100, sessionsCompleted: 10, status: 'COMPLETED', completedAt: new Date() },
-        create: { userId: students[0].id, bootcampId: thirdBootcamp.id, progressPct: 100, sessionsCompleted: 10, status: 'COMPLETED', completedAt: new Date() },
-      });
-    }
+    // Enroll in Course 2 (DSA)
+    await prisma.enrollment.upsert({
+      where: { userId_courseId: { userId: sUser.id, courseId: course2.id } },
+      update: { status: EnrollmentStatus.COMPLETED, completedAt: new Date() },
+      create: { userId: sUser.id, courseId: course2.id, status: EnrollmentStatus.COMPLETED, completedAt: new Date() },
+    });
+    await prisma.lessonProgress.upsert({
+      where: { userId_lessonId: { userId: sUser.id, lessonId: c2L1.id } },
+      update: { completed: true, completedAt: new Date() },
+      create: { userId: sUser.id, lessonId: c2L1.id, completed: true, completedAt: new Date() },
+    });
+    await prisma.lessonProgress.upsert({
+      where: { userId_lessonId: { userId: sUser.id, lessonId: c2L2.id } },
+      update: { completed: true, completedAt: new Date() },
+      create: { userId: sUser.id, lessonId: c2L2.id, completed: true, completedAt: new Date() },
+    });
+
+    // Enroll in Course 3 (DevOps) - In progress (0/1 lessons completed)
+    await prisma.enrollment.upsert({
+      where: { userId_courseId: { userId: sUser.id, courseId: course3.id } },
+      update: { status: EnrollmentStatus.ACTIVE },
+      create: { userId: sUser.id, courseId: course3.id, status: EnrollmentStatus.ACTIVE },
+    });
+
+    // Enroll in Course 4 (Python Fundamentals) - In progress (2/7 lessons completed)
+    await prisma.enrollment.upsert({
+      where: { userId_courseId: { userId: sUser.id, courseId: course4.id } },
+      update: { status: EnrollmentStatus.ACTIVE },
+      create: { userId: sUser.id, courseId: course4.id, status: EnrollmentStatus.ACTIVE },
+    });
+    await prisma.lessonProgress.upsert({
+      where: { userId_lessonId: { userId: sUser.id, lessonId: pyL1.id } },
+      update: { completed: true, completedAt: new Date() },
+      create: { userId: sUser.id, lessonId: pyL1.id, completed: true, completedAt: new Date() },
+    });
+    await prisma.lessonProgress.upsert({
+      where: { userId_lessonId: { userId: sUser.id, lessonId: pyL2.id } },
+      update: { completed: true, completedAt: new Date() },
+      create: { userId: sUser.id, lessonId: pyL2.id, completed: true, completedAt: new Date() },
+    });
   }
 
   console.log('✅ Database seeded successfully with real-world entities:');
@@ -538,6 +798,7 @@ async function main() {
   console.log(` - Institutions: ${Object.keys(institutions).join(', ')}`);
   console.log(` - Problems: ${createdProblems.map((p) => p.title).join(', ')}`);
   console.log(` - Contests: ${contest1.title}, ${contest2.title}`);
+  console.log(` - Courses: ${course1.title}, ${course2.title}, ${course3.title}, ${course4.title}`);
   console.log(` - Bootcamps: ${bootcampsData.map((b) => b.title).join(', ')}`);
 }
 

@@ -54,7 +54,7 @@ import { useToast } from '@/context/ToastContext';
 import { useAppSelector } from '@/store/hooks';
 import { BlogPost, formatBlogDate } from '@/types/blog';
 import { apiService } from '@/lib/api-service';
-import { getBlogThemeConfig } from './BlogsClient';
+import { getBlogThemeConfig } from '@/components/students/blogs/BlogsClient';
 import MarkdownViewer, { renderInlineContent } from '@/components/shared/MarkdownViewer';
 
 interface BlogReaderClientProps {

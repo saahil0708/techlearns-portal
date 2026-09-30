@@ -20,6 +20,9 @@ describe('BlogsService', () => {
     blogComment: {
       create: vi.fn(),
     },
+    $transaction: vi.fn((cb) => cb(mockPrismaService)),
+    $executeRawUnsafe: vi.fn(),
+    $queryRawUnsafe: vi.fn(),
   };
 
   beforeEach(async () => {

@@ -103,6 +103,8 @@ export interface StudentProfileData {
   certifications?: StudentCertification[];
   topicSkills?: StudentTopicSkill[];
   cohortResult?: string;
+  courses?: StudentCourseProgress[];
+  submissions?: StudentSubmission[];
   ratingHistory?: Array<{
     contestCode: string;
     contestName: string;
@@ -115,4 +117,48 @@ export interface StudentProfileData {
     date: string;
     count: number;
   }>;
+  growthMetrics?: {
+    masteryIndex: number;
+    masteryTrend: 'rising' | 'steady' | 'declining';
+    practiceConsistencyPct: number;
+    consistencyHealth: 'optimal' | 'moderate' | 'at_risk';
+    projectEvidenceScore: number;
+    verifiedArtifactsCount: number;
+    feedbackImprovementRate: number;
+    evidenceBackedPct: number;
+  };
+  roleReadiness?: {
+    targetRole: string;
+    readinessScore: number;
+    competencies: Array<{
+      name: string;
+      category: string;
+      requiredLevel: number;
+      currentLevel: number;
+      status: 'mastered' | 'progressing' | 'gap';
+      evidenceCount: number;
+      nextDrillTitle?: string;
+      nextDrillSlug?: string;
+    }>;
+  };
+}
+
+export interface RoleCompetency {
+  name: string;
+  category: string;
+  requiredLevel: number;
+  currentLevel: number;
+  status: 'mastered' | 'progressing' | 'gap';
+  evidenceCount: number;
+  nextDrillTitle?: string;
+  nextDrillSlug?: string;
+}
+
+export interface RoleTargetProfile {
+  id: string;
+  roleTitle: string;
+  badge: string;
+  description: string;
+  benchmarkScore: number;
+  competencies: RoleCompetency[];
 }
