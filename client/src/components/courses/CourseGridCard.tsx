@@ -33,7 +33,8 @@ function getCourseThemeConfig(category: string) {
       return {
         image: '/images/courses/uiux.jpg',
         fallbackBg: '#FFE4E8',
-        cardBg: '#EEF2F6',
+        cardBg: '#FFFFFF',
+        clippedBg: '#F8FAFC',
         titleColor: '#FF6433',
         btnBg: '#FA5A35',
         btnHover: '#E84824',
@@ -42,7 +43,8 @@ function getCourseThemeConfig(category: string) {
       return {
         image: '/images/courses/dsa.jpg',
         fallbackBg: '#E0F2FE',
-        cardBg: '#EEF2F6',
+        cardBg: '#FFFFFF',
+        clippedBg: '#F8FAFC',
         titleColor: '#2563EB',
         btnBg: '#2563EB',
         btnHover: '#1D4ED8',
@@ -51,7 +53,8 @@ function getCourseThemeConfig(category: string) {
       return {
         image: '/images/courses/system.jpg',
         fallbackBg: '#F3E8FF',
-        cardBg: '#EEF2F6',
+        cardBg: '#FFFFFF',
+        clippedBg: '#F8FAFC',
         titleColor: '#7C3AED',
         btnBg: '#7C3AED',
         btnHover: '#6D28D9',
@@ -60,7 +63,8 @@ function getCourseThemeConfig(category: string) {
       return {
         image: '/images/courses/ai.jpg',
         fallbackBg: '#FEF3C7',
-        cardBg: '#EEF2F6',
+        cardBg: '#FFFFFF',
+        clippedBg: '#F8FAFC',
         titleColor: '#D97706',
         btnBg: '#D97706',
         btnHover: '#B45309',
@@ -69,7 +73,8 @@ function getCourseThemeConfig(category: string) {
       return {
         image: '/images/courses/cp.jpg',
         fallbackBg: '#DCFCE7',
-        cardBg: '#EEF2F6',
+        cardBg: '#FFFFFF',
+        clippedBg: '#F8FAFC',
         titleColor: '#059669',
         btnBg: '#059669',
         btnHover: '#047857',
@@ -79,7 +84,8 @@ function getCourseThemeConfig(category: string) {
       return {
         image: '/images/courses/web.jpg',
         fallbackBg: '#E0F2FE',
-        cardBg: '#EEF2F6',
+        cardBg: '#FFFFFF',
+        clippedBg: '#F8FAFC',
         titleColor: '#0284C7',
         btnBg: '#0284C7',
         btnHover: '#0369A1',
@@ -124,7 +130,8 @@ export default function CourseGridCard({
         transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
         position: 'relative',
         '&:hover': {
-          transform: 'translateY(-5px)',
+          transform: 'translateY(-4px)',
+          border: 'none',
           boxShadow: 'none',
         },
       }}
@@ -340,7 +347,7 @@ export default function CourseGridCard({
         >
           <path
             d="M 140 48 L 173 0 L 320 0 L 320 48 Z"
-            fill="#FFFFFF"
+            fill={theme.clippedBg}
           />
         </svg>
 

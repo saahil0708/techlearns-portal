@@ -1,34 +1,32 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Box,
   Typography,
   Card,
   Button,
-  Chip,
-  LinearProgress,
   IconButton,
-  Divider,
-  Drawer,
-  useMediaQuery,
-  useTheme,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  Alert,
+  Tooltip,
 } from '@mui/material';
 
 // Icons
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import RadioButtonUncheckedRoundedIcon from '@mui/icons-material/RadioButtonUncheckedRounded';
-import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
-import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
-import NavigateNextRoundedIcon from '@mui/icons-material/NavigateNextRounded';
-import NavigateBeforeRoundedIcon from '@mui/icons-material/NavigateBeforeRounded';
-import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
-import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
-import StarRoundedIcon from '@mui/icons-material/StarRounded';
-import LayersRoundedIcon from '@mui/icons-material/LayersRounded';
+import QuizRoundedIcon from '@mui/icons-material/QuizRounded';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import ShareRoundedIcon from '@mui/icons-material/ShareRounded';
+import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
+import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
 import CodeEditorWorkspace from '@/components/editor/CodeEditorWorkspace';
@@ -41,6 +39,22 @@ interface CourseLearningWorkspaceProps {
   course: CourseDirectoryEntity;
 }
 
+interface CodingExercise {
+  title: string;
+  description: string;
+  starterCode: string;
+  language: 'python' | 'cpp' | 'java' | 'javascript';
+  sampleInput?: string;
+  sampleOutput?: string;
+}
+
+interface QuizMCQ {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+}
+
 interface LessonItem {
   id: string;
   moduleId: string;
@@ -49,51 +63,104 @@ interface LessonItem {
   durationMinutes: number;
   type: 'reading' | 'code' | 'quiz';
   contentMarkdown: string;
-  starterCode?: string;
-  language?: 'python' | 'cpp' | 'java' | 'javascript';
+  codingProblem?: CodingExercise;
+  quizMCQ?: QuizMCQ;
 }
 
-// Generate rich dynamic lessons for course tracks
+// Generate dynamic structured lessons for the course
 function generateCourseLessons(course: CourseDirectoryEntity): LessonItem[] {
   const lessons: LessonItem[] = [];
-  const highlights = course.moduleHighlights && course.moduleHighlights.length > 0
-    ? course.moduleHighlights
-    : [
-        { title: 'Core Foundations & Principles', lessons: 4 },
-        { title: 'Data Structures & Algorithmic Patterns', lessons: 4 },
-        { title: 'Advanced Problem Solving & Optimization', lessons: 4 },
-      ];
 
   const isDesignTrack =
     course.code?.startsWith('DES') ||
     course.category?.toLowerCase().includes('design') ||
     course.category?.toLowerCase().includes('ui/ux');
 
+  if (Array.isArray(course.modules) && course.modules.length > 0) {
+    course.modules.forEach((m, mIdx) => {
+      const lessonItems = m.lessons || [];
+      lessonItems.forEach((les, lIdx) => {
+        const isCode = !isDesignTrack && lIdx % 2 === 1;
+        const starterCode = isCode
+          ? `# Complete the exercise for ${les.title}\ndef solve_problem(input_data):\n    # Write your algorithmic solution here\n    return input_data\n\n# Test execution\nprint(solve_problem("Test Passed"))`
+          : undefined;
+
+        const content = les.content
+          ? `## ${les.title}\n\n${les.content}\n\n### Core Insights\nIn this lesson of **${course.title}**, you will master the concepts of **${m.title}** through hands-on exercises.\n\n### Key Concepts\n- Robust state handling and memory footprint management.\n- Algorithmic throughput scaling and benchmark optimization.\n- Comprehensive test case coverage across standard and boundary inputs.`
+          : `## ${les.title}\n\nDetailed walkthrough for **${les.title}** within **${m.title}**.\n\n### Key Takeaways\n- Core foundations and engineering standards in ${course.category || course.title}.\n- Best practices, architectural patterns, and performance considerations.\n- Hands-on exercises and real-world implementation techniques.`;
+
+        const quizData = (les as any).quizMCQ || (les as any).quiz;
+
+        lessons.push({
+          id: les.id || `${mIdx}-${lIdx}`,
+          moduleId: m.id || `mod-${mIdx + 1}`,
+          moduleTitle: m.title,
+          title: les.title || `Lesson ${lIdx + 1}`,
+          durationMinutes: 20 + lIdx * 5,
+          type: isCode ? 'code' : 'reading',
+          contentMarkdown: content,
+          codingProblem: isCode
+            ? {
+                title: `${les.title} Implementation Challenge`,
+                description: `Implement an optimal solution for ${les.title}.`,
+                starterCode: starterCode!,
+                language: isDesignTrack ? 'javascript' : 'python',
+                sampleInput: 'Input: [4, 7, 2, 9, 1]',
+                sampleOutput: 'Output: [1, 2, 4, 7, 9]',
+              }
+            : undefined,
+          quizMCQ: quizData
+            ? {
+                question: quizData.question,
+                options: quizData.options,
+                correctIndex: quizData.correctIndex ?? 0,
+                explanation: quizData.explanation || 'Review the lesson notes for details.',
+              }
+            : undefined,
+        });
+      });
+    });
+
+    if (lessons.length > 0) {
+      return lessons;
+    }
+  }
+
+  const highlights =
+    course.moduleHighlights && course.moduleHighlights.length > 0
+      ? course.moduleHighlights
+      : [
+          { title: 'Core Foundations & Principles', lessons: 4 },
+          { title: 'Data Structures & Algorithmic Patterns', lessons: 4 },
+          { title: 'Advanced Problem Solving & Optimization', lessons: 4 },
+        ];
+
   highlights.forEach((m, mIdx) => {
     const count = m.lessons || 3;
     for (let lIdx = 1; lIdx <= count; lIdx++) {
-      const lessonId = `les-${mIdx + 1}-${lIdx}`;
+      const lessonId = `${mIdx}-${lIdx - 1}`;
       const isCode = !isDesignTrack && lIdx % 2 === 0;
 
-      let markdownContent = '';
-      if (isDesignTrack) {
-        markdownContent = `## Overview\n\nIn this lesson, we explore the core design principles of **${m.title}** in **${course.title}** and understand how user-centered design systems, visual hierarchy, and wireframes are structured for modern digital products.\n\n### Key Concepts Covered\n- Visual hierarchy, typography scales, and WCAG accessibility standards\n- Component libraries, atomic design tokens, and spacing grids (4pt/8pt)\n- User journey mapping, wireframing workflows, and interactive prototyping\n\n### Design Application\nAnalyze user personas and evaluate design patterns for **${course.title}**:\n\n> **Design Tip**: Always ensure color contrast ratios meet AA standard (4.5:1 for normal text) when building cohesive themes.`;
-      } else {
-        markdownContent = `## Overview\n\nIn this lesson, we explore the foundational concepts of **${m.title}** in **${course.title}** and understand how optimal algorithms and data structures are formulated.\n\n### Key Concepts Covered\n- Asymptotic complexity and invariant guarantees\n- Recursive transition state equations\n- Memory caching and cache locality benchmarks\n\n### Practical Implementation\nReview the following implementation pattern:\n\n\`\`\`cpp\n// Optimal ${course.category} solution\n#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    cout << "Executing ${m.title} benchmark..." << endl;\n    return 0;\n}\n\`\`\`\n\n> **Note**: Test your solution against the sample constraints in the editor below.`;
-      }
+      const markdownContent = `## ${m.title} — Part ${lIdx}\n\nIn this lesson, we explore the core principles of **${m.title}** and understand how optimal patterns, clean architectures, and solutions are formulated.\n\n### Key Concepts Covered\n- Core concepts and fundamentals for ${course.category || course.title}.\n- Practical techniques, design patterns, and engineering workflows.\n- Edge case evaluation and performance validation.`;
 
       lessons.push({
         id: lessonId,
         moduleId: `mod-${mIdx + 1}`,
         moduleTitle: m.title,
-        title: `${m.title}: Part ${lIdx} — ${isDesignTrack ? 'Design System & Prototyping' : 'Core Concepts & Implementation'}`,
+        title: `${m.title}: Part ${lIdx}`,
         durationMinutes: 15 + lIdx * 5,
         type: isCode ? 'code' : 'reading',
         contentMarkdown: markdownContent,
-        starterCode: isCode
-          ? `# Complete your ${course.title} exercise\ndef solve_problem():\n    # Write your logic here\n    print("Success: Test cases validated")\n\nsolve_problem()`
+        codingProblem: isCode
+          ? {
+              title: `${m.title} Challenge`,
+              description: `Implement a solution for ${m.title}. Optimize for optimal execution time and minimal space complexity.`,
+              starterCode: `# Solve the challenge for ${m.title}\ndef solve(data):\n    return data\n\nprint(solve("Test Input"))`,
+              language: isDesignTrack ? 'javascript' : 'python',
+              sampleInput: 'Input: [5, 2, 8, 1, 9]',
+              sampleOutput: 'Output: [1, 2, 5, 8, 9]',
+            }
           : undefined,
-        language: 'python',
       });
     }
   });
@@ -101,27 +168,103 @@ function generateCourseLessons(course: CourseDirectoryEntity): LessonItem[] {
   return lessons;
 }
 
+// Pixel-perfect vector 6-dot grip handle matching reference design with clear dot separation
+function ResizerGripHandle() {
+  return (
+    <svg
+      width="8"
+      height="18"
+      viewBox="0 0 8 18"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: 'block', pointerEvents: 'none' }}
+    >
+      <circle cx="1.75" cy="2.5" r="1.25" fill="currentColor" />
+      <circle cx="6.25" cy="2.5" r="1.25" fill="currentColor" />
+      <circle cx="1.75" cy="9" r="1.25" fill="currentColor" />
+      <circle cx="6.25" cy="9" r="1.25" fill="currentColor" />
+      <circle cx="1.75" cy="15.5" r="1.25" fill="currentColor" />
+      <circle cx="6.25" cy="15.5" r="1.25" fill="currentColor" />
+    </svg>
+  );
+}
+
 export default function CourseLearningWorkspace({ course }: CourseLearningWorkspaceProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
-  const muiTheme = useTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
 
-  const lessons = generateCourseLessons(course);
-  const [activeLessonIdx, setActiveLessonIdx] = useState(0);
-  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(
-    new Set<string>()
-  );
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<'content' | 'practice'>('content');
+  const lessons = useMemo(() => generateCourseLessons(course), [course]);
+
+  const [activeLessonIdx, setActiveLessonIdx] = useState<number>(0);
+  const [activeTab, setActiveTab] = useState<'note' | 'problem'>('note');
+  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set());
+
+  // MCQ state
+  const [selectedMCQOption, setSelectedMCQOption] = useState<number | null>(null);
+  const [isMCQSubmitted, setIsMCQSubmitted] = useState<boolean>(false);
+
+  // Resizable split-pane width state
+  const [leftSplitPercent, setLeftSplitPercent] = useState<number>(34);
+  const isDraggingSplitRef = useRef<boolean>(false);
+  const splitContainerRef = useRef<HTMLDivElement | null>(null);
+  const pendingSaveRef = useRef<Set<string>>(new Set());
 
   const currentLesson = lessons[activeLessonIdx] || lessons[0];
+  const hasExercises = Boolean(currentLesson.quizMCQ || currentLesson.codingProblem);
+  const effectiveTab: 'note' | 'problem' = hasExercises ? activeTab : 'note';
 
-  const progressPercent = Math.round(
-    (completedLessonIds.size / Math.max(1, lessons.length)) * 100
-  );
+  // Sync with URL query parameter
+  const lessonParam = searchParams.get('lesson');
+  useEffect(() => {
+    if (lessonParam && lessons.length > 0) {
+      const targetIdx = lessons.findIndex((l) => l.id === lessonParam);
+      if (targetIdx !== -1) {
+        setActiveLessonIdx(targetIdx);
+        const targetLesson = lessons[targetIdx];
+        if (!targetLesson?.quizMCQ && !targetLesson?.codingProblem) {
+          setActiveTab('note');
+        }
+      }
+    }
+  }, [lessonParam, lessons]);
 
-  const toggleLessonComplete = async (lessonId: string) => {
+  // Reset MCQ submission state on lesson change
+  useEffect(() => {
+    setSelectedMCQOption(null);
+    setIsMCQSubmitted(false);
+  }, [activeLessonIdx, activeTab]);
+
+  // Handle pointer drag resizing
+  const handlePointerDownResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    isDraggingSplitRef.current = true;
+  };
+
+  const handlePointerMoveResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingSplitRef.current || !splitContainerRef.current) return;
+    const rect = splitContainerRef.current.getBoundingClientRect();
+    const relativeX = e.clientX - rect.left;
+    const newPercent = Math.max(22, Math.min(50, (relativeX / rect.width) * 100));
+    setLeftSplitPercent(newPercent);
+  };
+
+  const handlePointerUpResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (isDraggingSplitRef.current) {
+      isDraggingSplitRef.current = false;
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {}
+    }
+  };
+
+  const toggleLessonComplete = async (lessonId: string): Promise<boolean> => {
+    if (pendingSaveRef.current.has(lessonId)) {
+      return false;
+    }
+    pendingSaveRef.current.add(lessonId);
+
     const isCompleted = completedLessonIds.has(lessonId);
     const previous = new Set(completedLessonIds);
     const updated = new Set(completedLessonIds);
@@ -136,348 +279,664 @@ export default function CourseLearningWorkspace({ course }: CourseLearningWorksp
     try {
       await apiService.updateLessonProgress(lessonId, !isCompleted);
       if (!isCompleted) {
-        toast.success(`Lesson marked as completed!`, 'Progress Saved');
+        toast.success('Lesson marked as completed!', 'Progress Saved');
       }
+      return true;
     } catch (err: any) {
-      // Restore previous state on failure and show error notification
       setCompletedLessonIds(previous);
       toast.error(err?.message || 'Failed to update lesson progress', 'Progress Error');
+      return false;
+    } finally {
+      pendingSaveRef.current.delete(lessonId);
     }
   };
 
-  const handleNextLesson = () => {
-    if (activeLessonIdx < lessons.length - 1) {
-      setActiveLessonIdx(activeLessonIdx + 1);
+  const handleNextStep = async () => {
+    if (effectiveTab === 'note') {
+      if (hasExercises) {
+        setActiveTab('problem');
+      } else {
+        // Pure reading lesson with no exercises: mark complete and advance on success
+        if (!completedLessonIds.has(currentLesson.id)) {
+          const success = await toggleLessonComplete(currentLesson.id);
+          if (!success) return;
+        }
+        if (activeLessonIdx < lessons.length - 1) {
+          const nextIdx = activeLessonIdx + 1;
+          setActiveLessonIdx(nextIdx);
+          setActiveTab('note');
+          const nextLesson = lessons[nextIdx];
+          if (nextLesson?.id) {
+            router.replace(`/courses/${course.slug || course.id}/learn?lesson=${encodeURIComponent(nextLesson.id)}`, { scroll: false });
+          }
+        } else {
+          toast.info('You have completed all lessons in this track!', 'Track Completed');
+        }
+      }
+    } else if (effectiveTab === 'problem') {
+      if (activeLessonIdx < lessons.length - 1) {
+        const nextIdx = activeLessonIdx + 1;
+        setActiveLessonIdx(nextIdx);
+        setActiveTab('note');
+        const nextLesson = lessons[nextIdx];
+        if (nextLesson?.id) {
+          router.replace(`/courses/${course.slug || course.id}/learn?lesson=${encodeURIComponent(nextLesson.id)}`, { scroll: false });
+        }
+      } else {
+        toast.info('You have completed all lessons in this track!', 'Track Completed');
+      }
     }
   };
 
-  const handlePrevLesson = () => {
-    if (activeLessonIdx > 0) {
-      setActiveLessonIdx(activeLessonIdx - 1);
+  const handlePrevStep = () => {
+    if (effectiveTab === 'problem') {
+      setActiveTab('note');
+    } else if (effectiveTab === 'note' && activeLessonIdx > 0) {
+      const prevIdx = activeLessonIdx - 1;
+      setActiveLessonIdx(prevIdx);
+      const prevLesson = lessons[prevIdx];
+      const prevHasExercises = Boolean(prevLesson?.quizMCQ || prevLesson?.codingProblem);
+      setActiveTab(prevHasExercises ? 'problem' : 'note');
+      if (prevLesson?.id) {
+        router.replace(`/courses/${course.slug || course.id}/learn?lesson=${encodeURIComponent(prevLesson.id)}`, { scroll: false });
+      }
     }
   };
 
-  const sidebarContent = (
-    <Box sx={{ width: { xs: 280, md: 320 }, height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#FFFFFF', borderRight: '1px solid #E2E8F0' }}>
-      {/* Course Info Header */}
-      <Box sx={{ p: 2.5, borderBottom: '1px solid #F1F5F9' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 1.5, flexWrap: 'wrap' }}>
-          <Typography
-            onClick={() => router.push('/courses')}
-            sx={{
-              fontWeight: 700,
-              fontSize: '0.82rem',
-              color: '#64748B',
-              cursor: 'pointer',
-              transition: 'color 0.15s ease',
-              '&:hover': { color: '#2563EB', textDecoration: 'underline' },
-            }}
-          >
-            Courses
-          </Typography>
-          <NavigateNextRoundedIcon sx={{ color: '#94A3B8', fontSize: 16 }} />
-          <Typography
-            noWrap
-            title={course.title}
-            sx={{
-              fontWeight: 700,
-              fontSize: '0.82rem',
-              color: '#0F172A',
-              maxWidth: { xs: 160, md: 190 },
-            }}
-          >
-            {course.title}
-          </Typography>
-        </Box>
-        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0F172A', lineHeight: 1.3, mb: 1 }}>
-          {course.title}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-          <Chip label={course.level} size="small" sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: 'rgba(37, 99, 235, 0.1)', color: '#2563EB' }} />
-          <Typography sx={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600 }}>
-            {course.durationHours} hrs total
-          </Typography>
-        </Box>
-
-        {/* Course Progress */}
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.6 }}>
-            <Typography sx={{ fontSize: '0.76rem', fontWeight: 700, color: '#475569' }}>
-              Curriculum Progress
-            </Typography>
-            <Typography sx={{ fontSize: '0.78rem', fontWeight: 800, color: '#2563EB' }}>
-              {progressPercent}%
-            </Typography>
-          </Box>
-          <LinearProgress
-            variant="determinate"
-            value={progressPercent}
-            sx={{
-              height: 6,
-              borderRadius: '9999px',
-              bgcolor: '#EEF2F6',
-              '& .MuiLinearProgress-bar': { bgcolor: '#2563EB', borderRadius: '9999px' },
-            }}
-          />
-        </Box>
-      </Box>
-
-      {/* Syllabus Module & Lesson Outline */}
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 1.5 }}>
-        <Typography sx={{ px: 1, py: 1, fontSize: '0.74rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Table of Contents
-        </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          {lessons.map((lesson, idx) => {
-            const isActive = idx === activeLessonIdx;
-            const isCompleted = completedLessonIds.has(lesson.id);
-
-            return (
-              <Box
-                key={lesson.id}
-                onClick={() => {
-                  setActiveLessonIdx(idx);
-                  if (isMobile) setSidebarOpen(false);
-                }}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.2,
-                  p: 1.2,
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  bgcolor: isActive ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
-                  border: isActive ? '1px solid rgba(37, 99, 235, 0.2)' : '1px solid transparent',
-                  transition: 'all 0.15s ease',
-                  '&:hover': {
-                    bgcolor: isActive ? 'rgba(37, 99, 235, 0.12)' : '#F8FAFC',
-                  },
-                }}
-              >
-                <IconButton
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleLessonComplete(lesson.id);
-                  }}
-                  sx={{ p: 0.2 }}
-                >
-                  {isCompleted ? (
-                    <CheckCircleRoundedIcon sx={{ fontSize: 18, color: '#16A34A' }} />
-                  ) : (
-                    <RadioButtonUncheckedRoundedIcon sx={{ fontSize: 18, color: '#CBD5E1' }} />
-                  )}
-                </IconButton>
-
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    noWrap
-                    sx={{
-                      fontSize: '0.82rem',
-                      fontWeight: isActive ? 800 : 600,
-                      color: isActive ? '#2563EB' : isCompleted ? '#475569' : '#0F172A',
-                    }}
-                  >
-                    {lesson.title}
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8' }}>
-                    {lesson.durationMinutes} mins • {lesson.type === 'code' ? 'Interactive Coding' : 'Reading'}
-                  </Typography>
-                </Box>
-              </Box>
-            );
-          })}
-        </Box>
-      </Box>
-    </Box>
-  );
+  const isMCQCorrect =
+    currentLesson?.quizMCQ &&
+    selectedMCQOption === currentLesson.quizMCQ.correctIndex;
 
   return (
     <StudentAppLayout streakDays={48} contestRating={2380} ratingTier="Master">
-      <Box sx={{ display: 'flex', minHeight: '80vh', bgcolor: '#F8FAFC', borderRadius: '18px', overflow: 'hidden', border: '1px solid #E2E8F0' }}>
-        {/* Desktop Left Sidebar */}
-        {!isMobile && sidebarContent}
-
-        {/* Mobile Sidebar Drawer */}
-        {isMobile && (
-          <Drawer anchor="left" open={sidebarOpen} onClose={() => setSidebarOpen(false)}>
-            {sidebarContent}
-          </Drawer>
-        )}
-
-        {/* Main Lesson Viewer Workspace */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          {/* Top Control Bar */}
-          <Box
-            sx={{
-              p: 2,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              bgcolor: '#FFFFFF',
-              borderBottom: '1px solid #E2E8F0',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              {isMobile && (
-                <IconButton onClick={() => setSidebarOpen(true)} size="small">
-                  <MenuRoundedIcon />
-                </IconButton>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '88vh',
+          bgcolor: '#F8FAFC',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.02)',
+        }}
+      >
+        {/* Top Navigation Bar */}
+        <Box
+          sx={{
+            height: 50,
+            px: { xs: 2, md: 3 },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            bgcolor: '#FFFFFF',
+            borderBottom: '1px solid #E2E8F0',
+          }}
+        >
+          {/* Top Left: Mode Tab Pill (Note or Problem) */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box
+              component="button"
+              onClick={() => {
+                if (hasExercises) {
+                  setActiveTab(activeTab === 'note' ? 'problem' : 'note');
+                }
+              }}
+              sx={{
+                all: 'unset',
+                cursor: hasExercises ? 'pointer' : 'default',
+                px: 2,
+                py: 0.55,
+                borderRadius: '8px',
+                fontWeight: 700,
+                fontSize: '0.84rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.7,
+                bgcolor: '#0F172A',
+                color: '#FFFFFF',
+                transition: 'all 0.15s ease',
+                '&:hover': { bgcolor: hasExercises ? '#1E293B' : '#0F172A' },
+              }}
+            >
+              {effectiveTab === 'note' ? (
+                <>
+                  <MenuBookRoundedIcon sx={{ fontSize: 16 }} />
+                  Note
+                </>
+              ) : (
+                <>
+                  <QuizRoundedIcon sx={{ fontSize: 16 }} />
+                  Problem
+                </>
               )}
-              <Box>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A' }}>
-                  {currentLesson.title}
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#64748B' }}>
-                  Module: {currentLesson.moduleTitle}
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Mode Switcher */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Button
-                size="small"
-                variant={activeWorkspaceTab === 'content' ? 'contained' : 'outlined'}
-                startIcon={<MenuBookRoundedIcon sx={{ fontSize: 16 }} />}
-                onClick={() => setActiveWorkspaceTab('content')}
-                sx={{
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  fontWeight: 700,
-                  fontSize: '0.78rem',
-                }}
-              >
-                Lesson
-              </Button>
-              <Button
-                size="small"
-                variant={activeWorkspaceTab === 'practice' ? 'contained' : 'outlined'}
-                startIcon={<CodeRoundedIcon sx={{ fontSize: 16 }} />}
-                onClick={() => setActiveWorkspaceTab('practice')}
-                sx={{
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  fontWeight: 700,
-                  fontSize: '0.78rem',
-                }}
-              >
-                Practice Sandbox
-              </Button>
             </Box>
           </Box>
 
-          {/* Lesson Body Content */}
-          <Box sx={{ flex: 1, p: { xs: 2.5, md: 4 }, overflowY: 'auto' }}>
-            {activeWorkspaceTab === 'content' ? (
-              <Card
-                sx={{
-                  p: { xs: 3, md: 4 },
-                  borderRadius: '16px',
-                  bgcolor: '#FFFFFF',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
-                  border: '1px solid #F1F5F9',
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          {/* Top Right: Settings Icon */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Tooltip title="Settings">
+              <IconButton size="small" sx={{ color: '#64748B' }}>
+                <SettingsOutlinedIcon sx={{ fontSize: 19 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+
+        {/* Split-Pane Main Body */}
+        <Box
+          ref={splitContainerRef}
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            overflow: 'hidden',
+            bgcolor: '#F8FAFC',
+          }}
+        >
+          {/* 1. LEFT PANEL */}
+          <Box
+            sx={{
+              width: { xs: '100%', md: `${leftSplitPercent}%` },
+              minWidth: { md: 260 },
+              p: { xs: 2.5, md: 3.5 },
+              display: 'flex',
+              flexDirection: 'column',
+              bgcolor: '#FFFFFF',
+              overflowY: 'auto',
+            }}
+          >
+            {effectiveTab === 'note' ? (
+              /* NOTE LEFT SIDEBAR */
+              <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                {/* Header: Note Icon + Title + Share */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Chip
-                      icon={<WorkspacePremiumRoundedIcon sx={{ fontSize: 14, color: '#2563EB !important' }} />}
-                      label={course.category}
-                      size="small"
-                      sx={{ bgcolor: 'rgba(37, 99, 235, 0.08)', color: '#2563EB', fontWeight: 700, fontSize: '0.74rem' }}
-                    />
-                    <Chip
-                      label={`${currentLesson.durationMinutes} min read`}
-                      size="small"
-                      sx={{ bgcolor: '#F1F5F9', color: '#64748B', fontWeight: 600, fontSize: '0.74rem' }}
-                    />
+                    <MenuBookRoundedIcon sx={{ color: '#0F172A', fontSize: 20 }} />
+                    <Typography sx={{ fontWeight: 800, fontSize: '0.98rem', color: '#0F172A' }}>
+                      {currentLesson.title}
+                    </Typography>
                   </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      if (typeof window !== 'undefined' && navigator.clipboard) {
+                        navigator.clipboard.writeText(window.location.href);
+                        toast.success('Lesson link copied!', 'Share');
+                      }
+                    }}
+                    sx={{ color: '#64748B', p: 0.5 }}
+                  >
+                    <ShareRoundedIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </Box>
+
+                {/* Action Row: Download note & Send feedback */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pt: 1, borderTop: '1px solid #F1F5F9' }}>
+                  <Button
+                    size="small"
+                    startIcon={<DownloadRoundedIcon sx={{ fontSize: 16 }} />}
+                    onClick={() => toast.info('Note saved for offline reading.', 'Download')}
+                    sx={{
+                      textTransform: 'none',
+                      color: '#64748B',
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      p: 0,
+                      '&:hover': { color: '#0F172A', bgcolor: 'transparent', textDecoration: 'underline' },
+                    }}
+                  >
+                    Download note
+                  </Button>
 
                   <Button
-                    variant={completedLessonIds.has(currentLesson.id) ? 'outlined' : 'contained'}
-                    color={completedLessonIds.has(currentLesson.id) ? 'success' : 'primary'}
-                    startIcon={<CheckCircleRoundedIcon sx={{ fontSize: 16 }} />}
-                    onClick={() => toggleLessonComplete(currentLesson.id)}
-                    sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 700, fontSize: '0.8rem' }}
+                    size="small"
+                    startIcon={<FeedbackOutlinedIcon sx={{ fontSize: 15 }} />}
+                    onClick={() => toast.info('Feedback dialog opened.', 'Feedback')}
+                    sx={{
+                      textTransform: 'none',
+                      color: '#64748B',
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      p: 0,
+                      '&:hover': { color: '#0F172A', bgcolor: 'transparent', textDecoration: 'underline' },
+                    }}
                   >
-                    {completedLessonIds.has(currentLesson.id) ? 'Completed' : 'Mark as Done'}
+                    Send feedback
                   </Button>
                 </Box>
-
-                {/* Formatted Markdown Content */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, color: '#334155', lineHeight: 1.8, fontSize: '0.94rem' }}>
-                  <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-0.01em' }}>
-                    {currentLesson.title}
-                  </Typography>
-
-                  <Box
-                    dangerouslySetInnerHTML={{ __html: formatArticleMarkdown(currentLesson.contentMarkdown) }}
-                    sx={{
-                      '& h2': { fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', mt: 2, mb: 1 },
-                      '& h3': { fontSize: '1.05rem', fontWeight: 700, color: '#0F172A', mt: 1.5, mb: 0.5 },
-                      '& p': { color: '#334155', mb: 1.5, lineHeight: 1.7 },
-                      '& ul, & ol': { pl: 3, mb: 1.5 },
-                      '& li': { mb: 0.5, color: '#334155' },
-                      '& blockquote': { bgcolor: '#F8FAFC', p: 2, borderRadius: '8px', borderLeft: '4px solid #2563EB', my: 2, fontStyle: 'normal' },
-                      '& pre': { bgcolor: '#0F172A', color: '#F8FAFC', p: 2, borderRadius: '8px', overflowX: 'auto', my: 2 },
-                      '& code': { fontFamily: 'monospace' },
-                    }}
-                  />
-
-                  {/* Inline Code Sandbox Quick View (only when lesson has code / starter code) */}
-                  {currentLesson.type === 'code' && (
-                    <Box sx={{ mt: 2 }}>
-                      <Typography sx={{ fontWeight: 700, color: '#0F172A', mb: 1 }}>
-                        Live Interactive Code Playground
-                      </Typography>
-                      <CodeEditorWorkspace initialLanguage={currentLesson.language || 'python'} initialCode={currentLesson.starterCode} />
-                    </Box>
-                  )}
-                </Box>
-              </Card>
+              </Box>
             ) : (
-              /* Full Practice Sandbox Tab */
-              <Box sx={{ height: '100%', minHeight: 600 }}>
-                <CodeEditorWorkspace initialLanguage="python" />
+              /* PROBLEM LEFT SIDEBAR */
+              <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                {/* Header: Grid Icon + Title + Share */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <QuizRoundedIcon sx={{ color: '#0F172A', fontSize: 20 }} />
+                    <Typography sx={{ fontWeight: 800, fontSize: '0.98rem', color: '#0F172A' }}>
+                      {currentLesson.title.replace(': Part 1', '').replace('Introduction', 'Python syntax')}
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      if (typeof window !== 'undefined' && navigator.clipboard) {
+                        navigator.clipboard.writeText(window.location.href);
+                        toast.success('Problem link copied!', 'Share');
+                      }
+                    }}
+                    sx={{ color: '#64748B', p: 0.5 }}
+                  >
+                    <ShareRoundedIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </Box>
+
+                {/* Difficulty & Points */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#16A34A' }}>
+                    Easy
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#94A3B8' }}>•</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                    <BoltRoundedIcon sx={{ fontSize: 15, color: '#F59E0B' }} />
+                    <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>
+                      0/10
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Problem Statement Header & Feedback */}
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+                  <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', color: '#0F172A' }}>
+                    Problem statement
+                  </Typography>
+                  <Typography
+                    onClick={() => toast.info('Feedback received.', 'Feedback')}
+                    sx={{ fontSize: '0.78rem', color: '#64748B', cursor: 'pointer', '&:hover': { color: '#0F172A', textDecoration: 'underline' } }}
+                  >
+                    Send feedback
+                  </Typography>
+                </Box>
+
+                {/* Problem Statement Body */}
+                <Typography sx={{ fontSize: '0.9rem', color: '#334155', lineHeight: 1.6, mb: 3 }}>
+                  {currentLesson.quizMCQ?.question || currentLesson.codingProblem?.description || 'What is the primary advantage of Python\'s syntax ?'}
+                </Typography>
               </Box>
             )}
           </Box>
 
-          {/* Footer Navigation Bar */}
+          {/* Vertical Resizer Divider Bar with 6-Dot Grip Handle */}
           <Box
+            role="separator"
+            tabIndex={0}
+            aria-valuenow={Math.round(leftSplitPercent)}
+            aria-valuemin={22}
+            aria-valuemax={50}
+            aria-label="Resize panels"
+            onPointerDown={handlePointerDownResize}
+            onPointerMove={handlePointerMoveResize}
+            onPointerUp={handlePointerUpResize}
+            onPointerCancel={handlePointerUpResize}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                setLeftSplitPercent((p) => Math.max(22, p - 2));
+              } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                setLeftSplitPercent((p) => Math.min(50, p + 2));
+              }
+            }}
             sx={{
-              p: 2,
-              display: 'flex',
+              display: { xs: 'none', md: 'flex' },
               alignItems: 'center',
-              justifyContent: 'space-between',
-              bgcolor: '#FFFFFF',
-              borderTop: '1px solid #E2E8F0',
+              justifyContent: 'center',
+              width: 10,
+              minWidth: 10,
+              maxWidth: 10,
+              bgcolor: '#F8FAFC',
+              borderLeft: '1px solid #E2E8F0',
+              borderRight: '1px solid #E2E8F0',
+              cursor: 'col-resize',
+              color: '#94A3B8',
+              userSelect: 'none',
+              touchAction: 'none',
+              outline: 'none',
+              transition: 'background-color 0.15s ease, color 0.15s ease',
+              '&:hover, &:focus-visible': {
+                bgcolor: '#E2E8F0',
+                color: '#475569',
+              },
             }}
           >
+            <ResizerGripHandle />
+          </Box>
+
+          {/* 2. RIGHT PANEL */}
+          <Box
+            sx={{
+              flex: 1,
+              p: { xs: 2, md: 2.5 },
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {effectiveTab === 'note' ? (
+              /* NOTE RIGHT PANEL: CLEAN READING CONTENT CARD */
+              <Card
+                elevation={0}
+                sx={{
+                  p: { xs: 2.5, md: 3 },
+                  borderRadius: '14px',
+                  bgcolor: '#FFFFFF',
+                  border: '1px solid #E2E8F0',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.02)',
+                }}
+              >
+                <Box
+                  dangerouslySetInnerHTML={{ __html: formatArticleMarkdown(currentLesson.contentMarkdown) }}
+                  sx={{
+                    color: '#334155',
+                    lineHeight: 1.65,
+                    fontSize: '0.94rem',
+                    '& h2': { fontSize: '1.35rem', fontWeight: 900, color: '#0F172A', mt: 0, mb: 1.5, letterSpacing: '-0.02em' },
+                    '& h3': { fontSize: '1.1rem', fontWeight: 800, color: '#0F172A', mt: 2, mb: 1 },
+                    '& p': { color: '#334155', mb: 1.5, lineHeight: 1.65 },
+                    '& ul, & ol': { pl: 2.5, mb: 1.5 },
+                    '& li': { mb: 0.5, color: '#334155', lineHeight: 1.6 },
+                    '& strong': { color: '#0F172A', fontWeight: 700 },
+                    '& blockquote': { bgcolor: '#F8FAFC', p: 1.5, borderRadius: '8px', borderLeft: '4px solid #2563EB', my: 1.5, fontStyle: 'normal' },
+                    '& pre': { bgcolor: '#0F172A', color: '#F8FAFC', p: 2, borderRadius: '10px', overflowX: 'auto', my: 2 },
+                    '& code': { fontFamily: 'monospace' },
+                  }}
+                />
+
+                {/* Bottom Action inside Note Card */}
+                <Box sx={{ mt: 3, pt: 2.5, borderTop: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+                  <Button
+                    variant={completedLessonIds.has(currentLesson.id) ? 'outlined' : 'contained'}
+                    color={completedLessonIds.has(currentLesson.id) ? 'success' : 'inherit'}
+                    onClick={() => toggleLessonComplete(currentLesson.id)}
+                    sx={{
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      fontSize: '0.82rem',
+                      px: 2.5,
+                      py: 0.7,
+                      ...(completedLessonIds.has(currentLesson.id)
+                        ? { borderColor: '#86EFAC', color: '#16A34A', bgcolor: '#F0FDF4' }
+                        : { bgcolor: '#F1F5F9', color: '#334155', '&:hover': { bgcolor: '#E2E8F0' } }),
+                    }}
+                  >
+                    {completedLessonIds.has(currentLesson.id) ? '✓ Completed' : 'Mark as Done'}
+                  </Button>
+
+                  {hasExercises ? (
+                    <Button
+                      variant="contained"
+                      onClick={() => setActiveTab('problem')}
+                      sx={{
+                        bgcolor: '#F97316',
+                        color: '#FFFFFF',
+                        borderRadius: '8px',
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        fontSize: '0.84rem',
+                        px: 3,
+                        py: 0.8,
+                        boxShadow: 'none',
+                        '&:hover': { bgcolor: '#EA580C', boxShadow: 'none' },
+                      }}
+                    >
+                      Next: Related Question & Practice →
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      onClick={handleNextStep}
+                      sx={{
+                        bgcolor: '#F97316',
+                        color: '#FFFFFF',
+                        borderRadius: '8px',
+                        textTransform: 'none',
+                        fontWeight: 700,
+                        fontSize: '0.84rem',
+                        px: 3,
+                        py: 0.8,
+                        boxShadow: 'none',
+                        '&:hover': { bgcolor: '#EA580C', boxShadow: 'none' },
+                      }}
+                    >
+                      Complete & Next Lesson →
+                    </Button>
+                  )}
+                </Box>
+              </Card>
+            ) : (
+              /* PROBLEM RIGHT PANEL: OPTIONS RADIO CARDS */
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {currentLesson.quizMCQ && (
+                  <Box>
+                    <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.92rem', mb: 2.5 }}>
+                      Options: Pick one correct answer from below
+                    </Typography>
+
+                    <FormControl component="fieldset" sx={{ width: '100%' }}>
+                      <RadioGroup
+                        value={selectedMCQOption !== null ? selectedMCQOption : ''}
+                        onChange={(e) => {
+                          if (!isMCQSubmitted) {
+                            setSelectedMCQOption(parseInt(e.target.value, 10));
+                          }
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                          {currentLesson.quizMCQ.options.map((opt, optIdx) => {
+                            const isSelected = selectedMCQOption === optIdx;
+                            const isCorrectOpt = optIdx === currentLesson.quizMCQ!.correctIndex;
+
+                            let optBorder = '#E2E8F0';
+                            let optBg = '#FFFFFF';
+                            if (isSelected) {
+                              optBorder = '#F97316';
+                              optBg = '#FFF7ED';
+                            }
+                            if (isMCQSubmitted) {
+                              if (isCorrectOpt) {
+                                optBorder = '#10B981';
+                                optBg = '#ECFDF5';
+                              } else if (isSelected && !isCorrectOpt) {
+                                optBorder = '#EF4444';
+                                optBg = '#FEF2F2';
+                              }
+                            }
+
+                            return (
+                              <Box
+                                key={optIdx}
+                                onClick={() => {
+                                  if (!isMCQSubmitted) setSelectedMCQOption(optIdx);
+                                }}
+                                sx={{
+                                  p: 2,
+                                  px: 2.5,
+                                  borderRadius: '10px',
+                                  border: `1.5px solid ${optBorder}`,
+                                  bgcolor: optBg,
+                                  cursor: isMCQSubmitted ? 'default' : 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  transition: 'all 0.15s ease',
+                                  '&:hover': {
+                                    bgcolor: isMCQSubmitted ? optBg : '#F8FAFC',
+                                    borderColor: isMCQSubmitted ? optBorder : '#CBD5E1',
+                                  },
+                                }}
+                              >
+                                <FormControlLabel
+                                  value={optIdx}
+                                  control={<Radio size="small" sx={{ color: isSelected ? '#F97316' : '#94A3B8', '&.Mui-checked': { color: '#F97316' } }} />}
+                                  label={
+                                    <Typography sx={{ fontSize: '0.88rem', fontWeight: isSelected ? 700 : 500, color: '#1E293B' }}>
+                                      {opt}
+                                    </Typography>
+                                  }
+                                  sx={{ m: 0, width: '100%' }}
+                                />
+                                {isMCQSubmitted && isCorrectOpt && (
+                                  <CheckRoundedIcon sx={{ color: '#059669', fontSize: 20 }} />
+                                )}
+                                {isMCQSubmitted && isSelected && !isCorrectOpt && (
+                                  <CloseRoundedIcon sx={{ color: '#DC2626', fontSize: 20 }} />
+                                )}
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      </RadioGroup>
+                    </FormControl>
+
+                    {/* Explanation Alert */}
+                    {isMCQSubmitted && (
+                      <Alert
+                        severity={isMCQCorrect ? 'success' : 'error'}
+                        sx={{ mt: 3, borderRadius: '10px', fontSize: '0.85rem' }}
+                      >
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', mb: 0.3 }}>
+                          {isMCQCorrect ? 'Correct Solution!' : 'Incorrect Choice'}
+                        </Typography>
+                        {currentLesson.quizMCQ.explanation}
+                      </Alert>
+                    )}
+                  </Box>
+                )}
+
+                {/* Coding Problem Sandbox Runner */}
+                {currentLesson.codingProblem && (
+                  <Box sx={{ mt: 2 }}>
+                    <CodeEditorWorkspace
+                      initialLanguage={currentLesson.codingProblem.language}
+                      initialCode={currentLesson.codingProblem.starterCode}
+                    />
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Box>
+        </Box>
+
+        {/* Bottom Action Footer */}
+        <Box
+          sx={{
+            height: 60,
+            px: { xs: 2, md: 4 },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            bgcolor: '#FFFFFF',
+            borderTop: '1px solid #E2E8F0',
+            position: 'relative',
+          }}
+        >
+          {/* Left Spacer for symmetrical centering */}
+          <Box sx={{ flex: 1, display: { xs: 'none', sm: 'block' } }} />
+
+          {/* Center Navigation Actions: Prev, Submit MCQ (if active), and Next */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3.5, justifyContent: 'center' }}>
+            {/* Prev Action */}
             <Button
-              variant="outlined"
-              startIcon={<NavigateBeforeRoundedIcon />}
-              onClick={handlePrevLesson}
-              disabled={activeLessonIdx === 0}
-              sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 700, fontSize: '0.82rem' }}
+              variant="text"
+              onClick={handlePrevStep}
+              disabled={effectiveTab === 'note' && activeLessonIdx === 0}
+              sx={{
+                color: effectiveTab === 'note' && activeLessonIdx === 0 ? '#CBD5E1' : '#64748B',
+                fontWeight: 700,
+                fontSize: '0.86rem',
+                textTransform: 'none',
+                minWidth: 'auto',
+                p: 0,
+                '&:hover': { color: '#0F172A', bgcolor: 'transparent' },
+                '&.Mui-disabled': { color: '#CBD5E1' },
+              }}
             >
-              Previous Lesson
+              Prev
             </Button>
 
-            <Typography sx={{ fontSize: '0.8rem', color: '#64748B', fontWeight: 600 }}>
-              Lesson {activeLessonIdx + 1} of {lessons.length}
-            </Typography>
+            {/* Submit MCQ Button (in Problem mode when MCQ is unsubmitted) */}
+            {effectiveTab === 'problem' && currentLesson.quizMCQ && !isMCQSubmitted && (
+              <Button
+                variant="contained"
+                disabled={selectedMCQOption === null}
+                onClick={() => {
+                  setIsMCQSubmitted(true);
+                  if (isMCQCorrect && !completedLessonIds.has(currentLesson.id)) {
+                    toggleLessonComplete(currentLesson.id);
+                  }
+                }}
+                sx={{
+                  bgcolor: '#F97316',
+                  color: '#FFFFFF',
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.84rem',
+                  px: 3,
+                  py: 0.75,
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#EA580C', boxShadow: 'none' },
+                  '&.Mui-disabled': { bgcolor: '#FED7AA', color: '#FFFFFF' },
+                }}
+              >
+                Submit MCQ
+              </Button>
+            )}
 
+            {/* Next Action */}
             <Button
-              variant="contained"
-              endIcon={<NavigateNextRoundedIcon />}
-              onClick={handleNextLesson}
-              disabled={activeLessonIdx === lessons.length - 1}
-              sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 700, fontSize: '0.82rem', bgcolor: '#2563EB' }}
+              variant="text"
+              onClick={handleNextStep}
+              sx={{
+                color: '#F97316',
+                fontWeight: 800,
+                fontSize: '0.86rem',
+                textTransform: 'none',
+                minWidth: 'auto',
+                p: 0,
+                '&:hover': { color: '#EA580C', bgcolor: 'transparent' },
+              }}
             >
-              Next Lesson
+              Next
             </Button>
+          </Box>
+
+          {/* Right Action Container: Ask AI Coach */}
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box
+              component="button"
+              onClick={() => toast.info('AI Coach is ready to assist you!', 'Ask AI Coach')}
+              sx={{
+                all: 'unset',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 2,
+                py: 0.7,
+                borderRadius: '8px',
+                bgcolor: '#0F172A',
+                color: '#FFFFFF',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                transition: 'all 0.15s ease',
+                '&:hover': { bgcolor: '#1E293B' },
+              }}
+            >
+              <AutoAwesomeRoundedIcon sx={{ fontSize: 16, color: '#F97316' }} />
+              Ask AI Coach
+            </Box>
           </Box>
         </Box>
       </Box>

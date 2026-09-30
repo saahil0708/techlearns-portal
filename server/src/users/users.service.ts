@@ -47,6 +47,14 @@ export const userSanitizedSelect: Prisma.UserSelect = {
   ratingTier: true,
   createdAt: true,
   updatedAt: true,
+  enrollments: {
+    select: {
+      id: true,
+      courseId: true,
+      status: true,
+      completedAt: true,
+    },
+  },
   memberships: {
     select: {
       id: true,

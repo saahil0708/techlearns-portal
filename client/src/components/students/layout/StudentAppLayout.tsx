@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, ReactNode } from 'react';
 import { Box } from '@mui/material';
-import StudentSidebar from './StudentSidebar';
-import StudentTopBar from './StudentTopBar';
+import StudentNavbar from '@/components/students/layout/StudentNavbar';
 import FacultySidebar from '@/components/faculty/layout/FacultySidebar';
 import FacultyNavbar from '@/components/faculty/layout/FacultyNavbar';
 import CurvedSidebar from '@/components/superadmin/layout/CurvedSidebar';
@@ -110,55 +109,50 @@ export default function StudentAppLayout({
     );
   }
 
-  // 🎓 Student Layout matching Super Admin and Faculty Floating Capsule Sidebar
+  // 🎓 Student Layout: Top Navbar (No Sidebar) for a Clean, Full-Width Profile & Learning Workspace
   return (
     <Box
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        bgcolor: '#F4F5F7',
+        flexDirection: 'column',
+        bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.05) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.03) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.03) 0%, transparent 50%)
         `,
         color: '#0F172A',
-        p: { xs: 1.5, sm: 2, md: 2.5 },
-        pl: { xs: '82px', sm: '90px', md: '102px' },
-        gap: { xs: 2, md: 3 },
       }}
     >
-      {/* 1. Left Floating Capsule Sidebar (Matching Other Profiles) */}
-      <StudentSidebar />
+      {/* 1. Top Navigation Bar */}
+      {!hideNavbar && (
+        <StudentNavbar
+          searchQuery={searchQuery}
+          onSearchChange={onSearchChange}
+          streakDays={streakDays !== undefined ? streakDays : (activeUser as any)?.streakDays}
+          contestRating={contestRating !== undefined ? contestRating : (activeUser as any)?.contestRating}
+          ratingTier={ratingTier !== undefined ? ratingTier : (activeUser as any)?.ratingTier}
+        />
+      )}
 
-      {/* 2. Main Workspace Layout */}
-      <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <Box
-          sx={{
-            maxWidth: 1800,
-            width: '100%',
-            mx: 'auto',
-            px: { xs: 1.5, sm: 2, md: 3 },
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3.5,
-            pb: { xs: 4, md: 6 },
-          }}
-        >
-          {/* Top Bar Navigation */}
-            {!hideNavbar && (
-              <StudentTopBar
-                searchQuery={searchQuery}
-                onSearchChange={onSearchChange}
-                streakDays={streakDays !== undefined ? streakDays : (activeUser as any)?.streakDays}
-                contestRating={contestRating !== undefined ? contestRating : (activeUser as any)?.contestRating}
-                ratingTier={ratingTier !== undefined ? ratingTier : (activeUser as any)?.ratingTier}
-              />
-            )}
-
-          {/* Page Content */}
-          {children}
-        </Box>
+      {/* 2. Main Full-Width Page Container */}
+      <Box
+        component="main"
+        sx={{
+          flex: 1,
+          width: '100%',
+          maxWidth: 1440,
+          mx: 'auto',
+          px: { xs: 2, sm: 3, md: 4 },
+          py: { xs: 2.5, md: 3.5 },
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 3.5,
+          pb: { xs: 6, md: 8 },
+        }}
+      >
+        {children}
       </Box>
     </Box>
   );

@@ -58,6 +58,17 @@ export interface CourseDirectoryEntity {
   description: string;
   accentColor: string;
   moduleHighlights: ModuleHighlight[];
+  modules?: {
+    id: string;
+    title: string;
+    order: number;
+    lessons?: {
+      id: string;
+      title: string;
+      content?: string;
+      order: number;
+    }[];
+  }[];
   whatYouWillLearn?: WhatYouWillLearnItem[];
   prerequisites?: string[];
   targetRoles?: string[];

@@ -44,7 +44,7 @@ import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 
-import BootcampGridCard, { StudentBootcamp } from './BootcampGridCard';
+import BootcampGridCard, { StudentBootcamp } from '@/components/students/bootcamps/BootcampGridCard';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/lib/api-service';
 

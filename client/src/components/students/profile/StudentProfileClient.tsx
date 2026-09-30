@@ -20,20 +20,31 @@ import { MuiCenterLoader, MuiPageLoader } from '@/components/shared/MuiLoadingFa
 import { apiService } from '@/lib/api-service';
 import { usePolling } from '@/utils/usePolling';
 
-// Layout & Modular Child Components
+import dynamic from 'next/dynamic';
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
-import StudentOverviewTab from './StudentOverviewTab';
-import StudentPracticeTab from './StudentPracticeTab';
-import StudentSubmissionsTab from './StudentSubmissionsTab';
-import StudentContestsTab from './StudentContestsTab';
-import StudentCoursesTab from './StudentCoursesTab';
-import StudentSettingsTab from './StudentSettingsTab';
-import EditStudentProfileModal from './EditStudentProfileModal';
-import ViewSubmissionCodeModal from './ViewSubmissionCodeModal';
-import ViewCertificateModal from './ViewCertificateModal';
-import UploadResumeModal from './UploadResumeModal';
+import StudentOverviewTab from '@/components/students/profile/StudentOverviewTab';
+import StudentGoalsTab from '@/components/students/profile/StudentGoalsTab';
+import StudentSubmissionsTab from '@/components/students/profile/StudentSubmissionsTab';
+import StudentContestsTab from '@/components/students/profile/StudentContestsTab';
+import StudentCoursesTab from '@/components/students/profile/StudentCoursesTab';
+import StudentSettingsTab from '@/components/students/profile/StudentSettingsTab';
+import { Tabs, Tab } from '@mui/material';
 
-export type StudentTabType = 'overview' | 'practice' | 'submissions' | 'contests' | 'courses' | 'settings';
+// Dynamic import for on-demand modals only
+const EditStudentProfileModal = dynamic(() => import('@/components/students/profile/EditStudentProfileModal'), { ssr: false });
+const ViewSubmissionCodeModal = dynamic(() => import('@/components/students/profile/ViewSubmissionCodeModal'), { ssr: false });
+const ViewCertificateModal = dynamic(() => import('@/components/students/profile/ViewCertificateModal'), { ssr: false });
+const UploadResumeModal = dynamic(() => import('@/components/students/profile/UploadResumeModal'), { ssr: false });
+
+// Icons for Tab Switcher
+import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
+import TrackChangesRoundedIcon from '@mui/icons-material/TrackChangesRounded';
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
+
+export type StudentTabType = 'overview' | 'goals' | 'submissions' | 'contests' | 'courses' | 'settings';
 
 interface StudentProfileClientProps {
   initialProfile?: Partial<StudentProfileData>;
@@ -71,7 +82,7 @@ const getInitialOwnerProfile = (): Partial<StudentProfileData> => {
   return {};
 };
 
-const validTabs: StudentTabType[] = ['overview', 'practice', 'submissions', 'contests', 'courses', 'settings'];
+const validTabs: StudentTabType[] = ['overview', 'goals', 'submissions', 'contests', 'courses', 'settings'];
 
 export default function StudentProfileClient({
   initialProfile,
@@ -158,8 +169,53 @@ export default function StudentProfileClient({
   // Contests History
   const [contests, setContests] = useState<StudentContestHistory[]>([]);
 
+const SAMPLE_ENROLLED_COURSES: StudentCourseProgress[] = [
+  {
+    id: 'crs-python-fundamentals',
+    title: 'Python 3 Programming: From Fundamentals to Algorithmic Problem Solving',
+    slug: 'crs-python-fundamentals',
+    instructor: 'Prof. Alan Turing',
+    modulesCompleted: 1,
+    totalModules: 4,
+    progressPct: 25,
+    status: 'In Progress',
+  },
+  {
+    id: 'crs-fullstack-architecture',
+    title: 'Full-Stack Web Architecture & Cloud Microservices',
+    slug: 'crs-fullstack-architecture',
+    instructor: 'Prof. Alan Turing',
+    modulesCompleted: 2,
+    totalModules: 3,
+    progressPct: 50,
+    status: 'In Progress',
+  },
+  {
+    id: 'crs-dsa-advanced',
+    title: 'Advanced Data Structures & Algorithmic Problem Solving',
+    slug: 'crs-dsa-advanced',
+    instructor: 'Prof. Thomas Cormen',
+    modulesCompleted: 1,
+    totalModules: 1,
+    progressPct: 100,
+    status: 'Completed',
+  },
+  {
+    id: 'crs-cloud-devops',
+    title: 'Cloud DevOps, Docker Sandboxing & CI/CD Pipelines',
+    slug: 'crs-cloud-devops',
+    instructor: 'Prof. Alan Turing',
+    modulesCompleted: 0,
+    totalModules: 1,
+    progressPct: 0,
+    status: 'In Progress',
+  },
+];
+
   // Courses Progress
-  const [courses, setCourses] = useState<StudentCourseProgress[]>([]);
+  const [courses, setCourses] = useState<StudentCourseProgress[]>(
+    initialProfile?.courses?.length ? initialProfile.courses : SAMPLE_ENROLLED_COURSES
+  );
 
   // Topic Skills
   const [topics, setTopics] = useState<StudentTopicSkill[]>([]);
@@ -313,16 +369,13 @@ export default function StudentProfileClient({
 
   const handleTabChange = (newTab: StudentTabType) => {
     if (newTab !== currentTab) {
-      setIsTabLoading(true);
       setCurrentTab(newTab);
 
-      // Keep browser URL and history state in sync
+      // Keep browser URL in sync instantly
       if (typeof window !== 'undefined') {
-        const newUrl = newTab === 'overview' ? '/students' : `/students?tab=${newTab}`;
-        window.history.pushState(null, '', newUrl);
+        const newUrl = newTab === 'overview' ? '/students/profile' : `/students/profile?tab=${newTab}`;
+        window.history.replaceState(null, '', newUrl);
       }
-
-      setTimeout(() => setIsTabLoading(false), 120);
     }
   };
 
@@ -373,39 +426,126 @@ export default function StudentProfileClient({
         <MuiPageLoader minHeight="75vh" />
       ) : (
         <Box sx={{ width: '100%' }}>
-          {/* Main Tab Content View */}
-          {isTabLoading ? (
-            <MuiCenterLoader minHeight="380px" />
-          ) : (
-            <>
-              {(!currentTab || currentTab === 'overview') && (
-                <StudentOverviewTab
-                  profile={profile}
-                  isOwner={isOwner}
-                  onEditProfile={() => setEditModalOpen(true)}
-                  onUploadResume={() => setResumeModalOpen(true)}
-                  onViewCert={(cert) => {
-                    setSelectedCert(cert);
-                    setCertModalOpen(true);
-                  }}
-                  onRemoveResume={() => {
-                    setProfile((prev) => ({ ...prev, resumeFileName: undefined, resumeUrl: undefined }));
-                    toast.info('Resume removed from profile.', 'Resume Removed');
-                  }}
+          {/* Top Profile Tab Navigation Bar (MUI Tabs) */}
+          <Box
+            sx={{
+              borderBottom: '1px solid #E2E8F0',
+              mb: 3.5,
+            }}
+          >
+            <Tabs
+              value={currentTab || 'overview'}
+              onChange={(_, val) => handleTabChange(val as StudentTabType)}
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                minHeight: 48,
+                '& .MuiTabs-indicator': {
+                  bgcolor: '#2563EB',
+                  height: 3,
+                  borderRadius: '3px 3px 0 0',
+                },
+                '& .MuiTab-root': {
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  color: '#64748B',
+                  minHeight: 48,
+                  px: { xs: 2, sm: 2.5 },
+                  transition: 'all 0.15s ease',
+                  '&:hover': {
+                    color: '#0F172A',
+                  },
+                  '&.Mui-selected': {
+                    color: '#2563EB',
+                    fontWeight: 700,
+                  },
+                },
+              }}
+            >
+              <Tab
+                value="overview"
+                label="Overview"
+                icon={<GridViewRoundedIcon sx={{ fontSize: 18 }} />}
+                iconPosition="start"
+              />
+              <Tab
+                value="goals"
+                label="Target & Goals"
+                icon={<TrackChangesRoundedIcon sx={{ fontSize: 18 }} />}
+                iconPosition="start"
+              />
+              <Tab
+                value="submissions"
+                label="Submissions History"
+                icon={<HistoryRoundedIcon sx={{ fontSize: 18 }} />}
+                iconPosition="start"
+              />
+              <Tab
+                value="contests"
+                label="Contests History"
+                icon={<EmojiEventsRoundedIcon sx={{ fontSize: 18 }} />}
+                iconPosition="start"
+              />
+              <Tab
+                value="courses"
+                label="Enrolled Courses"
+                icon={<SchoolRoundedIcon sx={{ fontSize: 18 }} />}
+                iconPosition="start"
+              />
+              {isOwner && (
+                <Tab
+                  value="settings"
+                  label="Settings"
+                  icon={<SettingsRoundedIcon sx={{ fontSize: 18 }} />}
+                  iconPosition="start"
                 />
               )}
-              {currentTab === 'practice' && <StudentPracticeTab />}
-              {currentTab === 'submissions' && (
-                <StudentSubmissionsTab
-                  submissions={submissions}
-                  studentHandle={profile.handle}
-                  onViewCode={handleViewCode}
-                />
-              )}
-              {currentTab === 'contests' && <StudentContestsTab contests={contests} />}
-              {currentTab === 'courses' && <StudentCoursesTab courses={courses} />}
-              {currentTab === 'settings' && isOwner && <StudentSettingsTab />}
-            </>
+            </Tabs>
+          </Box>
+
+          {/* Main Tab Content View - Preserved in DOM for instant 0ms switching */}
+          <Box sx={{ display: (!currentTab || currentTab === 'overview') ? 'block' : 'none' }}>
+            <StudentOverviewTab
+              profile={profile}
+              isOwner={isOwner}
+              onEditProfile={() => setEditModalOpen(true)}
+              onUploadResume={() => setResumeModalOpen(true)}
+              onViewCert={(cert) => {
+                setSelectedCert(cert);
+                setCertModalOpen(true);
+              }}
+              onRemoveResume={() => {
+                setProfile((prev) => ({ ...prev, resumeFileName: undefined, resumeUrl: undefined }));
+                toast.info('Resume removed from profile.', 'Resume Removed');
+              }}
+            />
+          </Box>
+
+          <Box sx={{ display: currentTab === 'goals' ? 'block' : 'none' }}>
+            <StudentGoalsTab profile={profile} isOwner={isOwner} />
+          </Box>
+
+          <Box sx={{ display: currentTab === 'submissions' ? 'block' : 'none' }}>
+            <StudentSubmissionsTab
+              submissions={submissions}
+              studentHandle={profile.handle}
+              onViewCode={handleViewCode}
+            />
+          </Box>
+
+          <Box sx={{ display: currentTab === 'contests' ? 'block' : 'none' }}>
+            <StudentContestsTab contests={contests} />
+          </Box>
+
+          <Box sx={{ display: currentTab === 'courses' ? 'block' : 'none' }}>
+            <StudentCoursesTab courses={courses} />
+          </Box>
+
+          {isOwner && (
+            <Box sx={{ display: currentTab === 'settings' ? 'block' : 'none' }}>
+              <StudentSettingsTab />
+            </Box>
           )}
 
           {/* Modals */}
