@@ -175,8 +175,8 @@ export default function FacultyCreateProblemModal({
 
       if (hasSampleInput && hasSampleOutput) {
         testCasesPayload.push({
-          input: sampleInput.trim(),
-          expectedOutput: sampleOutput.trim(),
+          input: sampleInput,
+          expectedOutput: sampleOutput,
           explanation: sampleExplanation.trim() || undefined,
           isHidden: false,
           order: 0,
@@ -184,12 +184,12 @@ export default function FacultyCreateProblemModal({
       }
 
       hiddenCases.forEach((tc) => {
-        const trimmedInput = tc.input.trim();
-        const trimmedOutput = tc.expectedOutput.trim();
-        if (trimmedInput && trimmedOutput) {
+        const hasInput = Boolean(tc.input.trim());
+        const hasOutput = Boolean(tc.expectedOutput.trim());
+        if (hasInput && hasOutput) {
           testCasesPayload.push({
-            input: trimmedInput,
-            expectedOutput: trimmedOutput,
+            input: tc.input,
+            expectedOutput: tc.expectedOutput,
             isHidden: true,
             order: testCasesPayload.length,
           });

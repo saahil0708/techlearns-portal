@@ -309,7 +309,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
       points: data.points,
       timeLimitMs: data.timeLimitMs,
       memoryLimitMb: data.memoryLimitMb,
-      testCasesCount: data.testCases?.length || data.testCasesCount || 20,
+      testCasesCount: data.testCases?.length ?? data.testCasesCount ?? 0,
       authorName: 'Administrator',
       likes: 0,
       dislikes: 0,

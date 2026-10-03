@@ -53,7 +53,7 @@ export class DockerSandboxProvider implements ISandboxProvider {
       '--tmpfs', '/tmp:rw,size=32m',
       '--memory', `${Math.max(16, limits.memoryLimitMb)}m`,
       '--memory-swap', `${Math.max(16, limits.memoryLimitMb)}m`,
-      '--cpus', '0.8',
+      '--cpus', '1',
       '--pids-limit', '32',
       '--ulimit', `cpu=${cpuLimitSeconds}:${cpuLimitSeconds}`,
       '--ulimit', 'fsize=10485760:10485760',

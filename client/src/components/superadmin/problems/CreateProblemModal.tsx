@@ -25,6 +25,7 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 
+import { useToast } from '@/context/ToastContext';
 import { NewProblemData, ProblemCategory, ProblemDifficulty, ProblemTestCaseItem } from '@/types/problem';
 
 interface CreateProblemModalProps {
@@ -58,6 +59,7 @@ export default function CreateProblemModal({
   onClose,
   onSubmit,
 }: CreateProblemModalProps) {
+  const toast = useToast();
   const [formData, setFormData] = useState<NewProblemData>({
     title: '',
     slug: '',
@@ -127,6 +129,31 @@ export default function CreateProblemModal({
     e.preventDefault();
     if (!formData.title || !formData.statementMarkdown) return;
 
+    // Validate sample testcase presence
+    const hasSampleInput = Boolean(formData.sampleInput.trim());
+    const hasSampleOutput = Boolean(formData.sampleOutput.trim());
+    if ((hasSampleInput && !hasSampleOutput) || (!hasSampleInput && hasSampleOutput)) {
+      toast.error(
+        'Please provide both Sample Input and Expected Output, or leave both empty.',
+        'Validation Error'
+      );
+      return;
+    }
+
+    // Validate hidden test cases presence
+    for (let i = 0; i < hiddenTestCases.length; i++) {
+      const tc = hiddenTestCases[i];
+      const hasInput = Boolean(tc.input.trim());
+      const hasOutput = Boolean(tc.expectedOutput.trim());
+      if ((hasInput && !hasOutput) || (!hasInput && hasOutput)) {
+        toast.error(
+          `Please provide both Input and Expected Output for Hidden Case #${i + 1}, or leave both empty.`,
+          'Validation Error'
+        );
+        return;
+      }
+    }
+
     const parsedTags = tagInput
       .split(',')
       .map((t) => t.trim())
@@ -136,12 +163,10 @@ export default function CreateProblemModal({
     const allTestCases: ProblemTestCaseItem[] = [];
 
     // 1. Public sample case if provided
-    const trimmedSampleInput = formData.sampleInput.trim();
-    const trimmedSampleOutput = formData.sampleOutput.trim();
-    if (trimmedSampleInput && trimmedSampleOutput) {
+    if (hasSampleInput && hasSampleOutput) {
       allTestCases.push({
-        input: trimmedSampleInput,
-        expectedOutput: trimmedSampleOutput,
+        input: formData.sampleInput,
+        expectedOutput: formData.sampleOutput,
         explanation: formData.sampleExplanation?.trim() || undefined,
         isHidden: false,
         order: 0,
@@ -150,12 +175,12 @@ export default function CreateProblemModal({
 
     // 2. Hidden test cases
     hiddenTestCases.forEach((tc) => {
-      const trimmedInput = tc.input.trim();
-      const trimmedOutput = tc.expectedOutput.trim();
-      if (trimmedInput && trimmedOutput) {
+      const hasInput = Boolean(tc.input.trim());
+      const hasOutput = Boolean(tc.expectedOutput.trim());
+      if (hasInput && hasOutput) {
         allTestCases.push({
-          input: trimmedInput,
-          expectedOutput: trimmedOutput,
+          input: tc.input,
+          expectedOutput: tc.expectedOutput,
           explanation: tc.explanation?.trim() || undefined,
           isHidden: true,
           order: allTestCases.length,
@@ -168,7 +193,7 @@ export default function CreateProblemModal({
       tags: parsedTags,
       code: formData.code || `PROB-${Date.now().toString(36).toUpperCase()}`,
       testCases: allTestCases,
-      testCasesCount: allTestCases.length > 0 ? allTestCases.length : formData.testCasesCount,
+      testCasesCount: allTestCases.length,
     });
 
     onClose();
