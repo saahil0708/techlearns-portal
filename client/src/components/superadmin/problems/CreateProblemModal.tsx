@@ -12,12 +12,20 @@ import {
   Box,
   Typography,
   IconButton,
-  Grid,
+  Tabs,
+  Tab,
+  Chip,
+  Tooltip,
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 
-import { NewProblemData, ProblemCategory, ProblemDifficulty } from '@/types/problem';
+import { NewProblemData, ProblemCategory, ProblemDifficulty, ProblemTestCaseItem } from '@/types/problem';
 
 interface CreateProblemModalProps {
   open: boolean;
@@ -36,6 +44,14 @@ const CATEGORIES: ProblemCategory[] = [
 ];
 
 const DIFFICULTIES: ProblemDifficulty[] = ['Easy', 'Medium', 'Hard'];
+
+interface LocalTestCase {
+  id: string;
+  input: string;
+  expectedOutput: string;
+  explanation?: string;
+  isHidden: boolean;
+}
 
 export default function CreateProblemModal({
   open,
@@ -57,7 +73,18 @@ export default function CreateProblemModal({
     statementMarkdown: '',
     sampleInput: '',
     sampleOutput: '',
+    sampleExplanation: '',
   });
+
+  const [testCaseTab, setTestCaseTab] = useState<'sample' | 'hidden'>('sample');
+  const [hiddenTestCases, setHiddenTestCases] = useState<LocalTestCase[]>([
+    {
+      id: 'tc-hidden-1',
+      input: '',
+      expectedOutput: '',
+      isHidden: true,
+    },
+  ]);
 
   const [tagInput, setTagInput] = useState('Dynamic Programming, Algorithms');
 
@@ -74,6 +101,28 @@ export default function CreateProblemModal({
     });
   };
 
+  const handleAddHiddenTestCase = () => {
+    setHiddenTestCases((prev) => [
+      ...prev,
+      {
+        id: `tc-hidden-${Date.now()}`,
+        input: '',
+        expectedOutput: '',
+        isHidden: true,
+      },
+    ]);
+  };
+
+  const handleRemoveHiddenTestCase = (id: string) => {
+    setHiddenTestCases((prev) => prev.filter((tc) => tc.id !== id));
+  };
+
+  const handleHiddenTestCaseChange = (id: string, field: 'input' | 'expectedOutput' | 'explanation', value: string) => {
+    setHiddenTestCases((prev) =>
+      prev.map((tc) => (tc.id === id ? { ...tc, [field]: value } : tc))
+    );
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.statementMarkdown) return;
@@ -83,10 +132,39 @@ export default function CreateProblemModal({
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
 
+    // Build array of test cases
+    const allTestCases: ProblemTestCaseItem[] = [];
+
+    // 1. Public sample case if provided
+    if (formData.sampleInput.trim() || formData.sampleOutput.trim()) {
+      allTestCases.push({
+        input: formData.sampleInput.trim(),
+        expectedOutput: formData.sampleOutput.trim(),
+        explanation: formData.sampleExplanation?.trim() || undefined,
+        isHidden: false,
+        order: 0,
+      });
+    }
+
+    // 2. Hidden test cases
+    hiddenTestCases.forEach((tc, idx) => {
+      if (tc.input.trim() || tc.expectedOutput.trim()) {
+        allTestCases.push({
+          input: tc.input.trim(),
+          expectedOutput: tc.expectedOutput.trim(),
+          explanation: tc.explanation?.trim() || undefined,
+          isHidden: true,
+          order: allTestCases.length + idx,
+        });
+      }
+    });
+
     onSubmit({
       ...formData,
       tags: parsedTags,
       code: formData.code || `PROB-${Date.now().toString(36).toUpperCase()}`,
+      testCases: allTestCases,
+      testCasesCount: allTestCases.length > 0 ? allTestCases.length : formData.testCasesCount,
     });
 
     onClose();
@@ -104,6 +182,7 @@ export default function CreateProblemModal({
             borderRadius: '16px',
             bgcolor: '#FFFFFF',
             boxShadow: '0 20px 40px rgba(15, 23, 42, 0.15)',
+            maxHeight: '90vh',
           },
         },
       }}
@@ -140,7 +219,7 @@ export default function CreateProblemModal({
                 Author New Coding Problem
               </Typography>
               <Typography sx={{ fontSize: '0.78rem', color: '#64748B' }}>
-                Add problem statement, test cases, and time/memory limits
+                Add statement, sample test cases, hidden evaluation test cases, and resource limits
               </Typography>
             </Box>
           </Box>
@@ -160,7 +239,7 @@ export default function CreateProblemModal({
         </DialogTitle>
 
         {/* Form Body */}
-        <DialogContent sx={{ px: 3, pt: '28px !important', pb: 3, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <DialogContent sx={{ px: 3, pt: '24px !important', pb: 3, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
           {/* Row 1: Title & Code */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' }, gap: 2 }}>
             <TextField
@@ -235,6 +314,7 @@ export default function CreateProblemModal({
               size="small"
               required
               fullWidth
+              helperText="Sandbox execution cap"
               slotProps={{ htmlInput: { min: 100, max: 30000, step: 100 } }}
               value={formData.timeLimitMs}
               onChange={(e) => handleChange('timeLimitMs', Math.max(100, Math.min(30000, Number(e.target.value))))}
@@ -246,6 +326,7 @@ export default function CreateProblemModal({
               size="small"
               required
               fullWidth
+              helperText="Max container RAM"
               slotProps={{ htmlInput: { min: 16, max: 2048, step: 16 } }}
               value={formData.memoryLimitMb}
               onChange={(e) => handleChange('memoryLimitMb', Math.max(16, Math.min(2048, Number(e.target.value))))}
@@ -273,26 +354,181 @@ export default function CreateProblemModal({
             onChange={(e) => handleChange('statementMarkdown', e.target.value)}
           />
 
-          {/* Sample Input & Output */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-            <TextField
-              label="Sample Input"
-              multiline
-              rows={3}
-              fullWidth
-              placeholder="nums = [10,9,2,5,3,7,101,18]"
-              value={formData.sampleInput}
-              onChange={(e) => handleChange('sampleInput', e.target.value)}
-            />
-            <TextField
-              label="Sample Output"
-              multiline
-              rows={3}
-              fullWidth
-              placeholder="4"
-              value={formData.sampleOutput}
-              onChange={(e) => handleChange('sampleOutput', e.target.value)}
-            />
+          {/* Test Cases Section with Tabs */}
+          <Box sx={{ border: '1px solid #E2E8F0', borderRadius: '12px', overflow: 'hidden', bgcolor: '#F8FAFC' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, pt: 1, borderBottom: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+              <Tabs
+                value={testCaseTab}
+                onChange={(_, val) => setTestCaseTab(val)}
+                sx={{
+                  minHeight: 44,
+                  '& .MuiTab-root': {
+                    minHeight: 44,
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                  },
+                }}
+              >
+                <Tab
+                  value="sample"
+                  icon={<VisibilityRoundedIcon sx={{ fontSize: 16 }} />}
+                  iconPosition="start"
+                  label="Sample Test Case (Public)"
+                />
+                <Tab
+                  value="hidden"
+                  icon={<VisibilityOffRoundedIcon sx={{ fontSize: 16 }} />}
+                  iconPosition="start"
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>Hidden Test Cases (Private)</span>
+                      <Chip
+                        size="small"
+                        label={hiddenTestCases.filter((tc) => tc.input.trim() || tc.expectedOutput.trim()).length}
+                        sx={{ height: 18, fontSize: '0.7rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB' }}
+                      />
+                    </Box>
+                  }
+                />
+              </Tabs>
+
+              {testCaseTab === 'hidden' && (
+                <Button
+                  size="small"
+                  startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
+                  onClick={handleAddHiddenTestCase}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    bgcolor: '#EFF6FF',
+                    color: '#2563EB',
+                    borderRadius: '8px',
+                    px: 1.5,
+                    '&:hover': { bgcolor: '#DBEAFE' },
+                  }}
+                >
+                  Add Hidden Case
+                </Button>
+              )}
+            </Box>
+
+            {/* Tab 1: Sample Test Case (Public) */}
+            {testCaseTab === 'sample' && (
+              <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#64748B', fontSize: '0.8rem' }}>
+                  <VisibilityRoundedIcon sx={{ fontSize: 16, color: '#3B82F6' }} />
+                  <span>Publicly visible in problem statement for student guidance and initial test runs.</span>
+                </Box>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  <TextField
+                    label="Sample Input"
+                    multiline
+                    rows={3}
+                    fullWidth
+                    placeholder="nums = [10,9,2,5,3,7,101,18]"
+                    value={formData.sampleInput}
+                    onChange={(e) => handleChange('sampleInput', e.target.value)}
+                  />
+                  <TextField
+                    label="Sample Expected Output"
+                    multiline
+                    rows={3}
+                    fullWidth
+                    placeholder="4"
+                    value={formData.sampleOutput}
+                    onChange={(e) => handleChange('sampleOutput', e.target.value)}
+                  />
+                </Box>
+                <TextField
+                  label="Sample Explanation (Optional)"
+                  size="small"
+                  fullWidth
+                  placeholder="e.g. The longest increasing subsequence is [2,3,7,101], therefore the length is 4."
+                  value={formData.sampleExplanation || ''}
+                  onChange={(e) => handleChange('sampleExplanation', e.target.value)}
+                />
+              </Box>
+            )}
+
+            {/* Tab 2: Hidden Test Cases (Private) */}
+            {testCaseTab === 'hidden' && (
+              <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#64748B', fontSize: '0.8rem' }}>
+                    <ShieldRoundedIcon sx={{ fontSize: 16, color: '#10B981' }} />
+                    <span>Hidden test cases are evaluated inside isolated Docker sandboxes and never exposed in client API responses.</span>
+                  </Box>
+                </Box>
+
+                {hiddenTestCases.map((tc, index) => (
+                  <Box
+                    key={tc.id}
+                    sx={{
+                      p: 2,
+                      bgcolor: '#FFFFFF',
+                      borderRadius: '10px',
+                      border: '1px solid #E2E8F0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.5,
+                      position: 'relative',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip
+                          label={`Hidden Case #${index + 1}`}
+                          size="small"
+                          sx={{ fontWeight: 700, fontSize: '0.75rem', bgcolor: '#F1F5F9', color: '#334155' }}
+                        />
+                        <Chip
+                          label="Private / Judge Sandbox"
+                          size="small"
+                          sx={{ fontWeight: 600, fontSize: '0.7rem', bgcolor: '#FEF2F2', color: '#DC2626' }}
+                        />
+                      </Box>
+
+                      {hiddenTestCases.length > 1 && (
+                        <Tooltip title="Remove hidden test case">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleRemoveHiddenTestCase(tc.id)}
+                            sx={{ color: '#EF4444', '&:hover': { bgcolor: '#FEE2E2' } }}
+                          >
+                            <DeleteOutlineRoundedIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
+                      <TextField
+                        label="Hidden Input"
+                        multiline
+                        rows={2}
+                        fullWidth
+                        size="small"
+                        placeholder="Edge case input (e.g., [0,0,0,0], large bounds, negative values)"
+                        value={tc.input}
+                        onChange={(e) => handleHiddenTestCaseChange(tc.id, 'input', e.target.value)}
+                      />
+                      <TextField
+                        label="Expected Output"
+                        multiline
+                        rows={2}
+                        fullWidth
+                        size="small"
+                        placeholder="Expected output for this hidden case"
+                        value={tc.expectedOutput}
+                        onChange={(e) => handleHiddenTestCaseChange(tc.id, 'expectedOutput', e.target.value)}
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            )}
           </Box>
         </DialogContent>
 

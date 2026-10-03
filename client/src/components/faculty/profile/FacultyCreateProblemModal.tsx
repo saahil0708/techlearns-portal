@@ -16,13 +16,20 @@ import {
   FormControl,
   InputLabel,
   InputAdornment,
-  Divider,
+  Tabs,
+  Tab,
+  Chip,
+  Tooltip,
 } from '@mui/material';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import TimerRoundedIcon from '@mui/icons-material/TimerRounded';
 import MemoryRoundedIcon from '@mui/icons-material/MemoryRounded';
-import TagRoundedIcon from '@mui/icons-material/TagRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
@@ -33,6 +40,13 @@ interface FacultyCreateProblemModalProps {
   collegeId?: string;
   collegeName?: string;
   onProblemCreated?: (problem: any) => void;
+}
+
+interface LocalHiddenTestCase {
+  id: string;
+  input: string;
+  expectedOutput: string;
+  explanation?: string;
 }
 
 export default function FacultyCreateProblemModal({
@@ -55,6 +69,14 @@ export default function FacultyCreateProblemModal({
   const [sampleOutput, setSampleOutput] = useState('');
   const [sampleExplanation, setSampleExplanation] = useState('');
   const [status, setStatus] = useState('PUBLISHED');
+  const [testCaseTab, setTestCaseTab] = useState<'sample' | 'hidden'>('sample');
+  const [hiddenCases, setHiddenCases] = useState<LocalHiddenTestCase[]>([
+    {
+      id: 'tc-faculty-hidden-1',
+      input: '',
+      expectedOutput: '',
+    },
+  ]);
   const [creating, setCreating] = useState(false);
 
   const resetForm = () => {
@@ -70,11 +92,39 @@ export default function FacultyCreateProblemModal({
     setSampleOutput('');
     setSampleExplanation('');
     setStatus('PUBLISHED');
+    setHiddenCases([
+      {
+        id: `tc-faculty-hidden-${Date.now()}`,
+        input: '',
+        expectedOutput: '',
+      },
+    ]);
   };
 
   const handleClose = () => {
     resetForm();
     onClose();
+  };
+
+  const handleAddHiddenCase = () => {
+    setHiddenCases((prev) => [
+      ...prev,
+      {
+        id: `tc-faculty-hidden-${Date.now()}`,
+        input: '',
+        expectedOutput: '',
+      },
+    ]);
+  };
+
+  const handleRemoveHiddenCase = (id: string) => {
+    setHiddenCases((prev) => prev.filter((tc) => tc.id !== id));
+  };
+
+  const handleHiddenCaseChange = (id: string, field: 'input' | 'expectedOutput', value: string) => {
+    setHiddenCases((prev) =>
+      prev.map((tc) => (tc.id === id ? { ...tc, [field]: value } : tc))
+    );
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -100,6 +150,36 @@ export default function FacultyCreateProblemModal({
 
     setCreating(true);
     try {
+      // Build test cases payload
+      const testCasesPayload: Array<{
+        input: string;
+        expectedOutput: string;
+        isHidden?: boolean;
+        explanation?: string;
+        order?: number;
+      }> = [];
+
+      if (hasSampleInput && hasSampleOutput) {
+        testCasesPayload.push({
+          input: sampleInput.trim(),
+          expectedOutput: sampleOutput.trim(),
+          explanation: sampleExplanation.trim() || undefined,
+          isHidden: false,
+          order: 0,
+        });
+      }
+
+      hiddenCases.forEach((tc, idx) => {
+        if (tc.input.trim() || tc.expectedOutput.trim()) {
+          testCasesPayload.push({
+            input: tc.input.trim(),
+            expectedOutput: tc.expectedOutput.trim(),
+            isHidden: true,
+            order: testCasesPayload.length + idx,
+          });
+        }
+      });
+
       const created = await apiService.createProblem({
         title: title.trim(),
         statement: statement.trim(),
@@ -111,31 +191,14 @@ export default function FacultyCreateProblemModal({
         memoryLimit: Number(memoryLimit) || 256,
         status: status,
         collegeId: collegeId || undefined,
+        testCases: testCasesPayload.length > 0 ? testCasesPayload : undefined,
       });
-
-      // If sample test case provided, add it
-      if (created?.id && hasSampleInput && hasSampleOutput) {
-        try {
-          await apiService.addProblemTestCase(created.id, {
-            input: sampleInput,
-            expectedOutput: sampleOutput,
-            explanation: sampleExplanation.trim() || undefined,
-            isHidden: false,
-            order: 0,
-          });
-        } catch (tcErr: any) {
-          toast.warning(
-            `Problem was created, but failed to attach sample testcase: ${tcErr?.message || 'Unknown error'}. You can add testcases from the problem workspace.`,
-            'Testcase Attachment Failed'
-          );
-        }
-      }
 
       const successTitle = status === 'DRAFT' ? 'Problem Draft Saved' : 'Problem Published';
       const successMessage =
         status === 'DRAFT'
-          ? `Lab problem draft "${title.trim()}" saved successfully!`
-          : `Lab problem "${title.trim()}" published successfully!`;
+          ? `Lab problem draft "${title.trim()}" saved with ${testCasesPayload.length} testcase(s)!`
+          : `Lab problem "${title.trim()}" published with ${testCasesPayload.length} testcase(s)!`;
 
       toast.success(successMessage, successTitle);
       onProblemCreated?.(created);
@@ -199,7 +262,7 @@ export default function FacultyCreateProblemModal({
               Author New Lab Coding Challenge
             </Typography>
             <Typography sx={{ fontSize: '0.76rem', color: '#64748B' }}>
-              Create algorithmic problem with sandbox test cases for {collegeName}
+              Create algorithmic problem with sample & hidden sandbox test cases for {collegeName}
             </Typography>
           </Box>
         </Box>
@@ -335,46 +398,188 @@ export default function FacultyCreateProblemModal({
             onChange={(e) => setConstraints(e.target.value)}
           />
 
-          <Divider sx={{ my: 0.5, borderColor: '#E2E8F0' }} />
+          {/* Test Cases Section with Tabs */}
+          <Box sx={{ border: '1px solid #E2E8F0', borderRadius: '12px', overflow: 'hidden', bgcolor: '#F8FAFC' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, pt: 1, borderBottom: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
+              <Tabs
+                value={testCaseTab}
+                onChange={(_, val) => setTestCaseTab(val)}
+                sx={{
+                  minHeight: 44,
+                  '& .MuiTab-root': {
+                    minHeight: 44,
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                  },
+                }}
+              >
+                <Tab
+                  value="sample"
+                  icon={<VisibilityRoundedIcon sx={{ fontSize: 16 }} />}
+                  iconPosition="start"
+                  label="Sample Public Case"
+                />
+                <Tab
+                  value="hidden"
+                  icon={<VisibilityOffRoundedIcon sx={{ fontSize: 16 }} />}
+                  iconPosition="start"
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>Hidden Test Cases</span>
+                      <Chip
+                        size="small"
+                        label={hiddenCases.filter((tc) => tc.input.trim() || tc.expectedOutput.trim()).length}
+                        sx={{ height: 18, fontSize: '0.7rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB' }}
+                      />
+                    </Box>
+                  }
+                />
+              </Tabs>
 
-          <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#0F172A' }}>
-            Sample Public Test Case
-          </Typography>
+              {testCaseTab === 'hidden' && (
+                <Button
+                  size="small"
+                  startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
+                  onClick={handleAddHiddenCase}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    bgcolor: '#EFF6FF',
+                    color: '#2563EB',
+                    borderRadius: '8px',
+                    px: 1.5,
+                    '&:hover': { bgcolor: '#DBEAFE' },
+                  }}
+                >
+                  Add Hidden Case
+                </Button>
+              )}
+            </Box>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-            <TextField
-              label="Sample Input"
-              placeholder="4 2 7 1 3 6 9"
-              multiline
-              rows={2}
-              fullWidth
-              size="small"
-              value={sampleInput}
-              onChange={(e) => setSampleInput(e.target.value)}
-              slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: '0.82rem' } } }}
-            />
+            {/* Public Sample Case */}
+            {testCaseTab === 'sample' && (
+              <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#64748B', fontSize: '0.8rem' }}>
+                  <VisibilityRoundedIcon sx={{ fontSize: 16, color: '#3B82F6' }} />
+                  <span>Publicly visible in problem statement for student guidance and initial test runs.</span>
+                </Box>
 
-            <TextField
-              label="Expected Output"
-              placeholder="4 7 2 9 6 3 1"
-              multiline
-              rows={2}
-              fullWidth
-              size="small"
-              value={sampleOutput}
-              onChange={(e) => setSampleOutput(e.target.value)}
-              slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: '0.82rem' } } }}
-            />
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+                  <TextField
+                    label="Sample Input"
+                    placeholder="4 2 7 1 3 6 9"
+                    multiline
+                    rows={2}
+                    fullWidth
+                    size="small"
+                    value={sampleInput}
+                    onChange={(e) => setSampleInput(e.target.value)}
+                    slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: '0.82rem' } } }}
+                  />
+
+                  <TextField
+                    label="Expected Output"
+                    placeholder="4 7 2 9 6 3 1"
+                    multiline
+                    rows={2}
+                    fullWidth
+                    size="small"
+                    value={sampleOutput}
+                    onChange={(e) => setSampleOutput(e.target.value)}
+                    slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: '0.82rem' } } }}
+                  />
+                </Box>
+
+                <TextField
+                  label="Sample Explanation (Optional)"
+                  placeholder="Explanation of how the sample output was derived..."
+                  fullWidth
+                  size="small"
+                  value={sampleExplanation}
+                  onChange={(e) => setSampleExplanation(e.target.value)}
+                />
+              </Box>
+            )}
+
+            {/* Hidden Cases */}
+            {testCaseTab === 'hidden' && (
+              <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#64748B', fontSize: '0.8rem' }}>
+                  <ShieldRoundedIcon sx={{ fontSize: 16, color: '#10B981' }} />
+                  <span>Hidden test cases are evaluated inside isolated Docker sandboxes for grading and cannot be read by students.</span>
+                </Box>
+
+                {hiddenCases.map((tc, index) => (
+                  <Box
+                    key={tc.id}
+                    sx={{
+                      p: 2,
+                      bgcolor: '#FFFFFF',
+                      borderRadius: '10px',
+                      border: '1px solid #E2E8F0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.5,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip
+                          label={`Hidden Case #${index + 1}`}
+                          size="small"
+                          sx={{ fontWeight: 700, fontSize: '0.75rem', bgcolor: '#F1F5F9', color: '#334155' }}
+                        />
+                        <Chip
+                          label="Private / Judge Sandbox"
+                          size="small"
+                          sx={{ fontWeight: 600, fontSize: '0.7rem', bgcolor: '#FEF2F2', color: '#DC2626' }}
+                        />
+                      </Box>
+
+                      {hiddenCases.length > 1 && (
+                        <Tooltip title="Remove hidden test case">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleRemoveHiddenCase(tc.id)}
+                            sx={{ color: '#EF4444', '&:hover': { bgcolor: '#FEE2E2' } }}
+                          >
+                            <DeleteOutlineRoundedIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
+                      <TextField
+                        label="Hidden Input"
+                        placeholder="Hidden evaluation input..."
+                        multiline
+                        rows={2}
+                        fullWidth
+                        size="small"
+                        value={tc.input}
+                        onChange={(e) => handleHiddenCaseChange(tc.id, 'input', e.target.value)}
+                        slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: '0.82rem' } } }}
+                      />
+                      <TextField
+                        label="Expected Output"
+                        placeholder="Expected output for evaluation..."
+                        multiline
+                        rows={2}
+                        fullWidth
+                        size="small"
+                        value={tc.expectedOutput}
+                        onChange={(e) => handleHiddenCaseChange(tc.id, 'expectedOutput', e.target.value)}
+                        slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: '0.82rem' } } }}
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            )}
           </Box>
-
-          <TextField
-            label="Sample Explanation (Optional)"
-            placeholder="Explanation of how the sample output was derived..."
-            fullWidth
-            size="small"
-            value={sampleExplanation}
-            onChange={(e) => setSampleExplanation(e.target.value)}
-          />
         </DialogContent>
 
         {/* Footer Actions */}

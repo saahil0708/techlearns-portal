@@ -45,12 +45,19 @@ export class DockerSandboxProvider implements ISandboxProvider {
     const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codeplatform-judge-'));
     const sourcePath = path.join(workDir, `solution.${extensions[language]}`);
     const containerName = `codeplatform-judge-${randomUUID()}`;
+    const cpuLimitSeconds = Math.max(1, Math.ceil(limits.timeLimitMs / 1000) + 1);
     const args = [
       'run', '-i', '--rm', '--name', containerName, '--network', 'none', '--read-only',
-      '--tmpfs', '/tmp:rw,size=64m', '--memory', `${Math.max(16, limits.memoryLimitMb)}m`,
+      '--tmpfs', '/tmp:rw,size=32m',
+      '--memory', `${Math.max(16, limits.memoryLimitMb)}m`,
       '--memory-swap', `${Math.max(16, limits.memoryLimitMb)}m`,
-      '--cpus', '1', '--pids-limit', '64', '--cap-drop', 'ALL',
-      '--security-opt', 'no-new-privileges', '--user', '1000:1000',
+      '--cpus', '0.8',
+      '--pids-limit', '32',
+      '--ulimit', `cpu=${cpuLimitSeconds}:${cpuLimitSeconds}`,
+      '--ulimit', 'fsize=10485760:10485760',
+      '--cap-drop', 'ALL',
+      '--security-opt', 'no-new-privileges',
+      '--user', '1000:1000',
       '-v', `${sourcePath.replace(/\\/g, '/')}:/workspace/${language === ProgrammingLanguage.JAVA ? 'Solution.java' : `solution.${extensions[language]}`}:ro`,
       image, language,
     ];
@@ -77,9 +84,10 @@ export class DockerSandboxProvider implements ISandboxProvider {
           spawn('docker', ['rm', '-f', containerName], { windowsHide: true, stdio: 'ignore' });
         };
 
+        // Strict watchdog timer: kills infinite loops within timeLimitMs + 1000ms
         const timer = setTimeout(() => {
           terminateContainer('timeout');
-        }, Math.max(4000, limits.timeLimitMs + 5000));
+        }, Math.max(1500, limits.timeLimitMs + 1000));
 
         child.stdout.on('data', (chunk: Buffer) => {
           output += chunk.toString();

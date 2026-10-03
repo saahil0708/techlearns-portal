@@ -49,6 +49,15 @@ export interface ProblemEntity {
   referenceSolution?: { language: string; code: string };
 }
 
+export interface ProblemTestCaseItem {
+  id?: string;
+  input: string;
+  expectedOutput: string;
+  explanation?: string;
+  isHidden?: boolean;
+  order?: number;
+}
+
 export interface NewProblemData {
   title: string;
   slug: string;
@@ -64,4 +73,6 @@ export interface NewProblemData {
   statementMarkdown: string;
   sampleInput: string;
   sampleOutput: string;
+  sampleExplanation?: string;
+  testCases?: ProblemTestCaseItem[];
 }

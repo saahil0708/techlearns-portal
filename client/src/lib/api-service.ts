@@ -625,6 +625,13 @@ export const apiService = {
     tags?: string[];
     points?: number;
     slug?: string;
+    testCases?: Array<{
+      input: string;
+      expectedOutput: string;
+      isHidden?: boolean;
+      explanation?: string;
+      order?: number;
+    }>;
   }) {
     const institutionId = input.institutionId || input.collegeId;
     const data = await fetchGraphQL<{ createProblem: any }>(CREATE_PROBLEM_MUTATION, {

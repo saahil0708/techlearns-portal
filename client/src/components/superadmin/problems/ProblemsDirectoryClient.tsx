@@ -290,6 +290,10 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
 
   const handleCreateProblem = async (data: NewProblemData) => {
     const tempId = `prob-${Date.now()}`;
+    const sampleCases = (data.testCases && data.testCases.filter((tc) => !tc.isHidden).length > 0)
+      ? data.testCases.filter((tc) => !tc.isHidden).map((tc) => ({ input: tc.input, output: tc.expectedOutput, explanation: tc.explanation }))
+      : [{ input: data.sampleInput, output: data.sampleOutput, explanation: data.sampleExplanation }];
+
     const newEntry: ProblemEntity = {
       id: tempId,
       code: data.code,
@@ -305,19 +309,14 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
       points: data.points,
       timeLimitMs: data.timeLimitMs,
       memoryLimitMb: data.memoryLimitMb,
-      testCasesCount: data.testCasesCount || 20,
+      testCasesCount: data.testCases?.length || data.testCasesCount || 20,
       authorName: 'Administrator',
       likes: 0,
       dislikes: 0,
       premium: false,
       companies: ['Community'],
       statementMarkdown: data.statementMarkdown,
-      sampleTestCases: [
-        {
-          input: data.sampleInput,
-          output: data.sampleOutput,
-        },
-      ],
+      sampleTestCases: sampleCases,
     };
     setProblems((prev) => [newEntry, ...prev]);
 
@@ -335,13 +334,14 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
             : 'MEDIUM',
         timeLimit: data.timeLimitMs,
         memoryLimit: data.memoryLimitMb,
+        testCases: data.testCases && data.testCases.length > 0 ? data.testCases : undefined,
       });
       if (created?.id) {
         setProblems((prev) =>
           prev.map((p) => (p.id === tempId ? { ...p, id: created.id } : p))
         );
       }
-      toast.success(`Problem "${data.title}" created and published.`, 'Problem Created');
+      toast.success(`Problem "${data.title}" created with ${data.testCases?.length || 1} test case(s).`, 'Problem Created');
     } catch {
       toast.info(`Problem "${data.title}" saved locally to repository.`, 'Problem Registered');
     }
