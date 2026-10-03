@@ -55,7 +55,8 @@ export default function StudentContestsTab({ contests }: StudentContestsTabProps
     );
   }, [contests, contestSearch]);
 
-  const bestRank = contests.length > 0 ? Math.min(...contests.map((c) => c.rank)) : 0;
+  const rankedContests = useMemo(() => contests.filter((c) => typeof c.rank === 'number' && c.rank > 0), [contests]);
+  const bestRank = rankedContests.length > 0 ? Math.min(...rankedContests.map((c) => c.rank)) : 0;
   const latestRating = contests.length > 0 ? contests[0].newRating : 1500;
   const totalContests = contests.length;
   const netDelta = contests.reduce((acc, c) => acc + (c.ratingDelta || 0), 0);
@@ -69,7 +70,7 @@ export default function StudentContestsTab({ contests }: StudentContestsTabProps
     return 'Newbie';
   };
 
-  const bestContest = contests.find((c) => c.rank === bestRank);
+  const bestContest = rankedContests.find((c) => c.rank === bestRank);
   const bestPercentile = bestContest && bestContest.totalParticipants > 0
     ? Math.max(1, Math.round((bestContest.rank / bestContest.totalParticipants) * 100))
     : null;

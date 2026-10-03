@@ -56,6 +56,12 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   }
 }
 
+@description('The frontend origins allowed for CORS requests')
+param allowedOrigins array = [
+  'https://techlearns.godigitify.com'
+  'http://localhost:3000'
+]
+
 resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' = {
   parent: storageAccount
   name: 'default'
@@ -63,9 +69,7 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01'
     cors: {
       corsRules: [
         {
-          allowedOrigins: [
-            '*'
-          ]
+          allowedOrigins: allowedOrigins
           allowedMethods: [
             'GET'
             'HEAD'

@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import StudentProfileClient from '@/components/students/profile/StudentProfileClient';
+import LoadingScreen from '@/components/ui/LoadingScreen';
 
 export const metadata: Metadata = {
   title: 'Student Profile & Competitive Record | CodePlatform',
@@ -12,9 +13,8 @@ export const metadata: Metadata = {
  */
 export default function StudentsRootPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<LoadingScreen mode="fullscreen" />}>
       <StudentProfileClient isOwner={true} />
     </Suspense>
   );
 }
-

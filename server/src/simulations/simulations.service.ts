@@ -146,7 +146,7 @@ export class SimulationsService {
     };
   }
 
-  async findOne(idOrKey: string) {
+  async findOne(idOrKey: string, currentUser?: CurrentUserPayload) {
     const ticket = await this.prisma.sprintTicket.findFirst({
       where: {
         OR: [{ id: idOrKey }, { key: idOrKey }],
@@ -164,6 +164,19 @@ export class SimulationsService {
     });
 
     if (!ticket) throw new NotFoundException('Sprint ticket not found');
+
+    const isGlobalSuperAdmin = currentUser?.globalRole === Role.SUPER_ADMIN;
+    if (ticket.institutionId && !isGlobalSuperAdmin && currentUser) {
+      const userInstitutionIds =
+        currentUser.memberships
+          ?.map((m) => m.institutionId)
+          .filter((id): id is string => Boolean(id)) ?? [];
+
+      if (!userInstitutionIds.includes(ticket.institutionId)) {
+        throw new NotFoundException('Sprint ticket not found');
+      }
+    }
+
     return ticket;
   }
 

@@ -88,6 +88,10 @@ describe('BlogsService', () => {
   });
 
   it('should increment claps on blog post', async () => {
+    mockPrismaService.blogPost.findUnique.mockResolvedValue({
+      id: 'blog-1',
+      claps: 9,
+    });
     mockPrismaService.blogPost.update.mockResolvedValue({
       id: 'blog-1',
       claps: 10,

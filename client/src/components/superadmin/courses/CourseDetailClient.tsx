@@ -1,6 +1,5 @@
 'use client';
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -23,8 +22,18 @@ import {
   InputAdornment,
   Divider,
   Collapse,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import RestartAltRoundedIcon from '@mui/icons-material/RestartAltRounded';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/context/ToastContext';
+import { apiService } from '@/lib/api-service';
 
 // Icons
 import { FluidArrowLeft } from '@/utils/fluid_arrow';
@@ -58,18 +67,33 @@ import PsychologyRoundedIcon from '@mui/icons-material/PsychologyRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import CodeOffRoundedIcon from '@mui/icons-material/CodeOffRounded';
 import LockOpenRoundedIcon from '@mui/icons-material/LockOpenRounded';
+import LockRoundedIcon from '@mui/icons-material/LockRounded';
 import ShareRoundedIcon from '@mui/icons-material/ShareRounded';
 import VideoLibraryRoundedIcon from '@mui/icons-material/VideoLibraryRounded';
 import MilitaryTechRoundedIcon from '@mui/icons-material/MilitaryTechRounded';
 import HubRoundedIcon from '@mui/icons-material/HubRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
+import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
+import CheckBoxRoundedIcon from '@mui/icons-material/CheckBoxRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded';
 
 import { useAppSelector } from '@/store/hooks';
 import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
 import ViewCertificateModal from '@/components/students/profile/ViewCertificateModal';
+import ModuleAuthoringModal from './ModuleAuthoringModal';
+import LessonAuthoringModal, { LessonAuthoringPayload } from './LessonAuthoringModal';
+import BulkImportCurriculumModal from './BulkImportCurriculumModal';
+import EditCourseModal from './EditCourseModal';
+import { DEFAULT_LEARNING_OUTCOMES } from './CreateCourseModal';
 import { InteractiveWarpGrid } from '@/components/common/InteractiveWarpGrid';
-import type { CourseDirectoryEntity } from '@/types/course';
+import type { CourseDirectoryEntity, CourseCategory } from '@/types/course';
 import type { StudentCertification } from '@/types/student-profile';
 
 interface CourseDetailClientProps {
@@ -120,6 +144,13 @@ interface TopicItem {
   problemTag?: string;
   importantNotes?: string[];
   problems?: SubModuleProblem[];
+  codingProblem?: any;
+  quizMCQ?: any;
+  quizAttempt?: any;
+  codeSubmission?: any;
+  userProgress?: any;
+  content?: string;
+  isCompleted?: boolean;
 }
 
 const pythonCatalog: Record<number, TopicItem[]> = {
@@ -529,52 +560,37 @@ const pythonCatalog: Record<number, TopicItem[]> = {
   };
 
 const getModuleTopicItems = (course: CourseDirectoryEntity, moduleIdx: number): TopicItem[] => {
-  const isPythonCourse = Boolean(
-    course.slug?.toLowerCase().includes('python') ||
-    course.code?.toLowerCase().includes('py') ||
-    course.title?.toLowerCase().includes('python')
-  );
+  const completedSet = new Set<string>((course as any).completedLessonIds || []);
 
   // 1. From course.modules[idx].lessons
   const backendModule = course.modules && course.modules[moduleIdx];
-  if (backendModule && Array.isArray(backendModule.lessons) && backendModule.lessons.length > 0) {
+  if (backendModule && Array.isArray(backendModule.lessons)) {
     return backendModule.lessons.map((lesson: any, lIdx: number) => {
       if (typeof lesson === 'string') {
         return {
-          id: `${moduleIdx}-${lIdx}`,
+          id: `local-${moduleIdx}-${lIdx}`,
           title: lesson,
           type: (lIdx % 3 === 0 ? 'guide' : lIdx % 3 === 1 ? 'reading' : 'lab') as any,
           duration: `${15 + (lIdx * 3) % 20} mins`,
-          problems: [
-            {
-              id: `p-${moduleIdx}-${lIdx}`,
-              title: `${lesson} Practice Challenge`,
-              difficulty: lIdx % 3 === 0 ? 'Easy' : lIdx % 3 === 1 ? 'Medium' : 'Hard',
-              score: 100 + lIdx * 20,
-              testCasesCount: 10 + lIdx * 2,
-              tags: [course.category || 'Practice'],
-            },
-          ],
+          isCompleted: false,
         };
       }
+      const lid = lesson.id || `local-${moduleIdx}-${lIdx}`;
       return {
-        id: lesson.id || `${moduleIdx}-${lIdx}`,
+        id: lid,
         title: lesson.title || `Lesson ${lIdx + 1}`,
-        type: (lesson.type || (lIdx % 3 === 0 ? 'guide' : lIdx % 3 === 1 ? 'reading' : 'lab')) as any,
+        type: (lesson.type || 'reading') as any,
         duration: lesson.duration || (lesson.durationMinutes ? `${lesson.durationMinutes} mins` : '15 mins'),
         summary: lesson.summary || lesson.description,
         problemTag: lesson.problemTag,
         importantNotes: lesson.importantNotes || lesson.keyTakeaways || [],
-        problems: lesson.problems || (lesson.practiceProblemsCount ? [
-          {
-            id: `p-${moduleIdx}-${lIdx}`,
-            title: `${lesson.title || 'Lesson'} Practice`,
-            difficulty: 'Medium',
-            score: 150,
-            testCasesCount: 12,
-            tags: [course.category || 'Practice'],
-          },
-        ] : []),
+        content: lesson.content,
+        quizMCQ: lesson.quizMCQ,
+        codingProblem: lesson.codingProblem,
+        quizAttempt: lesson.userProgress?.quizAttempt || lesson.quizAttempt,
+        codeSubmission: lesson.userProgress?.codeSubmission || lesson.codeSubmission,
+        userProgress: lesson.userProgress,
+        isCompleted: Boolean(lesson.isCompleted || completedSet.has(lid)),
       };
     });
   }
@@ -586,7 +602,7 @@ const getModuleTopicItems = (course: CourseDirectoryEntity, moduleIdx: number): 
     if (levelMod) {
       if (Array.isArray(levelMod.topics) && levelMod.topics.length > 0) {
         return levelMod.topics.map((t: any, tIdx: number) => ({
-          id: `${moduleIdx}-${tIdx}`,
+          id: `local-${moduleIdx}-${tIdx}`,
           title: typeof t === 'string' ? t : t.title || `Topic ${tIdx + 1}`,
           type: (tIdx % 3 === 0 ? 'guide' : tIdx % 3 === 1 ? 'reading' : 'lab') as any,
           duration: `${15 + (tIdx * 4) % 20} mins`,
@@ -594,7 +610,7 @@ const getModuleTopicItems = (course: CourseDirectoryEntity, moduleIdx: number): 
       }
       if (Array.isArray(levelMod.lessons) && levelMod.lessons.length > 0) {
         return levelMod.lessons.map((l: any, lIdx: number) => ({
-          id: `${moduleIdx}-${lIdx}`,
+          id: `local-${moduleIdx}-${lIdx}`,
           title: typeof l === 'string' ? l : l.title || `Lesson ${lIdx + 1}`,
           type: (lIdx % 3 === 0 ? 'guide' : lIdx % 3 === 1 ? 'reading' : 'lab') as any,
           duration: `${15 + (lIdx * 4) % 20} mins`,
@@ -603,40 +619,7 @@ const getModuleTopicItems = (course: CourseDirectoryEntity, moduleIdx: number): 
     }
   }
 
-  // 3. If python course, show python catalog
-  if (isPythonCourse && pythonCatalog[moduleIdx]) {
-    return pythonCatalog[moduleIdx];
-  }
-
-  // 4. From course.moduleHighlights[moduleIdx].lessons
-  const modHighlight = course.moduleHighlights && course.moduleHighlights[moduleIdx];
-  if (modHighlight && typeof modHighlight.lessons === 'number' && modHighlight.lessons > 0) {
-    return Array.from({ length: modHighlight.lessons }, (_, lIdx) => ({
-      id: `${moduleIdx}-${lIdx}`,
-      title: `${modHighlight.title} - Concept ${lIdx + 1}`,
-      type: (lIdx % 3 === 0 ? 'guide' : lIdx % 3 === 1 ? 'reading' : 'lab') as any,
-      duration: `${15 + (lIdx * 3) % 20} mins`,
-      problems: [
-        {
-          id: `p-${moduleIdx}-${lIdx}`,
-          title: `${modHighlight.title} Challenge ${lIdx + 1}`,
-          difficulty: lIdx % 2 === 0 ? 'Easy' : 'Medium',
-          score: 100 + lIdx * 20,
-          testCasesCount: 10 + lIdx * 2,
-          tags: [course.category || 'Practice'],
-        },
-      ],
-    }));
-  }
-
-  return [
-    {
-      id: `${moduleIdx}-0`,
-      title: `${modHighlight?.title || `Module ${moduleIdx + 1}`} Overview & Architecture`,
-      type: 'guide',
-      duration: '15 mins',
-    },
-  ];
+  return [];
 };
 
 const getBadgeForType = (type: TopicItem['type']) => {
@@ -680,6 +663,8 @@ export default function CourseDetailClient({
   course,
   role = 'superadmin',
 }: CourseDetailClientProps) {
+  const router = useRouter();
+  const toast = useToast();
   const authUser = useAppSelector((state) => state.auth.user);
   const certStudentName = role === 'student' ? (authUser?.name || 'Student') : 'Your Name';
   const isStudent = role === 'student';
@@ -689,14 +674,584 @@ export default function CourseDetailClient({
   const [labSearch, setLabSearch] = useState<string>('');
   const [selectedCert, setSelectedCert] = useState<StudentCertification | null>(null);
 
-  // Module Accordion Collapse/Expand State
-  const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>(() => {
-    const initial: Record<number, boolean> = {};
-    (course.moduleHighlights || []).forEach((_, idx) => {
-      initial[idx] = idx === 0; // First module open by default
+  // Live Enrollment & Progress State
+  const [isEnrolled, setIsEnrolled] = useState<boolean>(false);
+  const [isEnrolling, setIsEnrolling] = useState<boolean>(false);
+  const [userProgressPct, setUserProgressPct] = useState<number>(0);
+
+  const [liveCourse, setLiveCourse] = useState<CourseDirectoryEntity>(course);
+  const [isStudioMode, setIsStudioMode] = useState<boolean>(!isStudent);
+  const [isTogglingPublish, setIsTogglingPublish] = useState<boolean>(false);
+
+  // Live Course Roster State
+  const [liveRoster, setLiveRoster] = useState<EnrolledStudent[]>([]);
+  const [hasFetchedRoster, setHasFetchedRoster] = useState<boolean>(false);
+  const [rosterFetchError, setRosterFetchError] = useState<string | null>(null);
+  const [isRosterLoading, setIsRosterLoading] = useState<boolean>(false);
+  const [isExportingRoster, setIsExportingRoster] = useState<boolean>(false);
+  const latestRosterRequestIdRef = useRef<number>(0);
+
+  // Authoring Modals State
+  const [isEditCourseModalOpen, setIsEditCourseModalOpen] = useState<boolean>(false);
+  const [isAddModuleOpen, setIsAddModuleOpen] = useState<boolean>(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState<boolean>(false);
+  const [moduleToEdit, setModuleToEdit] = useState<{ id?: string; title: string; description?: string; index?: number } | null>(null);
+  const [isAddLessonOpen, setIsAddLessonOpen] = useState<boolean>(false);
+  const [targetModuleForLesson, setTargetModuleForLesson] = useState<{ id?: string; index: number; title: string } | null>(null);
+  const [lessonToEdit, setLessonToEdit] = useState<{ id?: string; moduleIndex: number; lessonIndex: number; data: any } | null>(null);
+
+  // Learning Outcomes Authoring State
+  const [isEditOutcomesOpen, setIsEditOutcomesOpen] = useState<boolean>(false);
+  const [editableOutcomes, setEditableOutcomes] = useState<string[]>([]);
+  const [newOutcomeText, setNewOutcomeText] = useState<string>('');
+  const [isSavingOutcomes, setIsSavingOutcomes] = useState<boolean>(false);
+
+  const currentCourseIdRef = useRef<string>(course?.id || course?.slug || '');
+
+  // Sync state if course prop changes and refresh live data on mount
+  useEffect(() => {
+    setLiveCourse(course);
+    const targetCourseId = course?.id || course?.slug;
+    currentCourseIdRef.current = targetCourseId || '';
+    if (targetCourseId) {
+      refreshLiveCourse(targetCourseId);
+    }
+  }, [course]);
+
+  const refreshLiveCourse = async (targetId?: string) => {
+    const courseIdToFetch = targetId || course?.id || liveCourse?.id || course?.slug;
+    if (!courseIdToFetch) return;
+    try {
+      const fetched = await apiService.getCourseById(courseIdToFetch);
+      // Ignore response if course prop has changed before it arrives
+      if (
+        currentCourseIdRef.current &&
+        currentCourseIdRef.current !== courseIdToFetch &&
+        fetched?.id !== currentCourseIdRef.current &&
+        fetched?.slug !== currentCourseIdRef.current
+      ) {
+        return;
+      }
+      if (fetched) {
+        setLiveCourse((prev) => {
+          if (prev.id && fetched.id && prev.id !== fetched.id && prev.slug !== fetched.slug) {
+            return prev;
+          }
+          return {
+            ...prev,
+            ...fetched,
+            status: fetched.status === 'PUBLISHED' ? 'Published' : 'Draft',
+            learningOutcomes: fetched.learningOutcomes || (Array.isArray(fetched.whatYouWillLearn) ? fetched.whatYouWillLearn.map((i: any) => typeof i === 'string' ? i : i.title || i.description) : prev.learningOutcomes),
+            modules: fetched.modules || prev.modules || [],
+            modulesCount: fetched.modules?.length ?? prev.modulesCount,
+            lessonsCount: fetched.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) ?? prev.lessonsCount,
+          };
+        });
+      }
+    } catch (err) {
+      console.warn('Could not reload fresh course data:', err);
+    }
+  };
+
+  const handleOpenEditOutcomes = () => {
+    setEditableOutcomes([...learningItems]);
+    setNewOutcomeText('');
+    setIsEditOutcomesOpen(true);
+  };
+
+  const handleAddEditableOutcome = (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e && 'key' in e && e.key !== 'Enter') return;
+    if (e) e.preventDefault();
+    const trimmed = newOutcomeText.trim();
+    if (trimmed && !editableOutcomes.includes(trimmed)) {
+      setEditableOutcomes([...editableOutcomes, trimmed]);
+      setNewOutcomeText('');
+    }
+  };
+
+  const handleRemoveEditableOutcome = (index: number) => {
+    setEditableOutcomes(editableOutcomes.filter((_, idx) => idx !== index));
+  };
+
+  const handleResetEditableOutcomes = () => {
+    const cat = liveCourse.category as CourseCategory;
+    const defaults = DEFAULT_LEARNING_OUTCOMES[cat] || [
+      `Learn ${liveCourse.category || liveCourse.title} Syntax & Core Fundamentals`,
+      'Problem Solving with Algorithmic Patterns',
+      'Practice Conditionals, Loops & Recursion',
+      '500 to 1350 Difficulty Rating Coding Labs',
+      'Object-Oriented Programming (OOP) & Modularity',
+      'Automated Sandbox Runner with Instant Verdicts',
+    ];
+    setEditableOutcomes([...defaults]);
+  };
+
+  const handleSaveOutcomesToBackend = async () => {
+    const cleaned = editableOutcomes.filter((item) => Boolean(item.trim()));
+    if (cleaned.length === 0) {
+      toast.warning('Please include at least one learning outcome point.', 'Validation');
+      return;
+    }
+
+    setIsSavingOutcomes(true);
+    try {
+      await apiService.updateCourse(liveCourse.id || course.id, {
+        learningOutcomes: cleaned,
+      });
+
+      setLiveCourse((prev) => ({
+        ...prev,
+        learningOutcomes: cleaned,
+        whatYouWillLearn: cleaned.map((title) => ({ title, description: title })),
+      }));
+
+      setIsEditOutcomesOpen(false);
+      toast.success('Course learning outcomes saved successfully!', 'Saved to Backend');
+      await refreshLiveCourse();
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to save learning outcomes to server.', 'Save Failed');
+    } finally {
+      setIsSavingOutcomes(false);
+    }
+  };
+
+  const handleTogglePublish = async () => {
+    setIsTogglingPublish(true);
+    try {
+      const isCurrentlyPublished = liveCourse.status === 'Published' || (liveCourse.status as string) === 'PUBLISHED';
+      if (isCurrentlyPublished) {
+        await apiService.unpublishCourse(liveCourse.id || course.id);
+        setLiveCourse((prev) => ({ ...prev, status: 'Draft' }));
+        toast.info(`Course "${liveCourse.title}" unpublished to Draft status.`, 'Course Unpublished');
+      } else {
+        await apiService.publishCourse(liveCourse.id || course.id);
+        setLiveCourse((prev) => ({ ...prev, status: 'Published' }));
+        toast.success(`Course "${liveCourse.title}" published into active catalog!`, 'Course Published');
+      }
+      await refreshLiveCourse();
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update course publishing status.', 'Status Update Failed');
+    } finally {
+      setIsTogglingPublish(false);
+    }
+  };
+
+  const fetchLiveRoster = async () => {
+    if (!liveCourse?.id || isStudent) return;
+    const currentReqId = ++latestRosterRequestIdRef.current;
+    setIsRosterLoading(true);
+    setRosterFetchError(null);
+    try {
+      const rosterRes = await apiService.getCourseRoster(liveCourse.id || course.id, {
+        search: studentSearch?.trim() || undefined,
+        limit: 100,
+      });
+      if (currentReqId !== latestRosterRequestIdRef.current) return;
+      const rawList: any[] = rosterRes?.items || (Array.isArray(rosterRes) ? rosterRes : []);
+      const mapped: EnrolledStudent[] = rawList.map((r: any) => ({
+        id: r.id || r.userId,
+        name: r.name || r.user?.name || 'Student Member',
+        handle: r.handle || r.user?.handle || r.email?.split('@')[0] || 'student',
+        institution: r.institution || r.user?.institution?.name || 'Academic Institution',
+        enrolledDate: r.enrolledDate ? new Date(r.enrolledDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recently',
+        progressPct: r.progressPct ?? r.progress ?? 0,
+        completedLessons: r.completedLessons ?? 0,
+        quizScorePct: r.quizScorePct ?? r.score ?? 85,
+        lastActive: r.lastActive ? new Date(r.lastActive).toLocaleDateString() : 'Active Today',
+        status: r.status === 'COMPLETED' ? 'Completed' : r.status === 'DROPPED' ? 'Inactive' : 'In Progress',
+      }));
+      setLiveRoster(mapped);
+      setHasFetchedRoster(true);
+    } catch (err: any) {
+      if (currentReqId !== latestRosterRequestIdRef.current) return;
+      setLiveRoster([]);
+      setHasFetchedRoster(true);
+      setRosterFetchError(err?.message || 'Failed to load course roster.');
+      toast.error(err?.message || 'Failed to load live course roster from server.', 'Roster Error');
+    } finally {
+      if (currentReqId === latestRosterRequestIdRef.current) {
+        setIsRosterLoading(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'students' && !isStudent) {
+      fetchLiveRoster();
+    }
+  }, [activeTab, studentSearch, liveCourse.id]);
+
+  const handleExportRosterCsv = async () => {
+    setIsExportingRoster(true);
+    try {
+      const blob = await apiService.exportCourseRosterCsv(liveCourse.id || course.id);
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'text/csv;charset=utf-8;' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `course-${liveCourse.slug || liveCourse.id}-roster.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Course gradebook roster CSV exported successfully!', 'Roster Exported');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to export course roster CSV.', 'Export Failed');
+    } finally {
+      setIsExportingRoster(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isStudent) return;
+    let isMounted = true;
+    async function checkEnrollment() {
+      try {
+        const [enrolledList, me] = await Promise.all([
+          apiService.getEnrolledCourses().catch(() => null),
+          apiService.getMe().catch(() => null),
+        ]);
+        if (isMounted) {
+          let found = false;
+          let prog = 0;
+          if (Array.isArray(enrolledList)) {
+            const match = enrolledList.find(
+              (e: any) =>
+                e.courseId === course.id ||
+                (e.course && (e.course.id === course.id || e.course.slug === course.slug)),
+            );
+            if (match) {
+              found = true;
+              prog = match.status === 'COMPLETED' ? 100 : (match.progressPct ?? 25);
+            }
+          }
+          if (!found && me?.enrollments && Array.isArray(me.enrollments)) {
+            const match = me.enrollments.find(
+              (e: any) => e.courseId === course.id || e.course?.slug === course.slug,
+            );
+            if (match) {
+              found = true;
+              prog = match.progressPct ?? 25;
+            }
+          }
+          setIsEnrolled(found);
+          setUserProgressPct(prog);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    checkEnrollment();
+    return () => {
+      isMounted = false;
+    };
+  }, [course.id, course.slug, isStudent]);
+
+  // Module Handlers
+  const handleOpenAddModule = () => {
+    setModuleToEdit(null);
+    setIsAddModuleOpen(true);
+  };
+
+  const handleOpenEditModule = (mod: any, index: number) => {
+    setModuleToEdit({
+      id: mod.id,
+      title: mod.title,
+      description: mod.description || '',
+      index,
     });
-    return initial;
-  });
+    setIsAddModuleOpen(true);
+  };
+
+  const handleSaveModule = async (data: { title: string; description: string }) => {
+    try {
+      if (moduleToEdit?.id) {
+        await apiService.updateCourseModule(moduleToEdit.id, data);
+        toast.success(`Module "${data.title}" updated successfully!`, 'Module Updated');
+      } else {
+        await apiService.createCourseModule(liveCourse.id || course.id, {
+          title: data.title,
+          description: data.description,
+          order: liveCourse.modules?.length || 0,
+        });
+        toast.success(`Module "${data.title}" added to curriculum!`, 'Module Created');
+      }
+      await refreshLiveCourse();
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to save module.', 'Module Save Failed');
+      throw err;
+    }
+  };
+
+  const handleDeleteModule = async (moduleIndex: number, moduleId?: string) => {
+    if (!window.confirm('Are you sure you want to delete this module and all its submodules?')) return;
+    try {
+      if (moduleId && !moduleId.startsWith('mod-') && !moduleId.startsWith('highlight-')) {
+        await apiService.deleteCourseModule(moduleId);
+      }
+      setLiveCourse((prev) => {
+        const nextModules = [...(prev.modules || [])];
+        if (nextModules.length > moduleIndex) {
+          nextModules.splice(moduleIndex, 1);
+        }
+        return {
+          ...prev,
+          modules: nextModules,
+          modulesCount: nextModules.length,
+          lessonsCount: nextModules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0),
+        };
+      });
+      toast.success('Curriculum module deleted.', 'Module Deleted');
+      await refreshLiveCourse();
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete module.', 'Delete Failed');
+    }
+  };
+
+  const handleReorderModule = async (moduleIndex: number, direction: 'up' | 'down') => {
+    const currentMods = [...(liveCourse.modules || [])];
+    const targetIndex = direction === 'up' ? moduleIndex - 1 : moduleIndex + 1;
+    if (targetIndex < 0 || targetIndex >= currentMods.length) return;
+
+    const [moved] = currentMods.splice(moduleIndex, 1);
+    currentMods.splice(targetIndex, 0, moved);
+
+    setLiveCourse((prev) => ({
+      ...prev,
+      modules: currentMods,
+    }));
+
+    try {
+      const payload = currentMods
+        .filter((m) => m.id && !m.id.startsWith('highlight-'))
+        .map((m, idx) => ({ id: m.id, order: idx }));
+      if (payload.length > 0) {
+        await apiService.reorderCourseModules(liveCourse.id || course.id, payload);
+      }
+    } catch (err) {
+      console.warn('Module reorder sync note:', err);
+    }
+  };
+
+  // Submodule / Lesson Handlers
+  const handleOpenAddLesson = (mod: any, moduleIndex: number) => {
+    setTargetModuleForLesson({
+      id: mod.id,
+      index: moduleIndex,
+      title: mod.title,
+    });
+    setLessonToEdit(null);
+    setIsAddLessonOpen(true);
+  };
+
+  const handleOpenEditLesson = (lessonItem: any, moduleIndex: number, lessonIndex: number, moduleTitle: string) => {
+    setTargetModuleForLesson({
+      id: lessonItem.moduleId || liveCourse.modules?.[moduleIndex]?.id,
+      index: moduleIndex,
+      title: moduleTitle,
+    });
+    setLessonToEdit({
+      id: lessonItem.id,
+      moduleIndex,
+      lessonIndex,
+      data: lessonItem,
+    });
+    setIsAddLessonOpen(true);
+  };
+
+  const handleSaveLesson = async (payload: LessonAuthoringPayload) => {
+    try {
+      if (lessonToEdit?.id && !lessonToEdit.id.startsWith('local-')) {
+        await apiService.updateCourseLesson(lessonToEdit.id, payload);
+        toast.success(`Submodule "${payload.title}" updated!`, 'Submodule Saved');
+      } else {
+        const moduleId = targetModuleForLesson?.id || liveCourse.modules?.[targetModuleForLesson?.index ?? 0]?.id;
+        if (!moduleId || moduleId.startsWith('highlight-')) {
+          // If the parent module is not yet persisted to backend, inform user
+          toast.error('Please create/save the parent module on the server first before adding lessons.', 'Action Required');
+          return;
+        }
+        await apiService.createCourseLesson(moduleId, {
+          ...payload,
+          order: liveCourse.modules?.[targetModuleForLesson?.index ?? 0]?.lessons?.length || 0,
+        });
+        toast.success(`Submodule "${payload.title}" added to curriculum!`, 'Submodule Created');
+      }
+      await refreshLiveCourse();
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to save submodule.', 'Save Failed');
+      throw err;
+    }
+  };
+
+  const handleDeleteLesson = async (moduleIndex: number, lessonIndex: number, lessonId?: string) => {
+    if (!window.confirm('Are you sure you want to delete this submodule?')) return;
+    try {
+      if (lessonId && !lessonId.startsWith('local-')) {
+        await apiService.deleteCourseLesson(lessonId);
+      }
+      setLiveCourse((prev) => {
+        const nextModules = [...(prev.modules || [])];
+        if (nextModules[moduleIndex]) {
+          const nextLessons = [...(nextModules[moduleIndex].lessons || [])];
+          nextLessons.splice(lessonIndex, 1);
+          nextModules[moduleIndex] = {
+            ...nextModules[moduleIndex],
+            lessons: nextLessons,
+          };
+        }
+        return {
+          ...prev,
+          modules: nextModules,
+          lessonsCount: nextModules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0),
+        };
+      });
+      toast.success('Submodule deleted.', 'Submodule Removed');
+      await refreshLiveCourse();
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete submodule.', 'Delete Failed');
+    }
+  };
+
+  const handleReorderLesson = async (moduleIndex: number, lessonIndex: number, direction: 'up' | 'down') => {
+    const currentMods = [...(liveCourse.modules || [])];
+    const targetModule = currentMods[moduleIndex];
+    if (!targetModule || !targetModule.lessons) return;
+
+    const currentLessons = [...targetModule.lessons];
+    const targetIndex = direction === 'up' ? lessonIndex - 1 : lessonIndex + 1;
+    if (targetIndex < 0 || targetIndex >= currentLessons.length) return;
+
+    const [moved] = currentLessons.splice(lessonIndex, 1);
+    currentLessons.splice(targetIndex, 0, moved);
+
+    currentMods[moduleIndex] = {
+      ...targetModule,
+      lessons: currentLessons,
+    };
+
+    setLiveCourse((prev) => ({
+      ...prev,
+      modules: currentMods,
+    }));
+
+    try {
+      if (targetModule.id && !targetModule.id.startsWith('highlight-')) {
+        const payload = currentLessons
+          .filter((l: any) => l.id && !String(l.id).startsWith('local-'))
+          .map((l: any, idx: number) => ({ id: l.id, order: idx }));
+        if (payload.length > 0) {
+          await apiService.reorderCourseLessons(targetModule.id, payload);
+        }
+      }
+    } catch (err) {
+      console.warn('Lesson reorder sync note:', err);
+    }
+  };
+
+  const handleEnrollOrStart = async (lessonKey?: string) => {
+    const targetUrl = lessonKey
+      ? `/courses/${liveCourse.slug || liveCourse.id}?lesson=${encodeURIComponent(lessonKey)}`
+      : `/courses/${liveCourse.slug || liveCourse.id}?mode=workspace`;
+
+    if (!isStudent || isEnrolled) {
+      router.push(targetUrl);
+      return;
+    }
+
+    setIsEnrolling(true);
+    try {
+      await apiService.enrollInCourse(liveCourse.id || course.id);
+      setIsEnrolled(true);
+      toast.success(`Successfully enrolled in ${liveCourse.title}!`, 'Enrolled');
+      router.push(targetUrl);
+    } catch (err: any) {
+      const isAlreadyEnrolled =
+        err?.response?.status === 409 ||
+        err?.status === 409 ||
+        err?.response?.data?.message?.toLowerCase()?.includes('already enrolled') ||
+        err?.message?.toLowerCase()?.includes('already enrolled');
+
+      if (isAlreadyEnrolled) {
+        setIsEnrolled(true);
+        router.push(targetUrl);
+      } else {
+        const errorMsg =
+          err?.response?.data?.message || err?.message || 'Failed to enroll in course.';
+        toast.error(errorMsg, 'Enrollment Failed');
+      }
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
+
+  // Computed live curriculum modules (empty array if 0 modules)
+  const displayModules = useMemo(() => {
+    if (Array.isArray(liveCourse.modules) && liveCourse.modules.length > 0) {
+      return liveCourse.modules;
+    }
+    return [];
+  }, [liveCourse.modules]);
+
+  // Flat map of module topic items for sequential gating & completion stats
+  const moduleTopicMap = useMemo(() => {
+    const map: Record<number, TopicItem[]> = {};
+    displayModules.forEach((_, idx) => {
+      map[idx] = getModuleTopicItems(liveCourse, idx);
+    });
+    return map;
+  }, [displayModules, liveCourse]);
+
+  const allSubmoduleItems = useMemo(() => {
+    return displayModules.flatMap((_, idx) => moduleTopicMap[idx] || []);
+  }, [displayModules, moduleTopicMap]);
+
+  const completedCount = useMemo(() => {
+    return allSubmoduleItems.filter((item) => item.isCompleted).length;
+  }, [allSubmoduleItems]);
+
+  const courseCompletionPct = useMemo(() => {
+    if (allSubmoduleItems.length === 0) return 0;
+    return Math.round((completedCount / allSubmoduleItems.length) * 100);
+  }, [allSubmoduleItems.length, completedCount]);
+
+  // Sequential module locking: Module 0 is unlocked. Module i (i > 0) is unlocked if all submodules in Module i - 1 are completed.
+  const isModuleUnlocked = (mIdx: number): boolean => {
+    if (!isStudent && isStudioMode) return true;
+    if (mIdx === 0) return true;
+    for (let prev = 0; prev < mIdx; prev++) {
+      const prevTopics = moduleTopicMap[prev] || [];
+      if (prevTopics.length === 0) continue;
+      const allDone = prevTopics.every((t) => t.isCompleted);
+      if (!allDone) return false;
+    }
+    return true;
+  };
+
+  // Sequential submodule locking: If parent module is locked, submodule is locked.
+  // Within parent module: submodule 0 is unlocked. Submodule sIdx (sIdx > 0) is unlocked if submodule sIdx - 1 is completed.
+  const isSubmoduleUnlocked = (mIdx: number, sIdx: number): boolean => {
+    if (!isStudent && isStudioMode) return true;
+    if (!isModuleUnlocked(mIdx)) return false;
+    if (sIdx === 0) return true;
+    const currentTopics = moduleTopicMap[mIdx] || [];
+    const prevSub = currentTopics[sIdx - 1];
+    return Boolean(prevSub?.isCompleted);
+  };
+
+  // Module Accordion Collapse/Expand State
+  const [expandedModules, setExpandedModules] = useState<Record<number, boolean>>({});
+
+  useEffect(() => {
+    if (Array.isArray(liveCourse.modules)) {
+      setExpandedModules((prev) => {
+        const nextState: Record<number, boolean> = {};
+        liveCourse.modules!.forEach((_, idx) => {
+          nextState[idx] = prev[idx] !== undefined ? prev[idx] : idx === 0;
+        });
+        return nextState;
+      });
+    }
+  }, [liveCourse.modules]);
 
   const toggleModule = (idx: number) => {
     setExpandedModules((prev) => ({
@@ -706,14 +1261,14 @@ export default function CourseDetailClient({
   };
 
   const allExpanded = useMemo(() => {
-    if (!course.moduleHighlights || course.moduleHighlights.length === 0) return false;
-    return course.moduleHighlights.every((_, idx) => !!expandedModules[idx]);
-  }, [course.moduleHighlights, expandedModules]);
+    if (!displayModules || displayModules.length === 0) return false;
+    return displayModules.every((_, idx) => !!expandedModules[idx]);
+  }, [displayModules, expandedModules]);
 
   const toggleAllModules = () => {
     const nextVal = !allExpanded;
     const nextState: Record<number, boolean> = {};
-    (course.moduleHighlights || []).forEach((_, idx) => {
+    (displayModules || []).forEach((_, idx) => {
       nextState[idx] = nextVal;
     });
     setExpandedModules(nextState);
@@ -741,7 +1296,7 @@ export default function CourseDetailClient({
         institution: 'Stanford University',
         enrolledDate: 'Jan 15, 2025',
         progressPct: 94,
-        completedLessons: Math.round(course.lessonsCount * 0.94),
+        completedLessons: Math.round((liveCourse.lessonsCount || 0) * 0.94),
         quizScorePct: 96,
         lastActive: '10 mins ago',
         status: 'In Progress',
@@ -753,7 +1308,7 @@ export default function CourseDetailClient({
         institution: 'MIT EECS',
         enrolledDate: 'Jan 18, 2025',
         progressPct: 100,
-        completedLessons: course.lessonsCount,
+        completedLessons: liveCourse.lessonsCount || 0,
         quizScorePct: 98,
         lastActive: 'Yesterday',
         status: 'Completed',
@@ -765,7 +1320,7 @@ export default function CourseDetailClient({
         institution: 'IIT Delhi',
         enrolledDate: 'Jan 22, 2025',
         progressPct: 82,
-        completedLessons: Math.round(course.lessonsCount * 0.82),
+        completedLessons: Math.round((liveCourse.lessonsCount || 0) * 0.82),
         quizScorePct: 88,
         lastActive: '2 hours ago',
         status: 'In Progress',
@@ -777,7 +1332,7 @@ export default function CourseDetailClient({
         institution: 'Oxford Computing',
         enrolledDate: 'Feb 02, 2025',
         progressPct: 65,
-        completedLessons: Math.round(course.lessonsCount * 0.65),
+        completedLessons: Math.round((liveCourse.lessonsCount || 0) * 0.65),
         quizScorePct: 84,
         lastActive: '3 days ago',
         status: 'In Progress',
@@ -789,7 +1344,7 @@ export default function CourseDetailClient({
         institution: 'UC Berkeley',
         enrolledDate: 'Feb 10, 2025',
         progressPct: 45,
-        completedLessons: Math.round(course.lessonsCount * 0.45),
+        completedLessons: Math.round((liveCourse.lessonsCount || 0) * 0.45),
         quizScorePct: 90,
         lastActive: '5 hours ago',
         status: 'In Progress',
@@ -801,13 +1356,13 @@ export default function CourseDetailClient({
         institution: 'Tokyo Tech',
         enrolledDate: 'Feb 14, 2025',
         progressPct: 20,
-        completedLessons: Math.round(course.lessonsCount * 0.2),
+        completedLessons: Math.round((liveCourse.lessonsCount || 0) * 0.2),
         quizScorePct: 75,
         lastActive: '1 week ago',
         status: 'Inactive',
       },
     ],
-    [course]
+    [liveCourse]
   );
 
   // Seeded Assignments Dataset
@@ -861,12 +1416,9 @@ export default function CourseDetailClient({
     []
   );
 
-  const filteredStudents = enrolledStudents.filter(
-    (s) =>
-      s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
-      s.handle.toLowerCase().includes(studentSearch.toLowerCase()) ||
-      s.institution.toLowerCase().includes(studentSearch.toLowerCase())
-  );
+  const filteredStudents = useMemo(() => {
+    return liveRoster;
+  }, [liveRoster]);
 
   const filteredLabs = courseAssignments.filter(
     (l) =>
@@ -875,38 +1427,61 @@ export default function CourseDetailClient({
   );
 
   const getModuleProblemsCount = (mod: any, idx: number, topics: TopicItem[]) => {
-    const problemsInTopics = topics.reduce((acc, t) => acc + (t.problems?.length || 0), 0);
-    if (problemsInTopics > 0) return problemsInTopics;
-    if (typeof mod.lessons === 'number') return mod.lessons * 2;
-    return 10;
+    let count = 0;
+    if (topics && topics.length > 0) {
+      for (const t of topics) {
+        if (Array.isArray(t.problems) && t.problems.length > 0) {
+          count += t.problems.length;
+        } else if (t.codingProblem || t.type === 'lab') {
+          count += 1;
+        }
+      }
+    } else if (Array.isArray(mod?.lessons) && mod.lessons.length > 0) {
+      for (const l of mod.lessons) {
+        if (Array.isArray(l.problems) && l.problems.length > 0) {
+          count += l.problems.length;
+        } else if (l.codingProblem || l.type === 'lab') {
+          count += 1;
+        }
+      }
+    }
+    return count;
   };
 
   const totalProblemsCount = useMemo(() => {
-    if (course.moduleHighlights && course.moduleHighlights.length > 0) {
-      return course.moduleHighlights.reduce((total, mod, idx) => {
-        const topics = getModuleTopicItems(course, idx);
-        return total + getModuleProblemsCount(mod, idx, topics);
-      }, 0);
-    }
-    return 40;
-  }, [course]);
+    if (!displayModules || displayModules.length === 0) return 0;
+    return displayModules.reduce((total, mod, idx) => {
+      const topics = getModuleTopicItems(liveCourse, idx);
+      return total + getModuleProblemsCount(mod, idx, topics);
+    }, 0);
+  }, [displayModules, liveCourse]);
 
   const learningItems = useMemo(() => {
-    if (course.whatYouWillLearn && course.whatYouWillLearn.length > 0) {
-      return course.whatYouWillLearn.map((item: any) => typeof item === 'string' ? item : item.title || item.description);
+    if (Array.isArray(liveCourse.learningOutcomes) && liveCourse.learningOutcomes.length > 0) {
+      return liveCourse.learningOutcomes;
+    }
+    if (Array.isArray(liveCourse.learningItems) && liveCourse.learningItems.length > 0) {
+      return liveCourse.learningItems;
+    }
+    if (liveCourse.whatYouWillLearn && liveCourse.whatYouWillLearn.length > 0) {
+      return liveCourse.whatYouWillLearn.map((item: any) => typeof item === 'string' ? item : item.title || item.description);
+    }
+    const cat = liveCourse.category as CourseCategory;
+    if (cat && DEFAULT_LEARNING_OUTCOMES[cat]) {
+      return DEFAULT_LEARNING_OUTCOMES[cat];
     }
     return [
-      `Learn ${course.category || course.title} Syntax & Core Fundamentals`,
+      `Learn ${liveCourse.category || liveCourse.title} Syntax & Core Fundamentals`,
       'Problem Solving with Algorithmic Patterns',
       'Practice Conditionals, Loops & Recursion',
       '500 to 1350 Difficulty Rating Coding Labs',
       'Object-Oriented Programming (OOP) & Modularity',
       'Automated Sandbox Runner with Instant Verdicts',
     ];
-  }, [course]);
+  }, [liveCourse]);
 
   const innerContent = (
-    <Box sx={{ maxWidth: 1440, width: '100%', mx: 'auto', px: role === 'student' ? 0 : { xs: 2, sm: 3, md: 4.5 }, display: 'flex', flexDirection: 'column', gap: 3.5, pb: { xs: 6, md: 8 } }}>
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 3.5 }}>
       {/* Breadcrumb & Global Action Controls */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         {/* Breadcrumb Navigation Trail */}
@@ -937,11 +1512,33 @@ export default function CourseDetailClient({
               whiteSpace: 'nowrap',
             }}
           >
-            {course.title}
+            {liveCourse.title}
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+          {(!isStudent || isStudioMode) && (
+            <Button
+              variant="outlined"
+              onClick={() => setIsEditCourseModalOpen(true)}
+              startIcon={<EditRoundedIcon sx={{ fontSize: 17 }} />}
+              sx={{
+                bgcolor: '#FFFFFF',
+                color: '#2563EB',
+                borderColor: '#BFDBFE',
+                borderRadius: '10px',
+                textTransform: 'none',
+                fontWeight: 700,
+                fontSize: '0.84rem',
+                px: 2,
+                py: 0.7,
+                '&:hover': { bgcolor: '#EFF6FF', borderColor: '#93C5FD' },
+              }}
+            >
+              Edit Course Details
+            </Button>
+          )}
+
           <Button
             variant="outlined"
             startIcon={<FileDownloadRoundedIcon sx={{ fontSize: 18 }} />}
@@ -962,11 +1559,19 @@ export default function CourseDetailClient({
           </Button>
           <Button
             variant="contained"
-            component={Link}
-            href={`/courses/${course.slug || course.id}?lesson=0-0`}
-            startIcon={<PlayArrowRoundedIcon sx={{ fontSize: 19 }} />}
+            disabled={isEnrolling}
+            onClick={() => handleEnrollOrStart('0-0')}
+            startIcon={
+              isEnrolling ? (
+                <CircularProgress size={16} sx={{ color: '#FFFFFF' }} />
+              ) : (
+                <PlayArrowRoundedIcon sx={{ fontSize: 19 }} />
+              )
+            }
             sx={{
-              background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+              background: isEnrolled
+                ? 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)'
+                : 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
               color: '#FFFFFF',
               borderRadius: '10px',
               textTransform: 'none',
@@ -974,306 +1579,359 @@ export default function CourseDetailClient({
               fontSize: '0.86rem',
               px: 2.5,
               py: 0.7,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
+              boxShadow: isEnrolled
+                ? '0 4px 14px rgba(22, 163, 74, 0.25)'
+                : '0 4px 14px rgba(37, 99, 235, 0.25)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
-                boxShadow: '0 6px 20px rgba(37, 99, 235, 0.35)',
+                background: isEnrolled
+                  ? 'linear-gradient(135deg, #15803D 0%, #166534 100%)'
+                  : 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
+                boxShadow: isEnrolled
+                  ? '0 6px 20px rgba(22, 163, 74, 0.35)'
+                  : '0 6px 20px rgba(37, 99, 235, 0.35)',
               },
             }}
           >
-            Start Course
+            {isEnrolling
+              ? 'Enrolling...'
+              : isEnrolled
+                ? 'Open Live Workspace'
+                : 'Enroll & Start Learning'}
           </Button>
         </Box>
       </Box>
 
       {/* 1. Ultra-Luxury Deep Sapphire Hero Banner with Interactive Elastic Warp Grid */}
       <Box
-            sx={{
-              position: 'relative',
-              borderRadius: '28px',
-              overflow: 'hidden',
-              bgcolor: '#07152E',
-              backgroundImage: `
-                radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.25) 0%, transparent 50%),
-                linear-gradient(135deg, #071329 0%, #0C234F 60%, #153272 100%)
-              `,
-              p: { xs: 3, sm: 4, md: 5 },
-              boxShadow: '0 12px 36px rgba(11, 34, 74, 0.16)',
-              display: 'flex',
-              flexDirection: { xs: 'column', lg: 'row' },
-              justifyContent: 'space-between',
-              alignItems: { xs: 'flex-start', lg: 'center' },
-              gap: 4,
-            }}
-          >
-            {/* Interactive Gravitational Warp Grid Canvas */}
-            <InteractiveWarpGrid
-              gridSize={36}
-              warpRadius={220}
-              warpStrength={55}
-              lineColor="rgba(147, 197, 253, 0.22)"
-              glowColor="rgba(59, 130, 246, 0.42)"
-            />
+        sx={{
+          position: 'relative',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          bgcolor: '#07152E',
+          backgroundImage: `
+            radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.25) 0%, transparent 50%),
+            linear-gradient(135deg, #071329 0%, #0C234F 60%, #153272 100%)
+          `,
+          p: { xs: 2.5, sm: 3, md: 3.5 },
+          boxShadow: '0 12px 36px rgba(11, 34, 74, 0.16)',
+          display: 'flex',
+          flexDirection: { xs: 'column', lg: 'row' },
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', lg: 'center' },
+          gap: 3,
+        }}
+      >
+        {/* Interactive Gravitational Warp Grid Canvas */}
+        <InteractiveWarpGrid
+          gridSize={36}
+          warpRadius={200}
+          warpStrength={50}
+          lineColor="rgba(147, 197, 253, 0.22)"
+          glowColor="rgba(59, 130, 246, 0.42)"
+        />
 
-            {/* Ambient vignette overlay */}
-            <Box
+        {/* Ambient vignette overlay */}
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            background: 'radial-gradient(ellipse at center, transparent 40%, rgba(7, 19, 41, 0.4) 100%)',
+            zIndex: 0,
+          }}
+        />
+
+        {/* Hero Left Content */}
+        <Box sx={{ position: 'relative', zIndex: 1, flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1.75 }}>
+          {/* Live Accreditation Tag */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <VerifiedRoundedIcon sx={{ fontSize: 16, color: '#10B981' }} />
+            <Typography sx={{ color: '#FFFFFF', fontWeight: 700, fontSize: '0.75rem', letterSpacing: '0.01em' }}>
+              Standardized Academic Accreditation
+            </Typography>
+          </Box>
+
+          {/* Title & Edit Action */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            <Typography
+              variant="h2"
               sx={{
-                position: 'absolute',
-                inset: 0,
-                pointerEvents: 'none',
-                background: 'radial-gradient(ellipse at center, transparent 40%, rgba(7, 19, 41, 0.4) 100%)',
-                zIndex: 0,
-              }}
-            />
-
-            {/* Hero Left Content */}
-            <Box sx={{ position: 'relative', zIndex: 1, flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              {/* Live Accreditation Tag */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <VerifiedRoundedIcon sx={{ fontSize: 17, color: '#10B981' }} />
-                <Typography sx={{ color: '#FFFFFF', fontWeight: 700, fontSize: '0.78rem', letterSpacing: '0.01em' }}>
-                  Standardized Academic Accreditation
-                </Typography>
-              </Box>
-
-              {/* Title */}
-              <Typography
-                variant="h2"
-                sx={{
-                  fontWeight: 900,
-                  fontSize: { xs: '1.85rem', sm: '2.4rem', md: '2.8rem' },
-                  letterSpacing: '-0.03em',
-                  color: '#FFFFFF',
-                  lineHeight: 1.2,
-                }}
-              >
-                {course.title}
-              </Typography>
-
-              {/* Description */}
-              <Typography
-                sx={{
-                  color: '#CBD5E1',
-                  fontSize: { xs: '0.95rem', md: '1.02rem' },
-                  lineHeight: 1.65,
-                  maxWidth: 780,
-                  fontWeight: 450,
-                }}
-              >
-                {course.description}
-              </Typography>
-
-              {/* Badges Row */}
-              <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5, pt: 0.5 }}>
-                {/* Certificate Pill */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    px: 1.8,
-                    py: 0.7,
-                    borderRadius: '9999px',
-                    bgcolor: 'rgba(255, 255, 255, 0.15)',
-                    border: '1px solid rgba(255, 255, 255, 0.25)',
-                    color: '#FFFFFF',
-                  }}
-                >
-                  <WorkspacePremiumRoundedIcon sx={{ fontSize: 18, color: '#FCD34D' }} />
-                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 700 }}>
-                    Verified Certificate Included
-                  </Typography>
-                </Box>
-
-                {/* Star Rating Badge */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.75,
-                    px: 1.6,
-                    py: 0.65,
-                    borderRadius: '9999px',
-                    bgcolor: '#F59E0B',
-                    color: '#0F172A',
-                    fontWeight: 800,
-                  }}
-                >
-                  <StarRoundedIcon sx={{ fontSize: 18, color: '#0F172A' }} />
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 800 }}>
-                    4.9
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.78rem', color: '#1E293B', fontWeight: 700 }}>
-                    (188.2k reviews)
-                  </Typography>
-                </Box>
-
-                {/* Sandbox Tag */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 0.75,
-                    px: 1.6,
-                    py: 0.65,
-                    borderRadius: '9999px',
-                    bgcolor: 'rgba(16, 185, 129, 0.2)',
-                    border: '1px solid rgba(16, 185, 129, 0.35)',
-                    color: '#A7F3D0',
-                  }}
-                >
-                  <BoltRoundedIcon sx={{ fontSize: 17, color: '#34D399' }} />
-                  <Typography sx={{ fontSize: '0.78rem', fontWeight: 700 }}>
-                    Instant GCC/CPython Execution
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-
-            {/* Hero Right: Modern White Course Snapshot Card */}
-            <Box
-              sx={{
-                position: 'relative',
-                zIndex: 1,
-                width: { xs: '100%', sm: 380, lg: 410 },
-                flexShrink: 0,
-                borderRadius: '24px',
-                bgcolor: '#FFFFFF',
-                border: '1px solid #E2E8F0',
-                p: { xs: 2.75, md: 3.25 },
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 2.25,
-                boxShadow: '0 20px 45px -10px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(255, 255, 255, 0.9) inset',
+                fontWeight: 900,
+                fontSize: { xs: '1.5rem', sm: '1.85rem', md: '2.15rem' },
+                letterSpacing: '-0.025em',
+                color: '#FFFFFF',
+                lineHeight: 1.2,
               }}
             >
-              {/* Header */}
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box>
-                  <Typography sx={{ color: '#0F172A', fontWeight: 900, fontSize: '1.02rem', letterSpacing: '-0.01em' }}>
-                    Course Snapshot
-                  </Typography>
-                  <Typography sx={{ color: '#64748B', fontSize: '0.78rem', fontWeight: 500 }}>
-                    Self-paced developer curriculum
-                  </Typography>
-                </Box>
-                <Chip
-                  label="All Levels"
+              {liveCourse.title}
+            </Typography>
+            {(!isStudent || isStudioMode) && (
+              <Tooltip title="Edit Course Details (Title, Code, Cover Image, Description, Tags)">
+                <IconButton
                   size="small"
+                  onClick={() => setIsEditCourseModalOpen(true)}
                   sx={{
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
-                    border: '1px solid #DBEAFE',
-                    fontWeight: 750,
-                    fontSize: '0.72rem',
-                    height: 24,
-                  }}
-                />
-              </Box>
-
-              {/* Structured Key Specs List */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-                {/* Modules Spec */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.25, px: 1.5, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #F1F5F9' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                    <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563EB' }}>
-                      <LayersRoundedIcon sx={{ fontSize: 18 }} />
-                    </Box>
-                    <Typography sx={{ fontSize: '0.84rem', fontWeight: 650, color: '#1E293B' }}>
-                      Curriculum Units
-                    </Typography>
-                  </Box>
-                  <Typography sx={{ fontSize: '0.86rem', fontWeight: 800, color: '#0F172A' }}>
-                    {course.modulesCount} Modules
-                  </Typography>
-                </Box>
-
-                {/* Duration Spec */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.25, px: 1.5, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #F1F5F9' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                    <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7C3AED' }}>
-                      <AccessTimeRoundedIcon sx={{ fontSize: 18 }} />
-                    </Box>
-                    <Typography sx={{ fontSize: '0.84rem', fontWeight: 650, color: '#1E293B' }}>
-                      Learning Content
-                    </Typography>
-                  </Box>
-                  <Typography sx={{ fontSize: '0.86rem', fontWeight: 800, color: '#0F172A' }}>
-                    {course.durationHours} Hours
-                  </Typography>
-                </Box>
-
-                {/* Problems Spec */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.25, px: 1.5, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #F1F5F9' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                    <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
-                      <TerminalRoundedIcon sx={{ fontSize: 18 }} />
-                    </Box>
-                    <Typography sx={{ fontSize: '0.84rem', fontWeight: 650, color: '#1E293B' }}>
-                      Coding Labs & Tests
-                    </Typography>
-                  </Box>
-                  <Typography sx={{ fontSize: '0.86rem', fontWeight: 800, color: '#0F172A' }}>
-                    {totalProblemsCount} Labs
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* Progress Bar & Primary Action */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, pt: 0.5 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography sx={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600 }}>
-                    Mastery Progress
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.78rem', color: '#2563EB', fontWeight: 750 }}>
-                    0 of {totalProblemsCount} solved (0%)
-                  </Typography>
-                </Box>
-
-                <LinearProgress
-                  variant="determinate"
-                  value={0}
-                  sx={{
-                    height: 7,
-                    borderRadius: '9999px',
-                    bgcolor: '#F1F5F9',
-                    '& .MuiLinearProgress-bar': {
-                      background: 'linear-gradient(90deg, #2563EB 0%, #38BDF8 100%)',
-                      borderRadius: '9999px',
-                    },
-                  }}
-                />
-
-                <Button
-                  fullWidth
-                  variant="contained"
-                  component={Link}
-                  href="/problems"
-                  startIcon={<PlayArrowRoundedIcon sx={{ fontSize: 20 }} />}
-                  sx={{
-                    mt: 0.5,
-                    background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
                     color: '#FFFFFF',
-                    fontWeight: 800,
-                    fontSize: '0.92rem',
-                    textTransform: 'none',
-                    borderRadius: '14px',
-                    py: 1.25,
-                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 8px 20px rgba(37, 99, 235, 0.45)',
-                    },
+                    bgcolor: 'rgba(255, 255, 255, 0.15)',
+                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                    backdropFilter: 'blur(8px)',
+                    p: 0.75,
+                    '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.3)' },
                   }}
                 >
-                  Start Course Learning
-                </Button>
-              </Box>
+                  <EditRoundedIcon sx={{ fontSize: 17 }} />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+
+          {/* Description */}
+          <Typography
+            sx={{
+              color: '#CBD5E1',
+              fontSize: { xs: '0.88rem', md: '0.94rem' },
+              lineHeight: 1.55,
+              maxWidth: 680,
+              fontWeight: 450,
+            }}
+          >
+            {liveCourse.description}
+          </Typography>
+
+          {/* Badges Row */}
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.25, pt: 0.25 }}>
+            {/* Certificate Pill */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75,
+                px: 1.4,
+                py: 0.5,
+                borderRadius: '9999px',
+                bgcolor: 'rgba(255, 255, 255, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+                color: '#FFFFFF',
+              }}
+            >
+              <WorkspacePremiumRoundedIcon sx={{ fontSize: 16, color: '#FCD34D' }} />
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700 }}>
+                Verified Certificate Included
+              </Typography>
+            </Box>
+
+            {/* Star Rating Badge */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.6,
+                px: 1.3,
+                py: 0.5,
+                borderRadius: '9999px',
+                bgcolor: '#F59E0B',
+                color: '#0F172A',
+                fontWeight: 800,
+              }}
+            >
+              <StarRoundedIcon sx={{ fontSize: 16, color: '#0F172A' }} />
+              <Typography sx={{ fontSize: '0.78rem', fontWeight: 800 }}>
+                4.9
+              </Typography>
+              <Typography sx={{ fontSize: '0.74rem', color: '#1E293B', fontWeight: 700 }}>
+                (188.2k)
+              </Typography>
+            </Box>
+
+            {/* Sandbox Tag */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.6,
+                px: 1.3,
+                py: 0.5,
+                borderRadius: '9999px',
+                bgcolor: 'rgba(16, 185, 129, 0.2)',
+                border: '1px solid rgba(16, 185, 129, 0.35)',
+                color: '#A7F3D0',
+              }}
+            >
+              <BoltRoundedIcon sx={{ fontSize: 15, color: '#34D399' }} />
+              <Typography sx={{ fontSize: '0.75rem', fontWeight: 700 }}>
+                Instant GCC/CPython
+              </Typography>
             </Box>
           </Box>
+        </Box>
+
+        {/* Hero Right: Compact Course Snapshot Card (without cover image) */}
+        <Box
+          sx={{
+            position: 'relative',
+            zIndex: 1,
+            width: { xs: '100%', sm: 310, lg: 330 },
+            flexShrink: 0,
+            borderRadius: '18px',
+            bgcolor: '#FFFFFF',
+            border: '1px solid #E2E8F0',
+            p: { xs: 2, md: 2.25 },
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+            boxShadow: '0 16px 36px -10px rgba(0, 0, 0, 0.25)',
+          }}
+        >
+          {/* Header */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.92rem', letterSpacing: '-0.01em' }}>
+                Course Snapshot
+              </Typography>
+              <Typography sx={{ color: '#64748B', fontSize: '0.74rem', fontWeight: 500 }}>
+                Self-paced developer curriculum
+              </Typography>
+            </Box>
+            <Chip
+              label={liveCourse.level || 'Intermediate'}
+              size="small"
+              sx={{
+                bgcolor: '#EFF6FF',
+                color: '#2563EB',
+                border: '1px solid #DBEAFE',
+                fontWeight: 750,
+                fontSize: '0.7rem',
+                height: 22,
+              }}
+            />
+          </Box>
+
+          {/* Compact Key Specs List */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.85 }}>
+            {/* Modules Spec */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 0.85, px: 1.25, borderRadius: '10px', bgcolor: '#F8FAFC', border: '1px solid #F1F5F9' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 26, height: 26, borderRadius: '7px', bgcolor: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563EB' }}>
+                  <LayersRoundedIcon sx={{ fontSize: 16 }} />
+                </Box>
+                <Typography sx={{ fontSize: '0.78rem', fontWeight: 650, color: '#1E293B' }}>
+                  Curriculum Units
+                </Typography>
+              </Box>
+              <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: '#0F172A' }}>
+                {liveCourse.modulesCount ?? liveCourse.modules?.length ?? 0} Modules
+              </Typography>
+            </Box>
+
+            {/* Duration Spec */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 0.85, px: 1.25, borderRadius: '10px', bgcolor: '#F8FAFC', border: '1px solid #F1F5F9' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 26, height: 26, borderRadius: '7px', bgcolor: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7C3AED' }}>
+                  <AccessTimeRoundedIcon sx={{ fontSize: 16 }} />
+                </Box>
+                <Typography sx={{ fontSize: '0.78rem', fontWeight: 650, color: '#1E293B' }}>
+                  Learning Content
+                </Typography>
+              </Box>
+              <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: '#0F172A' }}>
+                {liveCourse.durationHours} Hours
+              </Typography>
+            </Box>
+
+            {/* Problems Spec */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 0.85, px: 1.25, borderRadius: '10px', bgcolor: '#F8FAFC', border: '1px solid #F1F5F9' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ width: 26, height: 26, borderRadius: '7px', bgcolor: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#059669' }}>
+                  <TerminalRoundedIcon sx={{ fontSize: 16 }} />
+                </Box>
+                <Typography sx={{ fontSize: '0.78rem', fontWeight: 650, color: '#1E293B' }}>
+                  Coding Labs & Tests
+                </Typography>
+              </Box>
+              <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: '#0F172A' }}>
+                {totalProblemsCount} Labs
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Progress Bar & Primary Action */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 0.25 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600 }}>
+                Mastery Progress
+              </Typography>
+              <Typography sx={{ fontSize: '0.74rem', color: isEnrolled ? '#16A34A' : '#2563EB', fontWeight: 750 }}>
+                {isEnrolled
+                  ? `${Math.round((userProgressPct / 100) * totalProblemsCount)} of ${totalProblemsCount} solved (${userProgressPct}%)`
+                  : `0 of ${totalProblemsCount} solved (0%)`}
+              </Typography>
+            </Box>
+
+            <LinearProgress
+              variant="determinate"
+              value={userProgressPct}
+              sx={{
+                height: 6,
+                borderRadius: '9999px',
+                bgcolor: '#F1F5F9',
+                '& .MuiLinearProgress-bar': {
+                  background: isEnrolled
+                    ? 'linear-gradient(90deg, #16A34A 0%, #34D399 100%)'
+                    : 'linear-gradient(90deg, #2563EB 0%, #38BDF8 100%)',
+                  borderRadius: '9999px',
+                },
+              }}
+            />
+
+            <Button
+              fullWidth
+              variant="contained"
+              disabled={isEnrolling}
+              onClick={() => handleEnrollOrStart()}
+              startIcon={
+                isEnrolling ? (
+                  <CircularProgress size={16} sx={{ color: '#FFFFFF' }} />
+                ) : isEnrolled ? (
+                  <PlayArrowRoundedIcon sx={{ fontSize: 18 }} />
+                ) : (
+                  <AutoAwesomeRoundedIcon sx={{ fontSize: 18 }} />
+                )
+              }
+              sx={{
+                mt: 0.25,
+                background: isEnrolled
+                  ? 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)'
+                  : 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                color: '#FFFFFF',
+                fontWeight: 800,
+                fontSize: '0.84rem',
+                textTransform: 'none',
+                borderRadius: '12px',
+                py: 0.9,
+                boxShadow: isEnrolled
+                  ? '0 4px 12px rgba(22, 163, 74, 0.25)'
+                  : '0 4px 12px rgba(37, 99, 235, 0.25)',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  background: isEnrolled
+                    ? 'linear-gradient(135deg, #15803D 0%, #166534 100%)'
+                    : 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
+                  boxShadow: isEnrolled
+                    ? '0 6px 16px rgba(22, 163, 74, 0.35)'
+                    : '0 6px 16px rgba(37, 99, 235, 0.35)',
+                },
+              }}
+            >
+              {isEnrolling
+                ? 'Enrolling...'
+                : isEnrolled
+                  ? 'Continue Learning'
+                  : 'Enroll in Course (Free)'}
+            </Button>
+          </Box>
+        </Box>
+      </Box>
 
           {/* 2. Main Two-Column Architectural Layout */}
           <Box
@@ -1297,11 +1955,38 @@ export default function CourseDetailClient({
                   boxShadow: '0 2px 12px rgba(0,0,0,0.02)',
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2.25 }}>
-                  <LightbulbRoundedIcon sx={{ color: '#2563EB', fontSize: 24 }} />
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.08rem' }}>
-                    What you'll learn
-                  </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.25, flexWrap: 'wrap', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <LightbulbRoundedIcon sx={{ color: '#2563EB', fontSize: 24 }} />
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.08rem' }}>
+                      What you'll learn
+                    </Typography>
+                  </Box>
+                  {(!isStudent || isStudioMode) && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={handleOpenEditOutcomes}
+                      startIcon={<EditRoundedIcon sx={{ fontSize: 16 }} />}
+                      sx={{
+                        borderRadius: '10px',
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        textTransform: 'none',
+                        color: '#2563EB',
+                        borderColor: '#BFDBFE',
+                        bgcolor: '#EFF6FF',
+                        py: 0.5,
+                        px: 1.75,
+                        '&:hover': {
+                          bgcolor: '#DBEAFE',
+                          borderColor: '#93C5FD',
+                        },
+                      }}
+                    >
+                      Edit Learning Points
+                    </Button>
+                  )}
                 </Box>
 
                 <Box
@@ -1312,47 +1997,14 @@ export default function CourseDetailClient({
                     columnGap: 3,
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <CheckRoundedIcon sx={{ color: '#2563EB', fontSize: 20 }} />
-                    <Typography sx={{ fontSize: '0.9rem', color: '#334155', fontWeight: 600 }}>
-                      Learn {course.category} Syntax & Core Fundamentals
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <CheckRoundedIcon sx={{ color: '#2563EB', fontSize: 20 }} />
-                    <Typography sx={{ fontSize: '0.9rem', color: '#334155', fontWeight: 600 }}>
-                      Problem Solving with Algorithmic Patterns
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <CheckRoundedIcon sx={{ color: '#2563EB', fontSize: 20 }} />
-                    <Typography sx={{ fontSize: '0.9rem', color: '#334155', fontWeight: 600 }}>
-                      Practice Conditionals, Loops & Recursion
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <CheckRoundedIcon sx={{ color: '#2563EB', fontSize: 20 }} />
-                    <Typography sx={{ fontSize: '0.9rem', color: '#334155', fontWeight: 600 }}>
-                      500 to 1350 Difficulty Rating Coding Labs
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <CheckRoundedIcon sx={{ color: '#2563EB', fontSize: 20 }} />
-                    <Typography sx={{ fontSize: '0.9rem', color: '#334155', fontWeight: 600 }}>
-                      Object-Oriented Programming (OOP) & Modularity
-                    </Typography>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <CheckRoundedIcon sx={{ color: '#2563EB', fontSize: 20 }} />
-                    <Typography sx={{ fontSize: '0.9rem', color: '#334155', fontWeight: 600 }}>
-                      Automated Sandbox Runner with Instant Verdicts
-                    </Typography>
-                  </Box>
+                  {learningItems.map((item: string, idx: number) => (
+                    <Box key={`learning-item-${idx}-${item.slice(0, 15)}`} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <CheckRoundedIcon sx={{ color: '#2563EB', fontSize: 20, flexShrink: 0 }} />
+                      <Typography sx={{ fontSize: '0.9rem', color: '#334155', fontWeight: 600 }}>
+                        {item}
+                      </Typography>
+                    </Box>
+                  ))}
                 </Box>
               </Card>
 
@@ -1393,7 +2045,7 @@ export default function CourseDetailClient({
                           <LayersRoundedIcon sx={{ fontSize: 19 }} />
                           <span>Curriculum & Timeline</span>
                           <Chip
-                            label={course.modulesCount}
+                            label={liveCourse.modulesCount ?? liveCourse.modules?.length ?? 0}
                             size="small"
                             sx={{
                               height: 20,
@@ -1459,16 +2111,148 @@ export default function CourseDetailClient({
                 {/* TAB 0: Curriculum & Detailed Topic Steppers */}
                 {activeTab === 'curriculum' && (
                   <Box sx={{ p: { xs: 2.5, md: 3.5 }, display: 'flex', flexDirection: 'column', gap: 3.5 }}>
+                    {/* Curriculum Header & Superadmin Studio Switcher */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
                       <Box>
-                        <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.15rem' }}>
-                          Curriculum Units Breakdown
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.15rem' }}>
+                            Curriculum Units Breakdown
+                          </Typography>
+                          {!isStudent && (
+                            <Chip
+                              label={isStudioMode ? 'STUDIO AUTHORING MODE' : 'STUDENT PREVIEW'}
+                              size="small"
+                              sx={{
+                                height: 22,
+                                fontWeight: 800,
+                                fontSize: '0.68rem',
+                                bgcolor: isStudioMode ? '#EFF6FF' : '#F1F5F9',
+                                color: isStudioMode ? '#2563EB' : '#64748B',
+                                border: isStudioMode ? '1px solid #BFDBFE' : '1px solid #E2E8F0',
+                              }}
+                            />
+                          )}
+                        </Box>
                         <Typography sx={{ color: '#64748B', fontSize: '0.84rem' }}>
-                          Step-by-step modular lessons with interactive tutorials, sandbox code labs, and milestone assessments.
+                          Step-by-step modular lessons with interactive theory notes, single MCQs, multi MSQs, and sandbox coding challenges.
                         </Typography>
                       </Box>
+
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                        {/* Superadmin Mode Switcher */}
+                        {!isStudent && (
+                          <Button
+                            variant="outlined"
+                            onClick={() => setIsStudioMode(!isStudioMode)}
+                            startIcon={isStudioMode ? <VisibilityRoundedIcon sx={{ fontSize: 17 }} /> : <TuneRoundedIcon sx={{ fontSize: 17 }} />}
+                            sx={{
+                              borderRadius: '9999px',
+                              borderColor: isStudioMode ? '#BFDBFE' : '#E2E8F0',
+                              color: isStudioMode ? '#2563EB' : '#475569',
+                              bgcolor: isStudioMode ? '#EFF6FF' : '#FFFFFF',
+                              textTransform: 'none',
+                              fontWeight: 700,
+                              fontSize: '0.82rem',
+                              px: 2,
+                              py: 0.65,
+                              '&:hover': {
+                                bgcolor: isStudioMode ? '#DBEAFE' : '#F8FAFC',
+                                borderColor: isStudioMode ? '#93C5FD' : '#CBD5E1',
+                              },
+                            }}
+                          >
+                            {isStudioMode ? 'Switch to Student View' : 'Open Curriculum Studio'}
+                          </Button>
+                        )}
+
+                        {/* Publish / Unpublish Toggle in Studio Mode */}
+                        {!isStudent && isStudioMode && (
+                          <Button
+                            variant="outlined"
+                            onClick={handleTogglePublish}
+                            disabled={isTogglingPublish}
+                            startIcon={
+                              isTogglingPublish ? (
+                                <CircularProgress size={14} />
+                              ) : (
+                                <CheckCircleRoundedIcon sx={{ fontSize: 16 }} />
+                              )
+                            }
+                            sx={{
+                              borderRadius: '9999px',
+                              borderColor: (liveCourse.status === 'Published' || (liveCourse.status as string) === 'PUBLISHED') ? '#CBD5E1' : '#86EFAC',
+                              color: (liveCourse.status === 'Published' || (liveCourse.status as string) === 'PUBLISHED') ? '#475569' : '#16A34A',
+                              bgcolor: (liveCourse.status === 'Published' || (liveCourse.status as string) === 'PUBLISHED') ? '#FFFFFF' : '#F0FDF4',
+                              textTransform: 'none',
+                              fontWeight: 700,
+                              fontSize: '0.82rem',
+                              px: 2,
+                              py: 0.65,
+                              '&:hover': {
+                                bgcolor: (liveCourse.status === 'Published' || (liveCourse.status as string) === 'PUBLISHED') ? '#F1F5F9' : '#DCFCE7',
+                              },
+                            }}
+                          >
+                            {isTogglingPublish
+                              ? 'Updating...'
+                              : (liveCourse.status === 'Published' || (liveCourse.status as string) === 'PUBLISHED')
+                                ? 'Unpublish to Draft'
+                                : 'Publish Course'}
+                          </Button>
+                        )}
+
+                        {/* Add Module Button in Studio Mode */}
+                        {!isStudent && isStudioMode && (
+                          <Button
+                            variant="contained"
+                            onClick={handleOpenAddModule}
+                            startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
+                            sx={{
+                              borderRadius: '9999px',
+                              background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                              color: '#FFFFFF',
+                              textTransform: 'none',
+                              fontWeight: 700,
+                              fontSize: '0.84rem',
+                              px: 2.4,
+                              py: 0.65,
+                              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
+                              '&:hover': {
+                                background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
+                                boxShadow: '0 6px 18px rgba(37, 99, 235, 0.35)',
+                              },
+                            }}
+                          >
+                            Add Unit Module
+                          </Button>
+                        )}
+
+                        {/* Bulk Import Button in Studio Mode */}
+                        {!isStudent && isStudioMode && (
+                          <Button
+                            variant="outlined"
+                            onClick={() => setIsBulkImportOpen(true)}
+                            startIcon={<CloudUploadRoundedIcon sx={{ fontSize: 18 }} />}
+                            sx={{
+                              borderRadius: '9999px',
+                              borderColor: '#BFDBFE',
+                              color: '#2563EB',
+                              bgcolor: '#EFF6FF',
+                              textTransform: 'none',
+                              fontWeight: 700,
+                              fontSize: '0.84rem',
+                              px: 2.2,
+                              py: 0.65,
+                              '&:hover': {
+                                bgcolor: '#DBEAFE',
+                                borderColor: '#93C5FD',
+                              },
+                            }}
+                          >
+                            Bulk Import
+                          </Button>
+                        )}
+
                         <Button
                           variant="outlined"
                           onClick={toggleAllModules}
@@ -1499,45 +2283,173 @@ export default function CourseDetailClient({
                         >
                           {allExpanded ? 'Collapse All Units' : 'Expand All Units'}
                         </Button>
-                        <Button
-                          variant="contained"
-                          component={Link}
-                          href="/problems"
-                          startIcon={<PlayCircleOutlineRoundedIcon />}
-                          sx={{
-                            borderRadius: '9999px',
-                            bgcolor: '#2563EB',
-                            textTransform: 'none',
-                            fontWeight: 700,
-                            fontSize: '0.84rem',
-                            px: 2.5,
-                            py: 0.7,
-                            boxShadow: 'none',
-                            '&:hover': { bgcolor: '#1D4ED8', boxShadow: '0 4px 12px rgba(37,99,235,0.25)' },
-                          }}
-                        >
-                          Start Module 1
-                        </Button>
                       </Box>
                     </Box>
 
-                    {/* Modular Units Stream - Flat Clean List with Underlines */}
+                    {/* Course Completion Progress Summary Card */}
+                    {allSubmoduleItems.length > 0 && (
+                      <Card
+                        elevation={0}
+                        sx={{
+                          p: 2.5,
+                          borderRadius: '16px',
+                          bgcolor: '#F8FAFC',
+                          border: '1px solid #E2E8F0',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 1.5,
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                            <Box
+                              sx={{
+                                width: 38,
+                                height: 38,
+                                borderRadius: '10px',
+                                bgcolor: courseCompletionPct === 100 ? '#ECFDF5' : '#EFF6FF',
+                                color: courseCompletionPct === 100 ? '#10B981' : '#2563EB',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: `1px solid ${courseCompletionPct === 100 ? '#A7F3D0' : '#BFDBFE'}`,
+                              }}
+                            >
+                              {courseCompletionPct === 100 ? (
+                                <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />
+                              ) : (
+                                <BoltRoundedIcon sx={{ fontSize: 20 }} />
+                              )}
+                            </Box>
+                            <Box>
+                              <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.96rem' }}>
+                                Course Completion Progress: {courseCompletionPct}%
+                              </Typography>
+                              <Typography sx={{ color: '#64748B', fontSize: '0.8rem', fontWeight: 600 }}>
+                                {completedCount} of {allSubmoduleItems.length} submodules completed • Sequential Gated Progression
+                              </Typography>
+                            </Box>
+                          </Box>
+
+                          <Chip
+                            label={courseCompletionPct === 100 ? 'Course Completed 🎉' : `${allSubmoduleItems.length - completedCount} Submodules Remaining`}
+                            size="small"
+                            sx={{
+                              fontWeight: 800,
+                              fontSize: '0.75rem',
+                              bgcolor: courseCompletionPct === 100 ? '#ECFDF5' : '#EFF6FF',
+                              color: courseCompletionPct === 100 ? '#059669' : '#2563EB',
+                              border: `1px solid ${courseCompletionPct === 100 ? '#A7F3D0' : '#BFDBFE'}`,
+                            }}
+                          />
+                        </Box>
+
+                        {/* Linear Progress Track */}
+                        <Box sx={{ width: '100%', bgcolor: '#E2E8F0', borderRadius: '9999px', height: 8, overflow: 'hidden' }}>
+                          <Box
+                            sx={{
+                              width: `${courseCompletionPct}%`,
+                              height: '100%',
+                              borderRadius: '9999px',
+                              bgcolor: courseCompletionPct === 100 ? '#10B981' : '#2563EB',
+                              transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                            }}
+                          />
+                        </Box>
+                      </Card>
+                    )}
+
+                    {/* Modular Units Stream */}
+                    {displayModules.length === 0 ? (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          textAlign: 'center',
+                          py: 7,
+                          px: 3,
+                          bgcolor: '#F8FAFC',
+                          borderRadius: '20px',
+                          border: '1.5px dashed #CBD5E1',
+                          gap: 2,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 56,
+                            height: 56,
+                            borderRadius: '16px',
+                            bgcolor: '#EFF6FF',
+                            color: '#2563EB',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid #BFDBFE',
+                          }}
+                        >
+                          <LayersRoundedIcon sx={{ fontSize: 28 }} />
+                        </Box>
+                        <Box sx={{ maxWidth: 460 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem', mb: 0.5 }}>
+                            No Curriculum Modules Added Yet
+                          </Typography>
+                          <Typography sx={{ color: '#64748B', fontSize: '0.86rem', lineHeight: 1.6 }}>
+                            This course currently has 0 modules. Use the Curriculum Studio to add your first unit chapter, notes, quizzes, or coding challenges.
+                          </Typography>
+                        </Box>
+                        {!isStudent && (
+                          <Button
+                            variant="contained"
+                            onClick={handleOpenAddModule}
+                            startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
+                            sx={{
+                              borderRadius: '9999px',
+                              background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                              color: '#FFFFFF',
+                              textTransform: 'none',
+                              fontWeight: 700,
+                              fontSize: '0.86rem',
+                              px: 3,
+                              py: 0.8,
+                              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
+                              '&:hover': {
+                                background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
+                                boxShadow: '0 6px 18px rgba(37, 99, 235, 0.35)',
+                              },
+                            }}
+                          >
+                            Create First Module
+                          </Button>
+                        )}
+                      </Box>
+                    ) : (
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                      {course.moduleHighlights.map((mod, idx) => {
-                        const topicItems = getModuleTopicItems(course, idx);
-                        const modLessonCount = typeof mod.lessons === 'number' ? mod.lessons : topicItems.length;
-                        const problemsCount = getModuleProblemsCount(mod, idx, topicItems);
+                      {displayModules.map((modItem: any, idx: number) => {
+                        const topicItems = moduleTopicMap[idx] || getModuleTopicItems(liveCourse, idx);
+                        const modTitle = modItem.title || `Module ${idx + 1}`;
+                        const modLessonCount = Array.isArray(modItem.lessons)
+                          ? modItem.lessons.length
+                          : typeof modItem.lessons === 'number'
+                          ? modItem.lessons
+                          : topicItems.length;
+                        const problemsCount = getModuleProblemsCount(modItem, idx, topicItems);
                         const isExpanded = !!expandedModules[idx];
                         const firstLessonKey = topicItems[0]?.id || `${idx}-0`;
-                        const isLast = idx === course.moduleHighlights.length - 1;
+                        const totalUnits = ((liveCourse.modules && liveCourse.modules.length > 0) ? liveCourse.modules.length : (liveCourse.moduleHighlights?.length || 0));
+                        const isLast = idx === totalUnits - 1;
+                        const modUnlocked = isModuleUnlocked(idx);
+                        const modCompleted = topicItems.length > 0 && topicItems.every((t) => t.isCompleted);
 
                         return (
                           <Box
-                            key={idx}
+                            key={modItem.id || idx}
                             sx={{
                               borderBottom: isLast ? 'none' : '1px solid #E2E8F0',
                               transition: 'all 0.2s ease',
                               py: { xs: 1.5, md: 2 },
+                              opacity: modUnlocked ? 1 : 0.72,
                             }}
                           >
                             {/* Module Header Bar */}
@@ -1567,64 +2479,221 @@ export default function CourseDetailClient({
                                     width: 44,
                                     height: 44,
                                     borderRadius: '12px',
-                                    bgcolor: isExpanded ? '#2563EB' : '#EFF6FF',
-                                    border: isExpanded ? '1px solid #2563EB' : '1px solid #BFDBFE',
+                                    bgcolor: modCompleted
+                                      ? '#ECFDF5'
+                                      : !modUnlocked
+                                      ? '#F1F5F9'
+                                      : isExpanded
+                                      ? '#2563EB'
+                                      : '#EFF6FF',
+                                    border: modCompleted
+                                      ? '1px solid #A7F3D0'
+                                      : !modUnlocked
+                                      ? '1px solid #E2E8F0'
+                                      : isExpanded
+                                      ? '1px solid #2563EB'
+                                      : '1px solid #BFDBFE',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     fontWeight: 900,
                                     fontSize: '1.05rem',
-                                    color: isExpanded ? '#FFFFFF' : '#2563EB',
+                                    color: modCompleted
+                                      ? '#059669'
+                                      : !modUnlocked
+                                      ? '#94A3B8'
+                                      : isExpanded
+                                      ? '#FFFFFF'
+                                      : '#2563EB',
                                     flexShrink: 0,
                                     transition: 'all 0.2s ease',
                                   }}
                                 >
-                                  0{idx + 1}
+                                  {modCompleted ? (
+                                    <CheckRoundedIcon sx={{ fontSize: 22 }} />
+                                  ) : !modUnlocked ? (
+                                    <LockRoundedIcon sx={{ fontSize: 18 }} />
+                                  ) : (
+                                    `0${idx + 1}`
+                                  )}
                                 </Box>
 
                                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                                  <Typography
-                                    sx={{
-                                      fontWeight: 800,
-                                      fontSize: { xs: '1.05rem', md: '1.18rem' },
-                                      color: '#0F172A',
-                                      letterSpacing: '-0.01em',
-                                    }}
-                                  >
-                                    {mod.title}
-                                  </Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Typography
+                                      sx={{
+                                        fontWeight: 800,
+                                        fontSize: { xs: '1.05rem', md: '1.18rem' },
+                                        color: modUnlocked ? '#0F172A' : '#64748B',
+                                        letterSpacing: '-0.01em',
+                                      }}
+                                    >
+                                      {modTitle}
+                                    </Typography>
+                                    {!modUnlocked && (
+                                      <Chip
+                                        icon={<LockRoundedIcon sx={{ fontSize: '13px !important', color: 'inherit !important' }} />}
+                                        label="Locked Unit"
+                                        size="small"
+                                        sx={{
+                                          height: 20,
+                                          fontSize: '0.68rem',
+                                          fontWeight: 800,
+                                          bgcolor: '#F1F5F9',
+                                          color: '#64748B',
+                                          border: '1px solid #E2E8F0',
+                                        }}
+                                      />
+                                    )}
+                                    {modCompleted && (
+                                      <Chip
+                                        icon={<CheckCircleRoundedIcon sx={{ fontSize: '13px !important', color: 'inherit !important' }} />}
+                                        label="Unit Completed"
+                                        size="small"
+                                        sx={{
+                                          height: 20,
+                                          fontSize: '0.68rem',
+                                          fontWeight: 800,
+                                          bgcolor: '#ECFDF5',
+                                          color: '#059669',
+                                          border: '1px solid #A7F3D0',
+                                        }}
+                                      />
+                                    )}
+                                  </Box>
                                   <Typography sx={{ color: '#64748B', fontWeight: 600, fontSize: '0.84rem', mt: 0.35 }}>
                                     Interactive Unit • {modLessonCount} Lessons • {problemsCount} Practice Problems
                                   </Typography>
                                 </Box>
                               </Box>
 
-                              {/* Module Header Actions: Single Start Button + Accordion Toggle */}
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Button
-                                  variant="contained"
-                                  component={Link}
-                                  href={`/courses/${course.slug}?lesson=${firstLessonKey}`}
-                                  onClick={(e) => e.stopPropagation()}
-                                  startIcon={<PlayArrowRoundedIcon sx={{ fontSize: 18 }} />}
-                                  sx={{
-                                    borderRadius: '9999px',
-                                    bgcolor: '#2563EB',
-                                    color: '#FFFFFF',
-                                    textTransform: 'none',
-                                    fontWeight: 700,
-                                    fontSize: '0.84rem',
-                                    px: 2.5,
-                                    py: 0.7,
-                                    boxShadow: 'none',
-                                    '&:hover': {
-                                      bgcolor: '#1D4ED8',
-                                      boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
-                                    },
-                                  }}
-                                >
-                                  Start Module
-                                </Button>
+                              {/* Module Actions */}
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap' }}>
+                                {/* Authoring Mode Module Actions */}
+                                {!isStudent && isStudioMode && (
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleOpenAddLesson(modItem, idx);
+                                      }}
+                                      startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
+                                      sx={{
+                                        borderRadius: '8px',
+                                        fontSize: '0.78rem',
+                                        fontWeight: 700,
+                                        textTransform: 'none',
+                                        color: '#2563EB',
+                                        borderColor: '#BFDBFE',
+                                        bgcolor: '#EFF6FF',
+                                        px: 1.5,
+                                        py: 0.4,
+                                        '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                                      }}
+                                    >
+                                      Add Submodule
+                                    </Button>
+
+                                    <Tooltip title="Edit Module Title/Description">
+                                      <IconButton
+                                        size="small"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleOpenEditModule(modItem, idx);
+                                        }}
+                                        sx={{ color: '#64748B', bgcolor: '#F1F5F9', '&:hover': { color: '#0F172A', bgcolor: '#E2E8F0' } }}
+                                      >
+                                        <EditRoundedIcon sx={{ fontSize: 16 }} />
+                                      </IconButton>
+                                    </Tooltip>
+
+                                    <Tooltip title="Move Module Up">
+                                      <span>
+                                        <IconButton
+                                          size="small"
+                                          disabled={idx === 0}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleReorderModule(idx, 'up');
+                                          }}
+                                          sx={{ color: '#64748B', bgcolor: '#F1F5F9', '&:hover': { color: '#0F172A', bgcolor: '#E2E8F0' } }}
+                                        >
+                                          <ArrowUpwardRoundedIcon sx={{ fontSize: 16 }} />
+                                        </IconButton>
+                                      </span>
+                                    </Tooltip>
+
+                                    <Tooltip title="Move Module Down">
+                                      <span>
+                                        <IconButton
+                                          size="small"
+                                          disabled={idx === totalUnits - 1}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleReorderModule(idx, 'down');
+                                          }}
+                                          sx={{ color: '#64748B', bgcolor: '#F1F5F9', '&:hover': { color: '#0F172A', bgcolor: '#E2E8F0' } }}
+                                        >
+                                          <ArrowDownwardRoundedIcon sx={{ fontSize: 16 }} />
+                                        </IconButton>
+                                      </span>
+                                    </Tooltip>
+
+                                    <Tooltip title="Delete Module">
+                                      <IconButton
+                                        size="small"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDeleteModule(idx, modItem.id);
+                                        }}
+                                        sx={{ color: '#94A3B8', bgcolor: '#F1F5F9', '&:hover': { color: '#EF4444', bgcolor: '#FEE2E2' } }}
+                                      >
+                                        <DeleteOutlineRoundedIcon sx={{ fontSize: 16 }} />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </Box>
+                                )}
+
+                                <Tooltip title={modUnlocked ? 'Start Module' : 'Complete previous units to unlock this module'}>
+                                  <span>
+                                    <Button
+                                      variant="contained"
+                                      disabled={isEnrolling || !modUnlocked}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!modUnlocked) {
+                                          toast.warning('Please complete all previous modules before starting this unit.', 'Module Locked');
+                                          return;
+                                        }
+                                        handleEnrollOrStart(firstLessonKey);
+                                      }}
+                                      startIcon={modUnlocked ? <PlayArrowRoundedIcon sx={{ fontSize: 18 }} /> : <LockRoundedIcon sx={{ fontSize: 16 }} />}
+                                      sx={{
+                                        borderRadius: '9999px',
+                                        bgcolor: modUnlocked ? '#2563EB' : '#F1F5F9',
+                                        color: modUnlocked ? '#FFFFFF' : '#94A3B8',
+                                        textTransform: 'none',
+                                        fontWeight: 700,
+                                        fontSize: '0.84rem',
+                                        px: 2.5,
+                                        py: 0.7,
+                                        boxShadow: 'none',
+                                        '&:hover': {
+                                          bgcolor: modUnlocked ? '#1D4ED8' : '#F1F5F9',
+                                          boxShadow: modUnlocked ? '0 4px 14px rgba(37,99,235,0.25)' : 'none',
+                                        },
+                                        '&.Mui-disabled': {
+                                          bgcolor: '#F1F5F9',
+                                          color: '#94A3B8',
+                                        },
+                                      }}
+                                    >
+                                      {modUnlocked ? 'Start Module' : 'Locked'}
+                                    </Button>
+                                  </span>
+                                </Tooltip>
 
                                 <Tooltip title={isExpanded ? 'Collapse module' : 'Expand module'}>
                                   <IconButton
@@ -1659,19 +2728,26 @@ export default function CourseDetailClient({
                               <Box sx={{ pt: 1, pb: 1.5, px: { xs: 0.5, md: 1 } }}>
                                 {/* Roadmap Sub-modules Stream */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                  {topicItems.map((item, tIdx) => {
+                                  {topicItems.map((item: any, tIdx: number) => {
                                     const subKey = item.id || `${idx}-${tIdx}`;
                                     const isSubExpanded = !!expandedSubModules[subKey];
                                     const isSubLast = tIdx === topicItems.length - 1;
+                                    const itemType = (item.type || 'reading').toLowerCase();
+                                    const isQuiz = itemType === 'quiz';
+                                    const isMSQ = item.quizMCQ?.isMSQ || (Array.isArray(item.quizMCQ?.correctIndices) && item.quizMCQ.correctIndices.length > 1);
+                                    const isCode = itemType === 'code' || itemType === 'lab';
+                                    const isSubUnlocked = isSubmoduleUnlocked(idx, tIdx);
+                                    const hasAttempt = Boolean(item.quizAttempt || item.codeSubmission || item.userProgress?.quizAttempt);
 
                                     return (
                                       <Box
-                                        key={tIdx}
+                                        key={subKey || tIdx}
                                         sx={{
                                           display: 'flex',
                                           alignItems: 'stretch',
                                           gap: 2,
                                           position: 'relative',
+                                          opacity: isSubUnlocked ? 1 : 0.65,
                                         }}
                                       >
                                         {/* Left: Roadmap Timeline Track & Waypoint Node */}
@@ -1685,29 +2761,60 @@ export default function CourseDetailClient({
                                             position: 'relative',
                                           }}
                                         >
-                                          {/* Waypoint Milestone Node */}
+                                          {/* Waypoint Milestone Node: Circled tick for completed, Lock icon for locked, Normal circle for unlocked */}
                                           <Box
-                                            onClick={() => toggleSubModule(subKey)}
+                                            onClick={() => {
+                                              if (isSubUnlocked) toggleSubModule(subKey);
+                                              else toast.warning('Complete previous submodules to unlock this lesson.', 'Lesson Locked');
+                                            }}
                                             sx={{
-                                              width: 14,
-                                              height: 14,
+                                              width: 18,
+                                              height: 18,
                                               borderRadius: '50%',
-                                              bgcolor: isSubExpanded ? '#2563EB' : '#FFFFFF',
-                                              border: `2px solid ${isSubExpanded ? '#2563EB' : '#CBD5E1'}`,
-                                              boxShadow: isSubExpanded
+                                              bgcolor: item.isCompleted
+                                                ? '#10B981'
+                                                : !isSubUnlocked
+                                                ? '#F1F5F9'
+                                                : isSubExpanded
+                                                ? '#2563EB'
+                                                : '#FFFFFF',
+                                              border: item.isCompleted
+                                                ? '1.5px solid #10B981'
+                                                : !isSubUnlocked
+                                                ? '1.5px solid #CBD5E1'
+                                                : `2px solid ${isSubExpanded ? '#2563EB' : '#94A3B8'}`,
+                                              color: item.isCompleted
+                                                ? '#FFFFFF'
+                                                : !isSubUnlocked
+                                                ? '#94A3B8'
+                                                : isSubExpanded
+                                                ? '#FFFFFF'
+                                                : '#64748B',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              justifyContent: 'center',
+                                              boxShadow: item.isCompleted
+                                                ? '0 0 0 2px #FFFFFF, 0 1px 4px rgba(16, 185, 129, 0.25)'
+                                                : isSubExpanded
                                                 ? '0 0 0 4px rgba(37, 99, 235, 0.18)'
                                                 : '0 0 0 2px #FFFFFF',
                                               zIndex: 2,
                                               flexShrink: 0,
-                                              mt: 2.1,
-                                              cursor: 'pointer',
+                                              mt: 1.6,
+                                              cursor: isSubUnlocked ? 'pointer' : 'not-allowed',
                                               transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                                               '&:hover': {
-                                                borderColor: '#2563EB',
-                                                transform: 'scale(1.2)',
+                                                borderColor: isSubUnlocked ? (item.isCompleted ? '#059669' : '#2563EB') : '#CBD5E1',
+                                                transform: isSubUnlocked ? 'scale(1.15)' : 'none',
                                               },
                                             }}
-                                          />
+                                          >
+                                            {item.isCompleted ? (
+                                              <CheckRoundedIcon sx={{ fontSize: 12, color: '#FFFFFF', stroke: '#FFFFFF', strokeWidth: 0.5 }} />
+                                            ) : !isSubUnlocked ? (
+                                              <LockRoundedIcon sx={{ fontSize: 11, color: '#94A3B8' }} />
+                                            ) : null}
+                                          </Box>
 
                                           {/* Vertical Pathway Trail Line */}
                                           {!isSubLast && (
@@ -1715,7 +2822,7 @@ export default function CourseDetailClient({
                                               sx={{
                                                 flex: 1,
                                                 width: 2,
-                                                bgcolor: isSubExpanded ? '#BFDBFE' : '#E2E8F0',
+                                                bgcolor: item.isCompleted ? '#86EFAC' : isSubExpanded ? '#BFDBFE' : '#E2E8F0',
                                                 my: 0.5,
                                                 borderRadius: '1px',
                                                 transition: 'background-color 0.2s ease',
@@ -1736,7 +2843,10 @@ export default function CourseDetailClient({
                                         >
                                           {/* Sub-module Accordion Header */}
                                           <Box
-                                            onClick={() => toggleSubModule(subKey)}
+                                            onClick={() => {
+                                              if (isSubUnlocked) toggleSubModule(subKey);
+                                              else toast.warning('Complete previous submodules to unlock this lesson.', 'Lesson Locked');
+                                            }}
                                             sx={{
                                               display: 'flex',
                                               alignItems: 'center',
@@ -1745,38 +2855,168 @@ export default function CourseDetailClient({
                                               py: 1.4,
                                               px: 1.25,
                                               borderRadius: '8px',
-                                              cursor: 'pointer',
+                                              cursor: isSubUnlocked ? 'pointer' : 'not-allowed',
                                               bgcolor: isSubExpanded ? '#F8FAFC' : 'transparent',
                                               transition: 'background-color 0.15s ease',
                                               '&:hover': {
-                                                bgcolor: '#F8FAFC',
-                                                '& .sub-title': { color: '#2563EB' },
+                                                bgcolor: isSubUnlocked ? '#F8FAFC' : 'transparent',
+                                                '& .sub-title': { color: isSubUnlocked ? '#2563EB' : '#94A3B8' },
                                               },
                                             }}
                                           >
-                                            {/* Title */}
-                                            <Typography
-                                              className="sub-title"
-                                              sx={{
-                                                fontSize: '0.9rem',
-                                                color: isSubExpanded ? '#2563EB' : '#1E293B',
-                                                fontWeight: isSubExpanded ? 700 : 600,
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap',
-                                                transition: 'color 0.15s ease',
-                                                flex: 1,
-                                                minWidth: 0,
-                                              }}
-                                            >
-                                              {item.title}
-                                            </Typography>
+                                            {/* Submodule Type Pill & Title */}
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flex: 1, minWidth: 0 }}>
+                                              <Chip
+                                                icon={
+                                                  isCode ? (
+                                                    <CodeRoundedIcon sx={{ fontSize: '13px !important', color: 'inherit !important' }} />
+                                                  ) : isMSQ ? (
+                                                    <CheckBoxRoundedIcon sx={{ fontSize: '13px !important', color: 'inherit !important' }} />
+                                                  ) : isQuiz ? (
+                                                    <QuizRoundedIcon sx={{ fontSize: '13px !important', color: 'inherit !important' }} />
+                                                  ) : (
+                                                    <MenuBookRoundedIcon sx={{ fontSize: '13px !important', color: 'inherit !important' }} />
+                                                  )
+                                                }
+                                                label={
+                                                  isCode
+                                                    ? 'Code Lab'
+                                                    : isMSQ
+                                                    ? 'MSQ Quiz'
+                                                    : isQuiz
+                                                    ? 'MCQ Quiz'
+                                                    : 'Theory'
+                                                }
+                                                size="small"
+                                                sx={{
+                                                  height: 22,
+                                                  fontSize: '0.72rem',
+                                                  fontWeight: 700,
+                                                  bgcolor: isCode
+                                                    ? '#ECFDF5'
+                                                    : isMSQ || isQuiz
+                                                    ? '#FEF3C7'
+                                                    : '#EFF6FF',
+                                                  color: isCode
+                                                    ? '#059669'
+                                                    : isMSQ || isQuiz
+                                                    ? '#B45309'
+                                                    : '#2563EB',
+                                                  border: '1px solid',
+                                                  borderColor: isCode
+                                                    ? '#A7F3D0'
+                                                    : isMSQ || isQuiz
+                                                    ? '#FDE68A'
+                                                    : '#BFDBFE',
+                                                }}
+                                              />
 
-                                            {/* Right Meta: Duration & Expand Chevron */}
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
+                                              <Typography
+                                                className="sub-title"
+                                                sx={{
+                                                  fontSize: '0.9rem',
+                                                  color: !isSubUnlocked ? '#94A3B8' : isSubExpanded ? '#2563EB' : '#1E293B',
+                                                  fontWeight: isSubExpanded ? 700 : 600,
+                                                  overflow: 'hidden',
+                                                  textOverflow: 'ellipsis',
+                                                  whiteSpace: 'nowrap',
+                                                  transition: 'color 0.15s ease',
+                                                  flex: 1,
+                                                  minWidth: 0,
+                                                }}
+                                              >
+                                                {item.title}
+                                              </Typography>
+
+                                              {!isSubUnlocked && (
+                                                <Tooltip title="Complete previous submodule to unlock">
+                                                  <Chip
+                                                    icon={<LockRoundedIcon sx={{ fontSize: '12px !important', color: 'inherit !important' }} />}
+                                                    label="Locked"
+                                                    size="small"
+                                                    sx={{ height: 19, fontSize: '0.66rem', bgcolor: '#F1F5F9', color: '#94A3B8', fontWeight: 700 }}
+                                                  />
+                                                </Tooltip>
+                                              )}
+
+                                              {hasAttempt && !item.isCompleted && (
+                                                <Tooltip title="Attempted by student">
+                                                  <Chip
+                                                    label="Attempted"
+                                                    size="small"
+                                                    sx={{ height: 19, fontSize: '0.66rem', bgcolor: '#FEF3C7', color: '#B45309', fontWeight: 700, border: '1px solid #FDE68A' }}
+                                                  />
+                                                </Tooltip>
+                                              )}
+
+                                              {item.isCompleted && (
+                                                <Tooltip title="Lesson Completed">
+                                                  <Chip
+                                                    icon={<CheckCircleRoundedIcon sx={{ fontSize: '12px !important', color: 'inherit !important' }} />}
+                                                    label="Completed"
+                                                    size="small"
+                                                    sx={{ height: 19, fontSize: '0.66rem', bgcolor: '#ECFDF5', color: '#059669', fontWeight: 700, border: '1px solid #A7F3D0' }}
+                                                  />
+                                                </Tooltip>
+                                              )}
+                                            </Box>
+
+                                            {/* Right Meta: Duration & Authoring / Preview Actions */}
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexShrink: 0 }}>
                                               <Typography sx={{ color: '#64748B', fontSize: '0.8rem', fontWeight: 600 }}>
                                                 {item.duration}
                                               </Typography>
+
+                                              {/* Studio Mode Submodule Controls */}
+                                              {!isStudent && isStudioMode && (
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }} onClick={(e) => e.stopPropagation()}>
+                                                  <Tooltip title="Edit Submodule Notes/Quiz/Code">
+                                                    <IconButton
+                                                      size="small"
+                                                      onClick={() => handleOpenEditLesson(item, idx, tIdx, modTitle)}
+                                                      sx={{ color: '#64748B', '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' } }}
+                                                    >
+                                                      <EditRoundedIcon sx={{ fontSize: 15 }} />
+                                                    </IconButton>
+                                                  </Tooltip>
+
+                                                  <Tooltip title="Move Submodule Up">
+                                                    <span>
+                                                      <IconButton
+                                                        size="small"
+                                                        disabled={tIdx === 0}
+                                                        onClick={() => handleReorderLesson(idx, tIdx, 'up')}
+                                                        sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}
+                                                      >
+                                                        <ArrowUpwardRoundedIcon sx={{ fontSize: 15 }} />
+                                                      </IconButton>
+                                                    </span>
+                                                  </Tooltip>
+
+                                                  <Tooltip title="Move Submodule Down">
+                                                    <span>
+                                                      <IconButton
+                                                        size="small"
+                                                        disabled={tIdx === topicItems.length - 1}
+                                                        onClick={() => handleReorderLesson(idx, tIdx, 'down')}
+                                                        sx={{ color: '#64748B', '&:hover': { color: '#0F172A' } }}
+                                                      >
+                                                        <ArrowDownwardRoundedIcon sx={{ fontSize: 15 }} />
+                                                      </IconButton>
+                                                    </span>
+                                                  </Tooltip>
+
+                                                  <Tooltip title="Delete Submodule">
+                                                    <IconButton
+                                                      size="small"
+                                                      onClick={() => handleDeleteLesson(idx, tIdx, item.id)}
+                                                      sx={{ color: '#94A3B8', '&:hover': { color: '#EF4444', bgcolor: '#FEE2E2' } }}
+                                                    >
+                                                      <DeleteOutlineRoundedIcon sx={{ fontSize: 15 }} />
+                                                    </IconButton>
+                                                  </Tooltip>
+                                                </Box>
+                                              )}
 
                                               <IconButton
                                                 size="small"
@@ -1792,7 +3032,7 @@ export default function CourseDetailClient({
                                             </Box>
                                           </Box>
 
-                                          {/* Sub-module Expanded Content: Study Summary Only */}
+                                          {/* Sub-module Expanded Content */}
                                           <Collapse in={isSubExpanded} timeout="auto" unmountOnExit={false}>
                                             <Box
                                               sx={{
@@ -1809,13 +3049,64 @@ export default function CourseDetailClient({
                                                   color: '#475569',
                                                   lineHeight: 1.65,
                                                   fontWeight: 500,
+                                                  whiteSpace: 'pre-wrap',
                                                 }}
                                               >
                                                 {item.summary ||
                                                   (item.importantNotes && item.importantNotes.length > 0
-                                                    ? item.importantNotes.join(' ')
-                                                    : `In this unit, you will study core syntax, structural paradigms, algorithmic foundations, and best practices for ${item.title}.`)}
+                                                    ? item.importantNotes.join('\n• ')
+                                                    : item.content ||
+                                                      `In this unit, you will study core syntax, structural paradigms, algorithmic foundations, and best practices for ${item.title}.`)}
                                               </Typography>
+                                              <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
+                                                {!isStudent && isStudioMode && (
+                                                  <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    onClick={() => handleOpenEditLesson(item, idx, tIdx, modTitle)}
+                                                    startIcon={<EditRoundedIcon sx={{ fontSize: 15 }} />}
+                                                    sx={{
+                                                      borderColor: '#CBD5E1',
+                                                      color: '#475569',
+                                                      fontWeight: 700,
+                                                      fontSize: '0.8rem',
+                                                      textTransform: 'none',
+                                                      borderRadius: '8px',
+                                                      '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
+                                                    }}
+                                                  >
+                                                    Edit in Studio
+                                                  </Button>
+                                                )}
+                                                <Tooltip title={isSubUnlocked ? 'Open interactive lesson in learning workspace' : 'Complete previous submodules to unlock'}>
+                                                  <span>
+                                                    <Button
+                                                      size="small"
+                                                      variant="text"
+                                                      disabled={isEnrolling || !isSubUnlocked}
+                                                      onClick={() => {
+                                                        if (!isSubUnlocked) {
+                                                          toast.warning('Complete previous submodules to unlock this lesson.', 'Lesson Locked');
+                                                          return;
+                                                        }
+                                                        handleEnrollOrStart(subKey);
+                                                      }}
+                                                      endIcon={isSubUnlocked ? <NorthEastRoundedIcon sx={{ fontSize: 15 }} /> : <LockRoundedIcon sx={{ fontSize: 14 }} />}
+                                                      sx={{
+                                                        color: isSubUnlocked ? '#2563EB' : '#94A3B8',
+                                                        fontWeight: 700,
+                                                        fontSize: '0.8rem',
+                                                        textTransform: 'none',
+                                                        p: 0,
+                                                        '&:hover': { bgcolor: 'transparent', color: isSubUnlocked ? '#1D4ED8' : '#94A3B8' },
+                                                        '&.Mui-disabled': { color: '#94A3B8' },
+                                                      }}
+                                                    >
+                                                      {isSubUnlocked ? 'Open Lesson in Workspace' : 'Locked'}
+                                                    </Button>
+                                                  </span>
+                                                </Tooltip>
+                                              </Box>
                                             </Box>
                                           </Collapse>
                                         </Box>
@@ -1829,6 +3120,7 @@ export default function CourseDetailClient({
                         );
                       })}
                     </Box>
+                    )}
                   </Box>
                 )}
 
@@ -1860,9 +3152,36 @@ export default function CourseDetailClient({
                           },
                         }}
                       />
-                      <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 600 }}>
-                        {filteredStudents.length} Students Enrolled
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 600 }}>
+                          {filteredStudents.length} Students Enrolled
+                        </Typography>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={handleExportRosterCsv}
+                          disabled={isExportingRoster}
+                          startIcon={
+                            isExportingRoster ? (
+                              <CircularProgress size={14} />
+                            ) : (
+                              <FileDownloadRoundedIcon sx={{ fontSize: 16 }} />
+                            )
+                          }
+                          sx={{
+                            borderRadius: '9999px',
+                            borderColor: '#CBD5E1',
+                            color: '#475569',
+                            fontWeight: 700,
+                            fontSize: '0.8rem',
+                            textTransform: 'none',
+                            bgcolor: '#FFFFFF',
+                            '&:hover': { bgcolor: '#F1F5F9', borderColor: '#94A3B8' },
+                          }}
+                        >
+                          {isExportingRoster ? 'Exporting...' : 'Export Gradebook CSV'}
+                        </Button>
+                      </Box>
                     </Box>
 
                     {/* Structured Student Roster Table */}
@@ -1891,8 +3210,33 @@ export default function CourseDetailClient({
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {filteredStudents.map((stu) => (
-                            <TableRow key={stu.id} sx={{ '&:hover': { bgcolor: '#F8FAFC' } }}>
+                          {isRosterLoading ? (
+                            <TableRow>
+                              <TableCell colSpan={6} sx={{ textAlign: 'center', py: 5, color: '#64748B' }}>
+                                <CircularProgress size={24} sx={{ mb: 1 }} />
+                                <Typography sx={{ fontSize: '0.85rem' }}>Loading course gradebook roster...</Typography>
+                              </TableCell>
+                            </TableRow>
+                          ) : rosterFetchError ? (
+                            <TableRow>
+                              <TableCell colSpan={6} sx={{ textAlign: 'center', py: 5, color: '#EF4444' }}>
+                                <Typography sx={{ fontSize: '0.88rem', fontWeight: 600 }}>{rosterFetchError}</Typography>
+                              </TableCell>
+                            </TableRow>
+                          ) : filteredStudents.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} sx={{ textAlign: 'center', py: 5, color: '#64748B' }}>
+                                <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#0F172A' }}>
+                                  No enrolled students found
+                                </Typography>
+                                <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                                  {studentSearch ? `No students match search query "${studentSearch}".` : 'No students are currently enrolled in this curriculum.'}
+                                </Typography>
+                              </TableCell>
+                            </TableRow>
+                          ) : (
+                            filteredStudents.map((stu) => (
+                              <TableRow key={stu.id} sx={{ '&:hover': { bgcolor: '#F8FAFC' } }}>
                               <TableCell sx={{ borderColor: '#E2E8F0' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                   <Avatar sx={{ width: 34, height: 34, bgcolor: '#2563EB', fontWeight: 700, fontSize: '0.8rem', color: '#FFFFFF' }}>
@@ -1939,7 +3283,7 @@ export default function CourseDetailClient({
                                   </Typography>
                                 </Box>
                                 <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.7rem' }}>
-                                  {stu.completedLessons} of {course.lessonsCount} lessons complete
+                                  {stu.completedLessons} of {liveCourse.lessonsCount || 0} lessons complete
                                 </Typography>
                               </TableCell>
 
@@ -1982,7 +3326,8 @@ export default function CourseDetailClient({
                                 />
                               </TableCell>
                             </TableRow>
-                          ))}
+                          ))
+                        )}
                         </TableBody>
                       </Table>
                     </TableContainer>
@@ -2225,7 +3570,7 @@ export default function CourseDetailClient({
                     }}
                   >
                     <Typography sx={{ fontFamily: 'monospace', fontSize: '0.72rem', color: '#2563EB', fontWeight: 700, letterSpacing: '0.04em' }}>
-                      ID: CP-{course.code || 'CRS'}-0x8F92D
+                      ID: CP-{liveCourse.code || 'CRS'}-0x8F92D
                     </Typography>
                   </Box>
 
@@ -2279,7 +3624,7 @@ export default function CourseDetailClient({
                       lineHeight: 1.55,
                     }}
                   >
-                    On completing all {course.modulesCount} modules and lab assessments in this roadmap, you'll receive an official verified certificate.
+                    On completing all {liveCourse.modulesCount ?? liveCourse.modules?.length ?? 0} modules and lab assessments in this roadmap, you'll receive an official verified certificate.
                   </Typography>
                 </Box>
 
@@ -2289,19 +3634,19 @@ export default function CourseDetailClient({
                   variant="outlined"
                   onClick={() =>
                     setSelectedCert({
-                      id: `cert-${course.id}`,
-                      title: course.title,
-                      badgeCode: course.code,
-                      language: course.category,
+                      id: `cert-${liveCourse.id}`,
+                      title: liveCourse.title,
+                      badgeCode: liveCourse.code,
+                      language: liveCourse.category,
                       stars: 3,
                       issueDate: 'Academic Term 2025',
                       issuer: 'CodePlatform Academic Board & Faculty',
-                      credentialId: `CP-${course.code || 'CRS'}-${course.id.slice(0, 6).toUpperCase()}`,
-                      skills: course.tags,
+                      credentialId: `CP-${liveCourse.code || 'CRS'}-${(liveCourse.id || '').slice(0, 6).toUpperCase()}`,
+                      skills: liveCourse.tags,
                       score: '96%',
                       percentile: 'Top 5%',
                       proctoredBy: 'Stanford CS Evaluation Engine',
-                      assessmentDuration: `${course.durationHours} Hours Total`,
+                      assessmentDuration: `${liveCourse.durationHours} Hours Total`,
                     })
                   }
                   startIcon={<WorkspacePremiumRoundedIcon sx={{ color: '#2563EB' }} />}
@@ -2353,7 +3698,7 @@ export default function CourseDetailClient({
 
           {/* Main Content Area */}
           <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-            <Box sx={{ maxWidth: 1440, width: '100%', mx: 'auto', px: { xs: 2, sm: 3, md: 4.5 }, display: 'flex', flexDirection: 'column', gap: 3.5, pb: { xs: 6, md: 8 } }}>
+            <Box sx={{ maxWidth: 1400, width: '100%', mx: 'auto', px: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 4, pb: { xs: 4, md: 6 } }}>
               {/* 2. Top Header Navbar */}
               <Navbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
               {innerContent}
@@ -2368,6 +3713,256 @@ export default function CourseDetailClient({
         onClose={() => setSelectedCert(null)}
         cert={selectedCert}
         studentName={certStudentName}
+      />
+
+      {/* Superadmin Module Authoring Modal */}
+      <ModuleAuthoringModal
+        open={isAddModuleOpen}
+        onClose={() => {
+          setIsAddModuleOpen(false);
+          setModuleToEdit(null);
+        }}
+        onSave={handleSaveModule}
+        initialData={moduleToEdit}
+        isEditing={Boolean(moduleToEdit?.id)}
+      />
+
+      {/* Superadmin Submodule (Lesson) Authoring Modal with Notes, MCQ, MSQ, & Coding Challenges */}
+      <LessonAuthoringModal
+        open={isAddLessonOpen}
+        onClose={() => {
+          setIsAddLessonOpen(false);
+          setLessonToEdit(null);
+          setTargetModuleForLesson(null);
+        }}
+        onSave={handleSaveLesson}
+        initialData={lessonToEdit?.data}
+        isEditing={Boolean(lessonToEdit?.id)}
+        moduleTitle={targetModuleForLesson?.title}
+      />
+
+      {/* Superadmin Bulk Curriculum Importer (CSV, JSON, Markdown) */}
+      <BulkImportCurriculumModal
+        open={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        courseId={liveCourse.id || course.id}
+        courseTitle={liveCourse.title || course.title}
+        onImportSuccess={async () => {
+          await refreshLiveCourse();
+        }}
+      />
+
+      {/* Superadmin / Instructor Learning Outcomes Editor Modal */}
+      <Dialog
+        open={isEditOutcomesOpen}
+        onClose={() => !isSavingOutcomes && setIsEditOutcomesOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: '24px',
+              p: 1,
+              boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.25)',
+            },
+          },
+        }}
+      >
+        <DialogTitle sx={{ px: 3, pt: 2.5, pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '12px',
+                  bgcolor: '#EFF6FF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#2563EB',
+                }}
+              >
+                <LightbulbRoundedIcon sx={{ fontSize: 22 }} />
+              </Box>
+              <Box>
+                <Typography sx={{ fontWeight: 800, fontSize: '1.15rem', color: '#0F172A' }}>
+                  What You'll Learn Points
+                </Typography>
+                <Typography sx={{ fontSize: '0.8rem', color: '#64748B' }}>
+                  Add or customize key outcomes saved to backend database
+                </Typography>
+              </Box>
+            </Box>
+            <IconButton
+              size="small"
+              onClick={() => setIsEditOutcomesOpen(false)}
+              disabled={isSavingOutcomes}
+              sx={{ color: '#94A3B8' }}
+            >
+              <CloseRoundedIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+
+        <DialogContent sx={{ px: 3, py: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {/* Add input */}
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="e.g. Master Asymptotic Big-O Analysis & Graph Algorithms..."
+              value={newOutcomeText}
+              onChange={(e) => setNewOutcomeText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddEditableOutcome();
+                }
+              }}
+              disabled={isSavingOutcomes}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '12px',
+                  bgcolor: '#F8FAFC',
+                  fontSize: '0.88rem',
+                },
+              }}
+            />
+            <Button
+              variant="contained"
+              onClick={() => handleAddEditableOutcome()}
+              disabled={!newOutcomeText.trim() || isSavingOutcomes}
+              startIcon={<AddRoundedIcon />}
+              sx={{
+                borderRadius: '12px',
+                bgcolor: '#2563EB',
+                textTransform: 'none',
+                fontWeight: 700,
+                px: 2.2,
+                py: 0.9,
+                whiteSpace: 'nowrap',
+                boxShadow: 'none',
+                '&:hover': { bgcolor: '#1D4ED8' },
+              }}
+            >
+              Add Point
+            </Button>
+          </Box>
+
+          {/* List of current outcomes */}
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+              p: 1.5,
+              bgcolor: '#F8FAFC',
+              borderRadius: '14px',
+              border: '1px solid #E2E8F0',
+              maxHeight: 280,
+              overflowY: 'auto',
+            }}
+          >
+            {editableOutcomes.length === 0 ? (
+              <Typography sx={{ fontSize: '0.84rem', color: '#94A3B8', textAlign: 'center', py: 2 }}>
+                No points configured yet.
+              </Typography>
+            ) : (
+              editableOutcomes.map((item, idx) => (
+                <Box
+                  key={`edit-outcome-${idx}`}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 1.5,
+                    p: 1.25,
+                    bgcolor: '#FFFFFF',
+                    borderRadius: '10px',
+                    border: '1px solid #E2E8F0',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flex: 1, minWidth: 0 }}>
+                    <CheckRoundedIcon sx={{ fontSize: 18, color: '#2563EB', flexShrink: 0 }} />
+                    <Typography sx={{ fontSize: '0.86rem', color: '#1E293B', fontWeight: 600 }}>
+                      {item}
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleRemoveEditableOutcome(idx)}
+                    disabled={isSavingOutcomes}
+                    sx={{ color: '#94A3B8', '&:hover': { color: '#EF4444', bgcolor: '#FEE2E2' } }}
+                  >
+                    <DeleteOutlineRoundedIcon sx={{ fontSize: 17 }} />
+                  </IconButton>
+                </Box>
+              ))
+            )}
+          </Box>
+
+          {/* Helper / Reset controls */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Button
+              size="small"
+              onClick={handleResetEditableOutcomes}
+              disabled={isSavingOutcomes}
+              startIcon={<RestartAltRoundedIcon sx={{ fontSize: 16 }} />}
+              sx={{ textTransform: 'none', fontSize: '0.78rem', color: '#64748B', fontWeight: 600 }}
+            >
+              Reset to Recommended Defaults
+            </Button>
+            <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+              {editableOutcomes.length} points defined
+            </Typography>
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 3, pb: 2.5, pt: 1, gap: 1 }}>
+          <Button
+            variant="outlined"
+            onClick={() => setIsEditOutcomesOpen(false)}
+            disabled={isSavingOutcomes}
+            sx={{
+              borderRadius: '10px',
+              textTransform: 'none',
+              fontWeight: 600,
+              color: '#475569',
+              borderColor: '#CBD5E1',
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveOutcomesToBackend}
+            disabled={isSavingOutcomes}
+            startIcon={isSavingOutcomes ? <CircularProgress size={16} sx={{ color: '#FFFFFF' }} /> : <CheckCircleRoundedIcon sx={{ fontSize: 18 }} />}
+            sx={{
+              borderRadius: '10px',
+              bgcolor: '#2563EB',
+              textTransform: 'none',
+              fontWeight: 700,
+              px: 3,
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+              '&:hover': { bgcolor: '#1D4ED8' },
+            }}
+          >
+            {isSavingOutcomes ? 'Saving to Database...' : 'Save Learning Points'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Core Course Details Modal */}
+      <EditCourseModal
+        open={isEditCourseModalOpen}
+        onClose={() => setIsEditCourseModalOpen(false)}
+        course={liveCourse}
+        onUpdated={(updated) => {
+          setLiveCourse((prev) => ({ ...prev, ...updated }));
+          refreshLiveCourse(liveCourse.id || course.id);
+        }}
       />
     </>
   );

@@ -338,7 +338,7 @@ export default function MarkdownViewer({
   if (!content) return null;
 
   // If content is HTML from TipTap, render in styled typography container after sanitization
-  const isHtml = /<([a-z0-9]+)[\s>]/i.test(content);
+  const isHtml = /^\s*<(?:p|h[1-6]|blockquote|pre|ul|ol|table|div|article|section)[\s>]/i.test(content);
   if (isHtml) {
     const safeHtml = sanitizeRichHtml(content);
     return (

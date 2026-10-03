@@ -22,6 +22,8 @@ import type { CurrentUserPayload } from '../common/types/current-user.interface.
 import { BulkInviteDto } from './dto/bulk-invite.dto.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { ListUsersQueryDto } from './dto/list-users-query.dto.js';
+import { SaveDiagnosticDto } from './dto/save-diagnostic.dto.js';
+import { SaveGoalsDto } from './dto/save-goals.dto.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { UsersService } from './users.service.js';
 import { validateUserCreationRBAC } from './utils/user-rbac.util.js';
@@ -132,6 +134,52 @@ export class UsersController {
   @ApiOperation({ summary: 'Get current user sanitized profile' })
   async getMe(@CurrentUser() currentUser: CurrentUserPayload) {
     return this.usersService.getProfile(currentUser.id);
+  }
+
+  // ----------------------------------------------------
+  // STUDENT DIAGNOSTIC & GOALS ENDPOINTS
+  // ----------------------------------------------------
+
+  @Post('me/diagnostic')
+  @ApiOperation({ summary: 'Save student diagnostic assessment results' })
+  async saveDiagnostic(
+    @CurrentUser() currentUser: CurrentUserPayload,
+    @Body() dto: SaveDiagnosticDto,
+  ) {
+    return this.usersService.saveDiagnostic(currentUser.id, dto);
+  }
+
+  @Get('me/diagnostic')
+  @ApiOperation({ summary: 'Get latest student diagnostic assessment results' })
+  async getDiagnostic(@CurrentUser() currentUser: CurrentUserPayload) {
+    return this.usersService.getLatestDiagnostic(currentUser.id);
+  }
+
+  @Get('me/diagnostic/history')
+  @ApiOperation({ summary: 'Get student diagnostic assessment history' })
+  async getDiagnosticHistory(@CurrentUser() currentUser: CurrentUserPayload) {
+    return this.usersService.getDiagnosticHistory(currentUser.id);
+  }
+
+  @Post('me/goals')
+  @ApiOperation({ summary: 'Save or update student active learning goals & cadence targets' })
+  async saveGoals(
+    @CurrentUser() currentUser: CurrentUserPayload,
+    @Body() dto: SaveGoalsDto,
+  ) {
+    return this.usersService.saveGoals(currentUser.id, dto);
+  }
+
+  @Get('me/goals')
+  @ApiOperation({ summary: 'Get student active learning goals and velocity metrics' })
+  async getGoals(@CurrentUser() currentUser: CurrentUserPayload) {
+    return this.usersService.getGoals(currentUser.id);
+  }
+
+  @Get('me/growth-metrics')
+  @ApiOperation({ summary: 'Get student aggregated growth metrics, role readiness, and problem stats' })
+  async getGrowthMetrics(@CurrentUser() currentUser: CurrentUserPayload) {
+    return this.usersService.getGrowthMetrics(currentUser.id);
   }
 
   @Get(':id')

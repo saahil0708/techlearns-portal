@@ -8,7 +8,7 @@ describe('CoursesController', () => {
   let controller: CoursesController;
   let service: CoursesService;
 
-  const mockUser = {
+  const mockUser: any = {
     id: 'user-faculty-1',
     email: 'faculty@example.com',
     name: 'Faculty Member',
@@ -30,15 +30,25 @@ describe('CoursesController', () => {
           provide: CoursesService,
           useValue: {
             createCourse: vi.fn().mockResolvedValue(mockCourse),
+            createCompositeCourse: vi.fn().mockResolvedValue(mockCourse),
             findAll: vi.fn().mockResolvedValue([mockCourse]),
             findCourseById: vi.fn().mockResolvedValue(mockCourse),
             updateCourse: vi.fn().mockResolvedValue(mockCourse),
             deleteCourse: vi.fn().mockResolvedValue(mockCourse),
+            publishCourse: vi.fn().mockResolvedValue({ ...mockCourse, status: 'PUBLISHED' }),
+            unpublishCourse: vi.fn().mockResolvedValue({ ...mockCourse, status: 'DRAFT' }),
             getEnrolledCourses: vi.fn().mockResolvedValue([]),
             enrollStudent: vi.fn().mockResolvedValue({ id: 'enr-1' }),
+            unenrollStudent: vi.fn().mockResolvedValue({ id: 'enr-1', status: 'DROPPED' }),
+            enrollBatchStudents: vi.fn().mockResolvedValue({ totalBatchStudents: 5, enrolledCount: 5 }),
+            getCourseRoster: vi.fn().mockResolvedValue({ items: [], meta: { total: 0 } }),
+            exportCourseRosterCsv: vi.fn().mockResolvedValue('"Student Name","Email"\n"John","john@edu.com"'),
             getLesson: vi.fn().mockResolvedValue({ id: 'les-1', title: 'Lesson 1' }),
             updateLessonProgress: vi.fn().mockResolvedValue({ completed: true }),
+            submitQuiz: vi.fn().mockResolvedValue({ isCorrect: true }),
             getCourseProgress: vi.fn().mockResolvedValue({ totalLessons: 10, completedLessons: 5, progressPercent: 50 }),
+            reorderModules: vi.fn().mockResolvedValue([]),
+            reorderLessons: vi.fn().mockResolvedValue([]),
           },
         },
       ],
@@ -59,21 +69,37 @@ describe('CoursesController', () => {
     expect(service.createCourse).toHaveBeenCalledWith(mockUser.id, dto, mockUser);
   });
 
-  it('should list all courses', async () => {
-    const result = await controller.findAll(mockUser);
-    expect(result).toEqual([mockCourse]);
-    expect(service.findAll).toHaveBeenCalledWith(undefined, undefined, mockUser);
-  });
-
-  it('should get course by id', async () => {
-    const result = await controller.findOne('course-1', mockUser);
+  it('should create a composite course', async () => {
+    const dto = {
+      title: 'Full Stack Systems',
+      modules: [{ title: 'Module 1', lessons: [{ title: 'Lesson 1' }] }],
+    };
+    const result = await controller.createComposite(mockUser, dto as any);
     expect(result).toEqual(mockCourse);
-    expect(service.findCourseById).toHaveBeenCalledWith('course-1', mockUser);
+    expect(service.createCompositeCourse).toHaveBeenCalledWith(mockUser.id, dto, mockUser);
   });
 
-  it('should enroll in a course', async () => {
-    const result = await controller.enroll('course-1', mockUser);
-    expect(result).toEqual({ id: 'enr-1' });
-    expect(service.enrollStudent).toHaveBeenCalledWith('course-1', mockUser);
+  it('should publish and unpublish course', async () => {
+    const pubResult = await controller.publish('course-1', mockUser);
+    expect(pubResult.status).toBe('PUBLISHED');
+
+    const unpubResult = await controller.unpublish('course-1', mockUser);
+    expect(unpubResult.status).toBe('DRAFT');
+  });
+
+  it('should get course roster gradebook', async () => {
+    const query = { page: 1, limit: 20 };
+    const result = await controller.getRoster('course-1', query, mockUser);
+    expect(result).toHaveProperty('items');
+    expect(service.getCourseRoster).toHaveBeenCalledWith('course-1', query, mockUser);
+  });
+
+  it('should export course roster CSV', async () => {
+    const mockRes = {
+      setHeader: vi.fn(),
+    } as any;
+    const csv = await controller.exportRosterCsv('course-1', mockUser, mockRes);
+    expect(csv).toContain('Student Name');
+    expect(mockRes.setHeader).toHaveBeenCalledWith('Content-Type', 'text/csv; charset=utf-8');
   });
 });

@@ -55,126 +55,25 @@ const LEVEL_COLORS: Record<CourseLevel, { bg: string; text: string }> = {
   Advanced: { bg: 'rgba(124, 58, 237, 0.1)', text: '#7C3AED' },
 };
 
-const DEFAULT_SAMPLE_COURSES: CourseDirectoryEntity[] = [
-  {
-    id: 'crs-fullstack-architecture',
-    code: 'CS-401',
-    slug: 'crs-fullstack-architecture',
-    title: 'Full-Stack Web Architecture & Cloud Microservices',
-    description: 'Master enterprise full-stack development with Next.js 15, SSR, NestJS APIs, PostgreSQL, Redis BullMQ queues, and Docker container security.',
-    category: 'Web & Full-Stack Development',
-    level: 'Advanced',
-    instructorName: 'Prof. Alan Turing',
-    instructorTitle: 'Distinguished Systems Architect',
-    institutionName: 'Stanford Computer Science',
-    durationHours: 64,
-    modulesCount: 3,
-    lessonsCount: 6,
-    enrolledStudents: 142,
-    completionRate: 78,
-    status: 'Published',
-    tags: ['Next.js 15', 'NestJS', 'PostgreSQL', 'Redis', 'Docker'],
-    accentColor: '#2563EB',
-    moduleHighlights: [
-      { title: 'Foundations of SSR & Next.js App Router', lessons: 2 },
-      { title: 'Production API Design with NestJS & TypeScript', lessons: 2 },
-      { title: 'PostgreSQL Relational Schema Design & Redis BullMQ Queues', lessons: 2 },
-    ],
-  },
-  {
-    id: 'crs-dsa-advanced',
-    code: 'CS-301',
-    slug: 'crs-dsa-advanced',
-    title: 'Advanced Data Structures & Algorithmic Problem Solving',
-    description: 'Master dynamic programming, graph algorithms, segment trees, and competitive programming techniques for high-tier tech interviews.',
-    category: 'Computer Science & DSA',
-    level: 'Intermediate',
-    instructorName: 'Prof. Thomas Cormen',
-    instructorTitle: 'Algorithms Faculty Chair',
-    institutionName: 'MIT EECS',
-    durationHours: 48,
-    modulesCount: 2,
-    lessonsCount: 4,
-    enrolledStudents: 320,
-    completionRate: 92,
-    status: 'Published',
-    tags: ['Algorithms', 'Dynamic Programming', 'Graph Theory', 'Trees'],
-    accentColor: '#10B981',
-    moduleHighlights: [
-      { title: 'Dynamic Programming Patterns', lessons: 2 },
-      { title: 'Graph Algorithms & Shortest Path Optimization', lessons: 2 },
-    ],
-  },
-  {
-    id: 'crs-cloud-devops',
-    code: 'CS-501',
-    slug: 'crs-cloud-devops',
-    title: 'Cloud DevOps, Docker Sandboxing & CI/CD Pipelines',
-    description: 'Container orchestration, multi-stage builds, isolated runtime sandboxes, and automated testing deployments.',
-    category: 'System Design & Architecture',
-    level: 'Advanced',
-    instructorName: 'Prof. Alan Turing',
-    instructorTitle: 'DevOps & Systems Specialist',
-    institutionName: 'Stanford Computer Science',
-    durationHours: 36,
-    modulesCount: 1,
-    lessonsCount: 2,
-    enrolledStudents: 98,
-    completionRate: 64,
-    status: 'Published',
-    tags: ['Docker', 'DevOps', 'CI/CD', 'Security', 'Linux'],
-    accentColor: '#8B5CF6',
-    moduleHighlights: [
-      { title: 'Docker Multi-Stage Builds & Isolation', lessons: 2 },
-    ],
-  },
-  {
-    id: 'crs-python-fundamentals',
-    code: 'PY-101',
-    slug: 'crs-python-fundamentals',
-    title: 'Python 3 Programming: From Fundamentals to Algorithmic Problem Solving',
-    description: 'Master Python 3 fundamentals from variables, conditionals, loops, and data structures to OOP, file I/O, and coding interview challenges.',
-    category: 'Computer Science & DSA',
-    level: 'Beginner',
-    instructorName: 'Prof. Alan Turing',
-    instructorTitle: 'Core Systems & Foundations Faculty',
-    institutionName: 'Stanford Computer Science',
-    durationHours: 45,
-    modulesCount: 4,
-    lessonsCount: 7,
-    enrolledStudents: 412,
-    completionRate: 88,
-    status: 'Published',
-    tags: ['Python 3', 'Beginners', 'DSA', 'OOP', 'Problem Solving'],
-    accentColor: '#3B82F6',
-    moduleHighlights: [
-      { title: 'Python Basics, Syntax & Expressions', lessons: 2 },
-      { title: 'Control Flow, Conditionals & Loops', lessons: 2 },
-      { title: 'Functions, Scoping & Modular Design', lessons: 1 },
-      { title: 'Lists, Dictionaries, Sets & Tuples', lessons: 2 },
-    ],
-  },
-];
-
 export default function CourseCatalogClient() {
   const router = useRouter();
   const toast = useToast();
 
-  const [courses, setCourses] = useState<CourseDirectoryEntity[]>(DEFAULT_SAMPLE_COURSES);
+  const [courses, setCourses] = useState<CourseDirectoryEntity[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [reloadCounter, setReloadCounter] = useState<number>(0);
+
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [levelFilter, setLevelFilter] = useState<string>('ALL');
-  const [activeTab, setActiveTab] = useState<string>('ENROLLED');
+  const [activeTab, setActiveTab] = useState<string>('AVAILABLE');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Student progress state
-  const [enrolledMap, setEnrolledMap] = useState<Record<string, number>>({
-    'crs-fullstack-architecture': 50,
-    'crs-dsa-advanced': 100,
-    'crs-cloud-devops': 20,
-  });
+  const [enrolledMap, setEnrolledMap] = useState<Record<string, number>>({});
 
   const handleNavigateToCourse = (course: CourseDirectoryEntity) => {
     const targetSlug = course.slug || course.id;
@@ -185,74 +84,113 @@ export default function CourseCatalogClient() {
   useEffect(() => {
     let isMounted = true;
     async function loadCourses() {
+      setIsLoading(true);
+      setFetchError(null);
       try {
-        const [res, meRes] = await Promise.all([
+        const [res, meRes, enrolledRes] = await Promise.all([
           apiService.getCourses({ limit: 50 }),
           apiService.getMe().catch(() => null),
+          apiService.getEnrolledCourses().catch(() => null),
         ]);
         if (isMounted) {
-          if (res?.items && res.items.length > 0) {
+          if (Array.isArray(res?.items)) {
             const mapped: CourseDirectoryEntity[] = res.items.map((c: any, idx: number) => {
-              const totalLessons = c.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 6;
+              const totalLessons =
+                c.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) ||
+                (c._count?.lessons ?? 0);
               return {
                 id: c.id,
                 code: c.code || `CS-${String(100 + (idx + 1) * 100)}`,
                 slug: c.slug || c.id,
                 title: c.title,
-                description: c.description || 'Comprehensive interactive curriculum covering core fundamentals and hands-on projects.',
+                description:
+                  c.description ||
+                  'Comprehensive interactive curriculum covering core fundamentals and hands-on projects.',
                 category: (c.category || 'Computer Science & DSA') as CourseCategory,
-                level: (c.level || 'Intermediate') as CourseLevel,
-                instructorName: c.instructorName || c.instructor?.name || c.createdBy?.name || 'Academic Faculty',
+                level: (c.level?.toUpperCase() === 'BEGINNER'
+                  ? 'Beginner'
+                  : c.level?.toUpperCase() === 'ADVANCED'
+                  ? 'Advanced'
+                  : 'Intermediate') as CourseLevel,
+                instructorName:
+                  c.instructorName || c.instructor?.name || c.createdBy?.name || 'Academic Faculty',
                 instructorTitle: c.instructorTitle || 'Senior Faculty Instructor',
-                institutionName: c.institutionName || c.institution?.name || c.college?.name || 'Global Open Academy',
-                durationHours: c.durationHours || 40,
-                modulesCount: c.modules?.length || c._count?.modules || 3,
+                institutionName:
+                  c.institutionName ||
+                  c.institution?.name ||
+                  c.college?.name ||
+                  'Global Open Academy',
+                durationHours: c.durationHours || (c.durationWeeks ? c.durationWeeks * 4 : 40),
+                modulesCount: c.modules?.length || c._count?.modules || 0,
                 lessonsCount: totalLessons,
-                enrolledStudents: c.enrolledStudents || c._count?.enrollments || 45,
-                completionRate: c.completionRate || 72,
-                status: (c.status === 'Draft' || c.status === 'Archived' ? c.status : 'Published') as 'Published' | 'Draft' | 'Archived',
+                enrolledStudents: c.enrolledStudents || c._count?.enrollments || 0,
+                completionRate: c.completionRate || 0,
+                status: (c.status === 'Draft' || c.status === 'Archived'
+                  ? c.status
+                  : 'Published') as 'Published' | 'Draft' | 'Archived',
                 tags: Array.isArray(c.tags) && c.tags.length > 0 ? c.tags : ['Core', 'Curriculum'],
-                accentColor: c.accentColor || (idx % 3 === 0 ? '#2563EB' : idx % 3 === 1 ? '#10B981' : '#8B5CF6'),
-                moduleHighlights: Array.isArray(c.moduleHighlights) && c.moduleHighlights.length > 0
-                  ? c.moduleHighlights
-                  : (Array.isArray(c.modules) && c.modules.length > 0
+                accentColor:
+                  c.accentColor ||
+                  (idx % 3 === 0 ? '#2563EB' : idx % 3 === 1 ? '#10B981' : '#8B5CF6'),
+                thumbnailUrl: c.thumbnailUrl || undefined,
+                moduleHighlights:
+                  Array.isArray(c.moduleHighlights) && c.moduleHighlights.length > 0
+                    ? c.moduleHighlights
+                    : Array.isArray(c.modules) && c.modules.length > 0
                     ? c.modules.map((m: any) => ({
-                      title: m.title || 'Course Module',
-                      lessons: m.lessons?.length || 2,
-                    }))
-                    : [
-                      { title: 'Core Foundations', lessons: 3 },
-                      { title: 'Applied Practice', lessons: 3 },
-                    ]),
+                        title: m.title || 'Course Module',
+                        lessons: m.lessons?.length || 0,
+                      }))
+                    : [],
               };
             });
             setCourses(mapped);
+          } else {
+            setCourses([]);
           }
 
-          if (meRes?.enrollments && Array.isArray(meRes.enrollments) && meRes.enrollments.length > 0) {
-            const eMap: Record<string, number> = {};
+          const eMap: Record<string, number> = {};
+          if (Array.isArray(enrolledRes)) {
+            enrolledRes.forEach((enr: any) => {
+              if (enr.courseId) {
+                eMap[enr.courseId] = enr.status === 'COMPLETED' ? 100 : 25;
+              }
+            });
+          }
+          if (meRes?.enrollments && Array.isArray(meRes.enrollments)) {
             meRes.enrollments.forEach((enr: any) => {
               if (enr.courseId) {
                 eMap[enr.courseId] = enr.progressPct ?? (enr.status === 'COMPLETED' ? 100 : 50);
               }
             });
-            setEnrolledMap(eMap);
+          }
+          if (Object.keys(eMap).length > 0) {
+            setEnrolledMap((prev) => ({ ...prev, ...eMap }));
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.warn('Live courses fetch failed:', err);
+        if (isMounted) {
+          setFetchError(err?.message || 'Failed to load courses from the server. Please try again.');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     }
     loadCourses();
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [reloadCounter]);
 
   // Categories list
   const categories = useMemo(() => {
     const set = new Set<string>();
-    courses.forEach((c) => set.add(c.category));
+    courses.forEach((c) => {
+      if (c.category) set.add(c.category);
+    });
     return Array.from(set);
   }, [courses]);
 
@@ -265,8 +203,14 @@ export default function CourseCatalogClient() {
         c.instructorName.toLowerCase().includes(search.toLowerCase()) ||
         c.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()));
 
-      const matchesCategory = categoryFilter === 'ALL' || c.category === categoryFilter;
-      const matchesLevel = levelFilter === 'ALL' || c.level === levelFilter;
+      const matchesCategory =
+        categoryFilter === 'ALL' ||
+        c.category === categoryFilter ||
+        c.category.toLowerCase() === categoryFilter.toLowerCase();
+      const matchesLevel =
+        levelFilter === 'ALL' ||
+        c.level === levelFilter ||
+        c.level.toLowerCase() === levelFilter.toLowerCase();
 
       let matchesTab = true;
       const progress = enrolledMap[c.id];
@@ -545,7 +489,37 @@ export default function CourseCatalogClient() {
           {/* ========================================================================= */}
           {viewMode === 'grid' ? (
             <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, bgcolor: '#F8FAFC' }}>
-              {filteredCourses.length === 0 ? (
+              {isLoading ? (
+                <Box sx={{ py: 10, textAlign: 'center', color: '#64748B' }}>
+                  <Typography sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                    Loading course catalog...
+                  </Typography>
+                </Box>
+              ) : fetchError ? (
+                <Box sx={{ py: 8, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', color: '#DC2626' }}>
+                    Failed to load courses
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.85rem', color: '#64748B', maxWidth: 460 }}>
+                    {fetchError}
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setReloadCounter((c) => c + 1)}
+                    sx={{
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      borderColor: '#DC2626',
+                      color: '#DC2626',
+                      '&:hover': { bgcolor: '#FEF2F2', borderColor: '#B91C1C' },
+                    }}
+                  >
+                    Retry Loading
+                  </Button>
+                </Box>
+              ) : filteredCourses.length === 0 ? (
                 <Box sx={{ py: 10, textAlign: 'center', color: '#94A3B8' }}>
                   <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', color: '#64748B', mb: 0.5 }}>
                     No courses found
@@ -560,11 +534,12 @@ export default function CourseCatalogClient() {
                     display: 'grid',
                     gridTemplateColumns: {
                       xs: '1fr',
-                      sm: 'repeat(auto-fill, minmax(260px, 1fr))',
-                      md: 'repeat(auto-fill, minmax(280px, 1fr))',
-                      lg: 'repeat(auto-fill, minmax(285px, 320px))',
+                      sm: 'repeat(2, 1fr)',
+                      md: 'repeat(3, 1fr)',
+                      lg: 'repeat(4, 1fr)',
+                      xl: 'repeat(4, 1fr)',
                     },
-                    gap: 3.5,
+                    gap: 2.5,
                   }}
                 >
                   {filteredCourses
@@ -613,7 +588,44 @@ export default function CourseCatalogClient() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredCourses.length === 0 ? (
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center" sx={{ py: 6, color: '#64748B' }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: '0.92rem' }}>
+                          Loading course catalog...
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : fetchError ? (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                          <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#DC2626' }}>
+                            Failed to load courses
+                          </Typography>
+                          <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
+                            {fetchError}
+                          </Typography>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => setReloadCounter((c) => c + 1)}
+                            sx={{
+                              borderRadius: '8px',
+                              textTransform: 'none',
+                              fontWeight: 700,
+                              fontSize: '0.78rem',
+                              borderColor: '#DC2626',
+                              color: '#DC2626',
+                              '&:hover': { bgcolor: '#FEF2F2' },
+                            }}
+                          >
+                            Retry Loading
+                          </Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredCourses.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} align="center" sx={{ py: 6, color: '#94A3B8' }}>
                         <Typography sx={{ fontWeight: 600, fontSize: '0.92rem' }}>

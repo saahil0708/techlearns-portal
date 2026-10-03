@@ -43,6 +43,7 @@ import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import FirstPageRoundedIcon from '@mui/icons-material/FirstPageRounded';
 import LastPageRoundedIcon from '@mui/icons-material/LastPageRounded';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
+import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
 import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import { FluidArrowRight } from '@/utils/fluid_arrow';
@@ -54,6 +55,7 @@ import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import StarsRoundedIcon from '@mui/icons-material/StarsRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
 
 import dynamic from 'next/dynamic';
 
@@ -67,9 +69,11 @@ import type { CourseDirectoryEntity, CourseCategory, CourseLevel, ModuleHighligh
 export type { CourseDirectoryEntity, CourseCategory, CourseLevel, ModuleHighlight, NewCourseData };
 
 const CreateCourseModal = dynamic(() => import('@/components/superadmin/courses/CreateCourseModal'), { loading: () => null });
+const EditCourseModal = dynamic(() => import('@/components/superadmin/courses/EditCourseModal'), { loading: () => null });
 const CourseQuickPeekDrawer = dynamic(() => import('@/components/superadmin/courses/CourseQuickPeekDrawer'), { loading: () => null });
 const DeleteConfirmModal = dynamic(() => import('@/components/superadmin/shared/DeleteConfirmModal'), { loading: () => null });
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
+const BulkImportCurriculumModal = dynamic(() => import('@/components/superadmin/courses/BulkImportCurriculumModal'), { loading: () => null });
 
 type SortField = 'title' | 'code' | 'level' | 'durationHours' | 'enrolledStudents' | 'completionRate';
 type SortDirection = 'asc' | 'desc';
@@ -87,44 +91,51 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL');
 
   // Client-side live data refresh
-  React.useEffect(() => {
-    async function loadLiveCourses() {
-      try {
-        const liveData = await apiService.getCourses({ limit: 50 });
-        if (liveData?.items && liveData.items.length > 0) {
-          const mapped: CourseDirectoryEntity[] = liveData.items.map((c: any, idx: number) => ({
-            id: c.id,
-            code: `CRS-${String(idx + 1).padStart(3, '0')}`,
-            slug: c.title ? c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `course-${idx + 1}`,
-            title: c.title,
-            category: 'Computer Science & DSA' as const,
-            level: 'Intermediate' as const,
-            instructorName: 'Faculty Lead',
-            instructorTitle: 'Course Instructor',
-            institutionName: c.college?.name || 'Academic Campus',
-            durationHours: 40,
-            modulesCount: c._count?.modules || 8,
-            lessonsCount: 32,
-            enrolledStudents: c._count?.enrollments || 120,
-            completionRate: 75,
-            status: 'Published' as const,
-            tags: ['Computer Science', 'Programming'],
-            description: c.description || 'Comprehensive programming curriculum with hands-on coding challenges.',
-            accentColor: ['#2563EB', '#7C3AED', '#DC2626', '#059669', '#D97706'][idx % 5],
-            moduleHighlights: [
-              { title: 'Foundations & Core Principles', lessons: 8 },
-              { title: 'Intermediate Data Structures', lessons: 12 },
-              { title: 'Advanced Algorithms & Problem Solving', lessons: 12 },
-            ],
-          }));
-          setCourses(mapped);
-        }
-      } catch (err) {
-        console.warn('Live courses fetch on client:', err);
+  const loadLiveCourses = React.useCallback(async () => {
+    try {
+      const liveData = await apiService.getCourses({ limit: 50 });
+      if (liveData?.items && Array.isArray(liveData.items)) {
+        const mapped: CourseDirectoryEntity[] = liveData.items.map((c: any, idx: number) => ({
+          id: c.id,
+          code: c.code ?? `CRS-${String(idx + 1).padStart(3, '0')}`,
+          slug: c.slug ?? (c.title ? c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `course-${idx + 1}`),
+          title: c.title,
+          category: (c.category as any) || 'Computer Science & DSA',
+          level: (c.level as any) || 'Intermediate',
+          instructorName: c.instructor?.name || c.createdBy?.name || 'Faculty Lead',
+          instructorTitle: 'Course Instructor',
+          institutionName: c.institution?.name || c.college?.name || 'Global Campus',
+          institutionId: c.institutionId || c.institution?.id || c.collegeId || undefined,
+          durationHours: c.durationHours ?? (c.durationWeeks ? c.durationWeeks * 4 : 36),
+          modulesCount: c._count?.modules ?? (Array.isArray(c.modules) ? c.modules.length : 0),
+          lessonsCount: Array.isArray(c.modules)
+            ? c.modules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0)
+            : (c._count?.lessons ?? 0),
+          enrolledStudents: c._count?.enrollments ?? 0,
+          completionRate: c.completionRate ?? 0,
+          status: c.status === 'PUBLISHED' ? 'Published' : 'Draft',
+          tags: Array.isArray(c.tags) && c.tags.length > 0 ? c.tags : ['Computer Science', 'Programming'],
+          description: c.description || 'Comprehensive programming curriculum with hands-on coding challenges.',
+          accentColor: ['#2563EB', '#7C3AED', '#DC2626', '#059669', '#D97706'][idx % 5],
+          thumbnailUrl: c.thumbnailUrl || undefined,
+          modules: c.modules || [],
+          moduleHighlights: Array.isArray(c.modules) && c.modules.length > 0
+            ? c.modules.map((m: any) => ({
+                title: m.title,
+                lessons: m.lessons?.length || 0,
+              }))
+            : [],
+        }));
+        setCourses(mapped);
       }
+    } catch (err) {
+      console.warn('Live courses fetch on client:', err);
     }
-    loadLiveCourses();
   }, []);
+
+  React.useEffect(() => {
+    loadLiveCourses();
+  }, [loadLiveCourses]);
 
   // Sorting State
   const [sortField, setSortField] = useState<SortField>('enrolledStudents');
@@ -132,7 +143,9 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
 
   // Selection & Modals State
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [courseToEdit, setCourseToEdit] = useState<CourseDirectoryEntity | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState<boolean>(false);
   const [peekCourse, setPeekCourse] = useState<CourseDirectoryEntity | null>(null);
   const [deleteTargetCourses, setDeleteTargetCourses] = useState<CourseDirectoryEntity[] | null>(null);
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
@@ -166,23 +179,57 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
   };
 
   const handleConfirmDelete = async () => {
-    if (!deleteTargetCourses) return;
+    if (!deleteTargetCourses || deleteTargetCourses.length === 0) return;
     const targetIds = new Set(deleteTargetCourses.map((c) => c.id));
-    const count = deleteTargetCourses.length;
     const targetsToDelete = [...deleteTargetCourses];
     setCourses((prev) => prev.filter((c) => !targetIds.has(c.id)));
     setSelectedIds((prev) => prev.filter((id) => !targetIds.has(id)));
     setDeleteTargetCourses(null);
 
-    // Call live API to delete course records from database
+    const failedTargets: CourseDirectoryEntity[] = [];
+    const successfulDeletions: CourseDirectoryEntity[] = [];
+
     for (const target of targetsToDelete) {
       try {
         await apiService.deleteCourse(target.id);
+        successfulDeletions.push(target);
       } catch (err) {
         console.error(`Failed to delete course ${target.id}:`, err);
+        failedTargets.push(target);
       }
     }
-    toast.success(`Deleted ${count} curriculum course${count > 1 ? 's' : ''}.`, 'Course Management');
+
+    if (failedTargets.length > 0) {
+      setCourses((prev) => [...failedTargets, ...prev]);
+      toast.error(
+        `Failed to delete ${failedTargets.length} course${failedTargets.length > 1 ? 's' : ''}.`,
+        'Delete Failed'
+      );
+    }
+
+    if (successfulDeletions.length > 0) {
+      const count = successfulDeletions.length;
+      toast.success(`Deleted ${count} curriculum course${count > 1 ? 's' : ''}.`, 'Course Management');
+    }
+  };
+
+  const handleTogglePublishCourse = async (course: CourseDirectoryEntity, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const isPublished = course.status === 'Published';
+    try {
+      if (isPublished) {
+        await apiService.unpublishCourse(course.id);
+        toast.info(`Course "${course.title}" unpublished to Draft.`, 'Status Changed');
+      } else {
+        await apiService.publishCourse(course.id);
+        toast.success(`Course "${course.title}" is now Published and visible to students!`, 'Course Published');
+      }
+      setCourses((prev) =>
+        prev.map((c) => (c.id === course.id ? { ...c, status: isPublished ? 'Draft' : 'Published' } : c))
+      );
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update publishing status.', 'Status Update Failed');
+    }
   };
 
   // Reset Filters
@@ -271,63 +318,59 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
   // Add new course handler
   const handleAddCourse = async (newData: NewCourseData) => {
     try {
-      const created = await apiService.createCourse({
+      const modulesPayload: any[] = Array.isArray((newData as any).modules) ? (newData as any).modules : [];
+      const targetStatus = newData.status?.toLowerCase() === 'published' ? 'PUBLISHED' : 'DRAFT';
+
+      const created = await apiService.createCompositeCourse({
         title: newData.title,
+        code: newData.code,
+        slug: newData.slug,
+        category: newData.category,
+        level: newData.level,
+        thumbnailUrl: newData.thumbnailUrl,
         description: newData.description,
-        status: newData.status.toUpperCase(),
+        status: targetStatus as any,
+        tags: newData.tags,
+        learningOutcomes: newData.learningOutcomes || newData.learningItems || (newData as any).whatYouWillLearn,
+        durationWeeks: Math.ceil(newData.durationHours / 4) || 6,
+        institutionId: (newData as any).institutionId || undefined,
+        modules: modulesPayload,
       });
 
       const newCourse: CourseDirectoryEntity = {
         id: created?.id || `crs-${Date.now()}`,
-        code: newData.code,
-        slug: newData.slug,
-        title: newData.title,
-        category: newData.category,
-        level: newData.level,
-        instructorName: newData.instructorName,
+        code: created?.code || newData.code,
+        slug: created?.slug || newData.slug,
+        title: created?.title || newData.title,
+        category: (created?.category as any) || newData.category,
+        level: (created?.level as any) || newData.level,
+        instructorName: created?.instructor?.name || created?.createdBy?.name || newData.instructorName,
         instructorTitle: newData.instructorTitle,
-        institutionName: newData.institutionName,
+        institutionName: created?.institution?.name || created?.college?.name || newData.institutionName,
         durationHours: newData.durationHours,
-        modulesCount: newData.modulesCount,
-        lessonsCount: newData.lessonsCount,
-        enrolledStudents: 0,
+        modulesCount: created?.modules?.length || 0,
+        lessonsCount: created?.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 0,
+        enrolledStudents: created?._count?.enrollments ?? 0,
         completionRate: 0,
-        status: newData.status,
-        tags: newData.tags,
-        description: newData.description,
+        status: created?.status === 'PUBLISHED' ? 'Published' : 'Draft',
+        tags: Array.isArray(created?.tags) && created.tags.length > 0 ? created.tags : newData.tags,
+        learningOutcomes: created?.learningOutcomes || newData.learningOutcomes || newData.learningItems || (newData as any).whatYouWillLearn || [],
+        description: created?.description || newData.description,
         accentColor: '#2563EB',
-        moduleHighlights: [
-          { title: 'Foundations & Architecture', lessons: Math.ceil(newData.lessonsCount / 3) },
-          { title: 'Core Implementation & Labs', lessons: Math.ceil(newData.lessonsCount / 3) },
-          { title: 'Capstone & Evaluation', lessons: Math.floor(newData.lessonsCount / 3) },
-        ],
+        thumbnailUrl: created?.thumbnailUrl || newData.thumbnailUrl || undefined,
+        modules: created?.modules || [],
+        moduleHighlights: Array.isArray(created?.modules) && created.modules.length > 0
+          ? created.modules.map((m: any) => ({
+              title: m.title,
+              lessons: m.lessons?.length || 0,
+            }))
+          : [],
       };
       setCourses((prev) => [newCourse, ...prev]);
-      toast.success(`Course "${newData.title}" created successfully.`, 'Course Published');
-    } catch {
-      const fallbackCourse: CourseDirectoryEntity = {
-        id: `crs-${Date.now()}`,
-        code: newData.code,
-        slug: newData.slug,
-        title: newData.title,
-        category: newData.category,
-        level: newData.level,
-        instructorName: newData.instructorName,
-        instructorTitle: newData.instructorTitle,
-        institutionName: newData.institutionName,
-        durationHours: newData.durationHours,
-        modulesCount: newData.modulesCount,
-        lessonsCount: newData.lessonsCount,
-        enrolledStudents: 0,
-        completionRate: 0,
-        status: newData.status,
-        tags: newData.tags,
-        description: newData.description,
-        accentColor: '#2563EB',
-        moduleHighlights: [],
-      };
-      setCourses((prev) => [fallbackCourse, ...prev]);
-      toast.info(`Course "${newData.title}" saved locally.`, 'Course Registered');
+      toast.success(`Course "${newData.title}" created successfully! Use Curriculum Studio to author modules and lessons.`, 'Course Created');
+    } catch (err: any) {
+      console.error('Failed to create course:', err);
+      toast.error(err?.message || 'Failed to create course on server.', 'Course Creation Failed');
     }
   };
 
@@ -353,20 +396,24 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
   const handleExportCSV = () => {
     const data = getExportData();
     if (data.length === 0) return;
-    const headers = Object.keys(data[0]).join(',');
+    const headers = Object.keys(data[0])
+      .map((h) => `"${String(h).replace(/"/g, '""')}"`)
+      .join(',');
     const rows = data.map((row) =>
       Object.values(row)
-        .map((val) => `"${val}"`)
+        .map((val) => `"${String(val ?? '').replace(/"/g, '""')}"`)
         .join(',')
     );
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = [headers, ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.setAttribute('href', url);
     link.setAttribute('download', `Courses_Curriculum_Export_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     setExportMenuAnchor(null);
   };
 
@@ -475,7 +522,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                   bgcolor: '#FFFFFF',
                   color: '#475569',
                   border: `1px solid ${borderColor}`,
-                  borderRadius: '9999px',
+                  borderRadius: '7px',
                   textTransform: 'none',
                   fontWeight: 600,
                   fontSize: '0.84rem',
@@ -520,6 +567,27 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                 </MenuItem>
               </Menu>
 
+              {/* Import Course Button */}
+              <Button
+                variant="outlined"
+                onClick={() => setIsBulkImportOpen(true)}
+                startIcon={<FileUploadRoundedIcon sx={{ fontSize: 18 }} />}
+                sx={{
+                  bgcolor: '#FFFFFF',
+                  color: '#475569',
+                  border: `1px solid ${borderColor}`,
+                  borderRadius: '7px',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.84rem',
+                  px: 2,
+                  py: 0.75,
+                  '&:hover': { bgcolor: '#F8FAFC', color: '#0F172A' },
+                }}
+              >
+                Import Course
+              </Button>
+
               {/* Create Course Button */}
               <Button
                 variant="contained"
@@ -528,7 +596,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                 sx={{
                   bgcolor: '#2563EB',
                   color: '#FFFFFF',
-                  borderRadius: '9999px',
+                  borderRadius: '7px',
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '0.84rem',
@@ -552,7 +620,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
               variant="blue"
               shape="orbital"
               subtitle={`${dsaCount} DSA • ${sysDesignCount} System Design`}
-            />
+            />  
 
             <StatsCard
               title="Active Student Enrollments"
@@ -736,9 +804,9 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                   }}
                 >
                   <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>All Levels</MenuItem>
-                  <MenuItem value="Beginner" sx={{ fontSize: '0.8rem' }}>🟢 Beginner</MenuItem>
-                  <MenuItem value="Intermediate" sx={{ fontSize: '0.8rem' }}>🟡 Intermediate</MenuItem>
-                  <MenuItem value="Advanced" sx={{ fontSize: '0.8rem' }}>🔴 Advanced</MenuItem>
+                  <MenuItem value="Beginner" sx={{ fontSize: '0.8rem' }}>Beginner</MenuItem>
+                  <MenuItem value="Intermediate" sx={{ fontSize: '0.8rem' }}>Intermediate</MenuItem>
+                  <MenuItem value="Advanced" sx={{ fontSize: '0.8rem' }}>Advanced</MenuItem>
                 </Select>
 
                 {/* Status Filter */}
@@ -1037,6 +1105,8 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                           <TableCell sx={{ borderColor: '#E2E8F0' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                               <Avatar
+                                src={course.thumbnailUrl}
+                                variant="rounded"
                                 sx={{
                                   width: 38,
                                   height: 38,
@@ -1044,6 +1114,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                                   fontWeight: 800,
                                   fontSize: '0.85rem',
                                   border: '2px solid #E2E8F0',
+                                  borderRadius: '8px',
                                 }}
                               >
                                 {course.code.slice(0, 2)}
@@ -1163,25 +1234,47 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
 
                           {/* Status */}
                           <TableCell sx={{ borderColor: '#E2E8F0' }}>
-                            <Chip
-                              label={course.status}
-                              size="small"
-                              sx={{
-                                height: 22,
-                                fontSize: '0.7rem',
-                                fontWeight: 700,
-                                borderRadius: '9999px',
-                                bgcolor: course.status === 'Published' ? '#F0FDF4' : '#FFFBEB',
-                                color: course.status === 'Published' ? '#16A34A' : '#D97706',
-                                border: '1px solid',
-                                borderColor: course.status === 'Published' ? '#BBF7D0' : '#FDE68A',
-                              }}
-                            />
+                            <Tooltip title={`Click to switch to ${course.status === 'Published' ? 'Draft' : 'Published'}`}>
+                              <Chip
+                                label={course.status}
+                                size="small"
+                                onClick={(e) => handleTogglePublishCourse(course, e)}
+                                sx={{
+                                  height: 22,
+                                  fontSize: '0.7rem',
+                                  fontWeight: 700,
+                                  borderRadius: '9999px',
+                                  bgcolor: course.status === 'Published' ? '#F0FDF4' : '#FFFBEB',
+                                  color: course.status === 'Published' ? '#16A34A' : '#D97706',
+                                  border: '1px solid',
+                                  borderColor: course.status === 'Published' ? '#BBF7D0' : '#FDE68A',
+                                  cursor: 'pointer',
+                                  '&:hover': {
+                                    bgcolor: course.status === 'Published' ? '#DCFCE7' : '#FEF3C7',
+                                  },
+                                }}
+                              />
+                            </Tooltip>
                           </TableCell>
 
                           {/* Actions */}
                           <TableCell align="right" sx={{ pr: 2.5, borderColor: '#E2E8F0' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                              {/* Edit Course Details */}
+                              <Tooltip title="Edit Course Details">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => setCourseToEdit(course)}
+                                  sx={{
+                                    color: '#64748B',
+                                    borderRadius: '9999px',
+                                    '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' },
+                                  }}
+                                >
+                                  <EditRoundedIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+
                               {/* Peek Quick View */}
                               <Tooltip title="Quick Peek Syllabus">
                                 <IconButton
@@ -1377,6 +1470,20 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
         onCreate={handleAddCourse}
       />
 
+      {courseToEdit && (
+        <EditCourseModal
+          open={Boolean(courseToEdit)}
+          onClose={() => setCourseToEdit(null)}
+          course={courseToEdit}
+          onUpdated={(updated) => {
+            setCourses((prev) =>
+              prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c))
+            );
+            loadLiveCourses();
+          }}
+        />
+      )}
+
       <CourseQuickPeekDrawer
         open={Boolean(peekCourse)}
         onClose={() => setPeekCourse(null)}
@@ -1419,6 +1526,15 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
             avatarColor: c.accentColor,
           })) || []
         }
+      />
+
+      {/* Bulk Import Course & Curriculum Modal */}
+      <BulkImportCurriculumModal
+        open={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        onImportSuccess={async () => {
+          await loadLiveCourses();
+        }}
       />
     </Box>
   );

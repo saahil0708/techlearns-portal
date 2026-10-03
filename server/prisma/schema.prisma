@@ -146,6 +146,8 @@ model User {
   communityReplies     CommunityReply[]
   assignedTickets      SprintTicket[]
   aiCoachMessages      AICoachMessage[]
+  diagnostics          StudentDiagnostic[]
+  studentGoal          StudentGoal?
 
   @@index([globalRole, status])
   @@index([status, createdAt])
@@ -350,6 +352,15 @@ model BatchStudent {
 model Course {
   id            String       @id @default(uuid())
   title         String
+  slug          String?      @unique
+  code          String?      @unique
+  category      String?
+  level         String?      @default("Beginner")
+  thumbnailUrl  String?
+  durationWeeks Int?         @default(8)
+  rating        Float?       @default(4.8)
+  tags          String[]     @default([])
+  learningOutcomes String[]  @default([])
   description   String?      @db.Text
   institutionId String?
   createdById   String
@@ -385,13 +396,17 @@ model Module {
 }
 
 model Lesson {
-  id        String   @id @default(uuid())
-  moduleId  String
-  title     String
-  content   String   @db.Text
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String   @id @default(uuid())
+  moduleId        String
+  title           String
+  content         String   @db.Text
+  type            String?  @default("reading") // "reading" | "code" | "quiz"
+  durationMinutes Int?     @default(20)
+  quizMCQ         Json?
+  codingProblem   Json?
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   module   Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   progress LessonProgress[]
@@ -418,11 +433,14 @@ model Enrollment {
 }
 
 model LessonProgress {
-  id          String    @id @default(uuid())
-  userId      String
-  lessonId    String
-  completed   Boolean   @default(false)
-  completedAt DateTime?
+  id             String    @id @default(uuid())
+  userId         String
+  lessonId       String
+  completed      Boolean   @default(false)
+  completedAt    DateTime?
+  quizAttempt    Json?
+  codeSubmission Json?
+  lastAttemptAt  DateTime?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
@@ -903,5 +921,56 @@ model AICoachMessage {
 
   @@index([userId, createdAt])
   @@map("ai_coach_messages")
+}
+
+model StudentDiagnostic {
+  id            String   @id @default(uuid())
+  userId        String
+  targetTrack   String
+  targetTrackId String
+  timeline      String
+  weeklyHours   Int      @default(12)
+  roleFitScore  Int      @default(75)
+  quizScore     String?  // e.g. "8/10"
+  skills        Json     // Array of { id, name, level, label }
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("student_diagnostics")
+}
+
+model StudentGoal {
+  id                     String   @id @default(uuid())
+  userId                 String   @unique
+  targetTrack            String
+  targetTrackId          String
+  timeline               String
+  weeklyHours            Int      @default(14)
+  roleFitScore           Int      @default(80)
+  skills                 Json     // Array of { id, name, level, label }
+  targetSolveTimeMins    Int?     @default(20)
+  currentAvgSolveTimeMins Int?    @default(26)
+  dailyGoalMins          Int?     @default(45)
+  dailyLoggedMins        Int?     @default(30)
+  weeklyProblemQuota     Int?     @default(10)
+  weeklyProblemsSolved   Int?     @default(6)
+  targetContestRating    Int?     @default(1750)
+  currentContestRating   Int?     @default(1500)
+  firstAttemptTargetRate Int?     @default(85)
+  currentFirstAttemptRate Int?    @default(72)
+  streakDays             Int?     @default(7)
+  quizScore              String?
+  customGoals            Json?    // Optional array of custom milestone goals
+  milestones             Json?    // Optional structured milestone items
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("student_goals")
 }
 

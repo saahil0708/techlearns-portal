@@ -42,7 +42,7 @@ export const apiClient: AxiosInstance = axios.create({
   timeout: 30000,
 });
 
-// Request Interceptor: Attach Bearer token dynamically
+// Request Interceptor: Attach Bearer token dynamically & handle FormData boundaries
 apiClient.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     // If authorization header is not already set, attempt to resolve token
@@ -52,6 +52,12 @@ apiClient.interceptors.request.use(
         config.headers['Authorization'] = `Bearer ${token}`;
       }
     }
+
+    // If data is FormData, remove hardcoded 'application/json' so browser sets multipart boundary
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (error) => Promise.reject(error)

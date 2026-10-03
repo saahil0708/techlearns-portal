@@ -25,7 +25,7 @@ import { RolesGuard } from '../common/guards/roles.guard.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
-import { StorageService } from './storage.service.js';
+import { FOLDER_MIME_ALLOWLIST, GLOBAL_ALLOWED_MIMES, StorageService } from './storage.service.js';
 import { GenerateSasUrlDto, StorageFolder } from './dto/generate-sas-url.dto.js';
 
 export interface UploadedFilePayload {
@@ -56,7 +56,8 @@ export class StorageController {
     @Body() dto: GenerateSasUrlDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.storageService.generateUploadSasUrl(dto, user.id);
+    const institutionId = user.memberships?.[0]?.institutionId;
+    return this.storageService.generateUploadSasUrl(dto, user.id, institutionId);
   }
 
   @Post('upload')
@@ -77,15 +78,28 @@ export class StorageController {
     @UploadedFile() file: UploadedFilePayload,
     @Query('folder', new ParseEnumPipe(StorageFolder, { optional: true }))
     folder: StorageFolder = StorageFolder.ATTACHMENTS,
+    @CurrentUser() user?: CurrentUserPayload,
   ) {
     if (!file || !file.buffer || file.buffer.length === 0) {
       throw new BadRequestException('No file uploaded or file payload is empty');
     }
+
+    const allowedMimes = FOLDER_MIME_ALLOWLIST[folder] || GLOBAL_ALLOWED_MIMES;
+    if (!allowedMimes.includes(file.mimetype.toLowerCase())) {
+      throw new BadRequestException(
+        `File MIME type "${file.mimetype}" is not permitted for folder "${folder}".`,
+      );
+    }
+
+    const institutionId = user?.memberships?.[0]?.institutionId;
+
     return this.storageService.uploadBuffer(
       file.buffer,
       file.originalname,
       file.mimetype,
       folder,
+      institutionId,
+      user?.id,
     );
   }
 
@@ -108,14 +122,20 @@ export class StorageController {
         .filter((m) => m.role === Role.INSTITUTION_ADMIN)
         .map((m) => m.institutionId);
 
-      // Parse the path segments to isolate the filename (e.g. "institutions/3fa85f64-5717-4562-b3fc-2c963f66afa6-uuid.png")
-      const segments = path.split('/');
-      const fileName = segments[segments.length - 1] || '';
+      const metadata = await this.storageService.getBlobMetadata(path);
+      let isAuthorized = false;
 
-      // Match full allowed institution ID followed by the '-' separator or exact match
-      const isAuthorized = allowedInstitutionIds.some(
-        (instId) => fileName.startsWith(`${instId}-`) || fileName === instId,
-      );
+      if (metadata && metadata.institutionid) {
+        isAuthorized = allowedInstitutionIds.includes(metadata.institutionid);
+      } else {
+        // Fallback to path/filename prefix if metadata is not recorded (legacy blobs)
+        const segments = path.split('/');
+        const fileName = segments[segments.length - 1] || '';
+        isAuthorized = allowedInstitutionIds.some(
+          (instId) => fileName.startsWith(`${instId}-`) || fileName === instId,
+        );
+      }
+
       if (!isAuthorized) {
         throw new ForbiddenException(
           'You do not have permission to delete assets outside your assigned institution.',

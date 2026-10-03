@@ -90,7 +90,7 @@ stages:
               templateLocation: 'Linked artifact'
               csmFile: '$(Build.SourcesDirectory)/infra/main.bicep'
               csmParametersFile: '$(Build.SourcesDirectory)/infra/main.parameters.json'
-              overrideParameters: '-environment $(ENVIRONMENT) -appPrefix $(APP_PREFIX) -dbAdminPassword $(DB_ADMIN_PASSWORD) -jwtSecret $(JWT_SECRET)'
+              overrideParameters: '-environment $(ENVIRONMENT) -appPrefix $(APP_PREFIX) -dbAdminPassword $(DB_ADMIN_PASSWORD) -jwtSecret $(JWT_SECRET) -backendImage $(BACKEND_IMAGE) -frontendImage $(FRONTEND_IMAGE)'
               deploymentMode: 'Incremental'
 
   # ----------------------------------------------------------------------------
@@ -130,11 +130,11 @@ stages:
                 
                 # 5. Update Azure Container Apps to use newly published image tags
                 az containerapp update \
-                  --name "$(APP_PREFIX)-backend-$(ENVIRONMENT)" \
+                  --name "ca-$(APP_PREFIX)-backend-$(ENVIRONMENT)" \
                   --resource-group $(RESOURCE_GROUP_NAME) \
                   --image "$ACR_LOGIN_SERVER/codeplatform-backend:$(Build.BuildId)"
                 
                 az containerapp update \
-                  --name "$(APP_PREFIX)-frontend-$(ENVIRONMENT)" \
+                  --name "ca-$(APP_PREFIX)-frontend-$(ENVIRONMENT)" \
                   --resource-group $(RESOURCE_GROUP_NAME) \
                   --image "$ACR_LOGIN_SERVER/codeplatform-frontend:$(Build.BuildId)"

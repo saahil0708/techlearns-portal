@@ -32,24 +32,44 @@ describe('UsersService', () => {
     memberships: [],
   };
 
+  const mockPrisma = {
+    user: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+    },
+    studentDiagnostic: {
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
+    },
+    studentGoal: {
+      create: vi.fn(),
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
+    },
+    submission: {
+      findMany: vi.fn(),
+    },
+    enrollment: {
+      findMany: vi.fn(),
+    },
+    $transaction: vi.fn((cb) => cb(mockPrisma)),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: PrismaService,
-          useValue: {
-            user: {
-              findUnique: vi.fn(),
-              create: vi.fn(),
-            },
-          },
+          useValue: mockPrisma,
         },
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
     prisma = module.get<PrismaService>(PrismaService);
+    prisma.$transaction = vi.fn((cb) => (typeof cb === 'function' ? cb(prisma) : Promise.all(cb))) as any;
   });
 
   it('should be defined', () => {
@@ -247,4 +267,94 @@ describe('UsersService', () => {
       });
     });
   });
+
+  describe('Student Diagnostics & Goals', () => {
+    it('should save student diagnostic and sync goals', async () => {
+      const mockDiag = {
+        id: 'diag-1',
+        userId: 'user-uuid-1',
+        targetTrack: 'Full-Stack Web Architect',
+        targetTrackId: 'fullstack',
+        timeline: '6 months (Standard)',
+        weeklyHours: 14,
+        roleFitScore: 85,
+        quizScore: '8/10',
+        skills: [{ id: 'prog', name: 'Programming', level: 85, label: 'Advanced' }],
+      };
+
+      (prisma.studentDiagnostic.create as any).mockResolvedValue(mockDiag);
+      (prisma.studentGoal.upsert as any).mockResolvedValue(mockDiag);
+
+      const result = await service.saveDiagnostic('user-uuid-1', {
+        targetTrack: 'Full-Stack Web Architect',
+        targetTrackId: 'fullstack',
+        timeline: '6 months (Standard)',
+        weeklyHours: 14,
+        roleFitScore: 85,
+        quizScore: '8/10',
+        skills: [{ id: 'prog', name: 'Programming', level: 85, label: 'Advanced' }],
+      });
+
+      expect(result.id).toBe('diag-1');
+      expect(prisma.studentDiagnostic.create).toHaveBeenCalled();
+      expect(prisma.studentGoal.upsert).toHaveBeenCalled();
+    });
+
+    it('should get latest diagnostic', async () => {
+      const mockDiag = { id: 'diag-latest', userId: 'user-uuid-1' };
+      (prisma.studentDiagnostic.findFirst as any).mockResolvedValue(mockDiag);
+
+      const result = await service.getLatestDiagnostic('user-uuid-1');
+      expect(result?.id).toBe('diag-latest');
+    });
+
+    it('should save and get student goals', async () => {
+      const mockGoal = {
+        id: 'goal-1',
+        userId: 'user-uuid-1',
+        targetTrack: 'Full-Stack Web Architect',
+        targetTrackId: 'fullstack',
+      };
+      (prisma.studentGoal.upsert as any).mockResolvedValue(mockGoal);
+      (prisma.studentGoal.findUnique as any).mockResolvedValue(mockGoal);
+
+      const saved = await service.saveGoals('user-uuid-1', {
+        targetTrack: 'Full-Stack Web Architect',
+        targetTrackId: 'fullstack',
+      });
+      expect(saved.id).toBe('goal-1');
+
+      const retrieved = await service.getGoals('user-uuid-1');
+      expect(retrieved?.id).toBe('goal-1');
+    });
+
+    it('should compute aggregated growth metrics', async () => {
+      (prisma.user.findUnique as any).mockResolvedValue({
+        contestRating: 1650,
+        ratingTier: 'Intermediate',
+      });
+      (prisma.submission.findMany as any).mockResolvedValue([
+        { verdict: 'ACCEPTED', problemId: 'prob-1', problem: { difficulty: 'EASY' } },
+        { verdict: 'ACCEPTED', problemId: 'prob-2', problem: { difficulty: 'MEDIUM' } },
+        { verdict: 'WRONG_ANSWER', problemId: 'prob-3', problem: { difficulty: 'HARD' } },
+      ]);
+      (prisma.enrollment.findMany as any).mockResolvedValue([
+        { status: 'ACTIVE' },
+        { status: 'COMPLETED' },
+      ]);
+      (prisma.studentGoal.findUnique as any).mockResolvedValue({
+        roleFitScore: 82,
+      });
+
+      const metrics = await service.getGrowthMetrics('user-uuid-1');
+      expect(metrics.solvedByDifficulty.total).toBe(2);
+      expect(metrics.solvedByDifficulty.easy).toBe(1);
+      expect(metrics.solvedByDifficulty.medium).toBe(1);
+      expect(metrics.coursesEnrolled).toBe(2);
+      expect(metrics.coursesCompleted).toBe(1);
+      expect(metrics.contestRating).toBe(1650);
+      expect(metrics.roleReadiness.fullstack).toBeGreaterThanOrEqual(80);
+    });
+  });
 });
+

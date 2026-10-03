@@ -138,9 +138,10 @@ export async function uploadFileToAzureBlob(
     if (isNetworkError) {
       console.warn('Transport failure on direct Azure Blob upload, retrying via server upload proxy:', err);
       const fallbackRes = await apiService.uploadStorageFileDirect(file, folder);
+      if (onProgress) onProgress(100);
       return {
-        blobUrl: fallbackRes.blobUrl,
-        blobPath: fallbackRes.blobPath,
+        blobUrl: fallbackRes.blobUrl || fallbackRes.url || '',
+        blobPath: fallbackRes.blobPath || fallbackRes.path || '',
         fileName: file.name,
         fileSize: file.size,
       };

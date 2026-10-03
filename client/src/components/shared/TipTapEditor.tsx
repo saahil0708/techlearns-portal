@@ -14,6 +14,7 @@ import TableHeader from '@tiptap/extension-table-header';
 
 import {
   Box,
+  Typography,
   IconButton,
   Tooltip,
   Divider,
@@ -41,6 +42,26 @@ import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
 import UndoRoundedIcon from '@mui/icons-material/UndoRounded';
 import RedoRoundedIcon from '@mui/icons-material/RedoRounded';
 
+import LightbulbRoundedIcon from '@mui/icons-material/LightbulbRounded';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import TerminalRoundedIcon from '@mui/icons-material/TerminalRounded';
+import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
+import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import Menu from '@mui/material/Menu';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+
+import { formatArticleMarkdown } from '@/utils/markdown';
+
+function normalizeEditorContent(raw?: string): string {
+  if (!raw) return '';
+  const isHtml = /^\s*<(?:p|h[1-6]|blockquote|pre|ul|ol|table|div|article|section|img|hr)[\s>/]/i.test(raw);
+  if (isHtml) return raw;
+  return formatArticleMarkdown(raw);
+}
+
 export interface TipTapEditorProps {
   content: string;
   onChange: (htmlContent: string) => void;
@@ -56,6 +77,17 @@ export default function TipTapEditor({
   minHeight = 280,
   maxHeight = 520,
 }: TipTapEditorProps) {
+  const [calloutAnchorEl, setCalloutAnchorEl] = React.useState<null | HTMLElement>(null);
+  const isCalloutMenuOpen = Boolean(calloutAnchorEl);
+
+  const handleCalloutMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setCalloutAnchorEl(event.currentTarget);
+  };
+
+  const handleCalloutMenuClose = () => {
+    setCalloutAnchorEl(null);
+  };
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -90,7 +122,7 @@ export default function TipTapEditor({
       TableHeader,
       TableCell,
     ],
-    content: content || '',
+    content: normalizeEditorContent(content),
     onUpdate: ({ editor: ed }) => {
       onChange(ed.isEmpty ? '' : ed.getHTML());
     },
@@ -107,7 +139,7 @@ export default function TipTapEditor({
       if (!content) {
         editor.commands.setContent('');
       } else if (editor.isEmpty) {
-        editor.commands.setContent(content);
+        editor.commands.setContent(normalizeEditorContent(content));
       }
     }
   }, [content, editor]);
@@ -138,6 +170,53 @@ export default function TipTapEditor({
     if (!editor) return;
     editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
   }, [editor]);
+
+  // Special Callout Insertion with distinct backgrounds
+  const insertSpecialCallout = (type: 'note' | 'tip' | 'warning' | 'important' | 'deepdive' | 'code') => {
+    if (!editor) return;
+    handleCalloutMenuClose();
+
+    const calloutTemplates = {
+      note: `
+        <div style="margin: 16px 0; padding: 14px 18px; background: #EFF6FF; border-left: 4px solid #2563EB; border-radius: 8px; color: #1E40AF;">
+          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #1D4ED8;">📘 Note & Key Concept</p>
+          <p style="margin: 0; color: #1E3A8A; font-size: 0.9rem;">Add your technical note, explanation, or key theoretical highlight here...</p>
+        </div>
+      `,
+      tip: `
+        <div style="margin: 16px 0; padding: 14px 18px; background: #ECFDF5; border-left: 4px solid #10B981; border-radius: 8px; color: #065F46;">
+          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #047857;">💡 Pro Tip & Best Practice</p>
+          <p style="margin: 0; color: #064E3B; font-size: 0.9rem;">Share a performance optimization, shortcut, or clean coding recommendation...</p>
+        </div>
+      `,
+      warning: `
+        <div style="margin: 16px 0; padding: 14px 18px; background: #FFFBEB; border-left: 4px solid #F59E0B; border-radius: 8px; color: #92400E;">
+          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #B45309;">⚠️ Warning & Common Pitfalls</p>
+          <p style="margin: 0; color: #78350F; font-size: 0.9rem;">Detail common bugs, edge-case failures, or memory pitfalls students often encounter...</p>
+        </div>
+      `,
+      important: `
+        <div style="margin: 16px 0; padding: 14px 18px; background: #FEF2F2; border-left: 4px solid #EF4444; border-radius: 8px; color: #991B1B;">
+          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #B91C1C;">🚨 Important & Critical Rule</p>
+          <p style="margin: 0; color: #7F1D1D; font-size: 0.9rem;">Crucial requirement or non-negotiable principle to remember for exams and interviews...</p>
+        </div>
+      `,
+      deepdive: `
+        <div style="margin: 16px 0; padding: 14px 18px; background: #FAF5FF; border-left: 4px solid #8B5CF6; border-radius: 8px; color: #5B21B6;">
+          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #6D28D9;">🔮 Deep Dive & Architecture</p>
+          <p style="margin: 0; color: #4C1D95; font-size: 0.9rem;">Explain low-level runtime internals, virtual machines, or memory layouts...</p>
+        </div>
+      `,
+      code: `
+        <div style="margin: 16px 0; padding: 14px 18px; background: #0F172A; border-left: 4px solid #38BDF8; border-radius: 8px; color: #F8FAFC;">
+          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #38BDF8;">💻 Execution Mechanics & Code Walkthrough</p>
+          <p style="margin: 0; color: #E2E8F0; font-size: 0.9rem; font-family: monospace;">Trace step-by-step variable mutation and stack frame allocation...</p>
+        </div>
+      `,
+    };
+
+    editor.chain().focus().insertContent(calloutTemplates[type]).run();
+  };
 
   if (!editor) {
     return null;
@@ -364,6 +443,150 @@ export default function TipTapEditor({
             <IntegrationInstructionsRoundedIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
+
+        <Divider orientation="vertical" flexItem sx={{ mx: 0.5, my: 0.5 }} />
+
+        {/* Special Styled Note / Callout Box Button */}
+        <Button
+          size="small"
+          onClick={handleCalloutMenuOpen}
+          endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: 16 }} />}
+          startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 16, color: '#8B5CF6' }} />}
+          sx={{
+            height: 30,
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            textTransform: 'none',
+            color: '#475569',
+            bgcolor: '#FFFFFF',
+            border: '1px solid #CBD5E1',
+            borderRadius: '8px',
+            px: 1.2,
+            '&:hover': { bgcolor: '#F1F5F9', borderColor: '#94A3B8' },
+          }}
+        >
+          Insert Special Note
+        </Button>
+
+        {/* Callout Selection Menu */}
+        <Menu
+          anchorEl={calloutAnchorEl}
+          open={isCalloutMenuOpen}
+          onClose={handleCalloutMenuClose}
+          slotProps={{
+            paper: {
+              sx: {
+                borderRadius: '12px',
+                minWidth: 260,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+                border: '1px solid #E2E8F0',
+                p: 0.5,
+              },
+            },
+          }}
+        >
+          <MenuItem
+            onClick={() => insertSpecialCallout('note')}
+            sx={{ borderRadius: '8px', my: 0.25, py: 0.75, '&:hover': { bgcolor: '#EFF6FF' } }}
+          >
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <MenuBookRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+            </ListItemIcon>
+            <Box>
+              <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#1E40AF', display: 'block' }}>
+                📘 Note / Key Concept
+              </Typography>
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', display: 'block' }}>
+                Sky blue callout background
+              </Typography>
+            </Box>
+          </MenuItem>
+
+          <MenuItem
+            onClick={() => insertSpecialCallout('tip')}
+            sx={{ borderRadius: '8px', my: 0.25, py: 0.75, '&:hover': { bgcolor: '#ECFDF5' } }}
+          >
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <LightbulbRoundedIcon sx={{ fontSize: 18, color: '#10B981' }} />
+            </ListItemIcon>
+            <Box>
+              <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#065F46', display: 'block' }}>
+                💡 Pro Tip & Best Practice
+              </Typography>
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', display: 'block' }}>
+                Emerald green callout background
+              </Typography>
+            </Box>
+          </MenuItem>
+
+          <MenuItem
+            onClick={() => insertSpecialCallout('warning')}
+            sx={{ borderRadius: '8px', my: 0.25, py: 0.75, '&:hover': { bgcolor: '#FFFBEB' } }}
+          >
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <WarningAmberRoundedIcon sx={{ fontSize: 18, color: '#F59E0B' }} />
+            </ListItemIcon>
+            <Box>
+              <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#92400E', display: 'block' }}>
+                ⚠️ Warning & Pitfalls
+              </Typography>
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', display: 'block' }}>
+                Warm amber callout background
+              </Typography>
+            </Box>
+          </MenuItem>
+
+          <MenuItem
+            onClick={() => insertSpecialCallout('important')}
+            sx={{ borderRadius: '8px', my: 0.25, py: 0.75, '&:hover': { bgcolor: '#FEF2F2' } }}
+          >
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <ErrorOutlineRoundedIcon sx={{ fontSize: 18, color: '#EF4444' }} />
+            </ListItemIcon>
+            <Box>
+              <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#991B1B', display: 'block' }}>
+                🚨 Important Notice
+              </Typography>
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', display: 'block' }}>
+                Rose red callout background
+              </Typography>
+            </Box>
+          </MenuItem>
+
+          <MenuItem
+            onClick={() => insertSpecialCallout('deepdive')}
+            sx={{ borderRadius: '8px', my: 0.25, py: 0.75, '&:hover': { bgcolor: '#FAF5FF' } }}
+          >
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <AutoAwesomeRoundedIcon sx={{ fontSize: 18, color: '#8B5CF6' }} />
+            </ListItemIcon>
+            <Box>
+              <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#5B21B6', display: 'block' }}>
+                🔮 Deep Dive / Architecture
+              </Typography>
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748B', display: 'block' }}>
+                Indigo purple callout background
+              </Typography>
+            </Box>
+          </MenuItem>
+
+          <MenuItem
+            onClick={() => insertSpecialCallout('code')}
+            sx={{ borderRadius: '8px', my: 0.25, py: 0.75, '&:hover': { bgcolor: '#0F172A' } }}
+          >
+            <ListItemIcon sx={{ minWidth: 32 }}>
+              <TerminalRoundedIcon sx={{ fontSize: 18, color: '#38BDF8' }} />
+            </ListItemIcon>
+            <Box>
+              <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#38BDF8', display: 'block' }}>
+                💻 Execution Mechanics
+              </Typography>
+              <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8', display: 'block' }}>
+                Dark navy slate callout background
+              </Typography>
+            </Box>
+          </MenuItem>
+        </Menu>
 
         <Divider orientation="vertical" flexItem sx={{ mx: 0.5, my: 0.5 }} />
 

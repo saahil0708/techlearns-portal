@@ -51,9 +51,14 @@ export class CommunityController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get single discussion post with thread replies' })
-  async findOne(@Param('id') id: string) {
-    return this.communityService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.communityService.findOne(id, user);
   }
 
   @Delete(':id')
@@ -87,7 +92,7 @@ export class CommunityController {
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateCommunityReplyDto,
   ) {
-    return this.communityService.addReply(id, user.id, dto);
+    return this.communityService.addReply(id, user.id, dto, user);
   }
 
   @Post(':id/replies/:replyId/upvote')

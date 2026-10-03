@@ -32,6 +32,7 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 
 import dynamic from 'next/dynamic';
 import { StudentProfileData, RoleTargetProfile } from '@/types/student-profile';
+import { apiService } from '@/lib/api-service';
 
 const IdentityDiagnosticWizard = dynamic(
   () => import('@/components/students/diagnostic/IdentityDiagnosticWizard'),
@@ -40,6 +41,7 @@ const IdentityDiagnosticWizard = dynamic(
 
 interface GrowthMetricsAndRoleReadinessProps {
   profile: StudentProfileData;
+  isOwner?: boolean;
   onOpenEvidenceGraph?: () => void;
 }
 
@@ -256,6 +258,7 @@ function CircularMetricGauge({
 
 export default function GrowthMetricsAndRoleReadiness({
   profile,
+  isOwner = true,
   onOpenEvidenceGraph,
 }: GrowthMetricsAndRoleReadinessProps) {
   const [selectedRoleId, setSelectedRoleId] = useState<string>('fullstack-engineer');
@@ -358,26 +361,28 @@ export default function GrowthMetricsAndRoleReadiness({
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, flexWrap: 'wrap' }}>
-            <Button
-              size="small"
-              variant="contained"
-              onClick={() => setDiagnosticModalOpen(true)}
-              startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />}
-              sx={{
-                bgcolor: '#2563EB',
-                color: '#FFFFFF',
-                fontWeight: 800,
-                textTransform: 'none',
-                borderRadius: '10px',
-                fontSize: '0.8rem',
-                py: 0.7,
-                px: 1.8,
-                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
-                '&:hover': { bgcolor: '#1D4ED8' },
-              }}
-            >
-              Run Diagnostic
-            </Button>
+            {isOwner && (
+              <Button
+                size="small"
+                variant="contained"
+                onClick={() => setDiagnosticModalOpen(true)}
+                startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />}
+                sx={{
+                  bgcolor: '#2563EB',
+                  color: '#FFFFFF',
+                  fontWeight: 800,
+                  textTransform: 'none',
+                  borderRadius: '10px',
+                  fontSize: '0.8rem',
+                  py: 0.7,
+                  px: 1.8,
+                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
+                  '&:hover': { bgcolor: '#1D4ED8' },
+                }}
+              >
+                Run Diagnostic
+              </Button>
+            )}
             <Chip
               icon={<VerifiedRoundedIcon sx={{ fontSize: 15, color: hasVerifiedGrowth ? '#059669 !important' : '#D97706 !important' }} />}
               label={hasVerifiedGrowth ? `${growth.evidenceBackedPct}% Evidence Backed` : 'Sample Calibration'}
@@ -828,9 +833,17 @@ export default function GrowthMetricsAndRoleReadiness({
       >
         <DialogContent sx={{ p: 0 }}>
           <IdentityDiagnosticWizard
+            userId={profile.id}
             isModal={true}
             onClose={() => setDiagnosticModalOpen(false)}
-            onComplete={() => setDiagnosticModalOpen(false)}
+            onComplete={(report) => {
+              if (typeof window !== 'undefined' && profile.id) {
+                try {
+                  localStorage.setItem(`codeplatform_diagnostic_goal_${profile.id}`, JSON.stringify(report));
+                } catch {}
+              }
+              setDiagnosticModalOpen(false);
+            }}
           />
         </DialogContent>
       </Dialog>

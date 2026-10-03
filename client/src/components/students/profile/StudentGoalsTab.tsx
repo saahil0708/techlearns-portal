@@ -53,6 +53,8 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import dynamic from 'next/dynamic';
 import { StudentProfileData } from '@/types/student-profile';
 import { useToast } from '@/context/ToastContext';
+import { apiService } from '@/lib/api-service';
+import { CAREER_TRACKS } from '@/components/students/diagnostic/IdentityDiagnosticWizard';
 
 const IdentityDiagnosticWizard = dynamic(
   () => import('@/components/students/diagnostic/IdentityDiagnosticWizard'),
@@ -62,6 +64,7 @@ const IdentityDiagnosticWizard = dynamic(
 interface StudentGoalsTabProps {
   profile: StudentProfileData;
   isOwner?: boolean;
+  onOpenDiagnostic?: () => void;
 }
 
 interface UserGoalData {
@@ -256,7 +259,11 @@ function normalizeTimeline(timeline?: string): string {
   return timeline;
 }
 
-export default function StudentGoalsTab({ profile, isOwner = true }: StudentGoalsTabProps) {
+export default function StudentGoalsTab({
+  profile,
+  isOwner = true,
+  onOpenDiagnostic,
+}: StudentGoalsTabProps) {
   const toast = useToast();
   const [goalData, setGoalData] = useState<UserGoalData>(DEFAULT_GOAL);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -270,20 +277,45 @@ export default function StudentGoalsTab({ profile, isOwner = true }: StudentGoal
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const storageKey = profile?.id ? `codeplatform_diagnostic_goal_${profile.id}` : 'codeplatform_diagnostic_goal';
-        const stored = localStorage.getItem(storageKey);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (parsed && typeof parsed.targetTrack === 'string' && Array.isArray(parsed.skills)) {
-            setGoalData((prev) => ({ ...prev, ...parsed }));
-            setFormData((prev) => ({ ...prev, ...parsed }));
+    let isMounted = true;
+
+    async function loadGoals() {
+      // 1. Check backend API first (only for owner)
+      if (isOwner) {
+        try {
+          const remote = await apiService.getStudentGoals();
+          if (remote && remote.targetTrack && isMounted) {
+            setGoalData((prev) => ({ ...prev, ...remote }));
+            setFormData((prev) => ({ ...prev, ...remote }));
+            return;
           }
+        } catch (err) {
+          console.warn('Could not load goals from API, checking local storage:', err);
         }
-      } catch {}
+      }
+
+      // 2. Local storage fallback
+      if (typeof window !== 'undefined') {
+        try {
+          const storageKey = profile?.id ? `codeplatform_diagnostic_goal_${profile.id}` : 'codeplatform_diagnostic_goal';
+          const stored = localStorage.getItem(storageKey);
+          if (stored && isMounted) {
+            const parsed = JSON.parse(stored);
+            if (parsed && typeof parsed.targetTrack === 'string' && Array.isArray(parsed.skills)) {
+              setGoalData((prev) => ({ ...prev, ...parsed }));
+              setFormData((prev) => ({ ...prev, ...parsed }));
+            }
+          }
+        } catch {}
+      }
     }
-  }, [profile?.id]);
+
+    loadGoals();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [profile?.id, isOwner]);
 
   const handleOpenCustomizer = (initialTab: number = 0) => {
     setFormData({ ...goalData });
@@ -291,13 +323,25 @@ export default function StudentGoalsTab({ profile, isOwner = true }: StudentGoal
     setCustomizerOpen(true);
   };
 
-  const handleSaveCustomForm = () => {
+  const handleSaveCustomForm = async () => {
+    const clamp = (val: number | undefined, min: number, max: number, defaultVal: number) => {
+      if (val === undefined || isNaN(val)) return defaultVal;
+      return Math.min(Math.max(val, min), max);
+    };
+
+    const clampedQuota = clamp(formData.weeklyProblemQuota, 5, 60, 20);
+    const clampedRating = clamp(formData.targetContestRating, 1000, 2800, 1800);
+    const clampedFirstAttempt = clamp(formData.firstAttemptTargetRate, 50, 99, 75);
+
     // Recalculate roleFitScore dynamically based on current skill average
     const avgSkill = Math.round(
       formData.skills.reduce((acc, curr) => acc + curr.level, 0) / (formData.skills.length || 1)
     );
     const updated: UserGoalData = {
       ...formData,
+      weeklyProblemQuota: clampedQuota,
+      targetContestRating: clampedRating,
+      firstAttemptTargetRate: clampedFirstAttempt,
       roleFitScore: avgSkill,
       timestamp: new Date().toISOString(),
     };
@@ -308,6 +352,13 @@ export default function StudentGoalsTab({ profile, isOwner = true }: StudentGoal
         localStorage.setItem(storageKey, JSON.stringify(updated));
       } catch {}
     }
+
+    try {
+      await apiService.saveStudentGoals(updated);
+    } catch (err) {
+      console.warn('Could not sync goals to backend:', err);
+    }
+
     toast.showToast('Target goals, speed limits & baseline skills calibrated successfully!', 'success');
     setCustomizerOpen(false);
   };
@@ -335,9 +386,10 @@ export default function StudentGoalsTab({ profile, isOwner = true }: StudentGoal
     if (typeof window !== 'undefined') {
       try {
         const storageKey = profile?.id ? `codeplatform_diagnostic_goal_${profile.id}` : 'codeplatform_diagnostic_goal';
-        localStorage.setItem(storageKey, JSON.stringify({ ...goalData, ...updated }));
+        localStorage.setItem(storageKey, JSON.stringify(updated));
       } catch {}
     }
+
     setWizardOpen(false);
   };
 
@@ -1415,36 +1467,32 @@ export default function StudentGoalsTab({ profile, isOwner = true }: StudentGoal
                     gap: 1.5,
                   }}
                 >
-                  {[
-                    { id: 'fullstack', label: 'Full-Stack Web Architect', desc: 'SSR, Next.js, NestJS, Postgres, Docker' },
-                    { id: 'backend', label: 'Backend & Distributed Systems', desc: 'Microservices, gRPC, Redis, Kafka, DB optimization' },
-                    { id: 'frontend', label: 'Frontend & UI/UX Specialist', desc: 'React 19, TypeScript, Performance, Design Systems' },
-                    { id: 'devops', label: 'DevOps & Cloud Architect', desc: 'Kubernetes, CI/CD, AWS/Azure, Terraform, Security' },
-                    { id: 'ai', label: 'AI & Machine Learning Engineer', desc: 'PyTorch, LLM agents, Vector DBs, Model Serving' },
-                    { id: 'dsa', label: 'Algorithms & Competitive Coder', desc: 'Advanced DSA, Codeforces 1900+, ICPC problem solving' },
-                  ].map((track) => (
-                    <Box
-                      key={track.id}
-                      onClick={() => setFormData((prev: UserGoalData) => ({ ...prev, targetTrack: track.label, targetTrackId: track.id }))}
-                      sx={{
-                        p: 1.8,
-                        borderRadius: '12px',
-                        border: '2px solid',
-                        borderColor: formData.targetTrack === track.label ? '#2563EB' : '#E2E8F0',
-                        bgcolor: formData.targetTrack === track.label ? '#EFF6FF' : '#FFFFFF',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease',
-                        '&:hover': { borderColor: '#93C5FD' },
-                      }}
-                    >
-                      <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: formData.targetTrack === track.label ? '#1D4ED8' : '#0F172A', mb: 0.3 }}>
-                        {track.label}
-                      </Typography>
-                      <Typography sx={{ color: '#64748B', fontSize: '0.74rem' }}>
-                        {track.desc}
-                      </Typography>
-                    </Box>
-                  ))}
+                  {CAREER_TRACKS.map((track) => {
+                    const isSelected = formData.targetTrackId ? formData.targetTrackId === track.id : formData.targetTrack === track.title;
+                    return (
+                      <Box
+                        key={track.id}
+                        onClick={() => setFormData((prev: UserGoalData) => ({ ...prev, targetTrack: track.title, targetTrackId: track.id }))}
+                        sx={{
+                          p: 1.8,
+                          borderRadius: '12px',
+                          border: '2px solid',
+                          borderColor: isSelected ? '#2563EB' : '#E2E8F0',
+                          bgcolor: isSelected ? '#EFF6FF' : '#FFFFFF',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          '&:hover': { borderColor: '#93C5FD' },
+                        }}
+                      >
+                        <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: isSelected ? '#1D4ED8' : '#0F172A', mb: 0.3 }}>
+                          {track.title}
+                        </Typography>
+                        <Typography sx={{ color: '#64748B', fontSize: '0.74rem' }}>
+                          {track.subtitle}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
                 </Box>
               </Box>
 

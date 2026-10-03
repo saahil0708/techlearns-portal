@@ -19,31 +19,35 @@ export default async function CoursesPage() {
 
   try {
     const liveData = await apiService.getCourses({ limit: 50 });
-    if (liveData?.items && liveData.items.length > 0) {
+    if (liveData?.items && Array.isArray(liveData.items)) {
       courses = liveData.items.map((c: any, idx: number) => ({
         id: c.id,
-        code: `CRS-${String(idx + 1).padStart(3, '0')}`,
-        slug: c.title ? c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `course-${idx + 1}`,
+        code: c.code ?? `CRS-${String(idx + 1).padStart(3, '0')}`,
+        slug: c.slug ?? (c.title ? c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `course-${idx + 1}`),
         title: c.title,
-        category: 'Computer Science & DSA' as const,
-        level: 'Intermediate' as const,
-        instructorName: 'Faculty Lead',
+        category: (c.category as any) || 'Computer Science & DSA',
+        level: (c.level as any) || 'Intermediate',
+        instructorName: c.instructor?.name || c.createdBy?.name || 'Faculty Lead',
         instructorTitle: 'Course Instructor',
-        institutionName: c.college?.name || 'Academic Campus',
-        durationHours: 40,
-        modulesCount: c._count?.modules || 8,
-        lessonsCount: 32,
-        enrolledStudents: c._count?.enrollments || 120,
-        completionRate: 75,
-        status: 'Published' as const,
-        tags: ['Computer Science', 'Programming'],
+        institutionName: c.institution?.name || c.college?.name || 'Global Campus',
+        durationHours: c.durationHours ?? (c.durationWeeks ? c.durationWeeks * 4 : 36),
+        modulesCount: c._count?.modules ?? (Array.isArray(c.modules) ? c.modules.length : 0),
+        lessonsCount: Array.isArray(c.modules)
+          ? c.modules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0)
+          : (c._count?.lessons ?? 0),
+        enrolledStudents: c._count?.enrollments ?? 0,
+        completionRate: c.completionRate ?? 0,
+        status: c.status === 'PUBLISHED' ? 'Published' : 'Draft',
+        tags: Array.isArray(c.tags) && c.tags.length > 0 ? c.tags : ['Computer Science', 'Programming'],
         description: c.description || 'Comprehensive programming curriculum with hands-on coding challenges.',
         accentColor: ['#2563EB', '#7C3AED', '#DC2626', '#059669', '#D97706'][idx % 5],
-        moduleHighlights: [
-          { title: 'Foundations & Core Principles', lessons: 8 },
-          { title: 'Intermediate Data Structures', lessons: 12 },
-          { title: 'Advanced Algorithms & Problem Solving', lessons: 12 },
-        ],
+        modules: c.modules || [],
+        moduleHighlights: Array.isArray(c.modules) && c.modules.length > 0
+          ? c.modules.map((m: any) => ({
+              title: m.title,
+              lessons: m.lessons?.length || 0,
+            }))
+          : [],
       }));
     }
   } catch (err) {

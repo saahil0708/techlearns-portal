@@ -234,7 +234,7 @@ export class ProjectsService {
     this.checkProjectAuth(project, currentUser, 'modify');
 
     // Exclude progressPct from user payload to preserve derived calculation
-    const { milestones, progressPct, ...projectData } = dto;
+    const { milestones: _milestones, progressPct: _progressPct, ...projectData } = dto;
 
     return this.prisma.studentProject.update({
       where: { id },
@@ -284,7 +284,6 @@ export class ProjectsService {
 
     this.checkProjectAuth(milestone.project, currentUser, 'toggle milestone on');
 
-    const nextDone = targetDone !== undefined ? targetDone : !milestone.done;
     const maxRetries = 3;
     let lastError: any = null;
 
@@ -297,6 +296,8 @@ export class ProjectsService {
             });
 
             if (!freshMilestone) throw new NotFoundException('Milestone not found');
+
+            const nextDone = targetDone !== undefined ? targetDone : !freshMilestone.done;
 
             const updated = await tx.projectMilestone.update({
               where: { id: milestoneId },
