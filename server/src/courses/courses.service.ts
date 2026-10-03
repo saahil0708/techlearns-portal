@@ -441,6 +441,7 @@ export class CoursesService {
               orderBy: { order: 'asc' },
               select: {
                 id: true,
+                moduleId: true,
                 title: true,
                 content: true,
                 type: true,
@@ -489,6 +490,7 @@ export class CoursesService {
     }
 
     let hasContentAccess = isPrivileged;
+    let userEnrollment: any = null;
     if (!hasContentAccess && user?.id) {
       const enrollment = await this.prisma.enrollment.findUnique({
         where: {
@@ -503,6 +505,7 @@ export class CoursesService {
         (enrollment.status === EnrollmentStatus.ACTIVE || enrollment.status === EnrollmentStatus.COMPLETED)
       ) {
         hasContentAccess = true;
+        userEnrollment = enrollment;
       }
     }
 
@@ -535,6 +538,8 @@ export class CoursesService {
     if (!hasContentAccess) {
       return {
         ...course,
+        isEnrolled: false,
+        userEnrollment: null,
         completedLessonIds: Array.from(completedLessonIdSet),
         modules: (course.modules || []).map((mod) => ({
           ...mod,
@@ -547,6 +552,8 @@ export class CoursesService {
             } = lesson;
             return {
               ...rest,
+              moduleId: lesson.moduleId || mod.id,
+              content: '',
               isCompleted: completedLessonIdSet.has(lesson.id),
               userProgress: progressByLessonId[lesson.id] || null,
             };
@@ -557,22 +564,17 @@ export class CoursesService {
 
     return {
       ...course,
+      isEnrolled: true,
+      userEnrollment: userEnrollment || { status: EnrollmentStatus.ACTIVE, enrolledAt: new Date() },
       completedLessonIds: Array.from(completedLessonIdSet),
       modules: (course.modules || []).map((mod) => ({
         ...mod,
-        lessons: (mod.lessons || []).map((lesson) => {
-          let sanitizedQuiz = lesson.quizMCQ;
-          if (!isPrivileged && sanitizedQuiz && typeof sanitizedQuiz === 'object') {
-            const { correctIndex: _strippedCorrectIndex, ...restQuiz } = sanitizedQuiz as any;
-            sanitizedQuiz = restQuiz;
-          }
-          return {
-            ...lesson,
-            quizMCQ: sanitizedQuiz,
-            isCompleted: completedLessonIdSet.has(lesson.id),
-            userProgress: progressByLessonId[lesson.id] || null,
-          };
-        }),
+        lessons: (mod.lessons || []).map((lesson) => ({
+          ...lesson,
+          moduleId: lesson.moduleId || mod.id,
+          isCompleted: completedLessonIdSet.has(lesson.id),
+          userProgress: progressByLessonId[lesson.id] || null,
+        })),
       })),
     };
   }
