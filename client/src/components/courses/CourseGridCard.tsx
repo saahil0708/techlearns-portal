@@ -117,7 +117,7 @@ export default function CourseGridCard({
       }}
       sx={{
         width: '100%',
-        maxWidth: 320,
+        maxWidth: '100%',
         mx: 'auto',
         borderRadius: '18px',
         bgcolor: theme.cardBg,
@@ -149,8 +149,11 @@ export default function CourseGridCard({
       >
         <Box
           component="img"
-          src={theme.image}
+          src={course.thumbnailUrl || theme.image}
           alt={course.title}
+          onError={(e: any) => {
+            e.currentTarget.src = theme.image;
+          }}
           sx={{
             width: '100%',
             height: '100%',

@@ -120,6 +120,10 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
       return;
     }
 
+    const prevCount = userClapCount;
+    const prevHasLiked = blog.hasLiked;
+    const prevClaps = blog.claps;
+
     const nextCount = userClapCount + 1;
     setUserClapCount(nextCount);
     setBlog((prev) => ({
@@ -135,9 +139,17 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
       toast.success(`Clapped! (${nextCount}/${MAX_CLAPS_PER_USER})`, 'Clap Added');
     } catch (err: any) {
       console.warn('Backend clap warning:', err);
+      setUserClapCount(prevCount);
+      setBlog((prev) => ({
+        ...prev,
+        hasLiked: prevHasLiked,
+        claps: prevClaps,
+      }));
       const message = err?.response?.data?.message || err?.message;
       if (message && message.includes('maximum limit')) {
         toast.info(message, 'Max Claps Reached');
+      } else {
+        toast.error(message || 'Failed to record clap', 'Clap Error');
       }
     }
   };

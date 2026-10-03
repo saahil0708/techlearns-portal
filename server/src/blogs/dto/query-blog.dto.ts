@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class QueryBlogDto {
   @ApiPropertyOptional({ example: 'Architecture' })
@@ -13,9 +13,10 @@ export class QueryBlogDto {
   @IsOptional()
   category?: string;
 
-  @ApiPropertyOptional({ example: 'Published' })
+  @ApiPropertyOptional({ example: 'Published', enum: ['Published', 'Draft', 'Archived'] })
   @IsString()
   @IsOptional()
+  @IsIn(['Published', 'Draft', 'Archived'])
   status?: string;
 
   @ApiPropertyOptional({ example: 1, default: 1 })

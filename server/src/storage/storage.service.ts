@@ -16,6 +16,40 @@ export interface SasUploadResult {
   expiresOn: Date;
 }
 
+export const FOLDER_MIME_ALLOWLIST: Record<StorageFolder, string[]> = {
+  [StorageFolder.AVATARS]: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+  [StorageFolder.INSTITUTIONS]: ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'],
+  [StorageFolder.COURSES]: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+  [StorageFolder.BLOGS]: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+  [StorageFolder.PROBLEMS]: [
+    'application/zip',
+    'application/x-zip-compressed',
+    'text/plain',
+    'application/json',
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+  ],
+  [StorageFolder.ATTACHMENTS]: [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'application/pdf',
+    'application/zip',
+    'application/x-zip-compressed',
+    'text/plain',
+    'application/json',
+    'text/csv',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ],
+};
+
+export const GLOBAL_ALLOWED_MIMES = Array.from(
+  new Set(Object.values(FOLDER_MIME_ALLOWLIST).flat()),
+);
+
 @Injectable()
 export class StorageService implements OnModuleInit {
   private readonly logger = new Logger(StorageService.name);
@@ -64,10 +98,27 @@ export class StorageService implements OnModuleInit {
     if (this.blobServiceClient) {
       try {
         const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
-        await containerClient.createIfNotExists({ access: 'blob' });
-        this.logger.log(`Azure Blob container "${this.containerName}" verified and ready (access: blob).`);
+        await containerClient.createIfNotExists();
+        this.logger.log(`Azure Blob container "${this.containerName}" verified and ready (private access).`);
       } catch (err: any) {
         this.logger.warn(`Could not automatically create Azure Blob container "${this.containerName}": ${err.message}`);
+      }
+
+      try {
+        await this.blobServiceClient.setProperties({
+          cors: [
+            {
+              allowedOrigins: '*',
+              allowedMethods: 'GET,HEAD,POST,PUT,OPTIONS,PATCH,DELETE',
+              allowedHeaders: '*',
+              exposedHeaders: '*',
+              maxAgeInSeconds: 86400,
+            },
+          ],
+        });
+        this.logger.log('Azure Blob Storage CORS rules configured successfully for direct browser uploads.');
+      } catch (err: any) {
+        this.logger.warn(`Could not set Azure Blob CORS rules (will rely on server proxy upload fallback if needed): ${err.message}`);
       }
     }
   }
@@ -82,8 +133,24 @@ export class StorageService implements OnModuleInit {
   /**
    * Generates a temporary SAS upload URL for direct browser-to-Azure uploads.
    */
-  async generateUploadSasUrl(dto: GenerateSasUrlDto, userId?: string): Promise<SasUploadResult> {
+  async generateUploadSasUrl(
+    dto: GenerateSasUrlDto,
+    _userId?: string,
+    _institutionId?: string,
+  ): Promise<SasUploadResult> {
     this.ensureConfigured();
+
+    const allowedMimes = FOLDER_MIME_ALLOWLIST[dto.folder] || GLOBAL_ALLOWED_MIMES;
+    const normalizedType = dto.fileType.toLowerCase();
+
+    if (!allowedMimes.includes(normalizedType)) {
+      throw new BadRequestException(
+        `File MIME type "${dto.fileType}" is not permitted for folder "${dto.folder}".`,
+      );
+    }
+
+    const isActiveContent = ['text/html', 'image/svg+xml', 'application/xhtml+xml'].includes(normalizedType);
+    const contentDisposition = isActiveContent ? 'attachment' : undefined;
 
     const sanitizedExt = (dto.fileName.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanPrefix = dto.entityId ? `${dto.entityId}-` : '';
@@ -112,6 +179,7 @@ export class StorageService implements OnModuleInit {
           startsOn: new Date(Date.now() - 60 * 1000), // Clock skew grace period
           expiresOn,
           contentType: dto.fileType,
+          contentDisposition,
         },
         sharedKeyCredential,
       ).toString();
@@ -122,14 +190,47 @@ export class StorageService implements OnModuleInit {
       throw new InternalServerErrorException(`Could not generate Azure upload SAS token: ${err.message}`);
     }
 
-    const publicBlobUrl = blobClient.url.split('?')[0];
+    const usableBlobUrl = this.generateReadSasUrl(blobName);
 
     return {
       uploadUrl: sasUrl,
-      blobUrl: publicBlobUrl,
+      blobUrl: usableBlobUrl,
       blobPath: blobName,
       expiresOn,
     };
+  }
+
+  /**
+   * Generates a read SAS URL or returns the direct blob URL for private access
+   */
+  generateReadSasUrl(blobName: string, durationDays = 7): string {
+    if (!this.blobServiceClient) return '';
+    const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
+    const blobClient = containerClient.getBlockBlobClient(blobName);
+
+    if (!this.accountKey) {
+      return blobClient.url;
+    }
+
+    try {
+      const sharedKeyCredential = new StorageSharedKeyCredential(this.accountName, this.accountKey);
+      const expiresOn = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+      const sasToken = generateBlobSASQueryParameters(
+        {
+          containerName: this.containerName,
+          blobName,
+          permissions: BlobSASPermissions.parse('r'), // Read
+          startsOn: new Date(Date.now() - 60 * 1000),
+          expiresOn,
+        },
+        sharedKeyCredential,
+      ).toString();
+
+      return `${blobClient.url}?${sasToken}`;
+    } catch (err: any) {
+      this.logger.warn(`Could not generate read SAS URL for ${blobName}: ${err.message}`);
+      return blobClient.url;
+    }
   }
 
   /**
@@ -140,10 +241,21 @@ export class StorageService implements OnModuleInit {
     originalName: string,
     fileType: string,
     folder: StorageFolder,
+    institutionId?: string,
+    userId?: string,
   ): Promise<{ blobUrl: string; blobPath: string }> {
     this.ensureConfigured();
 
-    const ext = (originalName.split('.').pop() || 'bin').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const allowedMimes = FOLDER_MIME_ALLOWLIST[folder] || GLOBAL_ALLOWED_MIMES;
+    const normalizedType = fileType.toLowerCase();
+    if (!allowedMimes.includes(normalizedType)) {
+      throw new BadRequestException(
+        `File MIME type "${fileType}" is not permitted for folder "${folder}".`,
+      );
+    }
+
+    const isActiveContent = ['text/html', 'image/svg+xml', 'application/xhtml+xml'].includes(normalizedType);
+
     const blobName = `${folder}/${randomUUID()}-${originalName.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
     const containerClient = this.blobServiceClient!.getContainerClient(this.containerName);
@@ -153,13 +265,35 @@ export class StorageService implements OnModuleInit {
       blobHTTPHeaders: {
         blobContentType: fileType,
         blobCacheControl: 'public, max-age=31536000',
+        ...(isActiveContent ? { blobContentDisposition: 'attachment' } : {}),
+      },
+      metadata: {
+        ...(institutionId ? { institutionid: institutionId } : {}),
+        ...(userId ? { ownerid: userId } : {}),
       },
     });
 
+    const usableBlobUrl = this.generateReadSasUrl(blobName);
+
     return {
-      blobUrl: blockBlobClient.url,
+      blobUrl: usableBlobUrl,
       blobPath: blobName,
     };
+  }
+
+  /**
+   * Get metadata properties for a blob
+   */
+  async getBlobMetadata(blobPath: string): Promise<Record<string, string> | null> {
+    if (!this.blobServiceClient) return null;
+    try {
+      const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
+      const blobClient = containerClient.getBlockBlobClient(blobPath);
+      const properties = await blobClient.getProperties();
+      return properties.metadata || {};
+    } catch {
+      return null;
+    }
   }
 
   /**

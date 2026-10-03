@@ -136,8 +136,10 @@ export default function CommunityClient() {
       if (postId && !postId.startsWith('post-')) {
         await apiService.upvoteCommunityPost(postId);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn('Backend upvote warning:', err);
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to upvote post.', 'Upvote Failed');
+      return;
     }
     setPosts((prev) =>
       prev.map((p) => (p.id === postId ? { ...p, upvotes: p.upvotes + 1 } : p))

@@ -511,6 +511,14 @@ async function main() {
     where: { id: 'crs-fullstack-architecture' },
     update: {
       title: 'Full-Stack Web Architecture & Cloud Microservices',
+      slug: 'fullstack-architecture',
+      code: 'FS-301',
+      category: 'Web Development',
+      level: 'Intermediate',
+      durationWeeks: 10,
+      rating: 4.9,
+      tags: ['Next.js 15', 'NestJS', 'PostgreSQL', 'Docker', 'Redis'],
+      thumbnailUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
       description: 'Master enterprise full-stack development with Next.js 15, SSR, NestJS APIs, PostgreSQL, Redis BullMQ queues, and Docker container security.',
       status: CourseStatus.PUBLISHED,
       institutionId: null,
@@ -519,6 +527,14 @@ async function main() {
     create: {
       id: 'crs-fullstack-architecture',
       title: 'Full-Stack Web Architecture & Cloud Microservices',
+      slug: 'fullstack-architecture',
+      code: 'FS-301',
+      category: 'Web Development',
+      level: 'Intermediate',
+      durationWeeks: 10,
+      rating: 4.9,
+      tags: ['Next.js 15', 'NestJS', 'PostgreSQL', 'Docker', 'Redis'],
+      thumbnailUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80',
       description: 'Master enterprise full-stack development with Next.js 15, SSR, NestJS APIs, PostgreSQL, Redis BullMQ queues, and Docker container security.',
       status: CourseStatus.PUBLISHED,
       institutionId: null,
@@ -533,13 +549,67 @@ async function main() {
   });
   const c1L1 = await prisma.lesson.upsert({
     where: { id: 'les-fstack-101' },
-    update: { title: 'React Server Components vs Client Leaf Boundaries', content: 'In-depth guide to server execution boundaries.', order: 1, moduleId: c1Mod1.id },
-    create: { id: 'les-fstack-101', title: 'React Server Components vs Client Leaf Boundaries', content: 'In-depth guide to server execution boundaries.', order: 1, moduleId: c1Mod1.id },
+    update: {
+      title: 'React Server Components vs Client Leaf Boundaries',
+      content: 'In-depth guide to server execution boundaries, hydration mismatches, and layout composition in React 19 and Next.js 15 App Router.\n\n### Key Concepts\n- Server components execute exclusively on the server node process.\n- Client components are hydrated with minimal JS payload.\n- Never pass non-serializable objects (functions, classes) across the boundary.',
+      type: 'reading',
+      durationMinutes: 20,
+      quizMCQ: {
+        question: 'Which component type executes exclusively on the server and is never sent to the browser JS bundle?',
+        options: ['React Server Components (RSC)', 'Client Leaf Components', 'Stateful Hooks (useState)', 'Hydrated Event Handlers'],
+        correctIndex: 0,
+        explanation: 'React Server Components render exclusively on the server and stream zero client-side JavaScript overhead.',
+      },
+      order: 1,
+      moduleId: c1Mod1.id,
+    },
+    create: {
+      id: 'les-fstack-101',
+      title: 'React Server Components vs Client Leaf Boundaries',
+      content: 'In-depth guide to server execution boundaries, hydration mismatches, and layout composition in React 19 and Next.js 15 App Router.\n\n### Key Concepts\n- Server components execute exclusively on the server node process.\n- Client components are hydrated with minimal JS payload.\n- Never pass non-serializable objects (functions, classes) across the boundary.',
+      type: 'reading',
+      durationMinutes: 20,
+      quizMCQ: {
+        question: 'Which component type executes exclusively on the server and is never sent to the browser JS bundle?',
+        options: ['React Server Components (RSC)', 'Client Leaf Components', 'Stateful Hooks (useState)', 'Hydrated Event Handlers'],
+        correctIndex: 0,
+        explanation: 'React Server Components render exclusively on the server and stream zero client-side JavaScript overhead.',
+      },
+      order: 1,
+      moduleId: c1Mod1.id,
+    },
   });
   const c1L2 = await prisma.lesson.upsert({
     where: { id: 'les-fstack-102' },
-    update: { title: 'Streaming SSR & Zero-Layout-Shift Suspense', content: 'Optimizing First Contentful Paint with Suspense streams.', order: 2, moduleId: c1Mod1.id },
-    create: { id: 'les-fstack-102', title: 'Streaming SSR & Zero-Layout-Shift Suspense', content: 'Optimizing First Contentful Paint with Suspense streams.', order: 2, moduleId: c1Mod1.id },
+    update: {
+      title: 'Streaming SSR & Zero-Layout-Shift Suspense',
+      content: 'Optimizing First Contentful Paint with Suspense streams and skeleton fallbacks.',
+      type: 'code',
+      durationMinutes: 25,
+      codingProblem: {
+        title: 'Streaming Suspense Boundary Optimizer',
+        description: 'Implement an asynchronous chunk streaming handler.',
+        starterCode: '// Implement streaming handler\nfunction streamChunk(chunk) {\n  return chunk.trim();\n}',
+        language: 'javascript',
+      },
+      order: 2,
+      moduleId: c1Mod1.id,
+    },
+    create: {
+      id: 'les-fstack-102',
+      title: 'Streaming SSR & Zero-Layout-Shift Suspense',
+      content: 'Optimizing First Contentful Paint with Suspense streams and skeleton fallbacks.',
+      type: 'code',
+      durationMinutes: 25,
+      codingProblem: {
+        title: 'Streaming Suspense Boundary Optimizer',
+        description: 'Implement an asynchronous chunk streaming handler.',
+        starterCode: '// Implement streaming handler\nfunction streamChunk(chunk) {\n  return chunk.trim();\n}',
+        language: 'javascript',
+      },
+      order: 2,
+      moduleId: c1Mod1.id,
+    },
   });
 
   const c1Mod2 = await prisma.module.upsert({
@@ -549,13 +619,43 @@ async function main() {
   });
   const c1L3 = await prisma.lesson.upsert({
     where: { id: 'les-fstack-201' },
-    update: { title: 'Modular Architecture, DTO Validation & Guards', content: 'Building robust enterprise APIs with class-validator.', order: 1, moduleId: c1Mod2.id },
-    create: { id: 'les-fstack-201', title: 'Modular Architecture, DTO Validation & Guards', content: 'Building robust enterprise APIs with class-validator.', order: 1, moduleId: c1Mod2.id },
+    update: {
+      title: 'Modular Architecture, DTO Validation & Guards',
+      content: 'Building robust enterprise APIs with class-validator and role-based guards.',
+      type: 'reading',
+      durationMinutes: 20,
+      order: 1,
+      moduleId: c1Mod2.id,
+    },
+    create: {
+      id: 'les-fstack-201',
+      title: 'Modular Architecture, DTO Validation & Guards',
+      content: 'Building robust enterprise APIs with class-validator and role-based guards.',
+      type: 'reading',
+      durationMinutes: 20,
+      order: 1,
+      moduleId: c1Mod2.id,
+    },
   });
   const c1L4 = await prisma.lesson.upsert({
     where: { id: 'les-fstack-202' },
-    update: { title: 'JWT Authentication & Multi-Tenant RBAC Guards', content: 'Securing endpoints with role-based access control.', order: 2, moduleId: c1Mod2.id },
-    create: { id: 'les-fstack-202', title: 'JWT Authentication & Multi-Tenant RBAC Guards', content: 'Securing endpoints with role-based access control.', order: 2, moduleId: c1Mod2.id },
+    update: {
+      title: 'JWT Authentication & Multi-Tenant RBAC Guards',
+      content: 'Securing endpoints with role-based access control and tenant isolation guards.',
+      type: 'code',
+      durationMinutes: 30,
+      order: 2,
+      moduleId: c1Mod2.id,
+    },
+    create: {
+      id: 'les-fstack-202',
+      title: 'JWT Authentication & Multi-Tenant RBAC Guards',
+      content: 'Securing endpoints with role-based access control and tenant isolation guards.',
+      type: 'code',
+      durationMinutes: 30,
+      order: 2,
+      moduleId: c1Mod2.id,
+    },
   });
 
   const c1Mod3 = await prisma.module.upsert({
@@ -565,13 +665,43 @@ async function main() {
   });
   const c1L5 = await prisma.lesson.upsert({
     where: { id: 'les-fstack-301' },
-    update: { title: 'Database Indexing, B-Trees & Query Optimization', content: 'Optimizing complex joins and transaction isolation.', order: 1, moduleId: c1Mod3.id },
-    create: { id: 'les-fstack-301', title: 'Database Indexing, B-Trees & Query Optimization', content: 'Optimizing complex joins and transaction isolation.', order: 1, moduleId: c1Mod3.id },
+    update: {
+      title: 'Database Indexing, B-Trees & Query Optimization',
+      content: 'Optimizing complex joins and transaction isolation in PostgreSQL.',
+      type: 'reading',
+      durationMinutes: 20,
+      order: 1,
+      moduleId: c1Mod3.id,
+    },
+    create: {
+      id: 'les-fstack-301',
+      title: 'Database Indexing, B-Trees & Query Optimization',
+      content: 'Optimizing complex joins and transaction isolation in PostgreSQL.',
+      type: 'reading',
+      durationMinutes: 20,
+      order: 1,
+      moduleId: c1Mod3.id,
+    },
   });
   const c1L6 = await prisma.lesson.upsert({
     where: { id: 'les-fstack-302' },
-    update: { title: 'Distributed Job Queue Execution with BullMQ & Redis', content: 'Asynchronous sandboxed task execution pipelines.', order: 2, moduleId: c1Mod3.id },
-    create: { id: 'les-fstack-302', title: 'Distributed Job Queue Execution with BullMQ & Redis', content: 'Asynchronous sandboxed task execution pipelines.', order: 2, moduleId: c1Mod3.id },
+    update: {
+      title: 'Distributed Job Queue Execution with BullMQ & Redis',
+      content: 'Asynchronous sandboxed task execution pipelines and Redis backpressure management.',
+      type: 'code',
+      durationMinutes: 30,
+      order: 2,
+      moduleId: c1Mod3.id,
+    },
+    create: {
+      id: 'les-fstack-302',
+      title: 'Distributed Job Queue Execution with BullMQ & Redis',
+      content: 'Asynchronous sandboxed task execution pipelines and Redis backpressure management.',
+      type: 'code',
+      durationMinutes: 30,
+      order: 2,
+      moduleId: c1Mod3.id,
+    },
   });
 
   // Course 2: DSA & Competitive Problem Solving
@@ -579,6 +709,14 @@ async function main() {
     where: { id: 'crs-dsa-advanced' },
     update: {
       title: 'Advanced Data Structures & Algorithmic Problem Solving',
+      slug: 'dsa-advanced',
+      code: 'CS-401',
+      category: 'Data Structures & Algorithms',
+      level: 'Advanced',
+      durationWeeks: 12,
+      rating: 4.95,
+      tags: ['Dynamic Programming', 'Graph Theory', 'Trees', 'C++', 'Java'],
+      thumbnailUrl: 'https://images.unsplash.com/photo-1516116211227-bbc13c73335c?auto=format&fit=crop&w=800&q=80',
       description: 'Master dynamic programming, graph algorithms, segment trees, and competitive programming techniques for high-tier tech interviews.',
       status: CourseStatus.PUBLISHED,
       institutionId: null,
@@ -587,6 +725,14 @@ async function main() {
     create: {
       id: 'crs-dsa-advanced',
       title: 'Advanced Data Structures & Algorithmic Problem Solving',
+      slug: 'dsa-advanced',
+      code: 'CS-401',
+      category: 'Data Structures & Algorithms',
+      level: 'Advanced',
+      durationWeeks: 12,
+      rating: 4.95,
+      tags: ['Dynamic Programming', 'Graph Theory', 'Trees', 'C++', 'Java'],
+      thumbnailUrl: 'https://images.unsplash.com/photo-1516116211227-bbc13c73335c?auto=format&fit=crop&w=800&q=80',
       description: 'Master dynamic programming, graph algorithms, segment trees, and competitive programming techniques for high-tier tech interviews.',
       status: CourseStatus.PUBLISHED,
       institutionId: null,
@@ -601,13 +747,43 @@ async function main() {
   });
   const c2L1 = await prisma.lesson.upsert({
     where: { id: 'les-dsa-101' },
-    update: { title: '2D Grid DP & Space Optimization', content: 'Mastering state transitions on 2D matrices.', order: 1, moduleId: c2Mod1.id },
-    create: { id: 'les-dsa-101', title: '2D Grid DP & Space Optimization', content: 'Mastering state transitions on 2D matrices.', order: 1, moduleId: c2Mod1.id },
+    update: {
+      title: '2D Grid DP & Space Optimization',
+      content: 'Mastering state transitions on 2D matrices and reducing memory complexity to O(N).',
+      type: 'reading',
+      durationMinutes: 25,
+      order: 1,
+      moduleId: c2Mod1.id,
+    },
+    create: {
+      id: 'les-dsa-101',
+      title: '2D Grid DP & Space Optimization',
+      content: 'Mastering state transitions on 2D matrices and reducing memory complexity to O(N).',
+      type: 'reading',
+      durationMinutes: 25,
+      order: 1,
+      moduleId: c2Mod1.id,
+    },
   });
   const c2L2 = await prisma.lesson.upsert({
     where: { id: 'les-dsa-102' },
-    update: { title: 'DP on Trees & Subtree Aggregations', content: 'Rerooting techniques and subtree diameter calculation.', order: 2, moduleId: c2Mod1.id },
-    create: { id: 'les-dsa-102', title: 'DP on Trees & Subtree Aggregations', content: 'Rerooting techniques and subtree diameter calculation.', order: 2, moduleId: c2Mod1.id },
+    update: {
+      title: 'DP on Trees & Subtree Aggregations',
+      content: 'Rerooting techniques and subtree diameter calculation with DFS traversals.',
+      type: 'code',
+      durationMinutes: 35,
+      order: 2,
+      moduleId: c2Mod1.id,
+    },
+    create: {
+      id: 'les-dsa-102',
+      title: 'DP on Trees & Subtree Aggregations',
+      content: 'Rerooting techniques and subtree diameter calculation with DFS traversals.',
+      type: 'code',
+      durationMinutes: 35,
+      order: 2,
+      moduleId: c2Mod1.id,
+    },
   });
 
   // Course 3: Docker & Cloud DevOps
@@ -615,6 +791,14 @@ async function main() {
     where: { id: 'crs-cloud-devops' },
     update: {
       title: 'Cloud DevOps, Docker Sandboxing & CI/CD Pipelines',
+      slug: 'cloud-devops-sandboxing',
+      code: 'DO-201',
+      category: 'DevOps & Cloud',
+      level: 'Intermediate',
+      durationWeeks: 8,
+      rating: 4.85,
+      tags: ['Docker', 'CI/CD', 'Kubernetes', 'Linux', 'Security'],
+      thumbnailUrl: 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?auto=format&fit=crop&w=800&q=80',
       description: 'Container orchestration, multi-stage builds, isolated runtime sandboxes, and automated testing deployments.',
       status: CourseStatus.PUBLISHED,
       institutionId: null,
@@ -623,6 +807,14 @@ async function main() {
     create: {
       id: 'crs-cloud-devops',
       title: 'Cloud DevOps, Docker Sandboxing & CI/CD Pipelines',
+      slug: 'cloud-devops-sandboxing',
+      code: 'DO-201',
+      category: 'DevOps & Cloud',
+      level: 'Intermediate',
+      durationWeeks: 8,
+      rating: 4.85,
+      tags: ['Docker', 'CI/CD', 'Kubernetes', 'Linux', 'Security'],
+      thumbnailUrl: 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?auto=format&fit=crop&w=800&q=80',
       description: 'Container orchestration, multi-stage builds, isolated runtime sandboxes, and automated testing deployments.',
       status: CourseStatus.PUBLISHED,
       institutionId: null,
@@ -637,8 +829,23 @@ async function main() {
   });
   const c3L1 = await prisma.lesson.upsert({
     where: { id: 'les-devops-101' },
-    update: { title: 'Container Security & Resource Quotas', content: 'Restricting memory and CPU for unprivileged sandbox execution.', order: 1, moduleId: c3Mod1.id },
-    create: { id: 'les-devops-101', title: 'Container Security & Resource Quotas', content: 'Restricting memory and CPU for unprivileged sandbox execution.', order: 1, moduleId: c3Mod1.id },
+    update: {
+      title: 'Container Security & Resource Quotas',
+      content: 'Restricting memory and CPU for unprivileged sandbox execution and preventing container breakouts.',
+      type: 'reading',
+      durationMinutes: 20,
+      order: 1,
+      moduleId: c3Mod1.id,
+    },
+    create: {
+      id: 'les-devops-101',
+      title: 'Container Security & Resource Quotas',
+      content: 'Restricting memory and CPU for unprivileged sandbox execution and preventing container breakouts.',
+      type: 'reading',
+      durationMinutes: 20,
+      order: 1,
+      moduleId: c3Mod1.id,
+    },
   });
 
   // Course 4: Python 3 Fundamentals for Beginners
@@ -646,6 +853,14 @@ async function main() {
     where: { id: 'crs-python-fundamentals' },
     update: {
       title: 'Python 3 Programming: From Fundamentals to Algorithmic Problem Solving',
+      slug: 'python-basics',
+      code: 'PY-101',
+      category: 'Programming Languages',
+      level: 'Beginner',
+      durationWeeks: 6,
+      rating: 4.92,
+      tags: ['Python 3', 'Data Structures', 'OOP', 'Problem Solving'],
+      thumbnailUrl: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?auto=format&fit=crop&w=800&q=80',
       description: 'Master Python 3 fundamentals from variables, conditionals, loops, and data structures to OOP, file I/O, and coding interview challenges.',
       status: CourseStatus.PUBLISHED,
       institutionId: null,
@@ -654,6 +869,14 @@ async function main() {
     create: {
       id: 'crs-python-fundamentals',
       title: 'Python 3 Programming: From Fundamentals to Algorithmic Problem Solving',
+      slug: 'python-basics',
+      code: 'PY-101',
+      category: 'Programming Languages',
+      level: 'Beginner',
+      durationWeeks: 6,
+      rating: 4.92,
+      tags: ['Python 3', 'Data Structures', 'OOP', 'Problem Solving'],
+      thumbnailUrl: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?auto=format&fit=crop&w=800&q=80',
       description: 'Master Python 3 fundamentals from variables, conditionals, loops, and data structures to OOP, file I/O, and coding interview challenges.',
       status: CourseStatus.PUBLISHED,
       institutionId: null,

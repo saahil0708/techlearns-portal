@@ -872,47 +872,69 @@ export async function resolveCourseData(slugParam: string): Promise<CourseDirect
     }
   }
 
-  // 3. If directMatch exists, merge live backend modules into it
+  // 3. If directMatch exists, merge live backend data into it
   if (directMatch) {
-    if (liveCourse && Array.isArray(liveCourse.modules) && liveCourse.modules.length > 0) {
+    if (liveCourse && liveCourse.id) {
+      const rawModules = Array.isArray(liveCourse.modules) && liveCourse.modules.length > 0
+        ? liveCourse.modules
+        : directMatch.modules || [];
+      const hasLiveOutcomes = Array.isArray(liveCourse.learningOutcomes) && liveCourse.learningOutcomes.length > 0;
+      const outcomes = hasLiveOutcomes
+        ? liveCourse.learningOutcomes
+        : (directMatch.learningOutcomes || directMatch.whatYouWillLearn?.map((w: any) => typeof w === 'string' ? w : w.title || w.description) || []);
+      const whatYouWillLearn = hasLiveOutcomes
+        ? liveCourse.learningOutcomes.map((title: string) => ({ title, description: title }))
+        : directMatch.whatYouWillLearn;
+
       return {
         ...directMatch,
         id: liveCourse.id || directMatch.id,
-        modules: liveCourse.modules,
+        title: liveCourse.title || directMatch.title,
+        description: liveCourse.description || directMatch.description,
+        tags: Array.isArray(liveCourse.tags) && liveCourse.tags.length > 0 ? liveCourse.tags : directMatch.tags,
+        learningOutcomes: outcomes,
+        whatYouWillLearn,
+        modules: rawModules,
+        status: liveCourse.status === 'PUBLISHED' ? 'Published' : liveCourse.status === 'DRAFT' ? 'Draft' : directMatch.status,
       };
     }
     return directMatch;
   }
 
-  // 4. If no static directMatch, map live course preserving live modules
+  // 4. If no static directMatch, map live course preserving live modules and learningOutcomes
   if (liveCourse && liveCourse.id) {
+    const rawModules = Array.isArray(liveCourse.modules) ? liveCourse.modules : [];
+    const outcomes = Array.isArray(liveCourse.learningOutcomes) && liveCourse.learningOutcomes.length > 0
+      ? liveCourse.learningOutcomes
+      : [];
+
     return {
       id: liveCourse.id,
       code: liveCourse.code || `CRS-${liveCourse.id.slice(0, 4).toUpperCase()}`,
-      slug: normalizeSlug(liveCourse.title),
+      slug: normalizeSlug(liveCourse.slug || liveCourse.title),
       title: liveCourse.title,
       category: (liveCourse.category || 'Computer Science & DSA') as any,
       level: (liveCourse.level || 'Intermediate') as any,
       instructorName: liveCourse.instructor?.name || liveCourse.createdBy?.name || 'Academic Faculty',
       instructorTitle: 'Faculty Lead',
       institutionName: liveCourse.institution?.name || liveCourse.college?.name || 'Academic Campus',
-      durationHours: liveCourse.durationHours || 40,
-      modulesCount: liveCourse._count?.modules || liveCourse.modules?.length || 4,
-      lessonsCount: liveCourse.modules?.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0) || 12,
-      enrolledStudents: liveCourse._count?.enrollments || 120,
-      completionRate: 85,
+      durationHours: liveCourse.durationHours || (liveCourse.durationWeeks ? liveCourse.durationWeeks * 5 : 40),
+      modulesCount: liveCourse._count?.modules ?? rawModules.length,
+      lessonsCount: rawModules.reduce((acc: number, m: any) => acc + (m.lessons?.length || 0), 0),
+      enrolledStudents: liveCourse._count?.enrollments || 0,
+      completionRate: 0,
       status: liveCourse.status === 'PUBLISHED' ? 'Published' : 'Draft',
       tags: Array.isArray(liveCourse.tags) ? liveCourse.tags : ['Curriculum', 'Programming'],
       description: liveCourse.description || 'Comprehensive programming curriculum.',
       accentColor: '#2563EB',
-      modules: liveCourse.modules || [],
-      moduleHighlights: Array.isArray(liveCourse.modules) && liveCourse.modules.length > 0
-        ? liveCourse.modules.map((m: any) => ({
-            title: m.title || 'Course Module',
-            lessons: m.lessons?.length || 2,
-          }))
-        : [],
-      whatYouWillLearn: [],
+      thumbnailUrl: liveCourse.thumbnailUrl || undefined,
+      modules: rawModules,
+      moduleHighlights: rawModules.map((m: any) => ({
+        title: m.title || 'Course Module',
+        lessons: m.lessons?.length || 0,
+      })),
+      learningOutcomes: outcomes,
+      whatYouWillLearn: outcomes.map((title: string) => ({ title, description: title })),
       prerequisites: ['Basic computer programming fundamentals'],
       targetRoles: ['Software Engineer', 'Developer'],
     };

@@ -3,7 +3,6 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-  OnModuleInit,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
@@ -13,26 +12,8 @@ import { UpdateBlogDto } from './dto/update-blog.dto.js';
 import { Role } from '@prisma/client';
 
 @Injectable()
-export class BlogsService implements OnModuleInit {
+export class BlogsService {
   constructor(private readonly prisma: PrismaService) {}
-
-  async onModuleInit() {
-    try {
-      await this.prisma.$executeRawUnsafe(`
-        CREATE TABLE IF NOT EXISTS blog_post_claps (
-          id TEXT PRIMARY KEY,
-          "postId" TEXT NOT NULL,
-          "userId" TEXT NOT NULL,
-          count INT NOT NULL DEFAULT 1,
-          "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
-          "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
-          CONSTRAINT blog_post_claps_post_user_unique UNIQUE ("postId", "userId")
-        );
-      `);
-    } catch {
-      // Table may already exist
-    }
-  }
 
   private slugify(title: string): string {
     return (
@@ -71,7 +52,6 @@ export class BlogsService implements OnModuleInit {
           select: {
             id: true,
             name: true,
-            email: true,
             globalRole: true,
             avatarUrl: true,
           },
@@ -90,14 +70,31 @@ export class BlogsService implements OnModuleInit {
       where.category = category;
     }
 
-    if (status) {
+    const isGlobalSuperAdmin = currentUser?.globalRole === Role.SUPER_ADMIN;
+    const andConditions: any[] = [];
+
+    // Status authorization
+    if (!status || status === 'Published') {
+      where.status = 'Published';
+    } else if (isGlobalSuperAdmin) {
       where.status = status;
+    } else if (currentUser) {
+      const adminInstitutionIds =
+        currentUser.memberships
+          ?.filter((m) => m.role === Role.SUPER_ADMIN || m.role === Role.INSTITUTION_ADMIN)
+          ?.map((m) => m.institutionId)
+          ?.filter((id): id is string => Boolean(id)) ?? [];
+
+      where.status = status;
+      andConditions.push({
+        OR: [
+          { authorId: currentUser.id },
+          ...(adminInstitutionIds.length > 0 ? [{ institutionId: { in: adminInstitutionIds } }] : []),
+        ],
+      });
     } else {
-      // Default to Published for general public queries
       where.status = 'Published';
     }
-
-    const andConditions: any[] = [];
 
     if (search) {
       andConditions.push({
@@ -109,7 +106,6 @@ export class BlogsService implements OnModuleInit {
       });
     }
 
-    const isGlobalSuperAdmin = currentUser?.globalRole === Role.SUPER_ADMIN;
     if (!isGlobalSuperAdmin) {
       const institutionIds =
         currentUser?.memberships
@@ -145,7 +141,6 @@ export class BlogsService implements OnModuleInit {
             select: {
               id: true,
               name: true,
-              email: true,
               globalRole: true,
               avatarUrl: true,
             },
@@ -170,7 +165,7 @@ export class BlogsService implements OnModuleInit {
     };
   }
 
-  async findOne(idOrSlug: string) {
+  async findOne(idOrSlug: string, currentUser?: CurrentUserPayload) {
     const post = await this.prisma.blogPost.findFirst({
       where: {
         OR: [{ id: idOrSlug }, { slug: idOrSlug }],
@@ -180,7 +175,6 @@ export class BlogsService implements OnModuleInit {
           select: {
             id: true,
             name: true,
-            email: true,
             globalRole: true,
             avatarUrl: true,
           },
@@ -191,7 +185,6 @@ export class BlogsService implements OnModuleInit {
               select: {
                 id: true,
                 name: true,
-                email: true,
                 globalRole: true,
                 avatarUrl: true,
               },
@@ -204,6 +197,35 @@ export class BlogsService implements OnModuleInit {
 
     if (!post) {
       throw new NotFoundException('Blog post not found');
+    }
+
+    const isGlobalSuperAdmin = currentUser?.globalRole === Role.SUPER_ADMIN;
+    const isOwner = currentUser?.id === post.authorId;
+    const isInstitutionAdmin =
+      Boolean(post.institutionId) &&
+      currentUser?.memberships?.some(
+        (m) =>
+          (m.role === Role.SUPER_ADMIN || m.role === Role.INSTITUTION_ADMIN) &&
+          m.institutionId === post.institutionId,
+      );
+
+    // Unpublished status check
+    if (post.status !== 'Published') {
+      if (!isGlobalSuperAdmin && !isOwner && !isInstitutionAdmin) {
+        throw new NotFoundException('Blog post not found');
+      }
+    }
+
+    // Institution isolation check
+    if (post.institutionId && !isGlobalSuperAdmin) {
+      const userInstitutionIds =
+        currentUser?.memberships
+          ?.map((m) => m.institutionId)
+          .filter((id): id is string => Boolean(id)) ?? [];
+
+      if (!userInstitutionIds.includes(post.institutionId) && !isOwner) {
+        throw new NotFoundException('Blog post not found');
+      }
     }
 
     await this.prisma.blogPost.update({
@@ -246,7 +268,6 @@ export class BlogsService implements OnModuleInit {
           select: {
             id: true,
             name: true,
-            email: true,
             globalRole: true,
             avatarUrl: true,
           },
@@ -281,59 +302,34 @@ export class BlogsService implements OnModuleInit {
     const MAX_CLAPS = 10;
 
     return this.prisma.$transaction(async (tx) => {
-      if (userId) {
-        // Ensure table exists
-        await tx.$executeRawUnsafe(`
-          CREATE TABLE IF NOT EXISTS blog_post_claps (
-            id TEXT PRIMARY KEY,
-            "postId" TEXT NOT NULL,
-            "userId" TEXT NOT NULL,
-            count INT NOT NULL DEFAULT 1,
-            "createdAt" TIMESTAMP NOT NULL DEFAULT NOW(),
-            "updatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
-            CONSTRAINT blog_post_claps_post_user_unique UNIQUE ("postId", "userId")
-          );
-        `);
-
-        const records = await tx.$queryRawUnsafe<{ count: number }[]>(
-          `SELECT count FROM blog_post_claps WHERE "postId" = $1 AND "userId" = $2`,
-          id,
-          userId,
-        );
-
-        const currentCount = records?.[0]?.count ?? 0;
-        if (currentCount >= MAX_CLAPS) {
-          throw new BadRequestException('You have reached the maximum limit of 10 claps for this article');
-        }
-      }
-
-      let updatedPost: any;
-      try {
-        updatedPost = await tx.blogPost.update({
-          where: { id },
-          data: { claps: { increment: 1 } },
-        });
-      } catch (err: any) {
-        if (err?.code === 'P2025') {
-          throw new NotFoundException('Blog post not found');
-        }
-        throw err;
+      const post = await tx.blogPost.findUnique({ where: { id } });
+      if (!post) {
+        throw new NotFoundException('Blog post not found');
       }
 
       if (userId) {
-        await tx.$executeRawUnsafe(
+        const affected = await tx.$executeRawUnsafe(
           `
           INSERT INTO blog_post_claps (id, "postId", "userId", count, "createdAt", "updatedAt")
           VALUES (gen_random_uuid()::text, $1, $2, 1, NOW(), NOW())
           ON CONFLICT ("postId", "userId")
           DO UPDATE SET count = blog_post_claps.count + 1, "updatedAt" = NOW()
+          WHERE blog_post_claps.count < $3
           `,
           id,
           userId,
+          MAX_CLAPS,
         );
+
+        if (affected === 0) {
+          throw new BadRequestException('You have reached the maximum limit of 10 claps for this article');
+        }
       }
 
-      return updatedPost;
+      return tx.blogPost.update({
+        where: { id },
+        data: { claps: { increment: 1 } },
+      });
     });
   }
 
@@ -356,7 +352,6 @@ export class BlogsService implements OnModuleInit {
           select: {
             id: true,
             name: true,
-            email: true,
             globalRole: true,
             avatarUrl: true,
           },
@@ -390,7 +385,6 @@ export class BlogsService implements OnModuleInit {
           select: {
             id: true,
             name: true,
-            email: true,
             globalRole: true,
             avatarUrl: true,
           },

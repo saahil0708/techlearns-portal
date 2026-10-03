@@ -17,6 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
+import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard.js';
 import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
 import { BlogsService } from './blogs.service.js';
 import { CreateBlogCommentDto, CreateBlogDto } from './dto/create-blog.dto.js';
@@ -41,6 +42,7 @@ export class BlogsController {
   }
 
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'List all blog articles with filter & pagination' })
   async findAll(
     @Query() query: QueryBlogDto,
@@ -50,9 +52,13 @@ export class BlogsController {
   }
 
   @Get(':idOrSlug')
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'Get single blog post details by ID or slug' })
-  async findOne(@Param('idOrSlug') idOrSlug: string) {
-    return this.blogsService.findOne(idOrSlug);
+  async findOne(
+    @Param('idOrSlug') idOrSlug: string,
+    @CurrentUser() user?: CurrentUserPayload,
+  ) {
+    return this.blogsService.findOne(idOrSlug, user);
   }
 
   @Patch(':id')

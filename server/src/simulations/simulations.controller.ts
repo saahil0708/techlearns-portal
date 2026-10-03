@@ -54,8 +54,11 @@ export class SimulationsController {
 
   @Get('tickets/:idOrKey')
   @ApiOperation({ summary: 'Get single ticket details by ID or Key' })
-  async findOne(@Param('idOrKey') idOrKey: string) {
-    return this.simulationsService.findOne(idOrKey);
+  async findOne(
+    @Param('idOrKey') idOrKey: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.simulationsService.findOne(idOrKey, user);
   }
 
   @Patch('tickets/:id')

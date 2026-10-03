@@ -83,14 +83,14 @@ samp,
 }
 
 /* Ensure ordered and unordered lists in article viewer and editors render bullet/number markers properly */
-ol, .tiptap-editor-canvas ol, article ol {
-  list-style-type: decimal !important;
+.tiptap-editor-canvas ol, article ol {
+  list-style-type: decimal;
 }
 
-ul, .tiptap-editor-canvas ul, article ul {
-  list-style-type: disc !important;
+.tiptap-editor-canvas ul, article ul {
+  list-style-type: disc;
 }
 
-ol li, ul li, .tiptap-editor-canvas li, article li {
-  display: list-item !important;
+.tiptap-editor-canvas li, article li {
+  display: list-item;
 }

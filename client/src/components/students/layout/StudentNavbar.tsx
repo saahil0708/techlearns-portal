@@ -25,6 +25,7 @@ import {
   DialogContent,
   DialogActions,
   Drawer,
+  Badge,
 } from '@mui/material';
 
 // Material Icons
@@ -134,9 +135,22 @@ export default function StudentNavbar({
 
   // Cleanup hover timers on unmount
   useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (!target.closest('.resources-menu-container') && !target.closest('.resources-popover-paper')) {
+        setResourcesAnchor(null);
+      }
+      if (!target.closest('.user-menu-container') && !target.closest('.user-menu-popover-paper')) {
+        setUserMenuAnchor(null);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+
     return () => {
       if (resourcesTimeoutRef.current) clearTimeout(resourcesTimeoutRef.current);
       if (userMenuTimeoutRef.current) clearTimeout(userMenuTimeoutRef.current);
+      document.removeEventListener('click', handleClickOutside);
     };
   }, []);
 
@@ -151,7 +165,7 @@ export default function StudentNavbar({
   const handleResourcesMouseLeave = () => {
     resourcesTimeoutRef.current = setTimeout(() => {
       setResourcesAnchor(null);
-    }, 180);
+    }, 240);
   };
 
   const handleUserMenuMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
@@ -165,7 +179,7 @@ export default function StudentNavbar({
   const handleUserMenuMouseLeave = () => {
     userMenuTimeoutRef.current = setTimeout(() => {
       setUserMenuAnchor(null);
-    }, 180);
+    }, 240);
   };
 
   const displayName = activeUser?.name || user?.name || '';
@@ -385,14 +399,33 @@ export default function StudentNavbar({
 
               {/* Resources ▾ Dropdown (On Hover & On Click) */}
               <Box
+                className="resources-menu-container"
                 onMouseEnter={handleResourcesMouseEnter}
                 onMouseLeave={handleResourcesMouseLeave}
-                sx={{ display: 'inline-flex', alignItems: 'center' }}
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  '&:hover .resources-arrow': {
+                    transform: 'rotate(180deg)',
+                    color: '#2563EB',
+                  },
+                }}
               >
                 <Button
                   size="small"
-                  onClick={(e) => setResourcesAnchor((prev) => (prev ? null : e.currentTarget))}
-                  endIcon={<ArrowDropDownRoundedIcon sx={{ fontSize: 18, color: '#64748B', ml: -0.5 }} />}
+                  onClick={(e) => setResourcesAnchor(e.currentTarget)}
+                  endIcon={
+                    <ArrowDropDownRoundedIcon
+                      className="resources-arrow"
+                      sx={{
+                        fontSize: 18,
+                        color: isResourcesActive || isResourcesOpen ? '#2563EB' : '#64748B',
+                        ml: -0.5,
+                        transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease',
+                        transform: isResourcesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      }}
+                    />
+                  }
                   sx={{
                     p: 0,
                     minWidth: 'auto',
@@ -400,7 +433,14 @@ export default function StudentNavbar({
                     fontSize: '0.88rem',
                     fontWeight: isResourcesActive || isResourcesOpen ? 700 : 500,
                     color: isResourcesActive || isResourcesOpen ? '#2563EB' : '#475569',
-                    '&:hover': { color: '#2563EB', bgcolor: 'transparent' },
+                    '&:hover': {
+                      color: '#2563EB',
+                      bgcolor: 'transparent',
+                      '& .resources-arrow': {
+                        transform: 'rotate(180deg)',
+                        color: '#2563EB',
+                      },
+                    },
                   }}
                 >
                   Resources
@@ -410,65 +450,121 @@ export default function StudentNavbar({
           </Box>
 
           {/* ========================================================================= */}
-          {/* 2. RIGHT GROUP: Profile Avatar with Chevron (On Hover & On Click) */}
+          {/* 2. RIGHT GROUP: Notifications Bell + Profile Avatar */}
           {/* ========================================================================= */}
-          <Box
-            onMouseEnter={handleUserMenuMouseEnter}
-            onMouseLeave={handleUserMenuMouseLeave}
-            sx={{ display: 'flex', alignItems: 'center' }}
-          >
-            {/* Profile & Avatar Group with Chevron */}
-            <Button
-              onClick={(e) => setUserMenuAnchor((prev) => (prev ? null : e.currentTarget))}
-              aria-haspopup="menu"
-              aria-expanded={isUserMenuOpen}
-              aria-label="User profile menu"
-              sx={{
-                p: 0.3,
-                minWidth: 'auto',
-                textTransform: 'none',
-                borderRadius: '50px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                '&:hover': { bgcolor: '#F8FAFC' },
-              }}
-            >
-              <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-                {/* Circular Profile Avatar */}
-                <Avatar
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Notification Bell Icon */}
+            <Tooltip title="Notifications">
+              <IconButton
+                onClick={(e) => setNotifAnchorEl(e.currentTarget)}
+                aria-label="Open notifications"
+                sx={{
+                  color: isNotifOpen ? '#2563EB' : '#64748B',
+                  bgcolor: isNotifOpen ? '#EFF6FF' : 'transparent',
+                  p: 0.8,
+                  '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
+                }}
+              >
+                <Badge
+                  badgeContent={unreadCount}
+                  color="error"
+                  max={99}
                   sx={{
-                    width: 36,
-                    height: 36,
-                    bgcolor: '#2563EB',
-                    background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-                    color: '#FFFFFF',
-                    fontSize: '0.82rem',
-                    fontWeight: 700,
-                    boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
+                    '& .MuiBadge-badge': {
+                      fontSize: '0.65rem',
+                      height: 16,
+                      minWidth: 16,
+                      px: 0.4,
+                      fontWeight: 800,
+                    },
                   }}
                 >
-                  {initials ? initials : <PersonRoundedIcon sx={{ fontSize: 18 }} />}
-                </Avatar>
+                  <NotificationsNoneRoundedIcon sx={{ fontSize: 21 }} />
+                </Badge>
+              </IconButton>
+            </Tooltip>
 
-                {/* Online/Rating Indicator Pill */}
-                <Box
+            {/* Profile Avatar with Chevron */}
+            <Box
+              className="user-menu-container"
+              onMouseEnter={handleUserMenuMouseEnter}
+              onMouseLeave={handleUserMenuMouseLeave}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                '&:hover .user-menu-arrow': {
+                  transform: 'rotate(180deg)',
+                  color: '#2563EB',
+                },
+              }}
+            >
+              <Button
+                onClick={(e) => setUserMenuAnchor(e.currentTarget)}
+                aria-haspopup="menu"
+                aria-expanded={isUserMenuOpen}
+                aria-label="User profile menu"
+                sx={{
+                  p: 0.3,
+                  minWidth: 'auto',
+                  textTransform: 'none',
+                  borderRadius: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  '&:hover': {
+                    bgcolor: '#F8FAFC',
+                    '& .user-menu-arrow': {
+                      transform: 'rotate(180deg)',
+                      color: '#2563EB',
+                    },
+                  },
+                }}
+              >
+                <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+                  {/* Circular Profile Avatar */}
+                  <Avatar
+                    sx={{
+                      width: 36,
+                      height: 36,
+                      bgcolor: '#2563EB',
+                      background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                      color: '#FFFFFF',
+                      fontSize: '0.82rem',
+                      fontWeight: 700,
+                      boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
+                    }}
+                  >
+                    {initials ? initials : <PersonRoundedIcon sx={{ fontSize: 18 }} />}
+                  </Avatar>
+
+                  {/* Online/Rating Indicator Pill */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: -1,
+                      right: -2,
+                      width: 11,
+                      height: 11,
+                      borderRadius: '50%',
+                      bgcolor: '#10B981',
+                      border: '2px solid #FFFFFF',
+                    }}
+                  />
+                </Box>
+
+                {/* Dropdown Chevron */}
+                <ArrowDropDownRoundedIcon
+                  className="user-menu-arrow"
                   sx={{
-                    position: 'absolute',
-                    bottom: -1,
-                    right: -2,
-                    width: 11,
-                    height: 11,
-                    borderRadius: '50%',
-                    bgcolor: '#10B981',
-                    border: '2px solid #FFFFFF',
+                    fontSize: 18,
+                    color: isUserMenuOpen ? '#2563EB' : '#64748B',
+                    ml: 0.2,
+                    transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease',
+                    transform: isUserMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                   }}
                 />
-              </Box>
-
-              {/* Dropdown Chevron */}
-              <ArrowDropDownRoundedIcon sx={{ fontSize: 18, color: '#64748B', ml: 0.2 }} />
-            </Button>
+              </Button>
+            </Box>
           </Box>
         </Box>
       </Box>
@@ -484,11 +580,12 @@ export default function StudentNavbar({
         transformOrigin={{ vertical: 'top', horizontal: 'left' }}
         disableRestoreFocus
         disableScrollLock
-        sx={{
-          pointerEvents: 'none',
-        }}
         slotProps={{
+          root: {
+            sx: { pointerEvents: 'none' },
+          },
           paper: {
+            className: 'resources-popover-paper',
             onMouseEnter: () => {
               if (resourcesTimeoutRef.current) {
                 clearTimeout(resourcesTimeoutRef.current);
@@ -500,7 +597,7 @@ export default function StudentNavbar({
               pointerEvents: 'auto',
               borderRadius: '16px',
               width: { xs: '96vw', sm: 460 },
-              mt: 1,
+              mt: 0.5,
               p: 1.5,
               background: '#FFFFFF',
               boxShadow: '0 12px 36px rgba(15, 23, 42, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05)',
@@ -914,11 +1011,12 @@ export default function StudentNavbar({
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         disableRestoreFocus
         disableScrollLock
-        sx={{
-          pointerEvents: 'none',
-        }}
         slotProps={{
+          root: {
+            sx: { pointerEvents: 'none' },
+          },
           paper: {
+            className: 'user-menu-popover-paper',
             onMouseEnter: () => {
               if (userMenuTimeoutRef.current) {
                 clearTimeout(userMenuTimeoutRef.current);
@@ -930,7 +1028,7 @@ export default function StudentNavbar({
               pointerEvents: 'auto',
               borderRadius: '12px',
               minWidth: 215,
-              mt: 1,
+              mt: 0.5,
               p: 0.75,
               background: '#FFFFFF',
               boxShadow: '0 10px 30px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05)',
@@ -1514,14 +1612,22 @@ export default function StudentNavbar({
         {/* Resources Section in Drawer */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: 1, overflowY: 'auto' }}>
           <Box
+            component="button"
+            type="button"
             onClick={() => setMobileResourcesOpen(!mobileResourcesOpen)}
+            aria-expanded={mobileResourcesOpen}
+            aria-controls="mobile-resources-list"
             sx={{
+              all: 'unset',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               cursor: 'pointer',
               px: 1,
-              py: 0.5,
+              py: 0.75,
+              width: '100%',
+              boxSizing: 'border-box',
+              '&:focus-visible': { outline: '2px solid #2563EB', borderRadius: '6px' },
             }}
           >
             <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -1537,26 +1643,52 @@ export default function StudentNavbar({
             />
           </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, pl: 0.5 }}>
-            {[
-              { label: 'Role Skill Graph', path: '/students/skill-graph', icon: <AccountTreeRoundedIcon sx={{ fontSize: 18 }} /> },
-              { label: 'Project Workspace', path: '/students/projects', icon: <LaptopChromebookRoundedIcon sx={{ fontSize: 18 }} /> },
-              { label: 'Corporate Simulation', path: '/students/simulations', icon: <ApartmentRoundedIcon sx={{ fontSize: 18 }} /> },
-              { label: 'Career Hub', path: '/students/career-hub', icon: <WorkOutlineRoundedIcon sx={{ fontSize: 18 }} /> },
-              { label: 'Jobs / Placements', path: '/students/jobs', icon: <LocationOnRoundedIcon sx={{ fontSize: 18 }} /> },
-              { label: 'Bootcamps', path: '/students/bootcamps', icon: <AccessTimeRoundedIcon sx={{ fontSize: 18 }} /> },
-              { label: 'Interview Prep', path: '/students/interview-prep', icon: <DescriptionRoundedIcon sx={{ fontSize: 18 }} /> },
-              { label: 'AI Coach', path: '/students/ai-coach', icon: <AutoAwesomeRoundedIcon sx={{ fontSize: 18 }} /> },
-              { label: 'Community', path: '/students/community', icon: <ForumRoundedIcon sx={{ fontSize: 18 }} /> },
-              { label: 'Certifications', path: '/students/certifications', icon: <VerifiedRoundedIcon sx={{ fontSize: 18 }} /> },
-              { label: 'Skill Passport & ID', path: '/students/skill-passport', icon: <BadgeOutlinedIcon sx={{ fontSize: 18 }} /> },
-            ].map((item) => (
+          {mobileResourcesOpen && (
+            <Box id="mobile-resources-list" sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, pl: 0.5 }}>
+              {[
+                { label: 'Role Skill Graph', path: '/students/skill-graph', icon: <AccountTreeRoundedIcon sx={{ fontSize: 18 }} /> },
+                { label: 'Project Workspace', path: '/students/projects', icon: <LaptopChromebookRoundedIcon sx={{ fontSize: 18 }} /> },
+                { label: 'Corporate Simulation', path: '/students/simulations', icon: <ApartmentRoundedIcon sx={{ fontSize: 18 }} /> },
+                { label: 'Career Hub', path: '/students/career-hub', icon: <WorkOutlineRoundedIcon sx={{ fontSize: 18 }} /> },
+                { label: 'Jobs / Placements', path: '/students/jobs', icon: <LocationOnRoundedIcon sx={{ fontSize: 18 }} /> },
+                { label: 'Bootcamps', path: '/students/bootcamps', icon: <AccessTimeRoundedIcon sx={{ fontSize: 18 }} /> },
+                { label: 'Interview Prep', path: '/students/interview-prep', icon: <DescriptionRoundedIcon sx={{ fontSize: 18 }} /> },
+                { label: 'AI Coach', path: '/students/ai-coach', icon: <AutoAwesomeRoundedIcon sx={{ fontSize: 18 }} /> },
+                { label: 'Community', path: '/students/community', icon: <ForumRoundedIcon sx={{ fontSize: 18 }} /> },
+                { label: 'Certifications', path: '/students/certifications', icon: <VerifiedRoundedIcon sx={{ fontSize: 18 }} /> },
+                { label: 'Skill Passport & ID', path: '/students/skill-passport', icon: <BadgeOutlinedIcon sx={{ fontSize: 18 }} /> },
+              ].map((item) => (
+                <Box
+                  key={item.label}
+                  component="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    router.push(item.path);
+                  }}
+                  sx={{
+                    all: 'unset',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.25,
+                    p: '7px 10px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                    fontSize: '0.82rem',
+                    color: '#475569',
+                    '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
+                  }}
+                >
+                  {item.icon}
+                  {item.label}
+                </Box>
+              ))}
+
               <Box
-                key={item.label}
                 component="button"
                 onClick={() => {
                   setMobileMenuOpen(false);
-                  router.push(item.path);
+                  setSkillOsModalOpen(true);
                 }}
                 sx={{
                   all: 'unset',
@@ -1572,35 +1704,66 @@ export default function StudentNavbar({
                   '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
                 }}
               >
-                {item.icon}
-                {item.label}
+                <TerminalRoundedIcon sx={{ fontSize: 18 }} />
+                SkillOS™
+                <Chip label="LIVE" size="small" sx={{ height: 16, fontSize: '0.55rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB' }} />
               </Box>
-            ))}
-
-            <Box
-              component="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                setSkillOsModalOpen(true);
-              }}
-              sx={{
-                all: 'unset',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.25,
-                p: '7px 10px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 500,
-                fontSize: '0.82rem',
-                color: '#475569',
-                '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
-              }}
-            >
-              <TerminalRoundedIcon sx={{ fontSize: 18 }} />
-              SkillOS™
-              <Chip label="LIVE" size="small" sx={{ height: 16, fontSize: '0.55rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB' }} />
             </Box>
+          )}
+        </Box>
+
+        <Divider sx={{ my: 1 }} />
+
+        {/* Mobile Profile & Signout actions */}
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, pt: 0.5 }}>
+          <Box
+            component="button"
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              router.push('/students/profile');
+            }}
+            sx={{
+              all: 'unset',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.25,
+              p: '8px 10px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.86rem',
+              color: '#1E293B',
+              '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
+            }}
+          >
+            <PersonRoundedIcon sx={{ fontSize: 19, color: '#2563EB' }} />
+            My Profile
+          </Box>
+
+          <Box
+            component="button"
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setLogoutDialogOpen(true);
+            }}
+            sx={{
+              all: 'unset',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.25,
+              p: '8px 10px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '0.86rem',
+              color: '#DC2626',
+              '&:hover': { bgcolor: '#FEF2F2' },
+            }}
+          >
+            <LogoutRoundedIcon sx={{ fontSize: 19 }} />
+            Sign Out
           </Box>
         </Box>
       </Drawer>

@@ -1054,7 +1054,251 @@ const decryptedUrl = this.decryptActivationUrl(delivery.activationUrl);
     return { delivered: deliveredCount, expired: expiredResult.count };
   }
 
+  // ----------------------------------------------------
+  // STUDENT DIAGNOSTIC & GOALS
+  // ----------------------------------------------------
+
+  async saveDiagnostic(userId: string, dto: {
+    targetTrack: string;
+    targetTrackId: string;
+    timeline: string;
+    weeklyHours: number;
+    roleFitScore: number;
+    quizScore?: string;
+    skills: any[];
+  }) {
+    return this.prisma.$transaction(async (tx) => {
+      const diagnostic = await tx.studentDiagnostic.create({
+        data: {
+          userId,
+          targetTrack: dto.targetTrack,
+          targetTrackId: dto.targetTrackId,
+          timeline: dto.timeline,
+          weeklyHours: dto.weeklyHours,
+          roleFitScore: dto.roleFitScore,
+          quizScore: dto.quizScore,
+          skills: dto.skills as any,
+        },
+      });
+
+      // Auto sync/upsert to active student goals
+      await tx.studentGoal.upsert({
+        where: { userId },
+        create: {
+          userId,
+          targetTrack: dto.targetTrack,
+          targetTrackId: dto.targetTrackId,
+          timeline: dto.timeline,
+          weeklyHours: dto.weeklyHours,
+          roleFitScore: dto.roleFitScore,
+          quizScore: dto.quizScore,
+          skills: dto.skills as any,
+        },
+        update: {
+          targetTrack: dto.targetTrack,
+          targetTrackId: dto.targetTrackId,
+          timeline: dto.timeline,
+          weeklyHours: dto.weeklyHours,
+          roleFitScore: dto.roleFitScore,
+          quizScore: dto.quizScore,
+          skills: dto.skills as any,
+        },
+      });
+
+      return diagnostic;
+    });
+  }
+
+  async getLatestDiagnostic(userId: string) {
+    return this.prisma.studentDiagnostic.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getDiagnosticHistory(userId: string) {
+    return this.prisma.studentDiagnostic.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async saveGoals(userId: string, dto: any) {
+    return this.prisma.studentGoal.upsert({
+      where: { userId },
+      create: {
+        userId,
+        targetTrack: dto.targetTrack || 'Full-Stack Web Architect',
+        targetTrackId: dto.targetTrackId || 'fullstack',
+        timeline: dto.timeline || '6 months (Standard)',
+        weeklyHours: dto.weeklyHours ?? 14,
+        roleFitScore: dto.roleFitScore ?? 80,
+        skills: (dto.skills || []) as any,
+        targetSolveTimeMins: dto.targetSolveTimeMins ?? 20,
+        currentAvgSolveTimeMins: dto.currentAvgSolveTimeMins ?? 26,
+        dailyGoalMins: dto.dailyGoalMins ?? 45,
+        dailyLoggedMins: dto.dailyLoggedMins ?? 30,
+        weeklyProblemQuota: dto.weeklyProblemQuota ?? 10,
+        weeklyProblemsSolved: dto.weeklyProblemsSolved ?? 6,
+        targetContestRating: dto.targetContestRating ?? 1750,
+        currentContestRating: dto.currentContestRating ?? 1500,
+        firstAttemptTargetRate: dto.firstAttemptTargetRate ?? 85,
+        currentFirstAttemptRate: dto.currentFirstAttemptRate ?? 72,
+        streakDays: dto.streakDays ?? 7,
+        quizScore: dto.quizScore,
+        customGoals: dto.customGoals ? (dto.customGoals as any) : undefined,
+        milestones: dto.milestones ? (dto.milestones as any) : undefined,
+      },
+      update: {
+        ...(dto.targetTrack ? { targetTrack: dto.targetTrack } : {}),
+        ...(dto.targetTrackId ? { targetTrackId: dto.targetTrackId } : {}),
+        ...(dto.timeline ? { timeline: dto.timeline } : {}),
+        ...(dto.weeklyHours !== undefined ? { weeklyHours: dto.weeklyHours } : {}),
+        ...(dto.roleFitScore !== undefined ? { roleFitScore: dto.roleFitScore } : {}),
+        ...(dto.skills !== undefined ? { skills: dto.skills as any } : {}),
+        ...(dto.targetSolveTimeMins !== undefined ? { targetSolveTimeMins: dto.targetSolveTimeMins } : {}),
+        ...(dto.currentAvgSolveTimeMins !== undefined ? { currentAvgSolveTimeMins: dto.currentAvgSolveTimeMins } : {}),
+        ...(dto.dailyGoalMins !== undefined ? { dailyGoalMins: dto.dailyGoalMins } : {}),
+        ...(dto.dailyLoggedMins !== undefined ? { dailyLoggedMins: dto.dailyLoggedMins } : {}),
+        ...(dto.weeklyProblemQuota !== undefined ? { weeklyProblemQuota: dto.weeklyProblemQuota } : {}),
+        ...(dto.weeklyProblemsSolved !== undefined ? { weeklyProblemsSolved: dto.weeklyProblemsSolved } : {}),
+        ...(dto.targetContestRating !== undefined ? { targetContestRating: dto.targetContestRating } : {}),
+        ...(dto.currentContestRating !== undefined ? { currentContestRating: dto.currentContestRating } : {}),
+        ...(dto.firstAttemptTargetRate !== undefined ? { firstAttemptTargetRate: dto.firstAttemptTargetRate } : {}),
+        ...(dto.currentFirstAttemptRate !== undefined ? { currentFirstAttemptRate: dto.currentFirstAttemptRate } : {}),
+        ...(dto.streakDays !== undefined ? { streakDays: dto.streakDays } : {}),
+        ...(dto.quizScore !== undefined ? { quizScore: dto.quizScore } : {}),
+        ...(dto.customGoals !== undefined ? { customGoals: dto.customGoals as any } : {}),
+        ...(dto.milestones !== undefined ? { milestones: dto.milestones as any } : {}),
+      },
+    });
+  }
+
+  async getGoals(userId: string) {
+    const goal = await this.prisma.studentGoal.findUnique({
+      where: { userId },
+    });
+    if (goal) return goal;
+
+    // Fallback check from latest diagnostic (read-only)
+    const latestDiag = await this.getLatestDiagnostic(userId);
+    if (latestDiag) {
+      return {
+        id: latestDiag.id,
+        userId: latestDiag.userId,
+        targetTrack: latestDiag.targetTrack,
+        targetTrackId: latestDiag.targetTrackId,
+        timeline: latestDiag.timeline,
+        weeklyHours: latestDiag.weeklyHours,
+        roleFitScore: latestDiag.roleFitScore,
+        skills: latestDiag.skills,
+        quizScore: latestDiag.quizScore,
+        targetSolveTimeMins: 20,
+        currentAvgSolveTimeMins: 26,
+        dailyGoalMins: 45,
+        dailyLoggedMins: 30,
+        weeklyProblemQuota: 10,
+        weeklyProblemsSolved: 6,
+        targetContestRating: 1750,
+        currentContestRating: 1500,
+        firstAttemptTargetRate: 85,
+        currentFirstAttemptRate: 72,
+        streakDays: 7,
+        customGoals: null,
+        milestones: null,
+        createdAt: latestDiag.createdAt,
+        updatedAt: latestDiag.updatedAt,
+      };
+    }
+
+    return null;
+  }
+
+  async getGrowthMetrics(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        contestRating: true,
+        ratingTier: true,
+      },
+    });
+
+    const [submissions, enrollments, goal] = await Promise.all([
+      this.prisma.submission.findMany({
+        where: { userId },
+        select: {
+          verdict: true,
+          problemId: true,
+          problem: {
+            select: { difficulty: true },
+          },
+        },
+      }),
+      this.prisma.enrollment.findMany({
+        where: { userId },
+        select: {
+          status: true,
+        },
+      }),
+      this.prisma.studentGoal.findUnique({
+        where: { userId },
+      }),
+    ]);
+
+    const solvedProblemIds = new Set<string>();
+    let easyCount = 0;
+    let mediumCount = 0;
+    let hardCount = 0;
+
+    for (const sub of submissions) {
+      if (sub.verdict === 'ACCEPTED' && !solvedProblemIds.has(sub.problemId)) {
+        solvedProblemIds.add(sub.problemId);
+        if (sub.problem?.difficulty === 'EASY') easyCount++;
+        else if (sub.problem?.difficulty === 'MEDIUM') mediumCount++;
+        else if (sub.problem?.difficulty === 'HARD') hardCount++;
+      }
+    }
+
+    const totalSolved = solvedProblemIds.size;
+    const totalSubmissions = submissions.length;
+    const acceptedSubmissions = submissions.filter((s) => s.verdict === 'ACCEPTED').length;
+    const acceptanceRate = totalSubmissions > 0 ? Math.round((acceptedSubmissions / totalSubmissions) * 100) : 0;
+
+    const coursesEnrolled = enrollments.length;
+    const coursesCompleted = enrollments.filter((e) => e.status === 'COMPLETED').length;
+
+    // Calculate dynamic role readiness % based on problem solving, course completions, and target goals
+    const baseReadiness = goal?.roleFitScore ?? 75;
+    const extraBoost = Math.min(15, Math.floor(totalSolved / 5) * 2 + coursesCompleted * 4);
+    const calculatedReadiness = Math.min(99, baseReadiness + extraBoost);
+
+    return {
+      solvedByDifficulty: {
+        easy: easyCount,
+        medium: mediumCount,
+        hard: hardCount,
+        total: totalSolved,
+      },
+      submissionsCount: totalSubmissions,
+      acceptanceRate,
+      contestRating: user?.contestRating ?? 1500,
+      ratingTier: user?.ratingTier ?? 'Novice',
+      coursesEnrolled,
+      coursesCompleted,
+      activeGoal: goal,
+      roleReadiness: {
+        overall: calculatedReadiness,
+        fullstack: Math.min(99, calculatedReadiness + 2),
+        backend: Math.min(99, calculatedReadiness - 1),
+        dsa: Math.min(99, Math.round((totalSolved / 50) * 100)),
+        cloudDevops: Math.min(99, calculatedReadiness - 5),
+        aiData: Math.min(99, calculatedReadiness - 8),
+      },
+    };
+  }
+
   private hashInvitationToken(token: string): string {
     return createHash('sha256').update(token).digest('hex');
   }
 }
+

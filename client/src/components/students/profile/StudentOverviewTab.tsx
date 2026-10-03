@@ -113,6 +113,7 @@ interface StudentOverviewTabProps {
   onUploadResume: () => void;
   onViewCert: (cert: StudentCertification) => void;
   onRemoveResume?: () => void;
+  onOpenDiagnostic?: () => void;
 }
 
 export default function StudentOverviewTab({
@@ -122,6 +123,7 @@ export default function StudentOverviewTab({
   onUploadResume,
   onViewCert,
   onRemoveResume = () => { },
+  onOpenDiagnostic,
 }: StudentOverviewTabProps) {
   const toast = useToast();
   const [medalsModalOpen, setMedalsModalOpen] = useState(false);
@@ -666,28 +668,30 @@ export default function StudentOverviewTab({
               This data will be helpful to auto-fill your competitive profile & job applications
             </Typography>
 
-            <Box sx={{ display: 'flex', gap: 1.5, mt: 1.5, flexWrap: 'wrap' }}>
-              <Link href="/students/diagnostic" style={{ textDecoration: 'none' }}>
-                <Button
-                  size="small"
-                  variant="contained"
-                  startIcon={<PsychologyRoundedIcon sx={{ fontSize: 16 }} />}
-                  sx={{
-                    bgcolor: '#FFFFFF',
-                    color: '#1E3A8A',
-                    fontWeight: 800,
-                    textTransform: 'none',
-                    borderRadius: '10px',
-                    fontSize: '0.78rem',
-                    py: 0.6,
-                    px: 1.8,
-                    '&:hover': { bgcolor: '#F0F9FF' },
-                  }}
-                >
-                  Run Baseline Diagnostic & Set Goals
-                </Button>
-              </Link>
-            </Box>
+            {isOwner && (
+              <Box sx={{ display: 'flex', gap: 1.5, mt: 1.5, flexWrap: 'wrap' }}>
+                <Link href="/students/diagnostic" style={{ textDecoration: 'none' }}>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    startIcon={<PsychologyRoundedIcon sx={{ fontSize: 16 }} />}
+                    sx={{
+                      bgcolor: '#FFFFFF',
+                      color: '#1E3A8A',
+                      fontWeight: 800,
+                      textTransform: 'none',
+                      borderRadius: '10px',
+                      fontSize: '0.78rem',
+                      py: 0.6,
+                      px: 1.8,
+                      '&:hover': { bgcolor: '#F0F9FF' },
+                    }}
+                  >
+                    Run Baseline Diagnostic & Set Goals
+                  </Button>
+                </Link>
+              </Box>
+            )}
           </Box>
 
           {/* Right Circular Progress Ring with Percentage */}
@@ -736,7 +740,7 @@ export default function StudentOverviewTab({
         </Card>
 
         {/* 10.1 & 10.2: Growth Telemetry & Target Role Readiness Gap Engine */}
-        <GrowthMetricsAndRoleReadiness profile={profile} />
+        <GrowthMetricsAndRoleReadiness profile={profile} isOwner={isOwner} />
 
         {/* CodeChef-Style Contest Rating Progression Chart */}
         <RatingHistoryChart

@@ -31,8 +31,27 @@ export class ResponseInterceptor<T>
         context.getClass(),
       ]) || 'Operation completed successfully';
 
+    const httpContext = typeof context.switchToHttp === 'function' ? context.switchToHttp() : null;
+    const httpRes = httpContext?.getResponse?.();
+    const contentType = httpRes?.getHeader?.('content-type')?.toString() || '';
+
+    // If the endpoint explicitly set a binary/CSV content-type, bypass JSON wrapping
+    if (
+      contentType.includes('text/csv') ||
+      contentType.includes('application/octet-stream') ||
+      contentType.includes('application/pdf') ||
+      contentType.includes('image/')
+    ) {
+      return next.handle();
+    }
+
     return next.handle().pipe(
       map((res) => {
+        // If response is already streamed/raw or headers indicate direct download
+        if (typeof res === 'string' && contentType.includes('text/csv')) {
+          return res;
+        }
+
         // If the service/controller already provided a structured response with meta or data
         if (
           res &&

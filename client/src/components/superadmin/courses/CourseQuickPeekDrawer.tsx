@@ -137,6 +137,33 @@ export default function CourseQuickPeekDrawer({
 
       {/* Drawer Body Content */}
       <Box sx={{ p: 3, flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {/* Cover Image Banner */}
+        {course.thumbnailUrl && (
+          <Box
+            sx={{
+              width: '100%',
+              height: 160,
+              borderRadius: '16px',
+              overflow: 'hidden',
+              border: `1px solid ${borderColor}`,
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.08)',
+              position: 'relative',
+              bgcolor: '#F8FAFC',
+            }}
+          >
+            <Box
+              component="img"
+              src={course.thumbnailUrl}
+              alt={course.title}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+          </Box>
+        )}
+
         {/* Title & Category */}
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, flexWrap: 'wrap' }}>

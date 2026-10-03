@@ -57,19 +57,42 @@ export interface CourseDirectoryEntity {
   tags: string[];
   description: string;
   accentColor: string;
+  thumbnailUrl?: string;
   moduleHighlights: ModuleHighlight[];
   modules?: {
     id: string;
     title: string;
     order: number;
+    description?: string;
     lessons?: {
       id: string;
       title: string;
       content?: string;
+      type?: string;
+      durationMinutes?: number;
+      quizMCQ?: {
+        question: string;
+        options: string[];
+        correctIndex: number;
+        explanation?: string;
+      };
+      codingProblem?: {
+        title: string;
+        description: string;
+        starterCode?: string;
+        language?: string;
+        sampleInput?: string;
+        sampleOutput?: string;
+      };
       order: number;
+      isCompleted?: boolean;
+      createdAt?: string;
     }[];
   }[];
-  whatYouWillLearn?: WhatYouWillLearnItem[];
+  completedLessonIds?: string[];
+  whatYouWillLearn?: WhatYouWillLearnItem[] | string[];
+  learningOutcomes?: string[];
+  learningItems?: string[];
   prerequisites?: string[];
   targetRoles?: string[];
   rating?: number;
@@ -89,11 +112,16 @@ export interface NewCourseData {
   instructorName: string;
   instructorTitle: string;
   institutionName: string;
+  institutionId?: string;
   durationHours: number;
   modulesCount: number;
   lessonsCount: number;
   description: string;
   status: 'Published' | 'Draft';
   tags: string[];
+  thumbnailUrl?: string;
+  learningOutcomes?: string[];
+  learningItems?: string[];
+  whatYouWillLearn?: string[];
 }
 

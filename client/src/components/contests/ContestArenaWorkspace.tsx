@@ -20,6 +20,8 @@ import {
   IconButton,
   Tooltip,
   CircularProgress,
+  Breadcrumbs,
+  Link as MuiLink,
 } from '@mui/material';
 
 // Icons
@@ -296,21 +298,32 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
           }}
         >
           <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 1, flexWrap: 'wrap' }}>
-              <Typography
+            <Breadcrumbs
+              separator={<ChevronRightRoundedIcon sx={{ color: '#94A3B8', fontSize: 16 }} />}
+              aria-label="Contest navigation breadcrumb"
+              sx={{ mb: 1 }}
+            >
+              <MuiLink
+                component="button"
+                type="button"
                 onClick={() => router.push('/contests')}
                 sx={{
                   fontWeight: 700,
                   fontSize: '0.86rem',
                   color: '#64748B',
+                  textDecoration: 'none',
+                  border: 'none',
+                  bgcolor: 'transparent',
                   cursor: 'pointer',
+                  p: 0,
+                  fontFamily: 'inherit',
                   transition: 'color 0.15s ease',
                   '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                  '&:focus-visible': { outline: '2px solid #2563EB', borderRadius: '4px' },
                 }}
               >
                 Contests
-              </Typography>
-              <ChevronRightRoundedIcon sx={{ color: '#94A3B8', fontSize: 16 }} />
+              </MuiLink>
               <Typography
                 noWrap
                 title={contest.title}
@@ -323,7 +336,7 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
               >
                 {contest.title}
               </Typography>
-            </Box>
+            </Breadcrumbs>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-0.01em' }}>
                 {contest.title}
@@ -485,21 +498,31 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
               /* Split Problem View & Monaco Runner */
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                    <Typography
+                  <Breadcrumbs
+                    separator={<ChevronRightRoundedIcon sx={{ color: '#94A3B8', fontSize: 16 }} />}
+                    aria-label="Problem navigation breadcrumb"
+                  >
+                    <MuiLink
+                      component="button"
+                      type="button"
                       onClick={() => setSelectedProblemIdx(null)}
                       sx={{
                         fontWeight: 700,
                         fontSize: '0.86rem',
                         color: '#64748B',
+                        textDecoration: 'none',
+                        border: 'none',
+                        bgcolor: 'transparent',
                         cursor: 'pointer',
+                        p: 0,
+                        fontFamily: 'inherit',
                         transition: 'color 0.15s ease',
                         '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                        '&:focus-visible': { outline: '2px solid #2563EB', borderRadius: '4px' },
                       }}
                     >
                       Problems
-                    </Typography>
-                    <ChevronRightRoundedIcon sx={{ color: '#94A3B8', fontSize: 16 }} />
+                    </MuiLink>
                     <Typography
                       noWrap
                       sx={{
@@ -510,7 +533,7 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
                     >
                       {activeProblem?.code}: {activeProblem?.title}
                     </Typography>
-                  </Box>
+                  </Breadcrumbs>
                   <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1rem' }}>
                     {activeProblem?.points} pts
                   </Typography>

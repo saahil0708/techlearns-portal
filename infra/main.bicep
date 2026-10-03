@@ -130,6 +130,7 @@ module storageModule 'modules/storage.bicep' = {
     storageAccountName: storageAccountName
     storageSku: environment == 'prod' ? 'Standard_GRS' : 'Standard_LRS'
     containerName: blobContainerName
+    containerPublicAccess: 'None'
     publicMediaContainerName: publicMediaContainerName
     allowBlobPublicAccess: true
   }

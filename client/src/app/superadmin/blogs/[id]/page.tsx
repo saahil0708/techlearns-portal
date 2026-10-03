@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { cache } from 'react';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import SuperAdminBlogReaderClient from '@/components/superadmin/blogs/SuperAdminBlogReaderClient';
@@ -9,7 +9,7 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-async function getBlogData(id: string): Promise<{ blog: BlogPost | null; related: BlogPost[] }> {
+const getBlogData = cache(async (id: string): Promise<{ blog: BlogPost | null; related: BlogPost[] }> => {
   // 1. Try fetching from server via apiService
   try {
     const liveBlog = await apiService.getBlogByIdOrSlug(id);
@@ -38,7 +38,7 @@ async function getBlogData(id: string): Promise<{ blog: BlogPost | null; related
   }
 
   return { blog: null, related: [] };
-}
+});
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;

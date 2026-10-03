@@ -555,12 +555,15 @@ export default function StudentTopBar({
               transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
               fontFamily: 'inherit',
               textAlign: 'left',
-              position: 'relative',
               '&:hover': {
                 bgcolor: '#F8FAFC',
                 borderColor: '#CBD5E1',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
                 transform: 'translateY(-1px)',
+                '& .topbar-profile-chevron': {
+                  transform: 'rotate(180deg)',
+                  color: '#2563EB',
+                },
               },
               '&:focus-visible': {
                 outline: 'none',
@@ -620,10 +623,11 @@ export default function StudentTopBar({
             </Box>
 
             <KeyboardArrowDownRoundedIcon
+              className="topbar-profile-chevron"
               sx={{
                 fontSize: 18,
                 color: Boolean(anchorEl) ? '#2563EB' : '#94A3B8',
-                transition: 'transform 0.25s ease, color 0.2s ease',
+                transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease',
                 transform: Boolean(anchorEl) ? 'rotate(180deg)' : 'rotate(0deg)',
               }}
             />

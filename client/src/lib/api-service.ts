@@ -774,55 +774,275 @@ export const apiService = {
   // ----------------------------------------------------
   // COURSES & CURRICULUM
   // ----------------------------------------------------
-  async getCourses(params?: { page?: number; limit?: number; search?: string; status?: string; collegeId?: string }) {
+  async getCourses(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+    institutionId?: string;
+    collegeId?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }) {
     try {
-      const data = await deduplicatedQuery<{ courses: { items: any[]; meta: any } }>(
-        COURSES_QUERY,
-        params || {},
-      );
-      return data.courses;
-    } catch (err) {
-      console.warn('API getCourses fallback:', err);
-      return null;
+      const res = await apiClient.get('/courses', { params });
+      const data = res.data?.data ?? res.data;
+      if (Array.isArray(data)) {
+        return { items: data, meta: { total: data.length, page: 1, limit: data.length, totalPages: 1 } };
+      }
+      return data;
+    } catch {
+      try {
+        const data = await deduplicatedQuery<{ courses: { items: any[]; meta: any } }>(
+          COURSES_QUERY,
+          params || {},
+        );
+        return data.courses;
+      } catch (err) {
+        console.warn('API getCourses fallback:', err);
+        return null;
+      }
     }
   },
 
-  async getCourseById(id: string) {
-    const data = await fetchGraphQL<{ course: any }>(COURSE_BY_ID_QUERY, { id });
-    return data.course;
+  async getEnrolledCourses() {
+    const res = await apiClient.get('/courses/enrolled');
+    return res.data?.data ?? res.data;
+  },
+
+  async getCourseById(idOrSlug: string) {
+    try {
+      const res = await apiClient.get(`/courses/${encodeURIComponent(idOrSlug)}`);
+      return res.data?.data ?? res.data;
+    } catch {
+      try {
+        const data = await fetchGraphQL<{ course: any }>(COURSE_BY_ID_QUERY, { id: idOrSlug });
+        return data.course;
+      } catch (err) {
+        console.warn('API getCourseById fallback:', err);
+        return null;
+      }
+    }
+  },
+
+  async getCourseBySlugOrId(idOrSlug: string) {
+    return this.getCourseById(idOrSlug);
   },
 
   async createCourse(input: {
     title: string;
+    slug?: string;
+    code?: string;
+    category?: string;
+    level?: string;
+    thumbnailUrl?: string;
+    durationWeeks?: number;
+    tags?: string[];
+    learningOutcomes?: string[];
+    learningItems?: string[];
+    whatYouWillLearn?: string[];
     description?: string;
+    institutionId?: string;
     collegeId?: string;
     status?: string;
   }) {
-    const data = await fetchGraphQL<{ createCourse: any }>(CREATE_COURSE_MUTATION, { input });
-    return data.createCourse;
+    try {
+      const res = await apiClient.post('/courses', input);
+      return res.data?.data ?? res.data;
+    } catch {
+      const data = await fetchGraphQL<{ createCourse: any }>(CREATE_COURSE_MUTATION, { input });
+      return data.createCourse;
+    }
   },
 
-  async updateCourse(id: string, input: {
-    title?: string;
+  async createCompositeCourse(input: {
+    title: string;
+    slug?: string;
+    code?: string;
+    category?: string;
+    level?: string;
+    thumbnailUrl?: string;
+    durationWeeks?: number;
+    tags?: string[];
+    learningOutcomes?: string[];
+    learningItems?: string[];
+    whatYouWillLearn?: string[];
     description?: string;
+    institutionId?: string;
+    collegeId?: string;
     status?: string;
+    modules: Array<{
+      title: string;
+      description?: string;
+      order?: number;
+      lessons: Array<{
+        title: string;
+        content?: string;
+        type?: string;
+        durationMinutes?: number;
+        importantNotes?: string[];
+        quizMCQ?: any;
+        codingProblem?: any;
+        order?: number;
+      }>;
+    }>;
   }) {
-    const data = await fetchGraphQL<{ updateCourse: any }>(UPDATE_COURSE_MUTATION, { id, input });
-    return data.updateCourse;
+    const res = await apiClient.post('/courses/composite', input);
+    return res.data?.data ?? res.data;
+  },
+
+  async updateCourse(
+    id: string,
+    input: {
+      title?: string;
+      slug?: string;
+      code?: string;
+      category?: string;
+      level?: string;
+      thumbnailUrl?: string;
+      durationWeeks?: number;
+      tags?: string[];
+      learningOutcomes?: string[];
+      learningItems?: string[];
+      whatYouWillLearn?: string[];
+      description?: string;
+      institutionId?: string;
+      collegeId?: string;
+      status?: string;
+    },
+  ) {
+    try {
+      const res = await apiClient.patch(`/courses/${id}`, input);
+      return res.data?.data ?? res.data;
+    } catch {
+      const data = await fetchGraphQL<{ updateCourse: any }>(UPDATE_COURSE_MUTATION, { id, input });
+      return data.updateCourse;
+    }
   },
 
   async deleteCourse(id: string) {
-    const data = await fetchGraphQL<{ deleteCourse: boolean }>(DELETE_COURSE_MUTATION, { id });
-    return data.deleteCourse;
+    try {
+      const res = await apiClient.delete(`/courses/${id}`);
+      return res.data?.data ?? res.data;
+    } catch {
+      const data = await fetchGraphQL<{ deleteCourse: boolean }>(DELETE_COURSE_MUTATION, { id });
+      return data.deleteCourse;
+    }
   },
 
-  async createCourseModule(courseId: string, input: { title: string; description?: string; order?: number }) {
+  async publishCourse(id: string) {
+    const res = await apiClient.post(`/courses/${id}/publish`);
+    return res.data?.data ?? res.data;
+  },
+
+  async unpublishCourse(id: string) {
+    const res = await apiClient.post(`/courses/${id}/unpublish`);
+    return res.data?.data ?? res.data;
+  },
+
+  async bulkImportCurriculum(
+    courseId: string,
+    data: {
+      mode?: 'append' | 'replace';
+      modules: Array<{
+        title: string;
+        description?: string;
+        order?: number;
+        lessons: Array<{
+          title: string;
+          content?: string;
+          type?: string;
+          durationMinutes?: number;
+          importantNotes?: string[];
+          quizMCQ?: any;
+          codingProblem?: any;
+          order?: number;
+        }>;
+      }>;
+    },
+  ) {
+    const res = await apiClient.post(`/courses/${courseId}/curriculum/bulk-import`, data);
+    return res.data?.data ?? res.data;
+  },
+
+  async createCourseModule(
+    courseId: string,
+    input: { title: string; description?: string; order?: number },
+  ) {
     const res = await apiClient.post(`/courses/${courseId}/modules`, input);
     return res.data?.data ?? res.data;
   },
 
-  async createCourseLesson(moduleId: string, input: { title: string; content: string; order?: number }) {
+  async updateCourseModule(
+    moduleId: string,
+    input: { title?: string; description?: string; order?: number },
+  ) {
+    const res = await apiClient.patch(`/courses/modules/${moduleId}`, input);
+    return res.data?.data ?? res.data;
+  },
+
+  async deleteCourseModule(moduleId: string) {
+    const res = await apiClient.delete(`/courses/modules/${moduleId}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async reorderCourseModules(
+    courseId: string,
+    modules: Array<{ id: string; order: number }>,
+  ) {
+    const res = await apiClient.put(`/courses/${courseId}/modules/reorder`, { modules });
+    return res.data?.data ?? res.data;
+  },
+
+  async createCourseLesson(
+    moduleId: string,
+    input: {
+      title: string;
+      content?: string;
+      type?: string;
+      durationMinutes?: number;
+      importantNotes?: string[];
+      quizMCQ?: any;
+      codingProblem?: any;
+      order?: number;
+    },
+  ) {
     const res = await apiClient.post(`/courses/modules/${moduleId}/lessons`, input);
+    return res.data?.data ?? res.data;
+  },
+
+  async getCourseLesson(lessonId: string) {
+    const res = await apiClient.get(`/courses/lessons/${lessonId}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async updateCourseLesson(
+    lessonId: string,
+    input: {
+      title?: string;
+      content?: string;
+      type?: string;
+      durationMinutes?: number;
+      importantNotes?: string[];
+      quizMCQ?: any;
+      codingProblem?: any;
+      order?: number;
+    },
+  ) {
+    const res = await apiClient.patch(`/courses/lessons/${lessonId}`, input);
+    return res.data?.data ?? res.data;
+  },
+
+  async deleteCourseLesson(lessonId: string) {
+    const res = await apiClient.delete(`/courses/lessons/${lessonId}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async reorderCourseLessons(
+    moduleId: string,
+    lessons: Array<{ id: string; order: number }>,
+  ) {
+    const res = await apiClient.put(`/courses/modules/${moduleId}/lessons/reorder`, { lessons });
     return res.data?.data ?? res.data;
   },
 
@@ -831,8 +1051,47 @@ export const apiService = {
     return res.data?.data ?? res.data;
   },
 
+  async unenrollFromCourse(courseId: string, targetUserId?: string) {
+    const res = await apiClient.delete(`/courses/${courseId}/enroll`, {
+      params: targetUserId ? { userId: targetUserId } : undefined,
+    });
+    return res.data?.data ?? res.data;
+  },
+
+  async enrollBatchInCourse(courseId: string, batchId: string) {
+    const res = await apiClient.post(`/courses/${courseId}/enroll-batch`, { batchId });
+    return res.data?.data ?? res.data;
+  },
+
+  async getCourseRoster(
+    courseId: string,
+    params?: { page?: number; limit?: number; search?: string; status?: string },
+  ) {
+    const res = await apiClient.get(`/courses/${courseId}/roster`, { params });
+    return res.data?.data ?? res.data;
+  },
+
+  async exportCourseRosterCsv(courseId: string) {
+    const res = await apiClient.get(`/courses/${courseId}/roster/export`, {
+      responseType: 'blob',
+    });
+    return res.data;
+  },
+
   async updateLessonProgress(lessonId: string, isCompleted: boolean = true) {
-    const res = await apiClient.post(`/courses/lessons/${lessonId}/progress`, { isCompleted });
+    const res = await apiClient.post(`/courses/lessons/${lessonId}/progress`, {
+      completed: isCompleted,
+    });
+    return res.data?.data ?? res.data;
+  },
+
+  async submitLessonQuiz(lessonId: string, data: { selectedOption: number }) {
+    const res = await apiClient.post(`/courses/lessons/${lessonId}/quiz-submit`, data);
+    return res.data?.data ?? res.data;
+  },
+
+  async getCourseProgress(courseId: string) {
+    const res = await apiClient.get(`/courses/${courseId}/progress`);
     return res.data?.data ?? res.data;
   },
 
@@ -1344,6 +1603,40 @@ export const apiService = {
     const res = await apiClient.delete(`/storage/file?path=${encodeURIComponent(path)}`);
     return res.data?.data ?? res.data;
   },
+
+  // ----------------------------------------------------
+  // STUDENT DIAGNOSTICS & GOALS
+  // ----------------------------------------------------
+  async saveStudentDiagnostic(data: any) {
+    const res = await apiClient.post('/users/me/diagnostic', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async getStudentDiagnostic() {
+    const res = await apiClient.get('/users/me/diagnostic');
+    return res.data?.data ?? res.data;
+  },
+
+  async getStudentDiagnosticHistory() {
+    const res = await apiClient.get('/users/me/diagnostic/history');
+    return res.data?.data ?? res.data;
+  },
+
+  async saveStudentGoals(data: any) {
+    const res = await apiClient.post('/users/me/goals', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async getStudentGoals() {
+    const res = await apiClient.get('/users/me/goals');
+    return res.data?.data ?? res.data;
+  },
+
+  async getStudentGrowthMetrics() {
+    const res = await apiClient.get('/users/me/growth-metrics');
+    return res.data?.data ?? res.data;
+  },
 };
+
 
 

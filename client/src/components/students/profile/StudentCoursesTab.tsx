@@ -336,7 +336,7 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                       }}
                     >
                       <TableCell sx={{ borderColor: '#F1F5F9', py: 1.5 }}>
-                        <Link href={`/courses/${crs.id}`} style={{ textDecoration: 'none' }}>
+                        <Link href={`/courses/${crs.slug || crs.id}`} style={{ textDecoration: 'none' }}>
                           <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', '&:hover': { color: '#2563EB' }, transition: 'color 0.15s ease' }}>
                             {crs.title}
                           </Typography>
@@ -398,7 +398,7 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                       </TableCell>
 
                       <TableCell sx={{ textAlign: 'right', borderColor: '#F1F5F9' }}>
-                        <Link href={`/courses/${crs.id}`} style={{ textDecoration: 'none' }}>
+                        <Link href={`/courses/${crs.slug || crs.id}`} style={{ textDecoration: 'none' }}>
                           <Button
                             variant={isDone ? 'outlined' : 'contained'}
                             size="small"

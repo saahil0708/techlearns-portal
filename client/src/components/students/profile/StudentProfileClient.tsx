@@ -28,13 +28,14 @@ import StudentSubmissionsTab from '@/components/students/profile/StudentSubmissi
 import StudentContestsTab from '@/components/students/profile/StudentContestsTab';
 import StudentCoursesTab from '@/components/students/profile/StudentCoursesTab';
 import StudentSettingsTab from '@/components/students/profile/StudentSettingsTab';
-import { Tabs, Tab } from '@mui/material';
+import { Tabs, Tab, Dialog, DialogContent } from '@mui/material';
 
 // Dynamic import for on-demand modals only
 const EditStudentProfileModal = dynamic(() => import('@/components/students/profile/EditStudentProfileModal'), { ssr: false });
 const ViewSubmissionCodeModal = dynamic(() => import('@/components/students/profile/ViewSubmissionCodeModal'), { ssr: false });
 const ViewCertificateModal = dynamic(() => import('@/components/students/profile/ViewCertificateModal'), { ssr: false });
 const UploadResumeModal = dynamic(() => import('@/components/students/profile/UploadResumeModal'), { ssr: false });
+const IdentityDiagnosticWizard = dynamic(() => import('@/components/students/diagnostic/IdentityDiagnosticWizard'), { ssr: false });
 
 // Icons for Tab Switcher
 import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
@@ -51,6 +52,49 @@ interface StudentProfileClientProps {
   isOwner?: boolean;
   defaultTab?: StudentTabType;
 }
+
+const SAMPLE_ENROLLED_COURSES: StudentCourseProgress[] = [
+  {
+    id: 'crs-python-fundamentals',
+    title: 'Python 3 Programming: From Fundamentals to Algorithmic Problem Solving',
+    slug: 'crs-python-fundamentals',
+    instructor: 'Prof. Alan Turing',
+    modulesCompleted: 1,
+    totalModules: 4,
+    progressPct: 25,
+    status: 'In Progress',
+  },
+  {
+    id: 'crs-fullstack-architecture',
+    title: 'Full-Stack Web Architecture & Cloud Microservices',
+    slug: 'crs-fullstack-architecture',
+    instructor: 'Prof. Alan Turing',
+    modulesCompleted: 2,
+    totalModules: 3,
+    progressPct: 50,
+    status: 'In Progress',
+  },
+  {
+    id: 'crs-dsa-advanced',
+    title: 'Advanced Data Structures & Algorithmic Problem Solving',
+    slug: 'crs-dsa-advanced',
+    instructor: 'Prof. Thomas Cormen',
+    modulesCompleted: 1,
+    totalModules: 1,
+    progressPct: 100,
+    status: 'Completed',
+  },
+  {
+    id: 'crs-cloud-devops',
+    title: 'Cloud DevOps, Docker Sandboxing & CI/CD Pipelines',
+    slug: 'crs-cloud-devops',
+    instructor: 'Prof. Alan Turing',
+    modulesCompleted: 0,
+    totalModules: 1,
+    progressPct: 0,
+    status: 'In Progress',
+  },
+];
 
 const getInitialOwnerProfile = (): Partial<StudentProfileData> => {
   if (typeof window !== 'undefined') {
@@ -169,52 +213,9 @@ export default function StudentProfileClient({
   // Contests History
   const [contests, setContests] = useState<StudentContestHistory[]>([]);
 
-const SAMPLE_ENROLLED_COURSES: StudentCourseProgress[] = [
-  {
-    id: 'crs-python-fundamentals',
-    title: 'Python 3 Programming: From Fundamentals to Algorithmic Problem Solving',
-    slug: 'crs-python-fundamentals',
-    instructor: 'Prof. Alan Turing',
-    modulesCompleted: 1,
-    totalModules: 4,
-    progressPct: 25,
-    status: 'In Progress',
-  },
-  {
-    id: 'crs-fullstack-architecture',
-    title: 'Full-Stack Web Architecture & Cloud Microservices',
-    slug: 'crs-fullstack-architecture',
-    instructor: 'Prof. Alan Turing',
-    modulesCompleted: 2,
-    totalModules: 3,
-    progressPct: 50,
-    status: 'In Progress',
-  },
-  {
-    id: 'crs-dsa-advanced',
-    title: 'Advanced Data Structures & Algorithmic Problem Solving',
-    slug: 'crs-dsa-advanced',
-    instructor: 'Prof. Thomas Cormen',
-    modulesCompleted: 1,
-    totalModules: 1,
-    progressPct: 100,
-    status: 'Completed',
-  },
-  {
-    id: 'crs-cloud-devops',
-    title: 'Cloud DevOps, Docker Sandboxing & CI/CD Pipelines',
-    slug: 'crs-cloud-devops',
-    instructor: 'Prof. Alan Turing',
-    modulesCompleted: 0,
-    totalModules: 1,
-    progressPct: 0,
-    status: 'In Progress',
-  },
-];
-
   // Courses Progress
   const [courses, setCourses] = useState<StudentCourseProgress[]>(
-    initialProfile?.courses?.length ? initialProfile.courses : SAMPLE_ENROLLED_COURSES
+    initialProfile?.courses?.length ? initialProfile.courses : []
   );
 
   // Topic Skills
@@ -364,8 +365,38 @@ const SAMPLE_ENROLLED_COURSES: StudentCourseProgress[] = [
   const [codeModalOpen, setCodeModalOpen] = useState(false);
   const [certModalOpen, setCertModalOpen] = useState(false);
   const [resumeModalOpen, setResumeModalOpen] = useState(false);
+  const [diagnosticModalOpen, setDiagnosticModalOpen] = useState(false);
   const [selectedCert, setSelectedCert] = useState<StudentCertification | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(null);
+
+  // First-time student detection: Prompt diagnostic & interest onboarding if no profile goals exist
+  useEffect(() => {
+    if (!isOwner) return;
+    let active = true;
+    apiService
+      .getStudentDiagnostic()
+      .then((diag) => {
+        if (!active) return;
+        if (!diag || !diag.targetTrack) {
+          const localKey = profile.id ? `codeplatform_diagnostic_goal_${profile.id}` : 'codeplatform_diagnostic_goal';
+          const local = typeof window !== 'undefined' ? localStorage.getItem(localKey) : null;
+          if (!local) {
+            setDiagnosticModalOpen(true);
+          }
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        const localKey = profile.id ? `codeplatform_diagnostic_goal_${profile.id}` : 'codeplatform_diagnostic_goal';
+        const local = typeof window !== 'undefined' ? localStorage.getItem(localKey) : null;
+        if (!local) {
+          setDiagnosticModalOpen(true);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [isOwner, profile.id]);
 
   const handleTabChange = (newTab: StudentTabType) => {
     if (newTab !== currentTab) {
@@ -373,7 +404,8 @@ const SAMPLE_ENROLLED_COURSES: StudentCourseProgress[] = [
 
       // Keep browser URL in sync instantly
       if (typeof window !== 'undefined') {
-        const newUrl = newTab === 'overview' ? '/students/profile' : `/students/profile?tab=${newTab}`;
+        const pathname = window.location.pathname;
+        const newUrl = newTab === 'overview' ? pathname : `${pathname}?tab=${newTab}`;
         window.history.replaceState(null, '', newUrl);
       }
     }
@@ -388,10 +420,13 @@ const SAMPLE_ENROLLED_COURSES: StudentCourseProgress[] = [
           phone: updated.phone,
           bio: updated.bio,
           institution: updated.institution,
+          department: (updated as any).department,
           location: updated.location,
+          avatarUrl: updated.avatarUrl,
           githubUrl: updated.githubUrl,
           linkedinUrl: updated.linkedinUrl,
           websiteUrl: updated.websiteUrl,
+          rollNo: (updated as any).rollNo,
         });
       }
       setProfile((prev) => ({ ...prev, ...updated }));
@@ -511,6 +546,7 @@ const SAMPLE_ENROLLED_COURSES: StudentCourseProgress[] = [
               isOwner={isOwner}
               onEditProfile={() => setEditModalOpen(true)}
               onUploadResume={() => setResumeModalOpen(true)}
+              onOpenDiagnostic={() => setDiagnosticModalOpen(true)}
               onViewCert={(cert) => {
                 setSelectedCert(cert);
                 setCertModalOpen(true);
@@ -523,7 +559,11 @@ const SAMPLE_ENROLLED_COURSES: StudentCourseProgress[] = [
           </Box>
 
           <Box sx={{ display: currentTab === 'goals' ? 'block' : 'none' }}>
-            <StudentGoalsTab profile={profile} isOwner={isOwner} />
+            <StudentGoalsTab
+              profile={profile}
+              isOwner={isOwner}
+              onOpenDiagnostic={() => setDiagnosticModalOpen(true)}
+            />
           </Box>
 
           <Box sx={{ display: currentTab === 'submissions' ? 'block' : 'none' }}>
@@ -577,6 +617,36 @@ const SAMPLE_ENROLLED_COURSES: StudentCourseProgress[] = [
               setProfile((prev) => ({ ...prev, resumeFileName: fileName }));
             }}
           />
+
+          {/* First-Time Onboarding & Re-calibrating Diagnostic Modal */}
+          <Dialog
+            open={diagnosticModalOpen}
+            onClose={() => setDiagnosticModalOpen(false)}
+            maxWidth="lg"
+            fullWidth
+            slotProps={{
+              paper: {
+                sx: {
+                  bgcolor: 'transparent',
+                  boxShadow: 'none',
+                  backgroundImage: 'none',
+                  m: { xs: 1.5, sm: 2 },
+                },
+              },
+            }}
+          >
+            <DialogContent sx={{ p: 0 }}>
+              <IdentityDiagnosticWizard
+                isModal={true}
+                userId={profile.id}
+                onClose={() => setDiagnosticModalOpen(false)}
+                onComplete={() => {
+                  setDiagnosticModalOpen(false);
+                  fetchLiveProfile();
+                }}
+              />
+            </DialogContent>
+          </Dialog>
         </Box>
       )}
     </StudentAppLayout>

@@ -120,7 +120,7 @@ export class CommunityService {
     };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, currentUser?: CurrentUserPayload) {
     const post = await this.prisma.communityPost.findUnique({
       where: { id },
       include: {
@@ -149,6 +149,9 @@ export class CommunityService {
     });
 
     if (!post) throw new NotFoundException('Community discussion post not found');
+    if (currentUser) {
+      this.verifyPostVisibility(post, currentUser);
+    }
     return post;
   }
 
@@ -213,11 +216,16 @@ export class CommunityService {
     postId: string,
     userId: string,
     dto: CreateCommunityReplyDto,
+    currentUser?: CurrentUserPayload,
   ) {
     const post = await this.prisma.communityPost.findUnique({
       where: { id: postId },
     });
     if (!post) throw new NotFoundException('Community post not found');
+
+    if (currentUser) {
+      this.verifyPostVisibility(post, currentUser);
+    }
 
     return this.prisma.$transaction(async (tx) => {
       const reply = await tx.communityReply.create({
