@@ -136,10 +136,12 @@ export default function CreateProblemModal({
     const allTestCases: ProblemTestCaseItem[] = [];
 
     // 1. Public sample case if provided
-    if (formData.sampleInput.trim() || formData.sampleOutput.trim()) {
+    const trimmedSampleInput = formData.sampleInput.trim();
+    const trimmedSampleOutput = formData.sampleOutput.trim();
+    if (trimmedSampleInput && trimmedSampleOutput) {
       allTestCases.push({
-        input: formData.sampleInput.trim(),
-        expectedOutput: formData.sampleOutput.trim(),
+        input: trimmedSampleInput,
+        expectedOutput: trimmedSampleOutput,
         explanation: formData.sampleExplanation?.trim() || undefined,
         isHidden: false,
         order: 0,
@@ -147,14 +149,16 @@ export default function CreateProblemModal({
     }
 
     // 2. Hidden test cases
-    hiddenTestCases.forEach((tc, idx) => {
-      if (tc.input.trim() || tc.expectedOutput.trim()) {
+    hiddenTestCases.forEach((tc) => {
+      const trimmedInput = tc.input.trim();
+      const trimmedOutput = tc.expectedOutput.trim();
+      if (trimmedInput && trimmedOutput) {
         allTestCases.push({
-          input: tc.input.trim(),
-          expectedOutput: tc.expectedOutput.trim(),
+          input: trimmedInput,
+          expectedOutput: trimmedOutput,
           explanation: tc.explanation?.trim() || undefined,
           isHidden: true,
-          order: allTestCases.length + idx,
+          order: allTestCases.length,
         });
       }
     });

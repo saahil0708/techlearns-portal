@@ -341,7 +341,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
           prev.map((p) => (p.id === tempId ? { ...p, id: created.id } : p))
         );
       }
-      toast.success(`Problem "${data.title}" created with ${data.testCases?.length || 1} test case(s).`, 'Problem Created');
+      toast.success(`Problem "${data.title}" created with ${data.testCases?.length ?? 0} test case(s).`, 'Problem Created');
     } catch {
       toast.info(`Problem "${data.title}" saved locally to repository.`, 'Problem Registered');
     }

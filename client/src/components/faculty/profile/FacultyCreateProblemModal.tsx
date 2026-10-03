@@ -148,6 +148,20 @@ export default function FacultyCreateProblemModal({
       return;
     }
 
+    // Validate hidden test cases before proceeding
+    for (let i = 0; i < hiddenCases.length; i++) {
+      const tc = hiddenCases[i];
+      const hasInput = Boolean(tc.input.trim());
+      const hasOutput = Boolean(tc.expectedOutput.trim());
+      if ((hasInput && !hasOutput) || (!hasInput && hasOutput)) {
+        toast.error(
+          `Please provide both Input and Expected Output for Hidden Case #${i + 1}, or leave both empty.`,
+          'Validation Error'
+        );
+        return;
+      }
+    }
+
     setCreating(true);
     try {
       // Build test cases payload
@@ -169,13 +183,15 @@ export default function FacultyCreateProblemModal({
         });
       }
 
-      hiddenCases.forEach((tc, idx) => {
-        if (tc.input.trim() || tc.expectedOutput.trim()) {
+      hiddenCases.forEach((tc) => {
+        const trimmedInput = tc.input.trim();
+        const trimmedOutput = tc.expectedOutput.trim();
+        if (trimmedInput && trimmedOutput) {
           testCasesPayload.push({
-            input: tc.input.trim(),
-            expectedOutput: tc.expectedOutput.trim(),
+            input: trimmedInput,
+            expectedOutput: trimmedOutput,
             isHidden: true,
-            order: testCasesPayload.length + idx,
+            order: testCasesPayload.length,
           });
         }
       });

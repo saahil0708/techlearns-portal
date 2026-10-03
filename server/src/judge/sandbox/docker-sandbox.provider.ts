@@ -44,8 +44,10 @@ export class DockerSandboxProvider implements ISandboxProvider {
 
     const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codeplatform-judge-'));
     const sourcePath = path.join(workDir, `solution.${extensions[language]}`);
+    const isCompiled = language === ProgrammingLanguage.JAVA || language === ProgrammingLanguage.CPP || language === ProgrammingLanguage.C;
+    const startupAndCompilationAllowanceMs = isCompiled ? 4000 : 1500;
+    const cpuLimitSeconds = Math.max(2, Math.ceil((limits.timeLimitMs + startupAndCompilationAllowanceMs) / 1000) + 1);
     const containerName = `codeplatform-judge-${randomUUID()}`;
-    const cpuLimitSeconds = Math.max(1, Math.ceil(limits.timeLimitMs / 1000) + 1);
     const args = [
       'run', '-i', '--rm', '--name', containerName, '--network', 'none', '--read-only',
       '--tmpfs', '/tmp:rw,size=32m',
@@ -84,10 +86,10 @@ export class DockerSandboxProvider implements ISandboxProvider {
           spawn('docker', ['rm', '-f', containerName], { windowsHide: true, stdio: 'ignore' });
         };
 
-        // Strict watchdog timer: kills infinite loops within timeLimitMs + 1000ms
+        // Watchdog timer accounts for container startup and compilation overhead so the program gets its full time budget
         const timer = setTimeout(() => {
           terminateContainer('timeout');
-        }, Math.max(1500, limits.timeLimitMs + 1000));
+        }, Math.max(2500, limits.timeLimitMs + startupAndCompilationAllowanceMs));
 
         child.stdout.on('data', (chunk: Buffer) => {
           output += chunk.toString();
