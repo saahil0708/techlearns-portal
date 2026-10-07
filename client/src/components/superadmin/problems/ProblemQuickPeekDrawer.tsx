@@ -25,6 +25,7 @@ import Link from 'next/link';
 
 import { ProblemEntity } from '@/types/problem';
 import { useToast } from '@/context/ToastContext';
+import ProblemStatementDisplay from '@/components/problems/ProblemStatementDisplay';
 
 interface ProblemQuickPeekDrawerProps {
   problem: ProblemEntity | null;
@@ -259,7 +260,7 @@ export default function ProblemQuickPeekDrawer({
 
           <Divider sx={{ borderColor: '#E2E8F0' }} />
 
-          {/* Problem Statement Preview */}
+          {/* Problem Statement Preview (Rich HTML + Markdown) */}
           <Box>
             <Typography sx={{ fontSize: '0.76rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', mb: 1, letterSpacing: '0.04em' }}>
               Problem Statement
@@ -270,13 +271,9 @@ export default function ProblemQuickPeekDrawer({
                 borderRadius: '12px',
                 bgcolor: '#F8FAFC',
                 border: '1px solid #E2E8F0',
-                color: '#334155',
-                fontSize: '0.88rem',
-                lineHeight: 1.6,
-                whiteSpace: 'pre-line',
               }}
             >
-              {problem.statementMarkdown}
+              <ProblemStatementDisplay content={problem.statementMarkdown} />
             </Box>
           </Box>
 

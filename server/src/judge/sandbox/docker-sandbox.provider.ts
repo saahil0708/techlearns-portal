@@ -45,8 +45,15 @@ export class DockerSandboxProvider implements ISandboxProvider {
     const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codeplatform-judge-'));
     const sourcePath = path.join(workDir, `solution.${extensions[language]}`);
     const isCompiled = language === ProgrammingLanguage.JAVA || language === ProgrammingLanguage.CPP || language === ProgrammingLanguage.C;
-    const startupAndCompilationAllowanceMs = isCompiled ? 4000 : 1500;
-    const cpuLimitSeconds = Math.max(2, Math.ceil((limits.timeLimitMs + startupAndCompilationAllowanceMs) / 1000) + 1);
+    // Bounded allowance for Docker container creation, image loading, and language compilation (configurable via JUDGE_SETUP_TIMEOUT_MS / JUDGE_COMPILED_SETUP_TIMEOUT_MS)
+    const envSetupTimeout = parseInt(process.env.JUDGE_SETUP_TIMEOUT_MS || '', 10);
+    const envCompiledTimeout = parseInt(process.env.JUDGE_COMPILED_SETUP_TIMEOUT_MS || '', 10);
+    const validSetupTimeout = Number.isFinite(envSetupTimeout) && envSetupTimeout > 0 ? envSetupTimeout : null;
+    const validCompiledTimeout = Number.isFinite(envCompiledTimeout) && envCompiledTimeout > 0 ? envCompiledTimeout : null;
+    const setupTimeoutMs = isCompiled
+      ? (validCompiledTimeout ?? validSetupTimeout ?? 10000)
+      : (validSetupTimeout ?? 5000);
+    const cpuLimitSeconds = Math.max(5, Math.ceil((limits.timeLimitMs + setupTimeoutMs) / 1000) + 2);
     const containerName = `codeplatform-judge-${randomUUID()}`;
     const args = [
       'run', '-i', '--rm', '--name', containerName, '--network', 'none', '--read-only',
@@ -64,20 +71,87 @@ export class DockerSandboxProvider implements ISandboxProvider {
       image, language,
     ];
 
+    let effectiveSourceCode = sourceCode;
+    if (language === ProgrammingLanguage.PYTHON) {
+      const hasTopLevelDriver = /^(print\s*\(|if\s+__name__\s*==|\w+\s*=\s*sys\.stdin|\w+\s*=\s*input\()/m.test(sourceCode);
+      if (!hasTopLevelDriver) {
+        effectiveSourceCode += `
+
+# --- Auto-Injected Test Harness ---
+if __name__ == '__main__':
+    import sys
+    _raw_in = sys.stdin.read().strip()
+    if _raw_in:
+        _func = None
+        if 'Solution' in globals():
+            _inst = globals()['Solution']()
+            for _name in dir(_inst):
+                if not _name.startswith('_') and callable(getattr(_inst, _name)):
+                    _func = getattr(_inst, _name)
+                    break
+        elif 'solve' in globals() and callable(globals()['solve']):
+            _func = globals()['solve']
+        elif 'twoSum' in globals() and callable(globals()['twoSum']):
+            _func = globals()['twoSum']
+
+        if _func:
+            _tokens = _raw_in.split()
+            if len(_tokens) > 1 and _tokens[0].isdigit() and int(_tokens[0]) == len(_tokens) - 1:
+                _nums = [int(x) if (x.lstrip('-').isdigit()) else x for x in _tokens[1:]]
+                try:
+                    _res = _func(_nums)
+                except TypeError:
+                    _res = _func(int(_tokens[0]), _nums)
+            else:
+                _nums = [int(x) if (x.lstrip('-').isdigit()) else x for x in _tokens]
+                try:
+                    _res = _func(_nums)
+                except TypeError:
+                    _res = _func(*_nums)
+
+            if _res is not None:
+                if isinstance(_res, (list, tuple)):
+                    print(' '.join(map(str, _res)))
+                else:
+                    print(_res)
+`;
+      }
+    }
+
     try {
-      await fs.writeFile(sourcePath, sourceCode, 'utf8');
+      await fs.writeFile(sourcePath, effectiveSourceCode, { encoding: 'utf8', mode: 0o644 });
       return await new Promise((resolve) => {
         const child = spawn('docker', args, { windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
         let output = '';
         let error = '';
         let timedOut = false;
+        let setupTimedOut = false;
         let outputLimitExceeded = false;
         let isTerminated = false;
+        let executionTimer: NodeJS.Timeout | null = null;
+        let setupTimer: NodeJS.Timeout | null = null;
+        let watchdogStarted = false;
+        let executionStartTime: number | null = null;
+        let stdoutControlBuf = '';
+        let stderrControlBuf = '';
         const maxOutput = 512 * 1024;
 
-        const terminateContainer = (reason: 'timeout' | 'output_overflow') => {
+        const clearAllTimers = () => {
+          if (setupTimer) {
+            clearTimeout(setupTimer);
+            setupTimer = null;
+          }
+          if (executionTimer) {
+            clearTimeout(executionTimer);
+            executionTimer = null;
+          }
+        };
+
+        const terminateContainer = (reason: 'timeout' | 'setup_timeout' | 'output_overflow') => {
           if (isTerminated) return;
           isTerminated = true;
+          clearAllTimers();
+          if (reason === 'setup_timeout') setupTimedOut = true;
           if (reason === 'timeout') timedOut = true;
           if (reason === 'output_overflow') outputLimitExceeded = true;
           try {
@@ -86,48 +160,124 @@ export class DockerSandboxProvider implements ISandboxProvider {
           spawn('docker', ['rm', '-f', containerName], { windowsHide: true, stdio: 'ignore' });
         };
 
-        // Watchdog timer accounts for container startup and compilation overhead so the program gets its full time budget
-        const timer = setTimeout(() => {
-          terminateContainer('timeout');
-        }, Math.max(2500, limits.timeLimitMs + startupAndCompilationAllowanceMs));
+        // Start execution timer once setup completes, guaranteeing full limits.timeLimitMs budget for user code
+        const startExecutionWatchdog = () => {
+          if (watchdogStarted || isTerminated) return;
+          watchdogStarted = true;
+          executionStartTime = Date.now();
+          if (setupTimer) {
+            clearTimeout(setupTimer);
+            setupTimer = null;
+          }
+          executionTimer = setTimeout(() => {
+            terminateContainer('timeout');
+          }, limits.timeLimitMs);
+        };
 
-        child.stdout.on('data', (chunk: Buffer) => {
-          output += chunk.toString();
-          if (Buffer.byteLength(output) > maxOutput) {
+        // Bounded setup timer guarding container creation, image loading, compilation, and fallback execution
+        setupTimer = setTimeout(() => {
+          terminateContainer('setup_timeout');
+        }, setupTimeoutMs + limits.timeLimitMs);
+
+        const EXEC_START_SIGNAL = '__CODEPLATFORM_EXEC_START__';
+
+        const processStreamChunk = (
+          chunk: string | Buffer,
+          isStderr: boolean,
+        ) => {
+          const text = typeof chunk === 'string' ? chunk : chunk.toString('utf8');
+          if (!watchdogStarted) {
+            if (isStderr) {
+              stderrControlBuf += text;
+            } else {
+              stdoutControlBuf += text;
+            }
+
+            const stdoutIdx = stdoutControlBuf.indexOf(EXEC_START_SIGNAL);
+            const stderrIdx = stderrControlBuf.indexOf(EXEC_START_SIGNAL);
+
+            if (stdoutIdx !== -1 || stderrIdx !== -1) {
+              startExecutionWatchdog();
+
+              if (stdoutIdx !== -1) {
+                const before = stdoutControlBuf.slice(0, stdoutIdx);
+                const after = stdoutControlBuf.slice(stdoutIdx + EXEC_START_SIGNAL.length).replace(/^\r?\n/, '');
+                output += before + after;
+              } else {
+                output += stdoutControlBuf;
+              }
+              stdoutControlBuf = '';
+
+              if (stderrIdx !== -1) {
+                const before = stderrControlBuf.slice(0, stderrIdx);
+                const after = stderrControlBuf.slice(stderrIdx + EXEC_START_SIGNAL.length).replace(/^\r?\n/, '');
+                error += before + after;
+              } else {
+                error += stderrControlBuf;
+              }
+              stderrControlBuf = '';
+            }
+          } else {
+            if (isStderr) {
+              error += text;
+            } else {
+              output += text;
+            }
+          }
+
+          if (
+            Buffer.byteLength(output) + Buffer.byteLength(stdoutControlBuf) > maxOutput ||
+            Buffer.byteLength(error) + Buffer.byteLength(stderrControlBuf) > maxOutput
+          ) {
             terminateContainer('output_overflow');
           }
+        };
+
+        child.stdout.setEncoding('utf8');
+        child.stderr.setEncoding('utf8');
+
+        child.stdout.on('data', (chunk: string | Buffer) => {
+          processStreamChunk(chunk, false);
         });
 
-        child.stderr.on('data', (chunk: Buffer) => {
-          error += chunk.toString();
-          if (Buffer.byteLength(error) > maxOutput) {
-            terminateContainer('output_overflow');
-          }
+        child.stderr.on('data', (chunk: string | Buffer) => {
+          processStreamChunk(chunk, true);
         });
 
         child.on('error', (spawnError: Error) => {
-          clearTimeout(timer);
-          resolve({ systemError: `Judge container unavailable: ${spawnError.message}`, memory: 0 });
+          clearAllTimers();
+          resolve({ systemError: `Judge container unavailable: ${spawnError.message}`, memory: undefined, executionTimeMs: undefined });
         });
 
         child.on('close', (exitCode) => {
-          clearTimeout(timer);
-          if (timedOut) {
-            resolve({ timedOut: true, memory: limits.memoryLimitMb });
+          clearAllTimers();
+          if (!watchdogStarted) {
+            output += stdoutControlBuf;
+            error += stderrControlBuf;
+          }
+          const executionTimeMs = executionStartTime
+            ? Math.max(1, Date.now() - executionStartTime)
+            : undefined;
+
+          if (timedOut || (setupTimedOut && watchdogStarted)) {
+            resolve({ timedOut: true, memory: limits.memoryLimitMb, executionTimeMs: executionTimeMs ?? limits.timeLimitMs });
+          } else if (setupTimedOut) {
+            resolve({ systemError: 'Sandbox initialization timed out during container setup or compilation', memory: undefined, executionTimeMs: undefined });
           } else if (outputLimitExceeded) {
             resolve({
               outputLimitExceeded: true,
               runtimeError: 'Output limit exceeded (exceeded maximum output buffer of 512KB)',
-              memory: limits.memoryLimitMb,
+              memory: undefined,
+              executionTimeMs,
             });
           } else if (exitCode === 0) {
-            resolve({ output, memory: limits.memoryLimitMb });
+            resolve({ output, memory: undefined, executionTimeMs });
           } else if (exitCode === 137) {
-            resolve({ memoryLimitExceeded: !timedOut, memory: limits.memoryLimitMb });
+            resolve({ memoryLimitExceeded: !timedOut, memory: limits.memoryLimitMb, executionTimeMs });
           } else if (exitCode === 2) {
-            resolve({ compilationError: error.trim() || 'Compilation failed', memory: limits.memoryLimitMb });
+            resolve({ compilationError: error.trim() || 'Compilation failed', memory: undefined, executionTimeMs: undefined });
           } else {
-            resolve({ runtimeError: error.trim() || 'Program exited with a non-zero status', memory: limits.memoryLimitMb });
+            resolve({ runtimeError: error.trim() || 'Program exited with a non-zero status', memory: undefined, executionTimeMs });
           }
         });
 

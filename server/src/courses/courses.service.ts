@@ -90,6 +90,88 @@ export class CoursesService {
     throw err;
   }
 
+  private isCoursePrivileged(
+    course: { createdById?: string | null; institutionId?: string | null },
+    user?: CurrentUserPayload,
+  ): boolean {
+    if (!user) return false;
+    if (user.globalRole === Role.SUPER_ADMIN || user.globalRole === Role.PLATFORM_ADMIN) {
+      return true;
+    }
+    if (course.createdById && course.createdById === user.id) {
+      return true;
+    }
+    if (
+      course.institutionId &&
+      user.memberships?.some(
+        (membership) =>
+          membership.institutionId === course.institutionId &&
+          (membership.role === Role.FACULTY || membership.role === Role.INSTITUTION_ADMIN),
+      )
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  private sanitizeLessonQuiz(lesson: any, isPrivileged: boolean) {
+    let sanitizedQuiz = lesson.quizMCQ;
+    if (!isPrivileged && sanitizedQuiz && typeof sanitizedQuiz === 'object') {
+      const {
+        correctIndex: _strippedCorrectIndex,
+        correctIndices: _strippedCorrectIndices,
+        explanation: _strippedExplanation,
+        ...restQuiz
+      } = sanitizedQuiz as any;
+      sanitizedQuiz = restQuiz;
+    }
+    return sanitizedQuiz;
+  }
+
+  private sanitizeLessonCoding(lesson: any, isPrivileged: boolean) {
+    let codingProblem = lesson.codingProblem;
+    if (!isPrivileged && codingProblem && typeof codingProblem === 'object') {
+      if (Array.isArray(codingProblem.testCases)) {
+        codingProblem = {
+          ...codingProblem,
+          testCases: codingProblem.testCases.filter((tc: any) => !tc.isHidden),
+        };
+      }
+    }
+    return codingProblem;
+  }
+
+  private sanitizeCourseModulesForUser<T extends { createdById?: string | null; institutionId?: string | null; modules?: any[] }>(
+    course: T,
+    user?: CurrentUserPayload,
+  ): T {
+    const isPrivileged = this.isCoursePrivileged(course, user);
+    if (isPrivileged || !course.modules) {
+      return course;
+    }
+
+    return {
+      ...course,
+      modules: course.modules.map((mod) => ({
+        ...mod,
+        lessons: (mod.lessons || []).map((lesson: any) => {
+          const {
+            content: _strippedContent,
+            quizMCQ: _strippedQuiz,
+            codingProblem: _strippedCoding,
+            ...rest
+          } = lesson;
+          return {
+            ...rest,
+            content: '',
+            quizMCQ: null,
+            codingProblem: null,
+          };
+        }),
+      })),
+    };
+  }
+
   // ----------------------------------------------------
   // COURSE MANAGEMENT
   // ----------------------------------------------------
@@ -288,7 +370,7 @@ export class CoursesService {
 
     const where: any = conditions.length === 0 ? {} : conditions.length === 1 ? conditions[0] : { AND: conditions };
 
-    return this.prisma.course.findMany({
+    const courses = await this.prisma.course.findMany({
       where,
       include: {
         createdBy: {
@@ -312,6 +394,8 @@ export class CoursesService {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    return courses.map((course) => this.sanitizeCourseModulesForUser(course, user));
   }
 
   async findPaginated(
@@ -414,7 +498,7 @@ export class CoursesService {
     const totalPages = Math.ceil(total / limit) || 1;
 
     return {
-      items,
+      items: items.map((course) => this.sanitizeCourseModulesForUser(course, user)),
       meta: {
         total,
         page,
@@ -464,18 +548,7 @@ export class CoursesService {
       throw new NotFoundException(`Course with ID or slug '${idOrSlug}' not found`);
     }
 
-    const isPrivileged =
-      user?.globalRole === Role.SUPER_ADMIN ||
-      user?.globalRole === Role.PLATFORM_ADMIN ||
-      course.createdById === user?.id ||
-      Boolean(
-        course.institutionId &&
-          user?.memberships?.some(
-            (membership) =>
-              membership.institutionId === course.institutionId &&
-              (membership.role === Role.FACULTY || membership.role === Role.INSTITUTION_ADMIN),
-          ),
-      );
+    const isPrivileged = this.isCoursePrivileged(course, user);
 
     if (!isPrivileged) {
       if (course.status !== CourseStatus.PUBLISHED) {
@@ -569,12 +642,18 @@ export class CoursesService {
       completedLessonIds: Array.from(completedLessonIdSet),
       modules: (course.modules || []).map((mod) => ({
         ...mod,
-        lessons: (mod.lessons || []).map((lesson) => ({
-          ...lesson,
-          moduleId: lesson.moduleId || mod.id,
-          isCompleted: completedLessonIdSet.has(lesson.id),
-          userProgress: progressByLessonId[lesson.id] || null,
-        })),
+        lessons: (mod.lessons || []).map((lesson) => {
+          const sanitizedQuiz = this.sanitizeLessonQuiz(lesson, isPrivileged);
+          const sanitizedCoding = this.sanitizeLessonCoding(lesson, isPrivileged);
+          return {
+            ...lesson,
+            quizMCQ: sanitizedQuiz,
+            codingProblem: sanitizedCoding,
+            moduleId: lesson.moduleId || mod.id,
+            isCompleted: completedLessonIdSet.has(lesson.id),
+            userProgress: progressByLessonId[lesson.id] || null,
+          };
+        }),
       })),
     };
   }
@@ -1040,15 +1119,13 @@ export class CoursesService {
       },
     });
 
-    let sanitizedQuiz = lesson.quizMCQ;
-    if (!isPrivileged && sanitizedQuiz && typeof sanitizedQuiz === 'object') {
-      const { correctIndex: _strippedCorrectIndex, ...restQuiz } = sanitizedQuiz as any;
-      sanitizedQuiz = restQuiz;
-    }
+    const sanitizedQuiz = this.sanitizeLessonQuiz(lesson, isPrivileged);
+    const sanitizedCoding = this.sanitizeLessonCoding(lesson, isPrivileged);
 
     return {
       ...lesson,
       quizMCQ: sanitizedQuiz,
+      codingProblem: sanitizedCoding,
       completed: progress?.completed ?? false,
     };
   }

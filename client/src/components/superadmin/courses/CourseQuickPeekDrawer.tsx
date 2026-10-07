@@ -37,9 +37,10 @@ export default function CourseQuickPeekDrawer({
   course,
 }: CourseQuickPeekDrawerProps) {
   const toast = useToast();
+  const [copied, setCopied] = React.useState(false);
+
   if (!course) return null;
 
-  const [copied, setCopied] = React.useState(false);
   const borderColor = '#E2E8F0';
 
   const handleCopySlug = () => {

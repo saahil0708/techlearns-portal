@@ -84,21 +84,29 @@ export default async function ProblemDetailPage({ params }: PageProps) {
         }));
       }
 
+      const diff = liveProblem.difficulty === 'HARD' ? 'Hard' : liveProblem.difficulty === 'MEDIUM' ? 'Medium' : 'Easy';
+      const totalSubmissions = liveProblem.totalSubmissions ?? liveProblem._count?.submissions ?? 0;
+      const acceptedSubmissions = liveProblem.acceptedSubmissions ?? liveProblem.acceptedCount ?? 0;
+      const acceptanceRate = liveProblem.acceptanceRate !== undefined && liveProblem.acceptanceRate !== null
+        ? liveProblem.acceptanceRate
+        : (totalSubmissions > 0 ? Number(((acceptedSubmissions / totalSubmissions) * 100).toFixed(1)) : 0);
+      const points = liveProblem.points || (diff === 'Easy' ? 100 : diff === 'Hard' ? 350 : 200);
+
       problem = {
         id: liveProblem.id,
         code: `PROB-${liveProblem.slug?.slice(0, 4).toUpperCase() || '001'}`,
         slug: liveProblem.slug,
         title: liveProblem.title,
         category: (liveProblem.category || (liveProblem.tags?.includes('Math') ? 'Math & Number Theory' : 'Arrays & Two Pointers')) as any,
-        difficulty: liveProblem.difficulty === 'HARD' ? 'Hard' : liveProblem.difficulty === 'MEDIUM' ? 'Medium' : 'Easy',
-        acceptanceRate: 68.5,
-        totalSubmissions: liveProblem._count?.submissions || 0,
-        acceptedSubmissions: Math.floor((liveProblem._count?.submissions || 0) * 0.68),
+        difficulty: diff,
+        acceptanceRate,
+        totalSubmissions,
+        acceptedSubmissions,
         testCasesCount: liveProblem._count?.testCases || liveProblem.testCases?.length || 4,
-        authorName: 'Academic Faculty',
+        authorName: liveProblem.authorName || 'Academic Faculty',
         tags: Array.isArray(liveProblem.tags) && liveProblem.tags.length > 0 ? liveProblem.tags : ['Algorithms', 'Data Structures'],
         status: liveProblem.status === 'PUBLISHED' ? 'Published' : 'Draft',
-        points: liveProblem.difficulty === 'HARD' ? 200 : liveProblem.difficulty === 'MEDIUM' ? 120 : 80,
+        points,
         timeLimitMs: liveProblem.timeLimit || 1000,
         memoryLimitMb: liveProblem.memoryLimit || 256,
         likes: 0,

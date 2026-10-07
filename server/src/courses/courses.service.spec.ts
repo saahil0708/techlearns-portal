@@ -286,7 +286,7 @@ describe('CoursesService', () => {
       );
     });
 
-    it('should strip correctIndex from quizMCQ for student users in findCourseById', async () => {
+    it('should strip correctIndex and explanation from quizMCQ for student users in findCourseById', async () => {
       const studentUser: any = {
         id: 'student-1',
         globalRole: 'STUDENT',
@@ -306,6 +306,7 @@ describe('CoursesService', () => {
                   question: 'What is O(1)?',
                   options: ['Constant', 'Linear'],
                   correctIndex: 0,
+                  explanation: 'Direct index access is instant.',
                 },
               },
             ],
@@ -324,6 +325,7 @@ describe('CoursesService', () => {
       const lessonQuiz = (result.modules[0].lessons[0] as any).quizMCQ;
       expect(lessonQuiz).toBeDefined();
       expect(lessonQuiz.correctIndex).toBeUndefined();
+      expect(lessonQuiz.explanation).toBeUndefined();
       expect(lessonQuiz.question).toBe('What is O(1)?');
     });
 
@@ -335,7 +337,7 @@ describe('CoursesService', () => {
   });
 
   describe('getLesson', () => {
-    it('should strip correctIndex from quizMCQ for student users in getLesson', async () => {
+    it('should strip correctIndex and explanation from quizMCQ for student users in getLesson', async () => {
       const studentUser: any = {
         id: 'student-1',
         globalRole: 'STUDENT',
@@ -349,6 +351,7 @@ describe('CoursesService', () => {
           question: 'What is O(1)?',
           options: ['Constant', 'Linear'],
           correctIndex: 0,
+          explanation: 'Direct index access is instant.',
         },
         module: {
           course: {
@@ -369,7 +372,87 @@ describe('CoursesService', () => {
       const resultQuiz = result.quizMCQ as any;
       expect(resultQuiz).toBeDefined();
       expect(resultQuiz.correctIndex).toBeUndefined();
+      expect(resultQuiz.explanation).toBeUndefined();
       expect(resultQuiz.question).toBe('What is O(1)?');
+    });
+
+    it('should strip correctIndices from quizMSQ for student users in getLesson', async () => {
+      const studentUser: any = {
+        id: 'student-1',
+        globalRole: 'STUDENT',
+        memberships: [{ institutionId: 'institution-1', role: 'STUDENT' }],
+      };
+
+      vi.spyOn(prisma.lesson, 'findUnique').mockResolvedValue({
+        id: 'l-msq',
+        title: 'MSQ Lesson',
+        quizMCQ: {
+          question: 'Select all prime numbers',
+          options: ['2', '3', '4', '5'],
+          correctIndices: [0, 1, 3],
+          explanation: '4 is composite.',
+        },
+        module: {
+          course: {
+            id: 'course-1',
+            title: 'DSA',
+            status: CourseStatus.PUBLISHED,
+            createdById: 'faculty-1',
+            institutionId: 'institution-1',
+          },
+        },
+      } as any);
+      vi.spyOn(prisma.enrollment, 'findUnique').mockResolvedValue({
+        status: 'ACTIVE',
+      } as any);
+      vi.spyOn(prisma.lessonProgress, 'findUnique').mockResolvedValue(null);
+
+      const result = await service.getLesson('l-msq', studentUser);
+      const resultQuiz = result.quizMCQ as any;
+      expect(resultQuiz).toBeDefined();
+      expect(resultQuiz.correctIndices).toBeUndefined();
+      expect(resultQuiz.explanation).toBeUndefined();
+      expect(resultQuiz.options).toHaveLength(4);
+    });
+
+    it('should filter hidden test cases from codingProblem for student users in getLesson', async () => {
+      const studentUser: any = {
+        id: 'student-1',
+        globalRole: 'STUDENT',
+        memberships: [{ institutionId: 'institution-1', role: 'STUDENT' }],
+      };
+
+      vi.spyOn(prisma.lesson, 'findUnique').mockResolvedValue({
+        id: 'l-code',
+        title: 'Coding Lesson',
+        codingProblem: {
+          id: 'prob-1',
+          title: 'Two Sum',
+          testCases: [
+            { input: '1 2', output: '3', isHidden: false },
+            { input: '99 1', output: '100', isHidden: true },
+          ],
+        },
+        module: {
+          course: {
+            id: 'course-1',
+            title: 'DSA',
+            status: CourseStatus.PUBLISHED,
+            createdById: 'faculty-1',
+            institutionId: 'institution-1',
+          },
+        },
+      } as any);
+      vi.spyOn(prisma.enrollment, 'findUnique').mockResolvedValue({
+        status: 'ACTIVE',
+      } as any);
+      vi.spyOn(prisma.lessonProgress, 'findUnique').mockResolvedValue(null);
+
+      const result = await service.getLesson('l-code', studentUser);
+      const codingProblem = result.codingProblem as any;
+      expect(codingProblem).toBeDefined();
+      expect(codingProblem.testCases).toHaveLength(1);
+      expect(codingProblem.testCases[0].input).toBe('1 2');
     });
   });
 

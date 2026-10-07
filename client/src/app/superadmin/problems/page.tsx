@@ -45,21 +45,29 @@ export default async function ProblemsPage() {
           }
         }
 
+        const diff = item.difficulty === 'HARD' ? 'Hard' : item.difficulty === 'MEDIUM' ? 'Medium' : 'Easy';
+        const totalSubmissions = item.totalSubmissions ?? item._count?.submissions ?? 0;
+        const acceptedSubmissions = item.acceptedSubmissions ?? item.acceptedCount ?? 0;
+        const acceptanceRate = item.acceptanceRate !== undefined && item.acceptanceRate !== null
+          ? item.acceptanceRate
+          : (totalSubmissions > 0 ? Number(((acceptedSubmissions / totalSubmissions) * 100).toFixed(1)) : 0);
+        const points = item.points || (diff === 'Easy' ? 100 : diff === 'Hard' ? 350 : 200);
+
         return {
           id: item.id,
           code: item.code || `PROB-${String(idx + 1).padStart(3, '0')}`,
           slug: item.slug,
           title: item.title,
           category,
-          difficulty: item.difficulty === 'HARD' ? 'Hard' : item.difficulty === 'MEDIUM' ? 'Medium' : 'Easy',
-          acceptanceRate: 65.0,
-          totalSubmissions: item._count?.submissions || 0,
-          acceptedSubmissions: Math.floor((item._count?.submissions || 0) * 0.65),
-          testCasesCount: item._count?.testCases || 0,
-          authorName: 'Faculty',
+          difficulty: diff,
+          acceptanceRate,
+          totalSubmissions,
+          acceptedSubmissions,
+          testCasesCount: item._count?.testCases || item.testCasesCount || 0,
+          authorName: item.authorName || 'Faculty',
           tags,
           status: item.status === 'PUBLISHED' ? 'Published' : 'Draft',
-          points: item.difficulty === 'HARD' ? 200 : item.difficulty === 'MEDIUM' ? 120 : 70,
+          points,
           timeLimitMs: item.timeLimit || 1000,
           memoryLimitMb: item.memoryLimit || 256,
           likes: 0,

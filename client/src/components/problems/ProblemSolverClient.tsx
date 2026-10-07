@@ -53,9 +53,12 @@ import AssessmentRoundedIcon from '@mui/icons-material/AssessmentRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import HighlightOffRoundedIcon from '@mui/icons-material/HighlightOffRounded';
 import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded';
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 
 import CodeEditorWorkspace from '@/components/editor/CodeEditorWorkspace';
-import AICopilotDrawer from '@/components/editor/AICopilotDrawer';
+import AIChatbotPopup from '@/components/editor/AIChatbotPopup';
+import ProblemStatementDisplay from './ProblemStatementDisplay';
 import { ProblemEntity } from '@/types/problem';
 import { useToast } from '@/context/ToastContext';
 import { apiService } from '@/lib/api-service';
@@ -67,44 +70,6 @@ interface ProblemSolverClientProps {
 }
 
 export type WorkspaceLayoutMode = 'split' | 'wide' | 'focus';
-
-/**
- * Parses inline markdown tokens: `code` and **bold**
- */
-function renderInlineMarkdown(text: string) {
-  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
-  return parts.map((part, idx) => {
-    if (part.startsWith('`') && part.endsWith('`')) {
-      return (
-        <Box
-          component="span"
-          key={idx}
-          sx={{
-            bgcolor: '#F1F5F9',
-            color: '#0F172A',
-            fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-            fontSize: '0.82em',
-            px: 0.7,
-            py: 0.15,
-            borderRadius: '4px',
-            border: '1px solid #E2E8F0',
-            fontWeight: 600,
-          }}
-        >
-          {part.slice(1, -1)}
-        </Box>
-      );
-    }
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return (
-        <strong key={idx} style={{ color: '#0F172A', fontWeight: 700 }}>
-          {part.slice(2, -2)}
-        </strong>
-      );
-    }
-    return part;
-  });
-}
 
 /**
  * Shared mapping helper for submission verdicts across polling and history
@@ -131,134 +96,6 @@ export function mapSubmissionVerdict(rawVerdict: string | undefined | null): str
   }
 }
 
-/**
- * Clean block markdown renderer for problem statements
- */
-function RenderMarkdownBlocks({ content }: { content: string }) {
-  if (!content) {
-    return (
-      <Typography sx={{ color: '#64748B', fontSize: '0.9rem' }}>
-        No detailed statement authored for this problem. Solve according to algorithmic constraints.
-      </Typography>
-    );
-  }
-
-  const blocks = content.split(/\n\s*\n/);
-
-  return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
-      {blocks.map((block, bIdx) => {
-        const trimmed = block.trim();
-        if (!trimmed) return null;
-
-        if (trimmed === '---' || trimmed === '***') {
-          return <Divider key={bIdx} sx={{ my: 0.5, borderColor: '#F1F5F9' }} />;
-        }
-
-        if (trimmed.startsWith('### ')) {
-          return (
-            <Typography
-              key={bIdx}
-              sx={{
-                fontWeight: 800,
-                color: '#0F172A',
-                fontSize: '1rem',
-                letterSpacing: '-0.01em',
-                mt: bIdx > 0 ? 1 : 0,
-                borderLeft: '3px solid #2563EB',
-                pl: 1.2,
-              }}
-            >
-              {trimmed.replace(/^###\s+/, '')}
-            </Typography>
-          );
-        }
-
-        if (trimmed.startsWith('## ')) {
-          return (
-            <Typography
-              key={bIdx}
-              sx={{
-                fontWeight: 800,
-                color: '#0F172A',
-                fontSize: '1.1rem',
-                letterSpacing: '-0.01em',
-                mt: bIdx > 0 ? 1.5 : 0,
-              }}
-            >
-              {trimmed.replace(/^##\s+/, '')}
-            </Typography>
-          );
-        }
-
-        if (trimmed.includes('\n- ') || trimmed.startsWith('- ') || trimmed.includes('\n* ') || trimmed.startsWith('* ')) {
-          const allLines = trimmed.split('\n');
-          const nonBulletLines: string[] = [];
-          const bulletLines: string[] = [];
-
-          let hasStartedBullets = false;
-          for (const line of allLines) {
-            const lineTrim = line.trim();
-            if (lineTrim.startsWith('- ') || lineTrim.startsWith('* ')) {
-              hasStartedBullets = true;
-              bulletLines.push(lineTrim);
-            } else if (!hasStartedBullets && lineTrim.length > 0) {
-              nonBulletLines.push(lineTrim);
-            } else if (hasStartedBullets && lineTrim.length > 0) {
-              bulletLines.push(lineTrim);
-            }
-          }
-
-          return (
-            <Box key={bIdx} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {nonBulletLines.length > 0 && (
-                <Typography sx={{ fontSize: '0.9rem', color: '#334155', lineHeight: 1.7 }}>
-                  {renderInlineMarkdown(nonBulletLines.join(' '))}
-                </Typography>
-              )}
-              {bulletLines.length > 0 && (
-                <Box
-                  component="ul"
-                  sx={{
-                    pl: 2.5,
-                    m: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 0.6,
-                    color: '#334155',
-                    fontSize: '0.88rem',
-                  }}
-                >
-                  {bulletLines.map((line, lIdx) => (
-                    <li key={lIdx}>
-                      <Typography component="span" sx={{ fontSize: '0.88rem', color: '#334155', lineHeight: 1.6 }}>
-                        {renderInlineMarkdown(line.replace(/^[-*]\s+/, ''))}
-                      </Typography>
-                    </li>
-                  ))}
-                </Box>
-              )}
-            </Box>
-          );
-        }
-
-        return (
-          <Typography
-            key={bIdx}
-            sx={{
-              fontSize: '0.9rem',
-              color: '#334155',
-              lineHeight: 1.7,
-            }}
-          >
-            {renderInlineMarkdown(trimmed)}
-          </Typography>
-        );
-      })}
-    </Box>
-  );
-}
-
 export default function ProblemSolverClient({ problem }: ProblemSolverClientProps) {
   const router = useRouter();
   const toast = useToast();
@@ -272,6 +109,58 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
 
   // Layout mode: 'split' (50/50), 'wide' (35/65), 'focus' (100% IDE)
   const [layoutMode, setLayoutMode] = useState<WorkspaceLayoutMode>('split');
+  const [leftWidth, setLeftWidth] = useState<number>(42);
+  const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      const windowWidth = window.innerWidth;
+      const newPercent = (e.clientX / windowWidth) * 100;
+      if (newPercent >= 18 && newPercent <= 78) {
+        setLeftWidth(newPercent);
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false);
+        document.body.style.cursor = 'default';
+        document.body.style.userSelect = 'auto';
+      }
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  const handleLayoutChange = (mode: WorkspaceLayoutMode) => {
+    setLayoutMode(mode);
+    if (mode === 'split') {
+      setIsLeftCollapsed(false);
+      setLeftWidth(45);
+    } else if (mode === 'wide') {
+      setIsLeftCollapsed(false);
+      setLeftWidth(30);
+    } else if (mode === 'focus') {
+      setIsLeftCollapsed(true);
+    }
+  };
 
   // Submission history & loading states
   const [submissions, setSubmissions] = useState<Array<{
@@ -468,24 +357,24 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
         setSubmissions((prev) => [newSub, ...prev.filter((s) => s.id !== submissionResult.id)]);
 
         if (finalVerdict === 'Accepted') {
-          toast.success(`All ${subDetails?.totalTestCases || 5} testcases passed! +${problem.points} Points`, 'Accepted 🎉');
+          toast.success(`All ${subDetails?.totalTestCases || 5} testcases passed! +${problem.points} Points`, 'Accepted');
         } else if (finalVerdict === 'Wrong Answer') {
           const detail =
             subDetails?.errorMessage ||
             `Passed ${subDetails?.passedTestCases || 0}/${subDetails?.totalTestCases || 0} testcases`;
-          toast.error(detail, 'Wrong Answer ❌');
+          toast.error(detail, 'Wrong Answer');
         } else if (finalVerdict === 'Runtime Error') {
           toast.error(
             subDetails?.errorMessage ? subDetails.errorMessage.slice(0, 120) : 'Runtime Error occurred during execution',
-            'Runtime Error ⚠️',
+            'Runtime Error',
           );
         } else if (finalVerdict === 'Compilation Error') {
           toast.error(
             subDetails?.errorMessage ? subDetails.errorMessage.slice(0, 120) : 'Compilation failed',
-            'Compilation Error ⚠️',
+            'Compilation Error',
           );
         } else if (finalVerdict === 'Time Limit Exceeded') {
-          toast.warning(`Execution exceeded time limit (${problem.timeLimitMs || 2000}ms)`, 'Time Limit Exceeded ⏱️');
+          toast.warning(`Execution exceeded time limit (${problem.timeLimitMs || 2000}ms)`, 'Time Limit Exceeded');
         } else {
           toast.warning(`Submission verdict: ${finalVerdict}`, 'Evaluation Result');
         }
@@ -601,7 +490,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
           <ToggleButtonGroup
             value={layoutMode}
             exclusive
-            onChange={(_, next) => next && setLayoutMode(next)}
+            onChange={(_, next) => next && handleLayoutChange(next)}
             size="small"
             sx={{
               bgcolor: '#F8FAFC',
@@ -755,29 +644,27 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
       </Box>
 
       {/* ========================================================================= */}
-      {/* 2. FULL-SCREEN SPLIT WORKSPACE */}
+      {/* 2. FULL-SCREEN SPLIT WORKSPACE WITH RESIZABLE SLIDER */}
       {/* ========================================================================= */}
       <Box
         sx={{
           flex: 1,
           p: { xs: 1, sm: 1.5 },
-          display: 'grid',
-          gridTemplateColumns:
-            layoutMode === 'focus'
-              ? '1fr'
-              : layoutMode === 'wide'
-              ? { xs: '1fr', lg: '0.6fr 1.4fr' }
-              : { xs: '1fr', lg: '0.9fr 1.1fr' },
-          gap: 1.5,
-          alignItems: 'start',
+          display: 'flex',
+          flexDirection: { xs: 'column', lg: 'row' },
+          gap: { xs: 1.5, lg: 0 },
+          alignItems: 'stretch',
+          position: 'relative',
         }}
       >
         {/* ========================================================================= */}
         {/* LEFT PANE: Tabbed Problem Statement, Testcases, Submissions */}
         {/* ========================================================================= */}
-        {layoutMode !== 'focus' && (
+        {!isLeftCollapsed && (
           <Card
             sx={{
+              width: { xs: '100%', lg: `${leftWidth}%` },
+              flexShrink: 0,
               borderRadius: '14px',
               bgcolor: '#FFFFFF',
               border: '1px solid #E2E8F0',
@@ -876,10 +763,8 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                   </Box>
                 </Box>
 
-                <Divider sx={{ borderColor: '#F1F5F9' }} />
-
-                {/* Markdown Content */}
-                <RenderMarkdownBlocks content={problem.statementMarkdown} />
+                {/* Formatted Problem Statement (Rich HTML + Markdown support) */}
+                <ProblemStatementDisplay content={problem.statementMarkdown} />
 
                 {/* Interactive Sample Testcase Preview Cards */}
                 {problem.sampleTestCases && problem.sampleTestCases.length > 0 && (
@@ -1115,7 +1000,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                 {/* ========================================================================= */}
                 <Box sx={{ mt: 1 }}>
                   <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', color: '#0F172A', mb: 1 }}>
-                    🧪 Detailed Test Case Execution Matrix
+                    Detailed Test Case Execution Matrix
                   </Typography>
 
                   {submissions.length > 0 ? (
@@ -1176,7 +1061,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
 
                 <Card variant="outlined" sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: '8px' }}>
                   <Typography sx={{ fontWeight: 700, fontSize: '0.84rem', color: '#0F172A', mb: 0.5 }}>
-                    💡 CodeChef Partial Scoring Rules
+                    CodeChef Partial Scoring Rules
                   </Typography>
                   <Typography sx={{ fontSize: '0.8rem', color: '#64748B', lineHeight: 1.6 }}>
                     If your solution passes Subtask 1 but fails Subtask 2, you will receive partial credit (e.g. 30/100 points). Your final score on the problem is the maximum score achieved across all submissions.
@@ -1322,9 +1207,9 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                     {problem.editorialMarkdown && (
                       <Card variant="outlined" sx={{ p: 2, borderRadius: '8px', bgcolor: '#F8FAFC' }}>
                         <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#2563EB', mb: 0.8 }}>
-                          💡 Problem Intuition & Proof
+                          Problem Intuition & Proof
                         </Typography>
-                        <RenderMarkdownBlocks content={problem.editorialMarkdown} />
+                        <ProblemStatementDisplay content={problem.editorialMarkdown} />
                       </Card>
                     )}
 
@@ -1332,7 +1217,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                       <Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                           <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#0F172A' }}>
-                            💻 Reference Implementation ({problem.referenceSolution.language.toUpperCase()})
+                            Reference Implementation ({problem.referenceSolution.language.toUpperCase()})
                           </Typography>
                           <Button
                             size="small"
@@ -1373,7 +1258,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                 {/* Hints Accordion */}
                 <Box sx={{ mt: 1 }}>
                   <Typography sx={{ fontSize: '0.86rem', fontWeight: 800, color: '#0F172A', mb: 1 }}>
-                    💡 Step-by-Step Progressive Hints
+                    Step-by-Step Progressive Hints
                   </Typography>
 
                   {problem.hints && problem.hints.length > 0 ? (
@@ -1427,37 +1312,112 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
           </Card>
         )}
 
+        {/* RESIZER / DRAG SLIDER */}
+        {!isLeftCollapsed && (
+          <Box
+            onMouseDown={handleMouseDown}
+            sx={{
+              width: 14,
+              cursor: 'col-resize',
+              display: { xs: 'none', lg: 'flex' },
+              alignItems: 'center',
+              justifyContent: 'center',
+              userSelect: 'none',
+              position: 'relative',
+              zIndex: 10,
+              mx: 0.5,
+              '&:hover .slider-bar, &:active .slider-bar': {
+                bgcolor: '#2563EB',
+                width: 4,
+              },
+              '&:hover .slider-handle': {
+                bgcolor: '#2563EB',
+                color: '#FFFFFF',
+                transform: 'scale(1.1)',
+              },
+            }}
+          >
+            {/* Center Visual Bar */}
+            <Box
+              className="slider-bar"
+              sx={{
+                width: 2,
+                height: '100%',
+                bgcolor: '#E2E8F0',
+                borderRadius: '4px',
+                transition: 'all 0.15s ease',
+              }}
+            />
+            {/* Minimize Chevron Button */}
+            <Tooltip title="Minimize problem description (or drag to resize)" arrow placement="top">
+              <IconButton
+                size="small"
+                className="slider-handle"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsLeftCollapsed(true);
+                  setLayoutMode('focus');
+                }}
+                sx={{
+                  position: 'absolute',
+                  bgcolor: '#FFFFFF',
+                  border: '1px solid #CBD5E1',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                  width: 22,
+                  height: 22,
+                  p: 0,
+                  borderRadius: '50%',
+                  color: '#64748B',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <ChevronLeftRoundedIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
+
+        {/* Restore Floating Pill when Left Pane is Collapsed */}
+        {isLeftCollapsed && (
+          <Button
+            size="small"
+            startIcon={<ChevronRightRoundedIcon sx={{ fontSize: 18 }} />}
+            onClick={() => {
+              setIsLeftCollapsed(false);
+              setLayoutMode('split');
+            }}
+            sx={{
+              position: 'fixed',
+              left: 20,
+              bottom: 24,
+              zIndex: 100,
+              bgcolor: '#0F172A',
+              color: '#FFFFFF',
+              borderRadius: '20px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.25)',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              textTransform: 'none',
+              px: 2,
+              py: 0.8,
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              '&:hover': { bgcolor: '#1E293B', transform: 'translateY(-1px)' },
+            }}
+          >
+            Show Problem Description
+          </Button>
+        )}
+
         {/* ========================================================================= */}
         {/* RIGHT PANE: Monaco Code Editor Workspace */}
         {/* ========================================================================= */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
-          {layoutMode === 'focus' && (
-            <Box sx={{ mb: 1, display: 'flex', justifyContent: 'flex-start' }}>
-              <Button
-                size="small"
-                variant="outlined"
-                startIcon={<VerticalSplitRoundedIcon sx={{ fontSize: 16 }} />}
-                onClick={() => setLayoutMode('split')}
-                sx={{
-                  bgcolor: '#FFFFFF',
-                  borderColor: '#CBD5E1',
-                  color: '#2563EB',
-                  fontWeight: 700,
-                  textTransform: 'none',
-                  fontSize: '0.78rem',
-                  borderRadius: '6px',
-                  px: 1.5,
-                  '&:hover': { bgcolor: '#F8FAFC' },
-                }}
-              >
-                Show Problem Description
-              </Button>
-            </Box>
-          )}
-
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100%' }}>
           <CodeEditorWorkspace
             initialLanguage="python"
             problemTitle={problem.title}
+            problemDifficulty={problem.difficulty}
+            problemStatement={problem.statementMarkdown}
+            problemTags={problem.tags}
             sampleTestCases={problem.sampleTestCases}
             onCodeChange={setActiveCode}
             onLanguageChange={setActiveLanguage}
@@ -1466,13 +1426,16 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
         </Box>
       </Box>
 
-      {/* AI Copilot Drawer */}
-      <AICopilotDrawer
+      {/* Interactive AI Chatbot Popup */}
+      <AIChatbotPopup
         open={copilotOpen}
         onClose={() => setCopilotOpen(false)}
-        problemTitle={problem.title}
-        problemDifficulty={problem.difficulty}
-        problemStatement={problem.statementMarkdown || ''}
+        problem={{
+          title: problem.title,
+          statement: problem.statementMarkdown || '',
+          difficulty: problem.difficulty,
+          tags: problem.tags,
+        }}
         currentCode={activeCode}
         language={activeLanguage}
       />

@@ -43,6 +43,12 @@ export interface ProblemEntity {
   difficultyRating?: number; // CodeChef-style numeric difficulty rating (e.g. 240 to 2800)
   contestCode?: string; // e.g. "START256", "COOK130"
   subtasks?: { name: string; points: number; testCases: number }[];
+  institutionId?: string;
+  institutionName?: string;
+  courseId?: string;
+  courseName?: string;
+  moduleId?: string;
+  lessonId?: string;
   sampleTestCases: TestCaseSample[];
   hints?: string[];
   editorialMarkdown?: string;
@@ -71,8 +77,16 @@ export interface NewProblemData {
   testCasesCount?: number;
   tags: string[];
   statementMarkdown: string;
+  statement?: string;
+  inputFormat?: string;
+  outputFormat?: string;
+  constraints?: string;
   sampleInput: string;
   sampleOutput: string;
   sampleExplanation?: string;
   testCases?: ProblemTestCaseItem[];
+  institutionId?: string;
+  courseId?: string;
+  moduleId?: string;
+  lessonId?: string;
 }

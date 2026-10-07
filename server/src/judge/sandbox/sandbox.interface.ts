@@ -13,7 +13,8 @@ export interface SandboxExecutionResult {
   timedOut?: boolean;
   memoryLimitExceeded?: boolean;
   outputLimitExceeded?: boolean;
-  memory: number;
+  memory?: number;
+  executionTimeMs?: number;
 }
 
 export interface ISandboxProvider {

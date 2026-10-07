@@ -78,11 +78,11 @@ interface StudentNavbarProps {
 }
 
 export default function StudentNavbar({
-  searchQuery = '',
-  onSearchChange = () => {},
+  searchQuery: _searchQuery = '',
+  onSearchChange: _onSearchChange = () => {},
   streakDays,
-  contestRating,
-  ratingTier,
+  contestRating: _contestRating,
+  ratingTier: _ratingTier,
 }: StudentNavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -91,6 +91,13 @@ export default function StudentNavbar({
   const user = useAppSelector((state) => state.auth.user);
   const [activeUser, setActiveUser] = useState(user);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+
+  const effectiveStreak =
+    typeof streakDays === 'number' && streakDays > 0
+      ? streakDays
+      : typeof (activeUser as any)?.streakDays === 'number' && (activeUser as any).streakDays > 0
+      ? (activeUser as any).streakDays
+      : 0;
 
   // Dropdown states & hover timers
   const [resourcesAnchor, setResourcesAnchor] = useState<null | HTMLElement>(null);
@@ -453,6 +460,27 @@ export default function StudentNavbar({
           {/* 2. RIGHT GROUP: Notifications Bell + Profile Avatar */}
           {/* ========================================================================= */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Daily Practice Streak Badge */}
+            {effectiveStreak > 0 && (
+              <Tooltip title={`${effectiveStreak} Days Daily Practice Streak`}>
+                <Chip
+                  icon={<LocalFireDepartmentRoundedIcon sx={{ fontSize: 16, color: '#EA580C !important' }} />}
+                  label={`${effectiveStreak}d`}
+                  size="small"
+                  sx={{
+                    bgcolor: '#FFF7ED',
+                    color: '#EA580C',
+                    border: '1px solid #FFEDD5',
+                    fontWeight: 800,
+                    fontSize: '0.75rem',
+                    height: 28,
+                    borderRadius: '9999px',
+                    mr: 0.5,
+                  }}
+                />
+              </Tooltip>
+            )}
+
             {/* Notification Bell Icon */}
             <Tooltip title="Notifications">
               <IconButton

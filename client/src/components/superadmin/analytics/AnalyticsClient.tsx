@@ -29,13 +29,10 @@ import {
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
-import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
-import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
-import FilterAltOffRoundedIcon from '@mui/icons-material/FilterAltOffRounded';
-import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
 import AutoStoriesRoundedIcon from '@mui/icons-material/AutoStoriesRounded';
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import { useToast } from '@/context/ToastContext';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
@@ -44,8 +41,6 @@ import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import FirstPageRoundedIcon from '@mui/icons-material/FirstPageRounded';
 import LastPageRoundedIcon from '@mui/icons-material/LastPageRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import WhatshotRoundedIcon from '@mui/icons-material/WhatshotRounded';
 
 import dynamic from 'next/dynamic';
 import CurvedSidebar from '@/components/superadmin/layout/CurvedSidebar';

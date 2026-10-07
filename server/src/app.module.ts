@@ -35,6 +35,7 @@ import { ProjectsModule } from './projects/projects.module.js';
 import { CommunityModule } from './community/community.module.js';
 import { SimulationsModule } from './simulations/simulations.module.js';
 import { AICoachModule } from './ai-coach/ai-coach.module.js';
+import { AIModule } from './common/ai/ai.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -121,6 +122,7 @@ const dynamicObserveImports = hasValidObserveKeys
     CommunityModule,
     SimulationsModule,
     AICoachModule,
+    AIModule,
   ],
   controllers: [AppController],
   providers: [

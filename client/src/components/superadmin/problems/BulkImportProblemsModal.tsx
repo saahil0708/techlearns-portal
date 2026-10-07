@@ -140,7 +140,7 @@ export default function BulkImportProblemsModal({
             const code = (codeIdx >= 0 && parts[codeIdx] ? parts[codeIdx] : `PROB-${Math.random().toString(36).substring(2, 6).toUpperCase()}`).trim();
             const points = pointsIdx >= 0 && !isNaN(parseInt(parts[pointsIdx], 10))
               ? parseInt(parts[pointsIdx], 10)
-              : difficulty === 'Hard' ? 120 : difficulty === 'Medium' ? 80 : 20;
+              : difficulty === 'Hard' ? 350 : difficulty === 'Medium' ? 200 : 100;
 
             const timeLimitMs = timeIdx >= 0 && !isNaN(parseInt(parts[timeIdx], 10)) ? parseInt(parts[timeIdx], 10) : 1000;
             const memoryLimitMb = memIdx >= 0 && !isNaN(parseInt(parts[memIdx], 10)) ? parseInt(parts[memIdx], 10) : 256;

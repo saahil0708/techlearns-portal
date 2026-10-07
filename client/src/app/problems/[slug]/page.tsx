@@ -48,7 +48,11 @@ async function resolveProblem(slug: string): Promise<ProblemEntity | null> {
     if (liveProblem && liveProblem.id) {
       const rawDiff = String(liveProblem.difficulty || '').toUpperCase();
       const diff: ProblemDifficulty = rawDiff === 'EASY' ? 'Easy' : rawDiff === 'HARD' ? 'Hard' : 'Medium';
-      const subCount = liveProblem._count?.submissions || 0;
+      const subCount = liveProblem.totalSubmissions ?? liveProblem._count?.submissions ?? 0;
+      const acceptedSubs = liveProblem.acceptedSubmissions ?? liveProblem.acceptedCount ?? 0;
+      const calculatedAccRate = subCount > 0 ? Number(((acceptedSubs / subCount) * 100).toFixed(1)) : 0;
+      const points = liveProblem.points || (diff === 'Easy' ? 100 : diff === 'Hard' ? 350 : 200);
+
       return {
         id: liveProblem.id,
         code: liveProblem.code || `PROB-${liveProblem.id.slice(0, 4).toUpperCase()}`,
@@ -56,14 +60,14 @@ async function resolveProblem(slug: string): Promise<ProblemEntity | null> {
         title: liveProblem.title,
         category: liveProblem.category || 'Dynamic Programming',
         difficulty: diff,
-        acceptanceRate: liveProblem.acceptanceRate || 54.2,
+        acceptanceRate: liveProblem.acceptanceRate !== undefined && liveProblem.acceptanceRate !== null ? liveProblem.acceptanceRate : calculatedAccRate,
         totalSubmissions: subCount,
-        acceptedSubmissions: liveProblem.acceptedSubmissions || Math.round(subCount * 0.54),
+        acceptedSubmissions: acceptedSubs,
         testCasesCount: liveProblem.testCases?.length || liveProblem._count?.testCases || 10,
         authorName: liveProblem.authorName || 'Platform Team',
         tags: Array.isArray(liveProblem.tags) ? liveProblem.tags : ['Algorithms'],
         status: liveProblem.status === 'PUBLISHED' ? 'Published' : 'Draft',
-        points: liveProblem.points || (diff === 'Easy' ? 100 : diff === 'Medium' ? 200 : 350),
+        points,
         timeLimitMs: liveProblem.timeLimit || 2000,
         memoryLimitMb: liveProblem.memoryLimit || 256,
         likes: liveProblem.likes || 120,

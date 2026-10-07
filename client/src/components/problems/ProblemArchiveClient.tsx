@@ -42,6 +42,9 @@ import ShuffleRoundedIcon from '@mui/icons-material/ShuffleRounded';
 import WorkspacePremiumRoundedIcon from '@mui/icons-material/WorkspacePremiumRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
+import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
+import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
 
 import StudentAppLayout from '@/components/students/layout/StudentAppLayout';
 import { ProblemDifficulty, ProblemEntity } from '@/types/problem';
@@ -72,6 +75,10 @@ export default function ProblemArchiveClient() {
   const [search, setSearch] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
+  const [institutionFilter, setInstitutionFilter] = useState<string>('ALL');
+  const [institutions, setInstitutions] = useState<Array<{ id: string; name: string; code?: string }>>([]);
+  const [courseFilter, setCourseFilter] = useState<string>('ALL');
+  const [courses, setCourses] = useState<Array<{ id: string; title: string; institutionId?: string }>>([]);
   const [statusTab, setStatusTab] = useState<string>('ALL');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -109,11 +116,31 @@ export default function ProblemArchiveClient() {
     async function loadData() {
       setIsLoading(true);
       try {
-        const [res, subsRes, potd] = await Promise.all([
-          apiService.getProblems({ limit: 100 }),
+        const problemParams: { limit: number; institutionId?: string; courseId?: string } = { limit: 100 };
+        if (institutionFilter !== 'ALL' && institutionFilter !== 'GLOBAL') {
+          problemParams.institutionId = institutionFilter;
+        }
+        if (courseFilter !== 'ALL' && courseFilter !== 'STANDALONE') {
+          problemParams.courseId = courseFilter;
+        }
+
+        const [res, subsRes, potd, instRes, courseRes] = await Promise.all([
+          apiService.getProblems(problemParams),
           apiService.getSubmissions({ limit: 100 }).catch(() => null),
           apiService.getTodayPotd().catch(() => null),
+          apiService.getInstitutions({ limit: 100 }).catch(() => null),
+          apiService.getCourses({ limit: 100 }).catch(() => null),
         ]);
+
+        if (instRes && isMounted) {
+          const instList = Array.isArray(instRes) ? instRes : instRes.items;
+          setInstitutions(Array.isArray(instList) ? instList : []);
+        }
+
+        if (courseRes && isMounted) {
+          const courseList = Array.isArray(courseRes) ? courseRes : courseRes.items;
+          setCourses(Array.isArray(courseList) ? courseList : []);
+        }
 
         if (potd && isMounted) {
           setPotdData(potd);
@@ -144,9 +171,11 @@ export default function ProblemArchiveClient() {
             const mapped: ProblemEntity[] = res.items.map((item: any, idx: number) => {
               const rawDiff = String(item.difficulty || '').toUpperCase();
               const diff: ProblemDifficulty = rawDiff === 'EASY' ? 'Easy' : rawDiff === 'HARD' ? 'Hard' : 'Medium';
-              const subCount = item._count?.submissions || item.submissionsCount || 0;
-              const accepted = item.acceptedCount || 0;
-              const accRate = subCount > 0 ? Math.round((accepted / subCount) * 100) : 54;
+              const subCount = item.totalSubmissions ?? item._count?.submissions ?? item.submissionsCount ?? 0;
+              const accepted = item.acceptedSubmissions ?? item.acceptedCount ?? 0;
+              const accRate = item.acceptanceRate !== undefined && item.acceptanceRate !== null
+                ? item.acceptanceRate
+                : (subCount > 0 ? Number(((accepted / subCount) * 100).toFixed(1)) : 0);
               const titleLower = String(item.title || '').toLowerCase();
               let category = item.category;
               let tags = Array.isArray(item.tags) && item.tags.length > 0 ? [...item.tags] : [];
@@ -238,6 +267,8 @@ export default function ProblemArchiveClient() {
                 premium: false,
                 companies: ['Google', 'Meta', 'Amazon'],
                 statementMarkdown: item.statement || '',
+                institutionId: item.institutionId || item.collegeId || undefined,
+                courseId: item.courseId || undefined,
                 sampleTestCases: [],
               };
             });
@@ -257,12 +288,12 @@ export default function ProblemArchiveClient() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [institutionFilter, courseFilter]);
 
   // Reset pagination on filter change
   useEffect(() => {
     setPage(0);
-  }, [search, difficultyFilter, categoryFilter, statusTab]);
+  }, [search, difficultyFilter, categoryFilter, institutionFilter, courseFilter, statusTab]);
 
   // Categories list
   const categories = useMemo(() => {
@@ -282,14 +313,28 @@ export default function ProblemArchiveClient() {
       const matchesDifficulty = difficultyFilter === 'ALL' || p.difficulty === difficultyFilter;
       const matchesCategory = categoryFilter === 'ALL' || p.category === categoryFilter;
 
+      let matchesInstitution = true;
+      if (institutionFilter === 'GLOBAL') {
+        matchesInstitution = !p.institutionId;
+      } else if (institutionFilter !== 'ALL') {
+        matchesInstitution = p.institutionId === institutionFilter;
+      }
+
+      let matchesCourse = true;
+      if (courseFilter === 'STANDALONE') {
+        matchesCourse = !p.courseId;
+      } else if (courseFilter !== 'ALL') {
+        matchesCourse = p.courseId === courseFilter;
+      }
+
       let matchesStatus = true;
       if (statusTab === 'SOLVED') matchesStatus = solvedIds.has(p.id);
       if (statusTab === 'ATTEMPTED') matchesStatus = attemptedIds.has(p.id) && !solvedIds.has(p.id);
       if (statusTab === 'TODO') matchesStatus = !solvedIds.has(p.id) && !attemptedIds.has(p.id);
 
-      return matchesSearch && matchesDifficulty && matchesCategory && matchesStatus;
+      return matchesSearch && matchesDifficulty && matchesCategory && matchesInstitution && matchesCourse && matchesStatus;
     });
-  }, [problems, search, difficultyFilter, categoryFilter, statusTab, solvedIds, attemptedIds]);
+  }, [problems, search, difficultyFilter, categoryFilter, institutionFilter, courseFilter, statusTab, solvedIds, attemptedIds]);
 
   // Export CSV using Blob to prevent truncation on '#' or special chars
   const handleExportCSV = () => {
@@ -591,39 +636,30 @@ export default function ProblemArchiveClient() {
               width: '100%',
             }}
           >
-            {/* Left Section: 3D Flame Shield + Problem Details */}
+            {/* Left Section: Sleek POTD Date Badge + Problem Details */}
             <Box sx={{ display: 'flex', gap: { xs: 2.5, sm: 3 }, alignItems: 'center', maxWidth: { xs: '100%', lg: '62%' } }}>
-              {/* Geometric Flame Shield Icon Box */}
+              {/* Minimalist Date & POTD Indicator Box */}
               <Box
                 sx={{
-                  width: { xs: 60, sm: 72 },
-                  height: { xs: 60, sm: 72 },
+                  width: { xs: 54, sm: 64 },
+                  height: { xs: 54, sm: 64 },
                   flexShrink: 0,
-                  borderRadius: '18px',
-                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(239, 68, 68, 0.22) 100%)',
-                  border: '1px solid rgba(245, 158, 11, 0.45)',
+                  borderRadius: '14px',
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.14)',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 10px 28px rgba(245, 158, 11, 0.3)',
-                  position: 'relative',
-                  overflow: 'hidden',
+                  backdropFilter: 'blur(10px)',
                 }}
               >
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'radial-gradient(circle, rgba(254, 240, 138, 0.35) 0%, transparent 70%)',
-                  }}
-                />
-                <WhatshotRoundedIcon
-                  sx={{
-                    fontSize: { xs: 32, sm: 38 },
-                    color: '#F59E0B',
-                    filter: 'drop-shadow(0 0 12px rgba(245, 158, 11, 0.9))',
-                  }}
-                />
+                <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '0.68rem', letterSpacing: '0.08em' }}>
+                  POTD
+                </Typography>
+                <Typography sx={{ color: '#FFFFFF', fontWeight: 900, fontSize: { xs: '1.05rem', sm: '1.2rem' }, lineHeight: 1.1 }}>
+                  {new Date().getDate()}
+                </Typography>
               </Box>
 
               {/* Title, Badges & Problem Summary */}
@@ -662,7 +698,7 @@ export default function ProblemArchiveClient() {
                         }}
                       >
                         <Typography sx={{ color: '#FCA5A5', fontWeight: 800, fontSize: '0.74rem' }}>
-                          🔥 {potdData.userStreak.currentStreak}-Day Streak ({potdData.userStreak.streakMultiplier}x XP)
+                          {potdData.userStreak.currentStreak}-Day Streak ({potdData.userStreak.streakMultiplier}x XP)
                         </Typography>
                       </Box>
                     ) : (
@@ -679,7 +715,7 @@ export default function ProblemArchiveClient() {
                         }}
                       >
                         <Typography sx={{ color: '#93C5FD', fontWeight: 800, fontSize: '0.74rem' }}>
-                          ⚡ 1.5x Multiplier Active
+                          1.5x Multiplier Active
                         </Typography>
                       </Box>
                     )
@@ -698,7 +734,6 @@ export default function ProblemArchiveClient() {
                         borderRadius: '8px',
                       }}
                     >
-                      <CheckCircleRoundedIcon sx={{ fontSize: 14, color: '#34D399' }} />
                       <Typography sx={{ color: '#34D399', fontWeight: 800, fontSize: '0.74rem' }}>
                         Solved Today
                       </Typography>
@@ -763,7 +798,6 @@ export default function ProblemArchiveClient() {
               {/* Digital HUD Countdown Clock */}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                  <AccessTimeRoundedIcon sx={{ fontSize: 14, color: '#38BDF8' }} />
                   <Typography sx={{ color: '#94A3B8', fontSize: '0.74rem', fontWeight: 800, letterSpacing: '0.06em' }}>
                     ENDS IN
                   </Typography>
@@ -848,12 +882,9 @@ export default function ProblemArchiveClient() {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.4 }}>
                 {potdData?.problem && (
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <BoltRoundedIcon sx={{ fontSize: 20, color: '#FBBF24' }} />
-                      <Typography sx={{ color: '#FBBF24', fontWeight: 900, fontSize: '0.98rem' }}>
-                        +{potdData?.bonusPoints || 50} Pts
-                      </Typography>
-                    </Box>
+                    <Typography sx={{ color: '#FBBF24', fontWeight: 900, fontSize: '0.98rem' }}>
+                      +{potdData?.bonusPoints || 50} Pts
+                    </Typography>
                     <Typography sx={{ color: '#94A3B8', fontSize: '0.76rem', fontWeight: 700 }}>
                       {getRatingTier(getProblemRating(potdData.problem)).division}
                     </Typography>
@@ -863,7 +894,6 @@ export default function ProblemArchiveClient() {
                 <Button
                   variant="contained"
                   disabled={!potdData?.problem}
-                  startIcon={<PlayArrowRoundedIcon sx={{ fontSize: 18 }} />}
                   onClick={() => {
                     const targetSlug = potdData?.problem?.slug;
                     if (targetSlug) {
@@ -895,8 +925,8 @@ export default function ProblemArchiveClient() {
                       boxShadow: !potdData?.problem
                         ? 'none'
                         : potdData?.isSolved
-                        ? '0 8px 26px rgba(16, 185, 129, 0.55)'
-                        : '0 8px 28px rgba(37, 99, 235, 0.65)',
+                        ? '0 6px 24px rgba(16, 185, 129, 0.55)'
+                        : '0 6px 26px rgba(37, 99, 235, 0.6)',
                     },
                     '&.Mui-disabled': {
                       color: '#94A3B8',
@@ -908,7 +938,7 @@ export default function ProblemArchiveClient() {
                     ? 'No Challenge Active'
                     : potdData?.isSolved
                     ? 'Review Solution'
-                    : 'Solve Challenge ⚡'}
+                    : 'Solve Challenge'}
                 </Button>
               </Box>
             </Box>
@@ -1112,6 +1142,66 @@ export default function ProblemArchiveClient() {
                   ))}
                 </Select>
               </FormControl>
+
+              {/* Institution / College Dropdown Filter */}
+              <FormControl size="small" sx={{ minWidth: 180 }}>
+                <Select
+                  aria-label="Filter by institute"
+                  value={institutionFilter}
+                  onChange={(e) => setInstitutionFilter(e.target.value)}
+                  inputProps={{ 'aria-label': 'Filter by institute' }}
+                  displayEmpty
+                  sx={{
+                    borderRadius: '8px',
+                    bgcolor: '#F8FAFC',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    color: '#334155',
+                  }}
+                >
+                  <MenuItem value="ALL" sx={{ fontSize: '0.84rem', fontWeight: 600 }}>
+                    🏛️ All Institutes & Public
+                  </MenuItem>
+                  <MenuItem value="GLOBAL" sx={{ fontSize: '0.84rem', fontWeight: 600 }}>
+                    🌐 Global / Platform Only
+                  </MenuItem>
+                  {institutions.map((inst) => (
+                    <MenuItem key={inst.id} value={inst.id} sx={{ fontSize: '0.84rem' }}>
+                      🎓 {inst.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Course Dropdown Filter */}
+              <FormControl size="small" sx={{ minWidth: 180 }}>
+                <Select
+                  aria-label="Filter by course"
+                  value={courseFilter}
+                  onChange={(e) => setCourseFilter(e.target.value)}
+                  inputProps={{ 'aria-label': 'Filter by course' }}
+                  displayEmpty
+                  sx={{
+                    borderRadius: '8px',
+                    bgcolor: '#F8FAFC',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    color: '#334155',
+                  }}
+                >
+                  <MenuItem value="ALL" sx={{ fontSize: '0.84rem', fontWeight: 600 }}>
+                    All Courses & Practice
+                  </MenuItem>
+                  <MenuItem value="STANDALONE" sx={{ fontSize: '0.84rem', fontWeight: 600 }}>
+                    Standalone Practice Only
+                  </MenuItem>
+                  {courses.map((crs) => (
+                    <MenuItem key={crs.id} value={crs.id} sx={{ fontSize: '0.84rem' }}>
+                      {crs.title}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Box>
           </Box>
 
@@ -1230,7 +1320,47 @@ export default function ProblemArchiveClient() {
                               >
                                 {problem.title}
                               </Typography>
-                              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                              <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
+                                {(() => {
+                                  if (!problem.institutionId) return null;
+                                  const instObj = institutions.find((i) => i.id === problem.institutionId);
+                                  const label = instObj ? instObj.name : 'College Problem';
+                                  return (
+                                    <Chip
+                                      icon={<SchoolOutlinedIcon sx={{ fontSize: 13, color: '#EA580C !important' }} />}
+                                      label={label}
+                                      size="small"
+                                      sx={{
+                                        fontSize: '0.66rem',
+                                        fontWeight: 700,
+                                        height: 18,
+                                        bgcolor: '#FFF7ED',
+                                        color: '#EA580C',
+                                        border: '1px solid #FFEDD5',
+                                      }}
+                                    />
+                                  );
+                                })()}
+                                {(() => {
+                                  if (!problem.courseId) return null;
+                                  const crsObj = courses.find((c) => c.id === problem.courseId);
+                                  const label = crsObj ? crsObj.title : 'Course Lab';
+                                  return (
+                                    <Chip
+                                      icon={<MenuBookRoundedIcon sx={{ fontSize: 13, color: '#2563EB !important' }} />}
+                                      label={label}
+                                      size="small"
+                                      sx={{
+                                        fontSize: '0.66rem',
+                                        fontWeight: 700,
+                                        height: 18,
+                                        bgcolor: '#EFF6FF',
+                                        color: '#2563EB',
+                                        border: '1px solid #BFDBFE',
+                                      }}
+                                    />
+                                  );
+                                })()}
                                 {problem.tags.slice(0, 3).map((tag) => (
                                   <Chip
                                     key={tag}

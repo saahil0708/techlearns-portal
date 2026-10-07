@@ -90,6 +90,9 @@ export interface StudentProfileData {
   ratingTier: string;
   globalRank: number;
   collegeRank?: number;
+  totalPoints?: number;
+  score?: number;
+  earnedPoints?: number;
   solvedTotal: number;
   solvedEasy: number;
   solvedMedium: number;

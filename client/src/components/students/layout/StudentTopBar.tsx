@@ -293,7 +293,7 @@ export default function StudentTopBar({
           {/* Streak Pill - Conditionally rendered only when numeric streak exists */}
           {typeof safeStreak === 'number' && (
             <Tooltip
-              title={`🔥 ${safeStreak} Day Streak! Solve 1 problem today to keep your streak.`}
+              title={`${safeStreak} Day Streak! Solve 1 problem today to keep your streak.`}
               arrow
               placement="bottom"
             >

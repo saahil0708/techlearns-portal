@@ -68,6 +68,18 @@ export default function StudentProfileHeader({
         >
           <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
             <Chip
+              label={`🏆 ${((profile.totalPoints ?? profile.score) || ((profile.solvedEasy * 100) + (profile.solvedMedium * 200) + (profile.solvedHard * 350))).toLocaleString()} Points`}
+              size="small"
+              sx={{
+                bgcolor: 'rgba(234, 179, 8, 0.18)',
+                backdropFilter: 'blur(10px)',
+                color: '#FDE047',
+                fontWeight: 900,
+                border: '1px solid rgba(250, 204, 21, 0.5)',
+                boxShadow: '0 4px 14px rgba(234, 179, 8, 0.25)',
+              }}
+            />
+            <Chip
               label={`Global Rank #${profile.globalRank}`}
               size="small"
               sx={{

@@ -30,9 +30,9 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
-
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import TiptapProblemEditor from '@/components/editor/TiptapProblemEditor';
 
 interface FacultyCreateProblemModalProps {
   open: boolean;
@@ -42,7 +42,7 @@ interface FacultyCreateProblemModalProps {
   onProblemCreated?: (problem: any) => void;
 }
 
-interface LocalHiddenTestCase {
+interface LocalTestCaseItem {
   id: string;
   input: string;
   expectedOutput: string;
@@ -65,12 +65,17 @@ export default function FacultyCreateProblemModal({
   const [inputFormat, setInputFormat] = useState('');
   const [outputFormat, setOutputFormat] = useState('');
   const [constraints, setConstraints] = useState('');
-  const [sampleInput, setSampleInput] = useState('');
-  const [sampleOutput, setSampleOutput] = useState('');
-  const [sampleExplanation, setSampleExplanation] = useState('');
   const [status, setStatus] = useState('PUBLISHED');
   const [testCaseTab, setTestCaseTab] = useState<'sample' | 'hidden'>('sample');
-  const [hiddenCases, setHiddenCases] = useState<LocalHiddenTestCase[]>([
+  const [publicCases, setPublicCases] = useState<LocalTestCaseItem[]>([
+    {
+      id: 'tc-fac-pub-1',
+      input: '',
+      expectedOutput: '',
+      explanation: '',
+    },
+  ]);
+  const [hiddenCases, setHiddenCases] = useState<LocalTestCaseItem[]>([
     {
       id: 'tc-faculty-hidden-1',
       input: '',
@@ -88,13 +93,19 @@ export default function FacultyCreateProblemModal({
     setInputFormat('');
     setOutputFormat('');
     setConstraints('');
-    setSampleInput('');
-    setSampleOutput('');
-    setSampleExplanation('');
     setStatus('PUBLISHED');
+    setTestCaseTab('sample');
+    setPublicCases([
+      {
+        id: 'tc-fac-pub-1',
+        input: '',
+        expectedOutput: '',
+        explanation: '',
+      },
+    ]);
     setHiddenCases([
       {
-        id: `tc-faculty-hidden-${Date.now()}`,
+        id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `tc-faculty-hidden-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         input: '',
         expectedOutput: '',
       },
@@ -106,11 +117,38 @@ export default function FacultyCreateProblemModal({
     onClose();
   };
 
+  const handleAddPublicCase = () => {
+    setPublicCases((prev) => [
+      ...prev,
+      {
+        id: `tc-fac-pub-${Date.now()}-${prev.length + 1}`,
+        input: '',
+        expectedOutput: '',
+        explanation: `Example #${prev.length + 1}`,
+      },
+    ]);
+  };
+
+  const handleRemovePublicCase = (id: string) => {
+    setPublicCases((prev) => {
+      if (prev.length <= 1) {
+        return [{ id: 'tc-fac-pub-1', input: '', expectedOutput: '', explanation: '' }];
+      }
+      return prev.filter((tc) => tc.id !== id);
+    });
+  };
+
+  const handlePublicCaseChange = (id: string, field: 'input' | 'expectedOutput' | 'explanation', value: string) => {
+    setPublicCases((prev) =>
+      prev.map((tc) => (tc.id === id ? { ...tc, [field]: value } : tc))
+    );
+  };
+
   const handleAddHiddenCase = () => {
     setHiddenCases((prev) => [
       ...prev,
       {
-        id: `tc-faculty-hidden-${Date.now()}`,
+        id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `tc-faculty-hidden-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         input: '',
         expectedOutput: '',
       },
@@ -118,7 +156,12 @@ export default function FacultyCreateProblemModal({
   };
 
   const handleRemoveHiddenCase = (id: string) => {
-    setHiddenCases((prev) => prev.filter((tc) => tc.id !== id));
+    setHiddenCases((prev) => {
+      if (prev.length <= 1) {
+        return [{ id: 'tc-faculty-hidden-1', input: '', expectedOutput: '' }];
+      }
+      return prev.filter((tc) => tc.id !== id);
+    });
   };
 
   const handleHiddenCaseChange = (id: string, field: 'input' | 'expectedOutput', value: string) => {
@@ -137,14 +180,11 @@ export default function FacultyCreateProblemModal({
       toast.error('Please provide a problem statement.', 'Validation Error');
       return;
     }
-    const hasSampleInput = Boolean(sampleInput.trim());
-    const hasSampleOutput = Boolean(sampleOutput.trim());
 
-    if ((hasSampleInput && !hasSampleOutput) || (!hasSampleInput && hasSampleOutput)) {
-      toast.error(
-        'Please provide both Sample Input and Expected Output, or leave both empty.',
-        'Validation Error'
-      );
+    const validPublics = publicCases.filter((tc) => tc.input.trim() || tc.expectedOutput.trim());
+    if (validPublics.length === 0) {
+      toast.error('Please provide at least one Public Sample Test Case.', 'Validation Error');
+      setTestCaseTab('sample');
       return;
     }
 
@@ -173,15 +213,15 @@ export default function FacultyCreateProblemModal({
         order?: number;
       }> = [];
 
-      if (hasSampleInput && hasSampleOutput) {
+      validPublics.forEach((tc, idx) => {
         testCasesPayload.push({
-          input: sampleInput,
-          expectedOutput: sampleOutput,
-          explanation: sampleExplanation.trim() || undefined,
+          input: tc.input,
+          expectedOutput: tc.expectedOutput,
+          explanation: tc.explanation?.trim() || undefined,
           isHidden: false,
-          order: 0,
+          order: idx,
         });
-      }
+      });
 
       hiddenCases.forEach((tc) => {
         const hasInput = Boolean(tc.input.trim());
@@ -367,18 +407,18 @@ export default function FacultyCreateProblemModal({
             </FormControl>
           </Box>
 
-          {/* Statement Markdown */}
-          <TextField
-            label="Problem Statement & Markdown Description"
-            placeholder="Given the root of a binary tree, invert the tree and return its root..."
-            required
-            multiline
-            rows={4}
-            fullWidth
-            size="small"
-            value={statement}
-            onChange={(e) => setStatement(e.target.value)}
-          />
+          {/* Statement Rich Text Editor */}
+          <Box>
+            <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
+              Problem Statement (Rich Text Editor) *
+            </Typography>
+            <TiptapProblemEditor
+              content={statement}
+              onChange={(val) => setStatement(val)}
+              placeholder="Describe the problem narrative, constraints, and examples..."
+              minHeight={200}
+            />
+          </Box>
 
           {/* Input & Output Format */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
@@ -434,7 +474,16 @@ export default function FacultyCreateProblemModal({
                   value="sample"
                   icon={<VisibilityRoundedIcon sx={{ fontSize: 16 }} />}
                   iconPosition="start"
-                  label="Sample Public Case"
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>Public Samples</span>
+                      <Chip
+                        size="small"
+                        label={publicCases.filter((tc) => tc.input.trim() || tc.expectedOutput.trim()).length}
+                        sx={{ height: 18, fontSize: '0.7rem', fontWeight: 800, bgcolor: '#ECFDF5', color: '#059669' }}
+                      />
+                    </Box>
+                  }
                 />
                 <Tab
                   value="hidden"
@@ -453,7 +502,25 @@ export default function FacultyCreateProblemModal({
                 />
               </Tabs>
 
-              {testCaseTab === 'hidden' && (
+              {testCaseTab === 'sample' ? (
+                <Button
+                  size="small"
+                  startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
+                  onClick={handleAddPublicCase}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    bgcolor: '#ECFDF5',
+                    color: '#059669',
+                    borderRadius: '8px',
+                    px: 1.5,
+                    '&:hover': { bgcolor: '#D1FAE5' },
+                  }}
+                >
+                  Add Sample Case
+                </Button>
+              ) : (
                 <Button
                   size="small"
                   startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
@@ -474,48 +541,89 @@ export default function FacultyCreateProblemModal({
               )}
             </Box>
 
-            {/* Public Sample Case */}
+            {/* Public Sample Cases */}
             {testCaseTab === 'sample' && (
               <Box sx={{ p: 2.5, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#64748B', fontSize: '0.8rem' }}>
-                  <VisibilityRoundedIcon sx={{ fontSize: 16, color: '#3B82F6' }} />
+                  <VisibilityRoundedIcon sx={{ fontSize: 16, color: '#059669' }} />
                   <span>Publicly visible in problem statement for student guidance and initial test runs.</span>
                 </Box>
 
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                  <TextField
-                    label="Sample Input"
-                    placeholder="4 2 7 1 3 6 9"
-                    multiline
-                    rows={2}
-                    fullWidth
-                    size="small"
-                    value={sampleInput}
-                    onChange={(e) => setSampleInput(e.target.value)}
-                    slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: '0.82rem' } } }}
-                  />
+                {publicCases.map((tc, index) => (
+                  <Box
+                    key={tc.id}
+                    sx={{
+                      p: 2,
+                      bgcolor: '#FFFFFF',
+                      borderRadius: '10px',
+                      border: '1px solid #E2E8F0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 1.5,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip
+                          label={`Example #${index + 1}`}
+                          size="small"
+                          sx={{ fontWeight: 800, fontSize: '0.75rem', bgcolor: 'rgba(16, 185, 129, 0.1)', color: '#059669' }}
+                        />
+                        <Chip
+                          label="Public Sample"
+                          size="small"
+                          sx={{ fontWeight: 600, fontSize: '0.7rem', bgcolor: '#F0FDF4', color: '#16A34A' }}
+                        />
+                      </Box>
 
-                  <TextField
-                    label="Expected Output"
-                    placeholder="4 7 2 9 6 3 1"
-                    multiline
-                    rows={2}
-                    fullWidth
-                    size="small"
-                    value={sampleOutput}
-                    onChange={(e) => setSampleOutput(e.target.value)}
-                    slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: '0.82rem' } } }}
-                  />
-                </Box>
+                      {publicCases.length > 1 && (
+                        <Tooltip title="Remove sample test case">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleRemovePublicCase(tc.id)}
+                            sx={{ color: '#94A3B8', '&:hover': { color: '#EF4444', bgcolor: '#FEE2E2' } }}
+                          >
+                            <DeleteOutlineRoundedIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
 
-                <TextField
-                  label="Sample Explanation (Optional)"
-                  placeholder="Explanation of how the sample output was derived..."
-                  fullWidth
-                  size="small"
-                  value={sampleExplanation}
-                  onChange={(e) => setSampleExplanation(e.target.value)}
-                />
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
+                      <TextField
+                        label="Sample Input"
+                        placeholder="4 2 7 1 3 6 9"
+                        multiline
+                        rows={2}
+                        fullWidth
+                        size="small"
+                        value={tc.input}
+                        onChange={(e) => handlePublicCaseChange(tc.id, 'input', e.target.value)}
+                        slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: '0.82rem' } } }}
+                      />
+                      <TextField
+                        label="Expected Output"
+                        placeholder="4 7 2 9 6 3 1"
+                        multiline
+                        rows={2}
+                        fullWidth
+                        size="small"
+                        value={tc.expectedOutput}
+                        onChange={(e) => handlePublicCaseChange(tc.id, 'expectedOutput', e.target.value)}
+                        slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: '0.82rem' } } }}
+                      />
+                    </Box>
+
+                    <TextField
+                      label="Sample Step Explanation (Optional)"
+                      placeholder="Explain how the sample output was derived..."
+                      fullWidth
+                      size="small"
+                      value={tc.explanation || ''}
+                      onChange={(e) => handlePublicCaseChange(tc.id, 'explanation', e.target.value)}
+                    />
+                  </Box>
+                ))}
               </Box>
             )}
 

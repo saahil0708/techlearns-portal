@@ -9,78 +9,30 @@ import {
   TextField,
   Box,
   Typography,
-  IconButton,
   Tabs,
   Tab,
-  Radio,
-  Checkbox,
-  Chip,
-  MenuItem,
-  Select,
-  Tooltip,
   CircularProgress,
-  Alert,
-  Divider,
 } from '@mui/material';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
 import QuizRoundedIcon from '@mui/icons-material/QuizRounded';
 import CheckBoxRoundedIcon from '@mui/icons-material/CheckBoxRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
-import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
-import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded';
-import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
-import FlashOnRoundedIcon from '@mui/icons-material/FlashOnRounded';
-import ContentPasteRoundedIcon from '@mui/icons-material/ContentPasteRounded';
-import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
-import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
-import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 
-import TipTapEditor from '@/components/shared/TipTapEditor';
-import { formatArticleMarkdown } from '@/utils/markdown';
-import { robustParseJson } from '@/lib/curriculum-import-parser';
+import {
+  LessonModality,
+  LessonAuthoringPayload,
+  LessonAuthoringModalProps,
+  TestCaseItem,
+} from './authoring/types';
+import { AuthoringModalHeader } from './authoring/AuthoringModalHeader';
+import { BulkImportAssistant } from './authoring/BulkImportAssistant';
+import { ReadingTheoryTab } from './authoring/ReadingTheoryTab';
+import { QuizBuilderTab } from './authoring/QuizBuilderTab';
+import { CodingLabTab } from './authoring/CodingLabTab';
 
-export type LessonModality = 'reading' | 'quiz' | 'msq' | 'code';
-
-export interface LessonAuthoringPayload {
-  title: string;
-  type: LessonModality;
-  durationMinutes: number;
-  content: string;
-  importantNotes?: string[];
-  quizMCQ?: {
-    question: string;
-    options: string[];
-    correctIndex?: number;
-    correctIndices?: number[];
-    isMSQ?: boolean;
-    explanation?: string;
-    hint?: string;
-    points?: number;
-  };
-  codingProblem?: {
-    title?: string;
-    statement?: string;
-    description?: string;
-    language?: string;
-    starterCode?: string;
-    sampleInput?: string;
-    sampleOutput?: string;
-    testCases?: Array<{ input: string; expectedOutput: string; isHidden?: boolean }>;
-  };
-}
-
-interface LessonAuthoringModalProps {
-  open: boolean;
-  onClose: () => void;
-  onSave: (data: LessonAuthoringPayload) => Promise<void> | void;
-  initialData?: any;
-  isEditing?: boolean;
-  moduleTitle?: string;
-}
+// Re-export types for backward compatibility
+export type { LessonModality, LessonAuthoringPayload, LessonAuthoringModalProps };
 
 export default function LessonAuthoringModal({
   open,
@@ -119,18 +71,16 @@ export default function LessonAuthoringModal({
   );
   const [sampleInput, setSampleInput] = useState('Input: [1, 2, 3]');
   const [sampleOutput, setSampleOutput] = useState('Output: [1, 2, 3]');
-  const [testCases, setTestCases] = useState<Array<{ input: string; expectedOutput: string; isHidden: boolean }>>([
+  const [testCases, setTestCases] = useState<TestCaseItem[]>([
     { input: '[1, 2, 3]', expectedOutput: '[1, 2, 3]', isHidden: false },
     { input: '[10, 20]', expectedOutput: '[10, 20]', isHidden: true },
   ]);
 
-  // Bulk Import In-Modal Assistant State
+  // Bulk Import Assistant State
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [bulkImportText, setBulkImportText] = useState('');
-  const [bulkImportFormat, setBulkImportFormat] = useState<'text' | 'csv' | 'json'>('text');
   const [bulkImportError, setBulkImportError] = useState<string | null>(null);
   const [bulkImportSuccessMsg, setBulkImportSuccessMsg] = useState<string | null>(null);
-  const [copiedTemplate, setCopiedTemplate] = useState(false);
 
   const borderColor = '#E2E8F0';
 
@@ -267,453 +217,6 @@ export default function LessonAuthoringModal({
     }
   }, [open, initialData]);
 
-  // Quiz Option Handlers
-  const handleAddQuizOption = () => {
-    setQuizOptions([...quizOptions, '']);
-  };
-
-  const handleRemoveQuizOption = (index: number) => {
-    if (quizOptions.length <= 2) return;
-    const next = quizOptions.filter((_, i) => i !== index);
-    setQuizOptions(next);
-    if (mcqCorrectIndex >= next.length) {
-      setMcqCorrectIndex(0);
-    }
-    setMsqCorrectIndices((prev) => prev.filter((i) => i !== index).map((i) => (i > index ? i - 1 : i)));
-  };
-
-  const handleToggleMsqIndex = (index: number) => {
-    setMsqCorrectIndices((prev) => {
-      if (prev.includes(index)) {
-        if (prev.length === 1) return prev; // Keep at least one selected
-        return prev.filter((i) => i !== index);
-      } else {
-        return [...prev, index].sort((a, b) => a - b);
-      }
-    });
-  };
-
-  // Takeaway Handlers
-  const handleAddTakeaway = () => {
-    setKeyTakeaways([...keyTakeaways, '']);
-  };
-
-  const handleRemoveTakeaway = (index: number) => {
-    setKeyTakeaways(keyTakeaways.filter((_, i) => i !== index));
-  };
-
-  // Test Case Handlers
-  const handleAddTestCase = () => {
-    setTestCases([...testCases, { input: '', expectedOutput: '', isHidden: false }]);
-  };
-
-  const handleRemoveTestCase = (index: number) => {
-    if (testCases.length <= 1) return;
-    setTestCases(testCases.filter((_, i) => i !== index));
-  };
-
-  // =========================================================================
-  // BULK IMPORT PARSER LOGIC FOR ALL 4 MODALITIES
-  // =========================================================================
-  const getBulkTemplate = () => {
-    if (modality === 'reading') {
-      if (bulkImportFormat === 'json') {
-        return JSON.stringify(
-          {
-            title: 'Memory References & Pointer Mechanics',
-            durationMinutes: 20,
-            content: '<h2>Memory Layout</h2><p>Variables reference heap memory objects in Python.</p>',
-            takeaways: [
-              'Immutable objects create new allocations on modification.',
-              'is compares memory identity while == compares value equality.',
-            ],
-          },
-          null,
-          2
-        );
-      }
-      return `# Submodule Title: Memory References & Pointer Mechanics
-Duration: 20
-
-## Technical Lecture Notes
-Variables in Python act as typed reference pointers to runtime heap objects.
-
-> [!NOTE]
-> All variable names live in local or global namespaces pointing to PyObject instances.
-
-> [!TIP]
-> Use sys.getrefcount(obj) to inspect live reference counts.
-
-## Key Takeaways
-- Immutable objects create new allocations on modification.
-- The 'is' keyword compares object memory IDs, whereas '==' compares equality.`;
-    }
-
-    if (modality === 'quiz') {
-      if (bulkImportFormat === 'json') {
-        return JSON.stringify(
-          {
-            title: 'Hash Collision Complexity Quiz',
-            question: 'What is the average time complexity of searching a key in an optimal hash table?',
-            options: ['O(1)', 'O(log N)', 'O(N)', 'O(N log N)'],
-            correctIndex: 0,
-            explanation: 'Hash tables calculate array bucket indices in direct O(1) time using deterministic hash functions.',
-            hint: 'Think about direct address indexing.',
-            points: 10,
-          },
-          null,
-          2
-        );
-      }
-      if (bulkImportFormat === 'csv') {
-        return `Question,Option A,Option B,Option C,Option D,Correct,Explanation,Hint,Points\nWhat is the average lookup complexity in a Hash Table?,O(1),O(log N),O(N),O(N log N),A,Hash tables calculate array bucket indices in O(1) time.,Think about direct address indexing.,10`;
-      }
-      return `Question: What is the average lookup complexity of searching a key in a Hash Table?
-Option A: O(1)
-Option B: O(log N)
-Option C: O(N)
-Option D: O(N log N)
-Correct: A
-Explanation: Hash tables compute array bucket indices in direct O(1) time via hash codes.
-Hint: Think about direct address indexing.
-Points: 10`;
-    }
-
-    if (modality === 'msq') {
-      if (bulkImportFormat === 'json') {
-        return JSON.stringify(
-          {
-            title: 'Python Immutable Types MSQ',
-            question: 'Which of the following built-in data types in Python are immutable?',
-            options: ['int', 'list', 'tuple', 'str'],
-            correctIndices: [0, 2, 3],
-            explanation: 'int, tuple, and str are immutable; lists and dictionaries are mutable.',
-            hint: 'Try mutating an element in place.',
-            points: 20,
-          },
-          null,
-          2
-        );
-      }
-      if (bulkImportFormat === 'csv') {
-        return `Question,Option A,Option B,Option C,Option D,Correct,Explanation,Hint,Points\nWhich types in Python are immutable?,int,list,tuple,str,"A, C, D",int tuple and str cannot be mutated in place.,Think about tuple assignment.,20`;
-      }
-      return `Question: Which of the following built-in data types in Python are immutable?
-Option A: int
-Option B: list
-Option C: tuple
-Option D: str
-Correct: A, C, D
-Explanation: int, tuple, and str cannot be mutated in place; lists and dictionaries are mutable.
-Hint: Think about modifying an element via indexing.
-Points: 20`;
-    }
-
-    // Coding Lab Template
-    if (bulkImportFormat === 'json') {
-      return JSON.stringify(
-        {
-          title: 'Two Sum Problem',
-          language: 'python',
-          durationMinutes: 25,
-          statement: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
-          starterCode: 'def two_sum(nums, target):\n    # Write optimal hash map solution\n    seen = {}\n    for i, num in enumerate(nums):\n        diff = target - num\n        if diff in seen:\n            return [seen[diff], i]\n        seen[num] = i\n    return []',
-          sampleInput: 'nums = [2,7,11,15], target = 9',
-          sampleOutput: '[0, 1]',
-          testCases: [
-            { input: '[2, 7, 11, 15], 9', expectedOutput: '[0, 1]', isHidden: false },
-            { input: '[3, 2, 4], 6', expectedOutput: '[1, 2]', isHidden: false },
-            { input: '[3, 3], 6', expectedOutput: '[0, 1]', isHidden: true },
-          ],
-        },
-        null,
-        2
-      );
-    }
-    return `Title: Two Sum Problem
-Language: python
-Duration: 25
-Statement: Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
-
-StarterCode:
-def two_sum(nums, target):
-    seen = {}
-    for i, num in enumerate(nums):
-        diff = target - num
-        if diff in seen:
-            return [seen[diff], i]
-        seen[num] = i
-    return []
-
-SampleInput: nums = [2,7,11,15], target = 9
-SampleOutput: [0, 1]
-
-TestCases:
-[2, 7, 11, 15], 9 | [0, 1] | public
-[3, 2, 4], 6 | [1, 2] | public
-[3, 3], 6 | [0, 1] | hidden`;
-  };
-
-  const handleCopyTemplate = () => {
-    if (typeof window !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(getBulkTemplate());
-      setCopiedTemplate(true);
-      setTimeout(() => setCopiedTemplate(false), 2000);
-    }
-  };
-
-  const handleApplyBulkImport = () => {
-    setBulkImportError(null);
-    setBulkImportSuccessMsg(null);
-
-    const raw = bulkImportText.trim();
-    if (!raw) {
-      setBulkImportError('Please paste content into the bulk import area before applying.');
-      return;
-    }
-
-    try {
-      // 1. JSON Format Parser
-      if (raw.startsWith('{') || raw.startsWith('[')) {
-        const data = robustParseJson(raw);
-        if (data.title && typeof data.title === 'string') {
-          setTitle(data.title.trim());
-        }
-        if (data.durationMinutes && Number(data.durationMinutes)) {
-          setDurationMinutes(Number(data.durationMinutes));
-        }
-
-        if (modality === 'reading') {
-          if (data.content) setReadingContent(data.content);
-          if (Array.isArray(data.takeaways) && data.takeaways.length > 0) {
-            setKeyTakeaways(data.takeaways.map((t: any) => String(t).trim()));
-          }
-          setBulkImportSuccessMsg('Successfully parsed and imported Reading Notes & Takeaways!');
-        } else if (modality === 'quiz' || modality === 'msq') {
-          if (data.question) setQuizQuestion(data.question);
-          if (Array.isArray(data.options) && data.options.length >= 2) {
-            setQuizOptions(data.options.map((o: any) => String(o).trim()));
-          }
-          if (data.correctIndex !== undefined) setMcqCorrectIndex(Number(data.correctIndex));
-          if (Array.isArray(data.correctIndices)) setMsqCorrectIndices(data.correctIndices.map(Number));
-          if (data.explanation) setQuizExplanation(data.explanation);
-          if (data.hint) setQuizHint(data.hint);
-          if (data.points) setQuizPoints(Number(data.points));
-          setBulkImportSuccessMsg(`Successfully parsed and imported ${modality === 'quiz' ? 'Single MCQ' : 'Multi MSQ'} question!`);
-        } else if (modality === 'code') {
-          if (data.title) setCodeTitle(data.title);
-          if (data.statement || data.description) setCodeStatement(data.statement || data.description);
-          if (data.language) setCodeLanguage(data.language);
-          if (data.starterCode) setStarterCode(data.starterCode);
-          if (data.sampleInput) setSampleInput(data.sampleInput);
-          if (data.sampleOutput) setSampleOutput(data.sampleOutput);
-          if (Array.isArray(data.testCases) && data.testCases.length > 0) {
-            setTestCases(
-              data.testCases.map((tc: any) => ({
-                input: tc.input || '',
-                expectedOutput: tc.expectedOutput || '',
-                isHidden: !!tc.isHidden,
-              }))
-            );
-          }
-          setBulkImportSuccessMsg('Successfully parsed and imported Coding Sandbox Challenge!');
-        }
-        return;
-      }
-
-      // 2. Modality-specific Text / CSV Parser
-      if (modality === 'reading') {
-        const lines = raw.split('\n');
-        let parsedTitle = '';
-        let takeawaysList: string[] = [];
-        let bodyLines: string[] = [];
-        let inTakeawaysSection = false;
-
-        lines.forEach((line) => {
-          const trimmed = line.trim();
-          if (/^#\s+(?:Submodule Title:\s*)?(.*)$/i.test(trimmed) && !parsedTitle) {
-            parsedTitle = trimmed.replace(/^#\s+(?:Submodule Title:\s*)?/i, '').trim();
-            return;
-          }
-          if (/^Duration:\s*(\d+)/i.test(trimmed)) {
-            const match = trimmed.match(/^Duration:\s*(\d+)/i);
-            if (match) setDurationMinutes(Number(match[1]));
-            return;
-          }
-          if (/^##?\s*(?:Key\s*)?Takeaways/i.test(trimmed)) {
-            inTakeawaysSection = true;
-            return;
-          }
-          if (inTakeawaysSection) {
-            if (/^[-*+]\s+(.*)$/.test(trimmed)) {
-              takeawaysList.push(trimmed.replace(/^[-*+]\s+/, '').trim());
-            } else if (trimmed) {
-              takeawaysList.push(trimmed);
-            }
-          } else {
-            bodyLines.push(line);
-          }
-        });
-
-        if (parsedTitle) setTitle(parsedTitle);
-        if (bodyLines.length > 0) setReadingContent(bodyLines.join('\n').trim());
-        if (takeawaysList.length > 0) setKeyTakeaways(takeawaysList);
-
-        setBulkImportSuccessMsg('Imported Notes and Key Takeaways successfully!');
-      } else if (modality === 'quiz' || modality === 'msq') {
-        // CSV or Key-Value Formats
-        const isCsv = raw.includes(',') && (raw.toLowerCase().includes('option') || raw.toLowerCase().includes('question'));
-        if (isCsv) {
-          const rows = raw.split('\n').filter((r) => r.trim());
-          const dataRow = rows.length > 1 && rows[0].toLowerCase().includes('question') ? rows[1] : rows[0];
-          const cols = dataRow.split(',').map((c) => c.trim().replace(/^["']|["']$/g, ''));
-
-          if (cols.length >= 5) {
-            setQuizQuestion(cols[0] || '');
-            const parsedOpts = [cols[1], cols[2], cols[3], cols[4]].filter(Boolean);
-            if (parsedOpts.length >= 2) setQuizOptions(parsedOpts);
-
-            const correctCol = cols[5] || 'A';
-            if (modality === 'quiz') {
-              const charIdx = correctCol.trim().toUpperCase().charCodeAt(0) - 65;
-              setMcqCorrectIndex(charIdx >= 0 && charIdx < parsedOpts.length ? charIdx : 0);
-            } else {
-              const letters = correctCol.toUpperCase().split(/[\s,]+/);
-              const indices = letters
-                .map((l) => l.charCodeAt(0) - 65)
-                .filter((idx) => idx >= 0 && idx < parsedOpts.length);
-              setMsqCorrectIndices(indices.length > 0 ? indices : [0]);
-            }
-
-            if (cols[6]) setQuizExplanation(cols[6]);
-            if (cols[7]) setQuizHint(cols[7]);
-            if (cols[8] && Number(cols[8])) setQuizPoints(Number(cols[8]));
-
-            setBulkImportSuccessMsg('Imported Quiz CSV successfully!');
-            return;
-          }
-        }
-
-        // Standard Text Parser
-        const lines = raw.split('\n');
-        let parsedQuestion = '';
-        const parsedOpts: string[] = [];
-        let parsedCorrectStr = '';
-        let parsedExplanation = '';
-        let parsedHint = '';
-        let parsedPoints = 10;
-
-        lines.forEach((line) => {
-          const t = line.trim();
-          if (/^Question:\s*(.*)$/i.test(t)) {
-            parsedQuestion = t.replace(/^Question:\s*/i, '').trim();
-          } else if (/^(?:Option\s*)?[A-D][):.]\s*(.*)$/i.test(t)) {
-            parsedOpts.push(t.replace(/^(?:Option\s*)?[A-D][):.]\s*/i, '').trim());
-          } else if (/^(?:Correct|Answer):\s*(.*)$/i.test(t)) {
-            parsedCorrectStr = t.replace(/^(?:Correct|Answer):\s*/i, '').trim();
-          } else if (/^Explanation:\s*(.*)$/i.test(t)) {
-            parsedExplanation = t.replace(/^Explanation:\s*/i, '').trim();
-          } else if (/^Hint:\s*(.*)$/i.test(t)) {
-            parsedHint = t.replace(/^Hint:\s*/i, '').trim();
-          } else if (/^Points:\s*(\d+)$/i.test(t)) {
-            parsedPoints = Number(t.replace(/^Points:\s*/i, ''));
-          }
-        });
-
-        if (parsedQuestion) setQuizQuestion(parsedQuestion);
-        if (!title.trim() && parsedQuestion) setTitle(parsedQuestion.slice(0, 60));
-        if (parsedOpts.length >= 2) setQuizOptions(parsedOpts);
-
-        if (parsedCorrectStr) {
-          if (modality === 'quiz') {
-            const charIdx = parsedCorrectStr.toUpperCase().charCodeAt(0) - 65;
-            if (charIdx >= 0 && charIdx < (parsedOpts.length || quizOptions.length)) {
-              setMcqCorrectIndex(charIdx);
-            }
-          } else {
-            const letters = parsedCorrectStr.toUpperCase().split(/[\s,]+/);
-            const indices = letters
-              .map((l) => l.charCodeAt(0) - 65)
-              .filter((idx) => idx >= 0 && idx < (parsedOpts.length || quizOptions.length));
-            if (indices.length > 0) setMsqCorrectIndices(indices);
-          }
-        }
-
-        if (parsedExplanation) setQuizExplanation(parsedExplanation);
-        if (parsedHint) setQuizHint(parsedHint);
-        if (parsedPoints) setQuizPoints(parsedPoints);
-
-        setBulkImportSuccessMsg(`Imported ${modality === 'quiz' ? 'MCQ' : 'MSQ'} question successfully!`);
-      } else if (modality === 'code') {
-        const lines = raw.split('\n');
-        let parsedTitle = '';
-        let parsedLang = 'python';
-        let parsedStatement = '';
-        let parsedStarterCode: string[] = [];
-        let parsedSampleInput = '';
-        let parsedSampleOutput = '';
-        const parsedTestCases: Array<{ input: string; expectedOutput: string; isHidden: boolean }> = [];
-
-        let currentSection: 'statement' | 'starter' | 'testcases' | 'none' = 'none';
-
-        lines.forEach((line) => {
-          const t = line.trim();
-          if (/^Title:\s*(.*)$/i.test(t)) {
-            parsedTitle = t.replace(/^Title:\s*/i, '').trim();
-            currentSection = 'none';
-          } else if (/^Language:\s*(.*)$/i.test(t)) {
-            parsedLang = t.replace(/^Language:\s*/i, '').trim().toLowerCase();
-            currentSection = 'none';
-          } else if (/^Statement:\s*(.*)$/i.test(t)) {
-            parsedStatement = t.replace(/^Statement:\s*/i, '').trim();
-            currentSection = 'statement';
-          } else if (/^StarterCode:\s*$/i.test(t)) {
-            currentSection = 'starter';
-          } else if (/^SampleInput:\s*(.*)$/i.test(t)) {
-            parsedSampleInput = t.replace(/^SampleInput:\s*/i, '').trim();
-            currentSection = 'none';
-          } else if (/^SampleOutput:\s*(.*)$/i.test(t)) {
-            parsedSampleOutput = t.replace(/^SampleOutput:\s*/i, '').trim();
-            currentSection = 'none';
-          } else if (/^TestCases:\s*$/i.test(t)) {
-            currentSection = 'testcases';
-          } else {
-            if (currentSection === 'starter') {
-              parsedStarterCode.push(line);
-            } else if (currentSection === 'statement') {
-              parsedStatement += '\n' + line;
-            } else if (currentSection === 'testcases' && t.includes('|')) {
-              const parts = t.split('|').map((p) => p.trim());
-              if (parts.length >= 2) {
-                parsedTestCases.push({
-                  input: parts[0],
-                  expectedOutput: parts[1],
-                  isHidden: parts[2] ? /hidden|true|private/i.test(parts[2]) : false,
-                });
-              }
-            }
-          }
-        });
-
-        if (parsedTitle) {
-          setCodeTitle(parsedTitle);
-          if (!title.trim()) setTitle(parsedTitle);
-        }
-        if (parsedLang) setCodeLanguage(parsedLang);
-        if (parsedStatement) setCodeStatement(parsedStatement.trim());
-        if (parsedStarterCode.length > 0) setStarterCode(parsedStarterCode.join('\n').trim());
-        if (parsedSampleInput) setSampleInput(parsedSampleInput);
-        if (parsedSampleOutput) setSampleOutput(parsedSampleOutput);
-        if (parsedTestCases.length > 0) setTestCases(parsedTestCases);
-
-        setBulkImportSuccessMsg('Imported Coding Challenge and Test Cases suite successfully!');
-      }
-    } catch (err: any) {
-      console.error('Bulk parse error:', err);
-      setBulkImportError('Failed to parse input: ' + (err?.message || 'Invalid format'));
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
@@ -812,84 +315,17 @@ TestCases:
         },
       }}
     >
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexShrink: 0 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            sx={{
-              width: 42,
-              height: 42,
-              borderRadius: '12px',
-              bgcolor:
-                modality === 'reading'
-                  ? '#EFF6FF'
-                  : modality === 'quiz' || modality === 'msq'
-                  ? '#FEF3C7'
-                  : '#ECFDF5',
-              color:
-                modality === 'reading'
-                  ? '#2563EB'
-                  : modality === 'quiz' || modality === 'msq'
-                  ? '#D97706'
-                  : '#059669',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '1px solid currentColor',
-              borderColor: 'inherit',
-            }}
-          >
-            {modality === 'reading' && <MenuBookRoundedIcon sx={{ fontSize: 22 }} />}
-            {modality === 'quiz' && <QuizRoundedIcon sx={{ fontSize: 22 }} />}
-            {modality === 'msq' && <CheckBoxRoundedIcon sx={{ fontSize: 22 }} />}
-            {modality === 'code' && <CodeRoundedIcon sx={{ fontSize: 22 }} />}
-          </Box>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.15rem' }}>
-              {isEditing ? 'Edit Submodule / Lesson' : 'Author New Submodule / Lesson'}
-            </Typography>
-            <Typography sx={{ color: '#64748B', fontSize: '0.8rem', fontWeight: 500 }}>
-              {moduleTitle ? `Inside ${moduleTitle}` : 'Configure rich notes, single/multi choice quizzes, or coding sandbox.'}
-            </Typography>
-          </Box>
-        </Box>
+      {/* 1. Modal Header */}
+      <AuthoringModalHeader
+        modality={modality}
+        isEditing={isEditing}
+        moduleTitle={moduleTitle}
+        isBulkImportOpen={isBulkImportOpen}
+        onToggleBulkImport={() => setIsBulkImportOpen(!isBulkImportOpen)}
+        onClose={onClose}
+      />
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Button
-            size="small"
-            onClick={() => setIsBulkImportOpen(!isBulkImportOpen)}
-            startIcon={<FlashOnRoundedIcon sx={{ fontSize: 16 }} />}
-            sx={{
-              bgcolor: isBulkImportOpen ? '#2563EB' : '#F1F5F9',
-              color: isBulkImportOpen ? '#FFFFFF' : '#334155',
-              fontWeight: 700,
-              fontSize: '0.78rem',
-              textTransform: 'none',
-              borderRadius: '8px',
-              px: 1.5,
-              py: 0.6,
-              '&:hover': {
-                bgcolor: isBulkImportOpen ? '#1D4ED8' : '#E2E8F0',
-              },
-            }}
-          >
-            {isBulkImportOpen ? 'Close Importer' : '⚡ Bulk Import'}
-          </Button>
-
-          <IconButton
-            onClick={onClose}
-            size="small"
-            sx={{
-              color: '#94A3B8',
-              '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
-            }}
-          >
-            <CloseRoundedIcon sx={{ fontSize: 20 }} />
-          </IconButton>
-        </Box>
-      </Box>
-
-      {/* Main Form */}
+      {/* 2. Main Form */}
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
         <DialogContent
           sx={{
@@ -902,124 +338,40 @@ TestCases:
             flex: 1,
           }}
         >
-          {/* BULK IMPORT EXPANDABLE ASSISTANT PANEL */}
+          {/* 3. Bulk Import Assistant (Expandable) */}
           {isBulkImportOpen && (
-            <Box
-              sx={{
-                bgcolor: '#F8FAFC',
-                border: '1.5px dashed #3B82F6',
-                borderRadius: '16px',
-                p: 2.5,
-                boxShadow: '0 4px 20px rgba(59,130,246,0.06)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 1.5,
-              }}
-            >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AutoAwesomeRoundedIcon sx={{ fontSize: 20, color: '#2563EB' }} />
-                  <Typography sx={{ fontWeight: 800, fontSize: '0.92rem', color: '#0F172A' }}>
-                    Bulk Import & Format Assistant ({modality.toUpperCase()})
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Button
-                    size="small"
-                    onClick={handleCopyTemplate}
-                    startIcon={copiedTemplate ? <CheckRoundedIcon sx={{ color: '#16A34A' }} /> : <ContentCopyRoundedIcon />}
-                    sx={{
-                      fontSize: '0.76rem',
-                      fontWeight: 700,
-                      textTransform: 'none',
-                      color: copiedTemplate ? '#16A34A' : '#2563EB',
-                      bgcolor: '#EFF6FF',
-                      borderRadius: '8px',
-                      px: 1.2,
-                    }}
-                  >
-                    {copiedTemplate ? 'Copied Template!' : 'Copy Sample Template'}
-                  </Button>
-                </Box>
-              </Box>
-
-              <Typography sx={{ fontSize: '0.8rem', color: '#64748B', lineHeight: 1.5 }}>
-                Paste structured markdown, CSV, or JSON for{' '}
-                <strong>
-                  {modality === 'reading'
-                    ? 'Technical Lecture Notes & Key Takeaways'
-                    : modality === 'quiz'
-                    ? 'Single-Choice MCQ'
-                    : modality === 'msq'
-                    ? 'Multi-Choice MSQ'
-                    : 'Coding Lab Challenge & Test Suite'}
-                </strong>
-                . Click Apply to auto-populate all fields instantly.
-              </Typography>
-
-              <TextField
-                fullWidth
-                multiline
-                rows={5}
-                placeholder={getBulkTemplate()}
-                value={bulkImportText}
-                onChange={(e) => setBulkImportText(e.target.value)}
-                slotProps={{
-                  input: {
-                    sx: {
-                      fontFamily: 'Consolas, Monaco, monospace',
-                      fontSize: '0.84rem',
-                      bgcolor: '#FFFFFF',
-                      borderRadius: '10px',
-                    },
-                  },
-                }}
-              />
-
-              {bulkImportError && (
-                <Alert severity="error" sx={{ fontSize: '0.82rem', py: 0.5, borderRadius: '8px' }}>
-                  {bulkImportError}
-                </Alert>
-              )}
-
-              {bulkImportSuccessMsg && (
-                <Alert severity="success" sx={{ fontSize: '0.82rem', py: 0.5, borderRadius: '8px' }}>
-                  {bulkImportSuccessMsg}
-                </Alert>
-              )}
-
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                <Button
-                  size="small"
-                  onClick={() => setBulkImportText('')}
-                  sx={{ textTransform: 'none', fontWeight: 600, fontSize: '0.8rem', color: '#64748B' }}
-                >
-                  Clear
-                </Button>
-                <Button
-                  size="small"
-                  variant="contained"
-                  onClick={handleApplyBulkImport}
-                  startIcon={<ContentPasteRoundedIcon sx={{ fontSize: 16 }} />}
-                  sx={{
-                    bgcolor: '#2563EB',
-                    color: '#FFFFFF',
-                    textTransform: 'none',
-                    fontWeight: 700,
-                    fontSize: '0.82rem',
-                    borderRadius: '8px',
-                    px: 2,
-                    boxShadow: 'none',
-                    '&:hover': { bgcolor: '#1D4ED8' },
-                  }}
-                >
-                  Parse & Apply to Submodule
-                </Button>
-              </Box>
-            </Box>
+            <BulkImportAssistant
+              modality={modality}
+              bulkImportText={bulkImportText}
+              setBulkImportText={setBulkImportText}
+              bulkImportError={bulkImportError}
+              setBulkImportError={setBulkImportError}
+              bulkImportSuccessMsg={bulkImportSuccessMsg}
+              setBulkImportSuccessMsg={setBulkImportSuccessMsg}
+              setTitle={setTitle}
+              title={title}
+              setDurationMinutes={setDurationMinutes}
+              setReadingContent={setReadingContent}
+              setKeyTakeaways={setKeyTakeaways}
+              setQuizQuestion={setQuizQuestion}
+              setQuizOptions={setQuizOptions}
+              quizOptions={quizOptions}
+              setMcqCorrectIndex={setMcqCorrectIndex}
+              setMsqCorrectIndices={setMsqCorrectIndices}
+              setQuizExplanation={setQuizExplanation}
+              setQuizHint={setQuizHint}
+              setQuizPoints={setQuizPoints}
+              setCodeTitle={setCodeTitle}
+              setCodeStatement={setCodeStatement}
+              setCodeLanguage={setCodeLanguage}
+              setStarterCode={setStarterCode}
+              setSampleInput={setSampleInput}
+              setSampleOutput={setSampleOutput}
+              setTestCases={setTestCases}
+            />
           )}
 
-          {/* Top Meta: Submodule Title & Duration */}
+          {/* 4. Top Meta: Title & Duration */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '2.5fr 1fr' }, gap: 2 }}>
             <Box>
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
@@ -1075,7 +427,7 @@ TestCases:
             </Box>
           </Box>
 
-          {/* Modality Segment Tabs */}
+          {/* 5. Modality Segment Tabs */}
           <Box sx={{ bgcolor: '#F1F5F9', p: 0.5, borderRadius: '14px' }}>
             <Tabs
               value={modality}
@@ -1139,536 +491,64 @@ TestCases:
             </Tabs>
           </Box>
 
-          {/* TAB 1: Theory / Reading Notes (TipTap Rich Editor + Special Callouts) */}
+          {/* 6. Modality Active Tab Content */}
           {modality === 'reading' && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>
-                  Technical Lesson Notes & Special Callouts
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Button
-                    size="small"
-                    onClick={() => setEditorMode(editorMode === 'tiptap' ? 'markdown' : 'tiptap')}
-                    startIcon={<EditNoteRoundedIcon />}
-                    sx={{
-                      fontSize: '0.78rem',
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      color: '#475569',
-                      bgcolor: '#F1F5F9',
-                      borderRadius: '8px',
-                      px: 1.2,
-                      '&:hover': { bgcolor: '#E2E8F0' },
-                    }}
-                  >
-                    {editorMode === 'tiptap' ? 'Switch to Raw Markdown' : 'Switch to TipTap Visual Editor'}
-                  </Button>
-
-                  <Button
-                    size="small"
-                    onClick={() => setPreviewMarkdown(!previewMarkdown)}
-                    startIcon={previewMarkdown ? <EditNoteRoundedIcon /> : <VisibilityRoundedIcon />}
-                    sx={{
-                      fontSize: '0.78rem',
-                      textTransform: 'none',
-                      fontWeight: 700,
-                      color: '#2563EB',
-                      bgcolor: '#EFF6FF',
-                      borderRadius: '8px',
-                      px: 1.2,
-                    }}
-                  >
-                    {previewMarkdown ? 'Edit Content' : 'Live Preview'}
-                  </Button>
-                </Box>
-              </Box>
-
-              {previewMarkdown ? (
-                <Box
-                  sx={{
-                    minHeight: 280,
-                    maxHeight: 460,
-                    overflowY: 'auto',
-                    p: 2.5,
-                    borderRadius: '12px',
-                    bgcolor: '#FFFFFF',
-                    border: `1px solid ${borderColor}`,
-                    color: '#0F172A',
-                    fontSize: '0.94rem',
-                    lineHeight: 1.7,
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: formatArticleMarkdown(readingContent) || '<em>(No content written yet)</em>',
-                  }}
-                />
-              ) : editorMode === 'tiptap' ? (
-                <TipTapEditor
-                  content={readingContent}
-                  onChange={(html) => setReadingContent(html)}
-                  minHeight={260}
-                  maxHeight={440}
-                  placeholder="Start typing your technical lesson notes... Use 'Insert Special Note' for callouts with custom backgrounds."
-                />
-              ) : (
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={10}
-                  placeholder="## Technical Guide Title&#10;&#10;Write comprehensive lecture notes with markdown headings, lists, and code blocks...&#10;&#10;> [!NOTE]&#10;> Custom note background&#10;&#10;```python&#10;# Example&#10;def solution(): pass&#10;```"
-                  value={readingContent}
-                  onChange={(e) => setReadingContent(e.target.value)}
-                  slotProps={{
-                    input: {
-                      sx: {
-                        borderRadius: '12px',
-                        fontSize: '0.88rem',
-                        fontFamily: 'monospace',
-                        bgcolor: '#F8FAFC',
-                        '& fieldset': { borderColor: borderColor },
-                        '&:hover fieldset': { borderColor: '#CBD5E1' },
-                        '&.Mui-focused fieldset': { borderColor: '#2563EB' },
-                      },
-                    },
-                  }}
-                />
-              )}
-
-              {/* Key Takeaways Section */}
-              <Box sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: '14px', border: `1px solid ${borderColor}` }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>
-                    Key Takeaways & High-Yield Bullet Highlights
-                  </Typography>
-                  <Button
-                    size="small"
-                    onClick={handleAddTakeaway}
-                    startIcon={<AddCircleOutlineRoundedIcon sx={{ fontSize: 16 }} />}
-                    sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', color: '#2563EB' }}
-                  >
-                    Add Takeaway
-                  </Button>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {keyTakeaways.map((note, nIdx) => (
-                    <Box key={nIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder={`Takeaway bullet ${nIdx + 1}...`}
-                        value={note}
-                        onChange={(e) => {
-                          const next = [...keyTakeaways];
-                          next[nIdx] = e.target.value;
-                          setKeyTakeaways(next);
-                        }}
-                        slotProps={{
-                          input: {
-                            sx: {
-                              borderRadius: '8px',
-                              fontSize: '0.84rem',
-                              bgcolor: '#FFFFFF',
-                            },
-                          },
-                        }}
-                      />
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemoveTakeaway(nIdx)}
-                        disabled={keyTakeaways.length <= 1}
-                        sx={{ color: '#94A3B8', '&:hover': { color: '#EF4444' } }}
-                      >
-                        <DeleteOutlineRoundedIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            </Box>
+            <ReadingTheoryTab
+              readingContent={readingContent}
+              setReadingContent={setReadingContent}
+              editorMode={editorMode}
+              setEditorMode={setEditorMode}
+              previewMarkdown={previewMarkdown}
+              setPreviewMarkdown={setPreviewMarkdown}
+              keyTakeaways={keyTakeaways}
+              setKeyTakeaways={setKeyTakeaways}
+              borderColor={borderColor}
+            />
           )}
 
-          {/* TAB 2 & 3: MCQ / MSQ Quiz Builder */}
           {(modality === 'quiz' || modality === 'msq') && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              {/* Question Statement */}
-              <Box>
-                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
-                  Quiz Question Statement <span style={{ color: '#EF4444' }}>*</span>
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  placeholder="e.g. Which of the following data structures provides O(1) average lookup time?"
-                  value={quizQuestion}
-                  onChange={(e) => setQuizQuestion(e.target.value)}
-                  slotProps={{
-                    input: {
-                      sx: {
-                        borderRadius: '10px',
-                        fontSize: '0.88rem',
-                        bgcolor: '#F8FAFC',
-                        '& fieldset': { borderColor: borderColor },
-                        '&:hover fieldset': { borderColor: '#CBD5E1' },
-                        '&.Mui-focused fieldset': { borderColor: '#2563EB' },
-                      },
-                    },
-                  }}
-                />
-              </Box>
-
-              {/* Options Builder */}
-              <Box sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: '14px', border: `1px solid ${borderColor}` }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>
-                    Answer Options ({modality === 'quiz' ? 'Select single correct radio' : 'Select all correct checkboxes'})
-                  </Typography>
-                  <Button
-                    size="small"
-                    onClick={handleAddQuizOption}
-                    startIcon={<AddCircleOutlineRoundedIcon sx={{ fontSize: 16 }} />}
-                    sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', color: '#2563EB' }}
-                  >
-                    Add Option
-                  </Button>
-                </Box>
-
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-                  {quizOptions.map((opt, oIdx) => {
-                    const isCorrect =
-                      modality === 'quiz' ? mcqCorrectIndex === oIdx : msqCorrectIndices.includes(oIdx);
-
-                    return (
-                      <Box
-                        key={oIdx}
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          bgcolor: isCorrect ? '#F0FDF4' : '#FFFFFF',
-                          border: isCorrect ? '1px solid #86EFAC' : `1px solid ${borderColor}`,
-                          borderRadius: '10px',
-                          p: 0.75,
-                          transition: 'all 0.15s ease',
-                        }}
-                      >
-                        {modality === 'quiz' ? (
-                          <Radio
-                            checked={mcqCorrectIndex === oIdx}
-                            onChange={() => setMcqCorrectIndex(oIdx)}
-                            sx={{ color: '#94A3B8', '&.Mui-checked': { color: '#16A34A' } }}
-                          />
-                        ) : (
-                          <Checkbox
-                            checked={msqCorrectIndices.includes(oIdx)}
-                            onChange={() => handleToggleMsqIndex(oIdx)}
-                            sx={{ color: '#94A3B8', '&.Mui-checked': { color: '#16A34A' } }}
-                          />
-                        )}
-
-                        <TextField
-                          fullWidth
-                          size="small"
-                          placeholder={`Option ${String.fromCharCode(65 + oIdx)}...`}
-                          value={opt}
-                          onChange={(e) => {
-                            const next = [...quizOptions];
-                            next[oIdx] = e.target.value;
-                            setQuizOptions(next);
-                          }}
-                          slotProps={{
-                            input: {
-                              sx: {
-                                borderRadius: '8px',
-                                fontSize: '0.86rem',
-                                bgcolor: 'transparent',
-                              },
-                            },
-                          }}
-                        />
-
-                        <IconButton
-                          size="small"
-                          onClick={() => handleRemoveQuizOption(oIdx)}
-                          disabled={quizOptions.length <= 2}
-                          sx={{ color: '#94A3B8', '&:hover': { color: '#EF4444' } }}
-                        >
-                          <DeleteOutlineRoundedIcon sx={{ fontSize: 18 }} />
-                        </IconButton>
-                      </Box>
-                    );
-                  })}
-                </Box>
-              </Box>
-
-              {/* Solution Explanation & Hints */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                <Box>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
-                    Detailed Solution Explanation
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={2}
-                    placeholder="Provide a step-by-step reason why the selected choice is correct..."
-                    value={quizExplanation}
-                    onChange={(e) => setQuizExplanation(e.target.value)}
-                    slotProps={{
-                      input: {
-                        sx: {
-                          borderRadius: '10px',
-                          fontSize: '0.85rem',
-                          bgcolor: '#F8FAFC',
-                        },
-                      },
-                    }}
-                  />
-                </Box>
-
-                <Box>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
-                    Student Hint (Optional)
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={2}
-                    placeholder="Think about hash collision mechanics and bucket indices..."
-                    value={quizHint}
-                    onChange={(e) => setQuizHint(e.target.value)}
-                    slotProps={{
-                      input: {
-                        sx: {
-                          borderRadius: '10px',
-                          fontSize: '0.85rem',
-                          bgcolor: '#F8FAFC',
-                        },
-                      },
-                    }}
-                  />
-                </Box>
-              </Box>
-            </Box>
+            <QuizBuilderTab
+              modality={modality}
+              quizQuestion={quizQuestion}
+              setQuizQuestion={setQuizQuestion}
+              quizOptions={quizOptions}
+              setQuizOptions={setQuizOptions}
+              mcqCorrectIndex={mcqCorrectIndex}
+              setMcqCorrectIndex={setMcqCorrectIndex}
+              msqCorrectIndices={msqCorrectIndices}
+              setMsqCorrectIndices={setMsqCorrectIndices}
+              quizExplanation={quizExplanation}
+              setQuizExplanation={setQuizExplanation}
+              quizHint={quizHint}
+              setQuizHint={setQuizHint}
+              quizPoints={quizPoints}
+              setQuizPoints={setQuizPoints}
+              borderColor={borderColor}
+            />
           )}
 
-          {/* TAB 4: Coding Lab / Sandbox Challenge */}
           {modality === 'code' && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              {/* Problem Statement & Language */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' }, gap: 2 }}>
-                <Box>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
-                    Challenge Title
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="e.g. Reverse Words in a String"
-                    value={codeTitle}
-                    onChange={(e) => setCodeTitle(e.target.value)}
-                    slotProps={{
-                      input: {
-                        sx: {
-                          borderRadius: '10px',
-                          fontSize: '0.88rem',
-                          bgcolor: '#F8FAFC',
-                        },
-                      },
-                    }}
-                  />
-                </Box>
-
-                <Box>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
-                    Default Language
-                  </Typography>
-                  <Select
-                    fullWidth
-                    size="small"
-                    value={codeLanguage}
-                    onChange={(e) => setCodeLanguage(e.target.value)}
-                    sx={{
-                      borderRadius: '10px',
-                      fontSize: '0.88rem',
-                      bgcolor: '#F8FAFC',
-                    }}
-                  >
-                    <MenuItem value="python">Python 3 (CPython)</MenuItem>
-                    <MenuItem value="cpp">C++ (GCC 12)</MenuItem>
-                    <MenuItem value="java">Java (OpenJDK 17)</MenuItem>
-                    <MenuItem value="javascript">JavaScript (Node.js)</MenuItem>
-                    <MenuItem value="typescript">TypeScript</MenuItem>
-                    <MenuItem value="go">Go 1.21</MenuItem>
-                    <MenuItem value="rust">Rust</MenuItem>
-                  </Select>
-                </Box>
-              </Box>
-
-              {/* Problem Description */}
-              <Box>
-                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
-                  Problem Statement & Specifications
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  placeholder="Implement an algorithm that receives input data and returns the expected result..."
-                  value={codeStatement}
-                  onChange={(e) => setCodeStatement(e.target.value)}
-                  slotProps={{
-                    input: {
-                      sx: {
-                        borderRadius: '10px',
-                        fontSize: '0.88rem',
-                        bgcolor: '#F8FAFC',
-                      },
-                    },
-                  }}
-                />
-              </Box>
-
-              {/* Starter Code Template */}
-              <Box>
-                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
-                  Starter Code Boilerplate Template
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={5}
-                  value={starterCode}
-                  onChange={(e) => setStarterCode(e.target.value)}
-                  slotProps={{
-                    input: {
-                      sx: {
-                        borderRadius: '10px',
-                        fontFamily: 'monospace',
-                        fontSize: '0.85rem',
-                        bgcolor: '#0F172A',
-                        color: '#38BDF8',
-                        '& textarea': { color: '#F1F5F9' },
-                      },
-                    },
-                  }}
-                />
-              </Box>
-
-              {/* Sample I/O */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
-                <Box>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
-                    Sample Input
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    value={sampleInput}
-                    onChange={(e) => setSampleInput(e.target.value)}
-                    slotProps={{ input: { sx: { borderRadius: '10px', fontSize: '0.85rem', bgcolor: '#F8FAFC' } } }}
-                  />
-                </Box>
-                <Box>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155', mb: 0.75 }}>
-                    Sample Output
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    value={sampleOutput}
-                    onChange={(e) => setSampleOutput(e.target.value)}
-                    slotProps={{ input: { sx: { borderRadius: '10px', fontSize: '0.85rem', bgcolor: '#F8FAFC' } } }}
-                  />
-                </Box>
-              </Box>
-
-              {/* Test Cases Suite */}
-              <Box sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: '14px', border: `1px solid ${borderColor}` }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>
-                    Automated Test Cases Suite
-                  </Typography>
-                  <Button
-                    size="small"
-                    onClick={handleAddTestCase}
-                    startIcon={<AddCircleOutlineRoundedIcon sx={{ fontSize: 16 }} />}
-                    sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', color: '#2563EB' }}
-                  >
-                    Add Test Case
-                  </Button>
-                </Box>
-
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                  {testCases.map((tc, tIdx) => (
-                    <Box
-                      key={tIdx}
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', sm: '2fr 2fr auto auto' },
-                        gap: 1.5,
-                        alignItems: 'center',
-                        bgcolor: '#FFFFFF',
-                        p: 1.25,
-                        borderRadius: '10px',
-                        border: `1px solid ${borderColor}`,
-                      }}
-                    >
-                      <TextField
-                        size="small"
-                        placeholder="Test Input..."
-                        value={tc.input}
-                        onChange={(e) => {
-                          const next = [...testCases];
-                          next[tIdx].input = e.target.value;
-                          setTestCases(next);
-                        }}
-                        slotProps={{ input: { sx: { borderRadius: '8px', fontSize: '0.84rem' } } }}
-                      />
-                      <TextField
-                        size="small"
-                        placeholder="Expected Output..."
-                        value={tc.expectedOutput}
-                        onChange={(e) => {
-                          const next = [...testCases];
-                          next[tIdx].expectedOutput = e.target.value;
-                          setTestCases(next);
-                        }}
-                        slotProps={{ input: { sx: { borderRadius: '8px', fontSize: '0.84rem' } } }}
-                      />
-                      <Chip
-                        label={tc.isHidden ? 'Hidden' : 'Public'}
-                        size="small"
-                        onClick={() => {
-                          const next = [...testCases];
-                          next[tIdx].isHidden = !next[tIdx].isHidden;
-                          setTestCases(next);
-                        }}
-                        sx={{
-                          cursor: 'pointer',
-                          fontWeight: 700,
-                          fontSize: '0.74rem',
-                          bgcolor: tc.isHidden ? '#FEF3C7' : '#EFF6FF',
-                          color: tc.isHidden ? '#B45309' : '#2563EB',
-                        }}
-                      />
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemoveTestCase(tIdx)}
-                        disabled={testCases.length <= 1}
-                        sx={{ color: '#94A3B8', '&:hover': { color: '#EF4444' } }}
-                      >
-                        <DeleteOutlineRoundedIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            </Box>
+            <CodingLabTab
+              codeTitle={codeTitle}
+              setCodeTitle={setCodeTitle}
+              codeLanguage={codeLanguage}
+              setCodeLanguage={setCodeLanguage}
+              codeStatement={codeStatement}
+              setCodeStatement={setCodeStatement}
+              starterCode={starterCode}
+              setStarterCode={setStarterCode}
+              sampleInput={sampleInput}
+              setSampleInput={setSampleInput}
+              sampleOutput={sampleOutput}
+              setSampleOutput={setSampleOutput}
+              testCases={testCases}
+              setTestCases={setTestCases}
+              borderColor={borderColor}
+            />
           )}
         </DialogContent>
 
-        {/* Footer */}
+        {/* 7. Footer Actions */}
         <DialogActions
           sx={{
             px: 0,

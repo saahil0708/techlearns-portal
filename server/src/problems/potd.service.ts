@@ -199,6 +199,196 @@ export class PotdService {
   }
 
   /**
+   * Delete / reset custom POTD assignment for a specific date
+   */
+  async deletePotd(dateStr: string, user?: any) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      throw new BadRequestException('Date must be in strict YYYY-MM-DD format');
+    }
+
+    if ((this.prisma as any).problemOfTheDay) {
+      try {
+        await (this.prisma as any).problemOfTheDay.delete({
+          where: { date: dateStr },
+        });
+      } catch (err: any) {
+        // Non-fatal if already deleted or does not exist
+      }
+    }
+
+    this.memoryFallbackMap.delete(dateStr);
+
+    if (this.redis) {
+      try {
+        await this.redis.hdel('potd:assignments', dateStr);
+      } catch (err: any) {
+        this.logger.warn(`Failed to delete POTD from Redis for ${dateStr}: ${err.message}`);
+      }
+    }
+
+    this.logger.log(`POTD custom assignment deleted for ${dateStr} by user ${user?.id || 'admin'}`);
+
+    return {
+      success: true,
+      message: `POTD assignment for ${dateStr} has been removed. Automated rotation restored.`,
+      date: dateStr,
+    };
+  }
+
+  /**
+   * Queue multiple problems for continuous consecutive days starting from startDateStr
+   */
+  async queuePotd(
+    problemIds: string[],
+    startDateStr = this.getIsoDate(),
+    bonusPoints = 50,
+    user?: any,
+  ) {
+    if (!Array.isArray(problemIds) || problemIds.length === 0) {
+      throw new BadRequestException('At least one problem ID must be provided');
+    }
+
+    const problems = await this.prisma.problem.findMany({
+      where: {
+        id: { in: problemIds },
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        difficulty: true,
+        status: true,
+        institutionId: true,
+      },
+    });
+
+    const problemMap = new Map(problems.map((p) => [p.id, p]));
+    for (const pId of problemIds) {
+      const p = problemMap.get(pId);
+      if (!p) {
+        throw new NotFoundException(`Problem with ID "${pId}" not found`);
+      }
+      if (p.status !== ProblemStatus.PUBLISHED || p.institutionId !== null) {
+        throw new BadRequestException(`Problem "${p.title}" is not a published global platform problem`);
+      }
+    }
+
+    const queuedResults: Array<{ date: string; problem: any; bonusPoints: number }> = [];
+    const [yearStr, monthStr, dayStr] = startDateStr.split('-');
+    const currentCalendarDate = new Date(
+      Date.UTC(parseInt(yearStr, 10), parseInt(monthStr, 10) - 1, parseInt(dayStr, 10)),
+    );
+
+    for (let i = 0; i < problemIds.length; i++) {
+      const dateObj = new Date(currentCalendarDate);
+      dateObj.setUTCDate(dateObj.getUTCDate() + i);
+      const iso = this.getIsoDate(dateObj);
+      const prob = problemMap.get(problemIds[i])!;
+
+      await this.setPotd(prob.id, iso, bonusPoints, user);
+      queuedResults.push({
+        date: iso,
+        problem: prob,
+        bonusPoints,
+      });
+    }
+
+    return {
+      success: true,
+      count: queuedResults.length,
+      startDate: startDateStr,
+      endDate: queuedResults[queuedResults.length - 1]?.date || startDateStr,
+      queued: queuedResults,
+    };
+  }
+
+  /**
+   * Get the POTD schedule and queue (past 7 days and future N days)
+   */
+  async getPotdSchedule(futureDays = 30) {
+    const publishedProblems = await this.prisma.problem.findMany({
+      where: {
+        status: ProblemStatus.PUBLISHED,
+        institutionId: null,
+      },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        difficulty: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+
+    const publishedMap = new Map(publishedProblems.map((p) => [p.id, p]));
+    const allCustom = await this.getAllStoredAssignments();
+    const today = new Date();
+    const todayStr = this.getIsoDate(today);
+
+    const scheduleList: Array<{
+      date: string;
+      problem: any;
+      bonusPoints: number;
+      isCustom: boolean;
+      isToday: boolean;
+      isPast: boolean;
+      isFuture: boolean;
+    }> = [];
+
+    for (let i = -7; i <= futureDays; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      const iso = this.getIsoDate(d);
+
+      let problem: any = null;
+      let bonusPoints = 50;
+      let isCustom = false;
+
+      const custom = allCustom.get(iso);
+      if (custom) {
+        problem = publishedMap.get(custom.problemId);
+        if (!problem) {
+          problem = await this.prisma.problem.findUnique({
+            where: { id: custom.problemId },
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              difficulty: true,
+              status: true,
+              createdAt: true,
+            },
+          });
+        }
+        if (problem) {
+          isCustom = true;
+          if (custom.bonusPoints) bonusPoints = custom.bonusPoints;
+        }
+      }
+
+      if (!problem && publishedProblems.length > 0) {
+        problem = publishedProblems[this.hashDateToIndex(iso, publishedProblems.length)];
+      }
+
+      if (problem) {
+        scheduleList.push({
+          date: iso,
+          problem,
+          bonusPoints,
+          isCustom,
+          isToday: iso === todayStr,
+          isPast: iso < todayStr,
+          isFuture: iso > todayStr,
+        });
+      }
+    }
+
+    return scheduleList;
+  }
+
+  /**
    * Returns 'YYYY-MM-DD' formatted string for a date (UTC)
    */
   public getIsoDate(date = new Date()): string {

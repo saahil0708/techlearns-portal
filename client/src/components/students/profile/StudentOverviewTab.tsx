@@ -882,7 +882,7 @@ export default function StudentOverviewTab({
                   Problem Solves & Activity
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 600 }}>
-                  {profile.totalSubmissions ?? 1840} Submissions • {profile.accuracyRate ?? '96.4%'} Accuracy Rate
+                  {profile.totalSubmissions ?? 0} Submissions • {profile.accuracyRate ?? '0%'} Accuracy • <span style={{ color: '#60A5FA', fontWeight: 700 }}>{((profile.totalPoints ?? profile.score) || ((profile.solvedEasy * 100) + (profile.solvedMedium * 200) + (profile.solvedHard * 350))).toLocaleString()} Points Earned</span>
                 </Typography>
               </Box>
             </Box>
@@ -981,7 +981,7 @@ export default function StudentOverviewTab({
                   }}
                 >
                   <Typography sx={{ fontSize: '1.25rem', fontWeight: 900, color: '#FFFFFF', lineHeight: 1 }}>
-                    {profile.solvedTotal ?? 680}
+                    {profile.solvedTotal ?? 0}
                   </Typography>
                   <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', mt: 0.2 }}>
                     Solved
@@ -998,9 +998,12 @@ export default function StudentOverviewTab({
                     <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#E2E8F0' }}>
                       Easy
                     </Typography>
+                    <Typography sx={{ fontSize: '0.68rem', color: '#6EE7B7', fontWeight: 700 }}>
+                      (+100 pts)
+                    </Typography>
                   </Box>
                   <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#FFFFFF' }}>
-                    {profile.solvedEasy ?? 240} <span style={{ color: '#64748B', fontWeight: 500, fontSize: '0.72rem' }}>/ 380</span>
+                    {profile.solvedEasy ?? 0} <span style={{ color: '#64748B', fontWeight: 500, fontSize: '0.72rem' }}>solved</span>
                   </Typography>
                 </Box>
 
@@ -1011,9 +1014,12 @@ export default function StudentOverviewTab({
                     <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#E2E8F0' }}>
                       Medium
                     </Typography>
+                    <Typography sx={{ fontSize: '0.68rem', color: '#FCD34D', fontWeight: 700 }}>
+                      (+200 pts)
+                    </Typography>
                   </Box>
                   <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#FFFFFF' }}>
-                    {profile.solvedMedium ?? 310} <span style={{ color: '#64748B', fontWeight: 500, fontSize: '0.72rem' }}>/ 540</span>
+                    {profile.solvedMedium ?? 0} <span style={{ color: '#64748B', fontWeight: 500, fontSize: '0.72rem' }}>solved</span>
                   </Typography>
                 </Box>
 
@@ -1024,9 +1030,12 @@ export default function StudentOverviewTab({
                     <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#E2E8F0' }}>
                       Hard
                     </Typography>
+                    <Typography sx={{ fontSize: '0.68rem', color: '#FDA4AF', fontWeight: 700 }}>
+                      (+350 pts)
+                    </Typography>
                   </Box>
                   <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#FFFFFF' }}>
-                    {profile.solvedHard ?? 130} <span style={{ color: '#64748B', fontWeight: 500, fontSize: '0.72rem' }}>/ 280</span>
+                    {profile.solvedHard ?? 0} <span style={{ color: '#64748B', fontWeight: 500, fontSize: '0.72rem' }}>solved</span>
                   </Typography>
                 </Box>
               </Box>

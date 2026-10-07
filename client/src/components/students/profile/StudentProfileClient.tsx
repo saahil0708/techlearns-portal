@@ -369,35 +369,6 @@ export default function StudentProfileClient({
   const [selectedCert, setSelectedCert] = useState<StudentCertification | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<StudentSubmission | null>(null);
 
-  // First-time student detection: Prompt diagnostic & interest onboarding if no profile goals exist
-  useEffect(() => {
-    if (!isOwner) return;
-    let active = true;
-    apiService
-      .getStudentDiagnostic()
-      .then((diag) => {
-        if (!active) return;
-        if (!diag || !diag.targetTrack) {
-          const localKey = profile.id ? `codeplatform_diagnostic_goal_${profile.id}` : 'codeplatform_diagnostic_goal';
-          const local = typeof window !== 'undefined' ? localStorage.getItem(localKey) : null;
-          if (!local) {
-            setDiagnosticModalOpen(true);
-          }
-        }
-      })
-      .catch(() => {
-        if (!active) return;
-        const localKey = profile.id ? `codeplatform_diagnostic_goal_${profile.id}` : 'codeplatform_diagnostic_goal';
-        const local = typeof window !== 'undefined' ? localStorage.getItem(localKey) : null;
-        if (!local) {
-          setDiagnosticModalOpen(true);
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, [isOwner, profile.id]);
-
   const handleTabChange = (newTab: StudentTabType) => {
     if (newTab !== currentTab) {
       setCurrentTab(newTab);

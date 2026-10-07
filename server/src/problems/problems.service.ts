@@ -1,5 +1,5 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
-import { Prisma, ProblemDifficulty, ProblemStatus, Role } from '@prisma/client';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { Prisma, ProblemDifficulty, ProblemStatus, Role, SubmissionVerdict } from '@prisma/client';
 import { AppCacheService } from '../common/cache/app-cache.service.js';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import { CurrentUserPayload } from '../common/types/current-user.interface.js';
@@ -24,9 +24,101 @@ export class ProblemsService {
       .replace(/^-+|-+$/g, '');
   }
 
+  private async assertValidCourseMapping(
+    courseId?: string | null,
+    moduleId?: string | null,
+    lessonId?: string | null,
+    problemInstitutionId?: string | null,
+    user?: CurrentUserPayload,
+  ) {
+    if (!courseId) {
+      if (moduleId || lessonId) {
+        throw new BadRequestException('Cannot associate a module or lesson without specifying a valid courseId');
+      }
+      return { moduleId: null };
+    }
+
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+    });
+    if (!course) {
+      throw new NotFoundException(`Course with ID ${courseId} not found`);
+    }
+
+    if (user) {
+      const isPrivileged =
+        user.globalRole === Role.SUPER_ADMIN ||
+        user.globalRole === Role.PLATFORM_ADMIN ||
+        course.createdById === user.id ||
+        Boolean(
+          course.institutionId &&
+            user.memberships?.some(
+              (m) =>
+                m.institutionId === course.institutionId &&
+                (m.role === Role.FACULTY || m.role === Role.INSTITUTION_ADMIN),
+            ),
+        );
+
+      if (!isPrivileged) {
+        throw new ForbiddenException('You do not have permission to associate problems with this course');
+      }
+    }
+
+    if (!problemInstitutionId && course.institutionId) {
+      throw new BadRequestException('A global problem cannot be linked to an institution-scoped course');
+    }
+
+    if (problemInstitutionId && course.institutionId && problemInstitutionId !== course.institutionId) {
+      throw new BadRequestException('Course belongs to a different institution than the problem');
+    }
+
+    let resolvedModuleId = moduleId || null;
+
+    if (moduleId) {
+      const moduleItem = await this.prisma.module.findUnique({
+        where: { id: moduleId },
+      });
+      if (!moduleItem) {
+        throw new NotFoundException(`Module with ID ${moduleId} not found`);
+      }
+      if (moduleItem.courseId !== courseId) {
+        throw new BadRequestException(`Referenced module ${moduleId} does not belong to course ${courseId}`);
+      }
+    }
+
+    if (lessonId) {
+      const lesson = await this.prisma.lesson.findUnique({
+        where: { id: lessonId },
+        include: { module: true },
+      });
+      if (!lesson) {
+        throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
+      }
+      if (moduleId && lesson.moduleId !== moduleId) {
+        throw new BadRequestException(`Referenced lesson ${lessonId} does not belong to module ${moduleId}`);
+      }
+      if (lesson.module?.courseId !== courseId) {
+        throw new BadRequestException(`Referenced lesson ${lessonId} belongs to a module outside course ${courseId}`);
+      }
+      if (!resolvedModuleId && lesson.moduleId) {
+        resolvedModuleId = lesson.moduleId;
+      }
+    }
+
+    return { moduleId: resolvedModuleId };
+  }
+
   async create(input: CreateProblemInput, creatorId: string, user?: CurrentUserPayload) {
-    const institutionId = input.institutionId || input.collegeId;
-    this.assertInstitutionAssignment(institutionId, user);
+    const institutionId = input.institutionId || input.collegeId || null;
+    this.assertInstitutionAssignment(institutionId || undefined, user);
+    const validatedCoursePlacement = await this.assertValidCourseMapping(
+      input.courseId,
+      input.moduleId,
+      input.lessonId,
+      institutionId,
+      user,
+    );
+    const resolvedModuleId = validatedCoursePlacement?.moduleId ?? input.moduleId ?? null;
     const slug = input.slug || this.slugify(input.title);
 
     const existing = await this.prisma.problem.findUnique({
@@ -49,6 +141,7 @@ export class ProblemsService {
         timeLimit: input.timeLimit,
         memoryLimit: input.memoryLimit,
         institutionId,
+        courseId: input.courseId || null,
         createdById: creatorId,
         status: input.status || ProblemStatus.PUBLISHED,
         testCases: input.testCases
@@ -60,6 +153,16 @@ export class ProblemsService {
                 explanation: tc.explanation,
                 order: tc.order ?? index,
               })),
+            }
+          : undefined,
+        courseMappings: input.courseId
+          ? {
+              create: {
+                courseId: input.courseId,
+                moduleId: resolvedModuleId,
+                lessonId: input.lessonId || null,
+                points: input.difficulty === ProblemDifficulty.EASY ? 100 : input.difficulty === ProblemDifficulty.HARD ? 350 : 200,
+              },
             }
           : undefined,
       },
@@ -80,6 +183,7 @@ export class ProblemsService {
     difficulty?: ProblemDifficulty,
     status?: ProblemStatus,
     institutionId?: string,
+    courseId?: string,
     user?: CurrentUserPayload,
   ) {
     const page = args.page || 1;
@@ -99,6 +203,10 @@ export class ProblemsService {
 
     if (difficulty) {
       where.difficulty = difficulty;
+    }
+
+    if (courseId) {
+      where.courseId = courseId;
     }
 
     const isSuperAdmin =
@@ -168,10 +276,35 @@ export class ProblemsService {
       this.prisma.problem.count({ where }),
     ]);
 
+    const problemIds = items.map((p) => p.id);
+    const acceptedCounts = problemIds.length > 0 ? await this.prisma.submission.groupBy({
+      by: ['problemId'],
+      where: {
+        problemId: { in: problemIds },
+        verdict: SubmissionVerdict.ACCEPTED,
+      },
+      _count: { id: true },
+    }) : [];
+    const acceptedMap = new Map(acceptedCounts.map((c) => [c.problemId, c._count.id]));
+
+    const mappedItems = items.map((p) => {
+      const totalSubmissions = p._count?.submissions || 0;
+      const acceptedSubmissions = acceptedMap.get(p.id) || 0;
+      const acceptanceRate = totalSubmissions > 0 ? Number(((acceptedSubmissions / totalSubmissions) * 100).toFixed(1)) : 0;
+      const points = p.difficulty === ProblemDifficulty.EASY ? 100 : p.difficulty === ProblemDifficulty.HARD ? 350 : 200;
+      return {
+        ...p,
+        points,
+        totalSubmissions,
+        acceptedSubmissions,
+        acceptanceRate,
+      };
+    });
+
     const totalPages = Math.ceil(total / limit) || 1;
 
     return {
-      items,
+      items: mappedItems,
       meta: {
         total,
         page,
@@ -230,23 +363,46 @@ export class ProblemsService {
       }
     }
 
-    const testCases = await this.prisma.testCase.findMany({
-      where: {
-        problemId: problem.id,
-        ...(hasPrivilegedAccess ? {} : { isHidden: false }),
-      },
-      orderBy: { order: 'asc' },
-    });
+    const [testCases, acceptedSubmissions] = await Promise.all([
+      this.prisma.testCase?.findMany
+        ? this.prisma.testCase.findMany({
+            where: {
+              problemId: problem.id,
+              ...(hasPrivilegedAccess ? {} : { isHidden: false }),
+            },
+            orderBy: { order: 'asc' },
+          })
+        : Promise.resolve([]),
+      this.prisma.submission?.count
+        ? this.prisma.submission.count({
+            where: {
+              problemId: problem.id,
+              verdict: SubmissionVerdict.ACCEPTED,
+            },
+          })
+        : Promise.resolve(0),
+    ]);
+
+    const totalSubmissions = problem._count?.submissions || 0;
+    const acceptanceRate = totalSubmissions > 0 ? Number(((acceptedSubmissions / totalSubmissions) * 100).toFixed(1)) : 0;
+    const points = problem.difficulty === ProblemDifficulty.EASY ? 100 : problem.difficulty === ProblemDifficulty.HARD ? 350 : 200;
 
     return {
       ...problem,
       testCases,
+      points,
+      totalSubmissions,
+      acceptedSubmissions,
+      acceptanceRate,
     };
   }
 
   async update(id: string, input: UpdateProblemInput, user?: CurrentUserPayload) {
     const existing = await this.prisma.problem.findUnique({
       where: { id },
+      include: {
+        courseMappings: true,
+      },
     });
 
     if (!existing) {
@@ -255,25 +411,149 @@ export class ProblemsService {
 
     this.assertProblemAuthorOrAdmin(existing, user);
 
-    const problem = await this.prisma.problem.update({
-      where: { id },
-      data: input,
-      include: {
-        testCases: true,
-        _count: {
-          select: {
-            submissions: true,
-            testCases: true,
+    const { moduleId, lessonId, courseId, institutionId, ...problemData } = input;
+
+    const targetInstitutionId =
+      institutionId !== undefined ? (institutionId || null) : existing.institutionId;
+
+    if (institutionId !== undefined && institutionId !== existing.institutionId) {
+      this.assertInstitutionAssignment(institutionId || undefined, user);
+    }
+
+    const targetCourseId = courseId !== undefined ? (courseId || null) : existing.courseId;
+    const isCourseChanged = courseId !== undefined && (courseId || null) !== existing.courseId;
+    const existingMapping =
+      existing.courseMappings?.find((m) => m.courseId === existing.courseId) ||
+      existing.courseMappings?.[0] ||
+      null;
+
+    const targetModuleId = !targetCourseId
+      ? null
+      : isCourseChanged
+        ? (moduleId !== undefined ? (moduleId || null) : null)
+        : (moduleId !== undefined ? (moduleId || null) : (lessonId ? null : (existingMapping?.moduleId || null)));
+
+    const targetLessonId = !targetCourseId
+      ? null
+      : isCourseChanged
+        ? (lessonId !== undefined ? (lessonId || null) : null)
+        : (lessonId !== undefined ? (lessonId || null) : (moduleId !== undefined ? null : (existingMapping?.lessonId || null)));
+
+    let resolvedModuleId = targetModuleId;
+    if (
+      courseId !== undefined ||
+      moduleId !== undefined ||
+      lessonId !== undefined ||
+      institutionId !== undefined
+    ) {
+      const validatedCoursePlacement = await this.assertValidCourseMapping(
+        targetCourseId,
+        targetModuleId,
+        targetLessonId,
+        targetInstitutionId,
+        user,
+      );
+      if (validatedCoursePlacement && validatedCoursePlacement.moduleId !== undefined) {
+        resolvedModuleId = validatedCoursePlacement.moduleId;
+      }
+    }
+
+    const updateData: Prisma.ProblemUpdateInput = {
+      ...problemData,
+    };
+
+    if (institutionId !== undefined) {
+      updateData.institution = institutionId
+        ? { connect: { id: institutionId } }
+        : { disconnect: true };
+    }
+
+    if (courseId !== undefined) {
+      updateData.course = courseId ? { connect: { id: courseId } } : { disconnect: true };
+    }
+
+    const problem = await this.prisma.$transaction(async (tx) => {
+      const updatedProblem = await tx.problem.update({
+        where: { id },
+        data: updateData,
+        include: {
+          testCases: true,
+          _count: {
+            select: {
+              submissions: true,
+              testCases: true,
+            },
           },
         },
-      },
+      });
+
+      if (courseId !== undefined && !courseId) {
+        await tx.courseProblem.deleteMany({
+          where: { problemId: id },
+        });
+      } else if (
+        targetCourseId &&
+        (courseId !== undefined ||
+          moduleId !== undefined ||
+          lessonId !== undefined ||
+          institutionId !== undefined ||
+          input.difficulty !== undefined)
+      ) {
+        if (isCourseChanged) {
+          await tx.courseProblem.deleteMany({
+            where: { problemId: id, courseId: { not: targetCourseId } },
+          });
+        }
+
+        await tx.courseProblem.upsert({
+          where: {
+            courseId_problemId: {
+              courseId: targetCourseId,
+              problemId: id,
+            },
+          },
+          create: {
+            courseId: targetCourseId,
+            problemId: id,
+            moduleId: resolvedModuleId,
+            lessonId: targetLessonId,
+            points:
+              updatedProblem.difficulty === ProblemDifficulty.EASY
+                ? 100
+                : updatedProblem.difficulty === ProblemDifficulty.HARD
+                  ? 350
+                  : 200,
+          },
+          update: {
+            moduleId: resolvedModuleId,
+            lessonId: targetLessonId,
+            ...(input.difficulty !== undefined && {
+              points:
+                updatedProblem.difficulty === ProblemDifficulty.EASY
+                  ? 100
+                  : updatedProblem.difficulty === ProblemDifficulty.HARD
+                    ? 350
+                    : 200,
+            }),
+          },
+        });
+      }
+
+      return updatedProblem;
+    });
+
+    const courseMappings = await this.prisma.courseProblem.findMany({
+      where: { problemId: id },
     });
 
     if (this.cacheService) {
       await this.cacheService.invalidatePrefix('problems:');
     }
 
-    return problem;
+    return {
+      ...problem,
+      courseMappings,
+    };
   }
 
   async delete(id: string, user?: CurrentUserPayload) {
@@ -318,6 +598,57 @@ export class ProblemsService {
         explanation: input.explanation,
         order: input.order ?? 0,
       },
+    });
+
+    if (this.cacheService) {
+      await this.cacheService.invalidatePrefix('problems:');
+    }
+
+    return tc;
+  }
+
+  async updateTestCase(problemId: string, testCaseId: string, input: Partial<CreateTestCaseInput>, user?: CurrentUserPayload) {
+    const problem = await this.prisma.problem.findUnique({
+      where: { id: problemId },
+    });
+
+    if (!problem) {
+      throw new NotFoundException(`Problem with ID ${problemId} not found`);
+    }
+
+    this.assertProblemAuthorOrAdmin(problem, user);
+
+    const tc = await this.prisma.testCase.update({
+      where: { id: testCaseId },
+      data: {
+        ...(input.input !== undefined && { input: input.input }),
+        ...(input.expectedOutput !== undefined && { expectedOutput: input.expectedOutput }),
+        ...(input.isHidden !== undefined && { isHidden: input.isHidden }),
+        ...(input.explanation !== undefined && { explanation: input.explanation }),
+        ...(input.order !== undefined && { order: input.order }),
+      },
+    });
+
+    if (this.cacheService) {
+      await this.cacheService.invalidatePrefix('problems:');
+    }
+
+    return tc;
+  }
+
+  async deleteTestCase(problemId: string, testCaseId: string, user?: CurrentUserPayload) {
+    const problem = await this.prisma.problem.findUnique({
+      where: { id: problemId },
+    });
+
+    if (!problem) {
+      throw new NotFoundException(`Problem with ID ${problemId} not found`);
+    }
+
+    this.assertProblemAuthorOrAdmin(problem, user);
+
+    const tc = await this.prisma.testCase.delete({
+      where: { id: testCaseId },
     });
 
     if (this.cacheService) {

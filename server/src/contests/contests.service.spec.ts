@@ -137,5 +137,57 @@ describe('ContestsService', () => {
         ),
       ).rejects.toThrow(ForbiddenException);
     });
+
+    it('broadcasts updates and invalidates cache when submission is evaluated for a contest', async () => {
+      const mockCacheService = {
+        invalidate: vi.fn().mockResolvedValue(undefined),
+        invalidatePrefix: vi.fn().mockResolvedValue(undefined),
+      };
+      const contestServiceWithCache = new ContestsService(prisma, mockCacheService as any);
+      const broadcastSpy = vi.spyOn(contestServiceWithCache, 'broadcastContestUpdate');
+
+      await contestServiceWithCache.handleSubmissionEvaluated({
+        submissionId: 'sub-1',
+        userId: 'u-1',
+        problemId: 'p-1',
+        verdict: 'ACCEPTED',
+        passedTestCases: 2,
+        totalTestCases: 2,
+        contestId: 'contest-1',
+      });
+
+      expect(mockCacheService.invalidate).toHaveBeenCalledWith('leaderboard:contest:contest-1');
+      expect(mockCacheService.invalidatePrefix).toHaveBeenCalledWith('leaderboard:contest:contest-1:');
+      expect(broadcastSpy).toHaveBeenCalledWith('contest-1', 'LEADERBOARD_UPDATE', {
+        submissionId: 'sub-1',
+        userId: 'u-1',
+        verdict: 'ACCEPTED',
+      });
+    });
+
+    it('broadcasts updates even if cache invalidation throws an error', async () => {
+      const mockCacheService = {
+        invalidate: vi.fn().mockRejectedValue(new Error('Redis connection failed')),
+        invalidatePrefix: vi.fn().mockRejectedValue(new Error('Redis connection failed')),
+      };
+      const contestServiceWithCache = new ContestsService(prisma, mockCacheService as any);
+      const broadcastSpy = vi.spyOn(contestServiceWithCache, 'broadcastContestUpdate');
+
+      await contestServiceWithCache.handleSubmissionEvaluated({
+        submissionId: 'sub-2',
+        userId: 'u-2',
+        problemId: 'p-1',
+        verdict: 'WRONG_ANSWER',
+        passedTestCases: 0,
+        totalTestCases: 2,
+        contestId: 'contest-2',
+      });
+
+      expect(broadcastSpy).toHaveBeenCalledWith('contest-2', 'LEADERBOARD_UPDATE', {
+        submissionId: 'sub-2',
+        userId: 'u-2',
+        verdict: 'WRONG_ANSWER',
+      });
+    });
   });
 });

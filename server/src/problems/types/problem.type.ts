@@ -49,6 +49,9 @@ export class ProblemType {
   @Field(() => String, { nullable: true })
   collegeId?: string;
 
+  @Field(() => String, { nullable: true })
+  courseId?: string;
+
   @Field(() => String)
   createdById: string;
 

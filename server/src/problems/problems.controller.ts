@@ -16,8 +16,10 @@ import { Roles } from '../common/decorators/roles.decorator.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
+import { CreateTestCaseInput } from './dto/create-test-case.input.js';
 import { CreateProblemInput } from './dto/create-problem.input.js';
 import { SetPotdDto } from './dto/set-potd.dto.js';
+import { QueuePotdDto } from './dto/queue-potd.dto.js';
 import { UpdateProblemInput } from './dto/update-problem.input.js';
 import { PotdService } from './potd.service.js';
 import { ProblemsService } from './problems.service.js';
@@ -50,6 +52,42 @@ export class ProblemsController {
     return this.potdService.setPotd(input.problemId, input.date, input.bonusPoints, user);
   }
 
+  @Post('potd/queue')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Queue multiple Problems of the Day across continuous consecutive days' })
+  @ApiResponse({ status: 200, description: 'Continuous POTDs queued successfully' })
+  async queuePotd(
+    @Body() input: QueuePotdDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.potdService.queuePotd(input.problemIds, input.startDate, input.bonusPoints, user);
+  }
+
+  @Delete('potd/:date')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Delete / reset custom POTD assignment for a specific date' })
+  @ApiResponse({ status: 200, description: 'POTD assignment deleted/reset successfully' })
+  async deletePotd(
+    @Param('date') date: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.potdService.deletePotd(date, user);
+  }
+
+  @Get('potd/schedule')
+  @ApiOperation({ summary: 'Get POTD schedule and queue with custom and automated assignments' })
+  @ApiResponse({ status: 200, description: 'List of scheduled POTD entries' })
+  async getPotdSchedule(
+    @Query('days') days?: string,
+  ) {
+    const numDays = days ? Math.min(Math.max(parseInt(days, 10), 1), 60) : 30;
+    return this.potdService.getPotdSchedule(numDays);
+  }
+
   @Get('potd/history')
   @ApiOperation({ summary: 'Get recent history of Daily Problems' })
   @ApiResponse({ status: 200, description: 'List of historical POTD entries' })
@@ -80,6 +118,7 @@ export class ProblemsController {
     @Query('difficulty') difficulty?: ProblemDifficulty,
     @Query('status') status?: ProblemStatus,
     @Query('institutionId') institutionId?: string,
+    @Query('courseId') courseId?: string,
     @CurrentUser() user?: CurrentUserPayload,
   ) {
     return this.problemsService.findPaginated(
@@ -91,6 +130,7 @@ export class ProblemsController {
       difficulty,
       status,
       institutionId,
+      courseId,
       user,
     );
   }
@@ -143,5 +183,45 @@ export class ProblemsController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.problemsService.delete(id, user);
+  }
+
+  @Post(':id/testcases')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Add a test case to a problem' })
+  async addTestCase(
+    @Param('id') id: string,
+    @Body() input: CreateTestCaseInput,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.problemsService.addTestCase(id, input, user);
+  }
+
+  @Patch(':id/testcases/:testCaseId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Update a test case' })
+  async updateTestCase(
+    @Param('id') id: string,
+    @Param('testCaseId') testCaseId: string,
+    @Body() input: Partial<CreateTestCaseInput>,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.problemsService.updateTestCase(id, testCaseId, input, user);
+  }
+
+  @Delete(':id/testcases/:testCaseId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Delete a test case' })
+  async deleteTestCase(
+    @Param('id') id: string,
+    @Param('testCaseId') testCaseId: string,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.problemsService.deleteTestCase(id, testCaseId, user);
   }
 }

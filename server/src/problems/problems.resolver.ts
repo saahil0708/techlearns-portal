@@ -32,6 +32,8 @@ export class ProblemsResolver {
     institutionId?: string,
     @Args('collegeId', { type: () => String, nullable: true })
     collegeId?: string,
+    @Args('courseId', { type: () => String, nullable: true })
+    courseId?: string,
     @GqlCurrentUser() currentUser?: CurrentUserPayload,
   ) {
     return this.problemsService.findPaginated(
@@ -39,6 +41,7 @@ export class ProblemsResolver {
       difficulty,
       status,
       institutionId || collegeId,
+      courseId,
       currentUser,
     );
   }

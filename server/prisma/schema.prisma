@@ -372,6 +372,8 @@ model Course {
   createdBy   User         @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Restrict)
   modules     Module[]
   enrollments Enrollment[]
+  problems    Problem[]
+  courseProblems CourseProblem[]
 
   @@index([institutionId, status])
   @@index([createdById, status])
@@ -390,6 +392,7 @@ model Module {
 
   course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lessons Lesson[]
+  courseProblems CourseProblem[]
 
   @@index([courseId, order])
   @@map("modules")
@@ -410,6 +413,7 @@ model Lesson {
 
   module   Module           @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   progress LessonProgress[]
+  courseProblems CourseProblem[]
 
   @@index([moduleId, order])
   @@map("lessons")
@@ -463,13 +467,16 @@ model Problem {
   timeLimit     Int               @default(1000) // ms
   memoryLimit   Int               @default(256) // MB
   institutionId String?
+  courseId      String?
   createdById   String
   status        ProblemStatus     @default(DRAFT)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
 
   institution     Institution?     @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  course          Course?          @relation(fields: [courseId], references: [id], onDelete: SetNull)
   createdBy       User             @relation("ProblemCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  courseMappings  CourseProblem[]
   testCases       TestCase[]
   submissions     Submission[]
   contestProblems ContestProblem[]
@@ -477,9 +484,31 @@ model Problem {
 
   @@index([difficulty, status])
   @@index([institutionId, status])
+  @@index([courseId, status])
   @@index([createdById, status])
   @@index([status, createdAt])
   @@map("problems")
+}
+
+model CourseProblem {
+  id          String   @id @default(uuid())
+  courseId    String
+  problemId   String
+  moduleId    String?
+  lessonId    String?
+  order       Int      @default(0)
+  points      Int      @default(100)
+  isMandatory Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  problem Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  module  Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  lesson  Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  @@unique([courseId, problemId])
+  @@index([courseId, order])
+  @@map("course_problems")
 }
 
 model TestCase {

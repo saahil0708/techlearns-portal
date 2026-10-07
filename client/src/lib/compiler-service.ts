@@ -72,6 +72,92 @@ const JUDGE0_ENDPOINT =
   process.env.NEXT_PUBLIC_JUDGE0_ENDPOINT ||
   'https://ce.judge0.com/submissions?wait=true&base64_encoded=false';
 
+export function wrapCodeWithHarness(lang: SupportedCompilerLang, sourceCode: string): string {
+  const code = sourceCode.trim();
+
+  if (lang === 'python') {
+    const hasTopLevelDriver = /^(print\s*\(|if\s+__name__\s*==|\w+\s*=\s*sys\.stdin|\w+\s*=\s*input\()/m.test(code);
+    if (hasTopLevelDriver) {
+      return code;
+    }
+
+    const pythonHarness = `
+
+# --- Auto-Injected Test Harness ---
+if __name__ == '__main__':
+    import sys
+    _raw_in = sys.stdin.read().strip()
+    if _raw_in:
+        _func = None
+        if 'Solution' in globals():
+            _inst = globals()['Solution']()
+            for _name in dir(_inst):
+                if not _name.startswith('_') and callable(getattr(_inst, _name)):
+                    _func = getattr(_inst, _name)
+                    break
+        elif 'solve' in globals() and callable(globals()['solve']):
+            _func = globals()['solve']
+        elif 'twoSum' in globals() and callable(globals()['twoSum']):
+            _func = globals()['twoSum']
+
+        if _func:
+            _tokens = _raw_in.split()
+            if len(_tokens) > 1 and _tokens[0].isdigit() and int(_tokens[0]) == len(_tokens) - 1:
+                _nums = [int(x) if (x.lstrip('-').isdigit()) else x for x in _tokens[1:]]
+                try:
+                    _res = _func(_nums)
+                except TypeError:
+                    _res = _func(int(_tokens[0]), _nums)
+            else:
+                _nums = [int(x) if (x.lstrip('-').isdigit()) else x for x in _tokens]
+                try:
+                    _res = _func(_nums)
+                except TypeError:
+                    _res = _func(*_nums)
+
+            if _res is not None:
+                if isinstance(_res, (list, tuple)):
+                    print(' '.join(map(str, _res)))
+                else:
+                    print(_res)
+`;
+    return code + pythonHarness;
+  }
+
+  if (lang === 'javascript' || lang === 'typescript') {
+    const hasConsoleLog = /console\.log\s*\(/m.test(code);
+    if (hasConsoleLog) return code;
+
+    const jsHarness = `
+
+// --- Auto-Injected Test Harness ---
+const fs = require('fs');
+try {
+  const input = fs.readFileSync(0, 'utf-8').trim();
+  if (input) {
+    const tokens = input.split(/\\s+/);
+    let targetFunc = typeof solve === 'function' ? solve : (typeof Solution === 'function' ? new Solution().solve : null);
+    if (targetFunc) {
+      let args;
+      if (tokens.length > 1 && !isNaN(tokens[0]) && Number(tokens[0]) === tokens.length - 1) {
+        args = [tokens.slice(1).map(Number)];
+      } else {
+        args = [tokens.map(Number)];
+      }
+      const res = targetFunc(...args);
+      if (res !== undefined) {
+        console.log(Array.isArray(res) ? res.join(' ') : res);
+      }
+    }
+  }
+} catch (e) {}
+`;
+    return code + jsHarness;
+  }
+
+  return code;
+}
+
 export class CompilerService {
   /**
    * Compiles and executes code in the real-time Judge0 sandbox
@@ -87,13 +173,14 @@ export class CompilerService {
   ): Promise<ExecutionResult> {
     const config = RUNTIME_MAP[lang] || RUNTIME_MAP.python;
     const startTime = performance.now();
+    const finalCode = wrapCodeWithHarness(lang, sourceCode);
 
     try {
       const response = await axios.post(
         JUDGE0_ENDPOINT,
         {
           language_id: config.judge0Id,
-          source_code: sourceCode,
+          source_code: finalCode,
           stdin: stdin || '',
           cpu_time_limit: 5,
           memory_limit: 262144, // 256 MB

@@ -242,8 +242,8 @@ export const CREATE_COLLEGE_MUTATION = `
 `;
 
 export const PROBLEMS_QUERY = `
-  query GetProblems($page: Int, $limit: Int, $search: String, $difficulty: ProblemDifficulty, $status: ProblemStatus) {
-    problems(page: $page, limit: $limit, search: $search, difficulty: $difficulty, status: $status) {
+  query GetProblems($page: Int, $limit: Int, $search: String, $difficulty: ProblemDifficulty, $status: ProblemStatus, $institutionId: String, $courseId: String) {
+    problems(page: $page, limit: $limit, search: $search, difficulty: $difficulty, status: $status, institutionId: $institutionId, courseId: $courseId) {
       items {
         id
         title
@@ -252,6 +252,9 @@ export const PROBLEMS_QUERY = `
         status
         timeLimit
         memoryLimit
+        institutionId
+        collegeId
+        courseId
         createdAt
         _count {
           submissions

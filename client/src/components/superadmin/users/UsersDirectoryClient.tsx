@@ -1,76 +1,45 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Typography,
   Card,
-  Chip,
   Button,
-  TextField,
-  InputAdornment,
-  Avatar,
-  IconButton,
-  Tooltip,
   ListItemIcon,
   Menu,
   MenuItem,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContainer,
-  Select,
-  Checkbox,
-  Tabs,
-  Tab,
   Divider,
 } from '@mui/material';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 
-// Icons
-import SearchIcon from '@mui/icons-material/Search';
-import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
-import GroupAddRoundedIcon from '@mui/icons-material/GroupAddRounded';
-import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded';
-import SecurityRoundedIcon from '@mui/icons-material/SecurityRounded';
-import VerifiedUserRoundedIcon from '@mui/icons-material/VerifiedUserRounded';
-import GppBadRoundedIcon from '@mui/icons-material/GppBadRounded';
-import SupervisorAccountRoundedIcon from '@mui/icons-material/SupervisorAccountRounded';
-import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
-import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
-import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import FirstPageRoundedIcon from '@mui/icons-material/FirstPageRounded';
-import LastPageRoundedIcon from '@mui/icons-material/LastPageRounded';
-import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
-import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
-import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
-import { FluidArrowRight } from '@/utils/fluid_arrow';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
-import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
-import FilterAltOffRoundedIcon from '@mui/icons-material/FilterAltOffRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
+import LinkOffRoundedIcon from '@mui/icons-material/LinkOffRounded';
 import LockResetRoundedIcon from '@mui/icons-material/LockResetRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import DeleteForeverRoundedIcon from '@mui/icons-material/DeleteForeverRounded';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
-import LinkOffRoundedIcon from '@mui/icons-material/LinkOffRounded';
-
-import dynamic from 'next/dynamic';
+import { FluidArrowRight } from '@/utils/fluid_arrow';
 
 // Layout & Modals
 import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
-import type { NewUserData, UserRole } from '@/components/superadmin/users/CreateUserModal';
+import type { NewUserData } from '@/components/superadmin/users/CreateUserModal';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
 import { useAppSelector } from '@/store/hooks';
-import YouBadge from '@/components/common/YouBadge';
-import StatsCard from '@/components/superadmin/shared/StatsCard';
+
+export * from './directory/types';
+import {
+  UserDirectoryEntity,
+  SortField,
+  SortDirection,
+  getRoleBadgeStyle,
+} from './directory/types';
+import UsersStatsBanner from './directory/UsersStatsBanner';
+import UsersFilterToolbar from './directory/UsersFilterToolbar';
+import UsersDataTable from './directory/UsersDataTable';
 
 const CreateUserModal = dynamic(() => import('@/components/superadmin/users/CreateUserModal'), { loading: () => null });
 const EditUserModal = dynamic(() => import('@/components/superadmin/users/EditUserModal'), { loading: () => null });
@@ -79,28 +48,6 @@ const UserQuickPeekDrawer = dynamic(() => import('@/components/superadmin/users/
 const BulkInviteUsersModal = dynamic(() => import('@/components/superadmin/users/BulkInviteUsersModal'), { loading: () => null });
 const DeleteConfirmModal = dynamic(() => import('@/components/superadmin/shared/DeleteConfirmModal'), { loading: () => null });
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
-
-export interface UserDirectoryEntity {
-  id: string;
-  name: string;
-  handle: string;
-  email: string;
-  role: UserRole;
-  institutionType: 'Institute' | 'Independent';
-  institutionName: string;
-  twoFactorEnabled: boolean;
-  lastLoginAt: string;
-  lastLoginAtRaw?: string;
-  lastLoginIp: string;
-  createdAt: string;
-  createdAtRaw?: string;
-  status: 'Active' | 'Invited' | 'Suspended';
-  avatarUrl?: string;
-  avatarColor: string;
-}
-
-type SortField = 'name' | 'role' | 'institutionName' | 'lastLoginAt' | 'createdAt';
-type SortDirection = 'asc' | 'desc';
 
 interface UsersDirectoryClientProps {
   initialUsers: UserDirectoryEntity[];
@@ -118,7 +65,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
   const [twoFactorFilter, setTwoFactorFilter] = useState<string>('ALL');
 
   // Client-side live data refresh
-  React.useEffect(() => {
+  useEffect(() => {
     async function loadLiveUsers() {
       try {
         const liveData = await apiService.getUsers({ limit: 100 });
@@ -139,7 +86,6 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
               const institutionName = collegeName || userInstitution || 'Independent';
 
               const lastLoginAtRaw = item.lastLoginAt || item.auditLogs?.[0]?.createdAt || '';
-              const createdAtRaw = item.createdAt || '';
               const lastLoginDate = lastLoginAtRaw
                 ? new Date(lastLoginAtRaw).toLocaleDateString('en-US', {
                     month: 'short',
@@ -169,6 +115,7 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
                       year: 'numeric',
                     })
                   : 'Recently',
+                createdAtRaw: item.createdAt || new Date().toISOString(),
                 status:
                   item.status === 'ACTIVE'
                     ? 'Active'
@@ -201,7 +148,6 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
   const [actionMenuAnchor, setActionMenuAnchor] = useState<null | HTMLElement>(null);
   const [actionMenuUser, setActionMenuUser] = useState<UserDirectoryEntity | null>(null);
   const [deleteTargetUsers, setDeleteTargetUsers] = useState<UserDirectoryEntity[] | null>(null);
-  const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
 
   // Pagination states
   const [page, setPage] = useState<number>(0);
@@ -251,12 +197,10 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
         institutionType: 'Independent',
       });
     } catch (err: any) {
-      console.error('Failed to unassign user:', err);
-      toast.error(err?.message || 'Failed to unassign user from institution.', 'Unassign Failed');
+      toast.error(err?.message || 'Failed to unassign user from institution.', 'Action Failed');
     }
   };
 
-  // Handle Sort Change
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -266,42 +210,20 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
     }
   };
 
-  // Delete Handlers
-  const _handleRequestDeleteSingle = (user: UserDirectoryEntity) => {
-    setDeleteTargetUsers([user]);
-  };
-
-  const handleRequestDeleteBulk = () => {
-    const targets = users.filter((u) => selectedIds.includes(u.id));
-    if (targets.length > 0) {
-      setDeleteTargetUsers(targets);
-    }
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deleteTargetUsers) return;
-    const targetIds = new Set(deleteTargetUsers.map((u) => u.id));
-    const count = deleteTargetUsers.length;
-    const targetsToDelete = [...deleteTargetUsers];
-    setUsers((prev) => prev.filter((u) => !targetIds.has(u.id)));
-    setSelectedIds((prev) => prev.filter((id) => !targetIds.has(id)));
-    setDeleteTargetUsers(null);
-
-    // Call live API to delete user records from database
-    for (const target of targetsToDelete) {
-      try {
-        await apiService.deleteUser(target.id);
-      } catch (err) {
-        console.error(`Failed to delete user ${target.id}:`, err);
-      }
-    }
-    toast.success(
-      count > 1 ? `Successfully deleted ${count} user accounts` : `Deleted user account successfully`,
-      'Account Management'
+  const handleToggleSelectRow = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
 
-  // Reset Filters
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(processedUsers.map((u) => u.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedRoleFilter('ALL');
@@ -311,194 +233,239 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
   };
 
   const isFilterActive =
-    searchQuery ||
+    searchQuery.trim() !== '' ||
     selectedRoleFilter !== 'ALL' ||
     selectedStatusFilter !== 'ALL' ||
     twoFactorFilter !== 'ALL';
 
-  // Filter & Sort
+const sanitizeSpreadsheetField = (val: any): string => {
+  let str = String(val ?? '');
+  if (/^[=+\-@\t\r]/.test(str)) {
+    str = "'" + str;
+  }
+  return str;
+};
+
+const sanitizeCsvField = (val: any): string => {
+  const str = sanitizeSpreadsheetField(val);
+  return `"${str.replace(/"/g, '""')}"`;
+};
+
+const escapeHtml = (unsafe: any): string => {
+  return String(unsafe ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
+  // Single or Bulk delete confirmation
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetUsers || deleteTargetUsers.length === 0) return;
+    const succeededUsers: UserDirectoryEntity[] = [];
+    let failedCount = 0;
+    let lastErrorMessage = '';
+
+    try {
+      for (const target of deleteTargetUsers) {
+        try {
+          await apiService.deleteUser(target.id);
+          succeededUsers.push(target);
+        } catch (err: any) {
+          failedCount++;
+          lastErrorMessage = err?.message || 'Failed to delete user';
+        }
+      }
+
+      if (failedCount > 0) {
+        const errorMsg = succeededUsers.length > 0
+          ? `Deleted ${succeededUsers.length} user(s), but ${failedCount} failed (${lastErrorMessage}).`
+          : `Failed to delete ${failedCount} user(s): ${lastErrorMessage}`;
+        toast.error(errorMsg, 'Deletion Incomplete');
+      } else {
+        const names = succeededUsers.map((u) => u.name).join(', ');
+        toast.success(
+          succeededUsers.length === 1
+            ? `Deleted account for ${names}.`
+            : `Permanently deleted ${succeededUsers.length} accounts (${names}).`,
+          'Accounts Removed'
+        );
+      }
+    } finally {
+      if (succeededUsers.length > 0) {
+        const succeededIds = new Set(succeededUsers.map((u) => u.id));
+        setUsers((prevUsers) => {
+          const remainingUsers = prevUsers.filter((u) => !succeededIds.has(u.id));
+          const remainingProcessed = remainingUsers.filter((user) => {
+            if (selectedRoleFilter !== 'ALL' && user.role !== selectedRoleFilter) return false;
+            if (selectedStatusFilter !== 'ALL' && user.status !== selectedStatusFilter) return false;
+            if (twoFactorFilter === 'ENABLED' && !user.twoFactorEnabled) return false;
+            if (twoFactorFilter === 'DISABLED' && user.twoFactorEnabled) return false;
+            const q = searchQuery.trim().toLowerCase();
+            if (q) {
+              const matchName = user.name.toLowerCase().includes(q);
+              const matchHandle = user.handle.toLowerCase().includes(q);
+              const matchEmail = user.email.toLowerCase().includes(q);
+              const matchInst = user.institutionName.toLowerCase().includes(q);
+              const matchRole = user.role.toLowerCase().includes(q);
+              if (!matchName && !matchHandle && !matchEmail && !matchInst && !matchRole) return false;
+            }
+            return true;
+          });
+          const maxPage = Math.max(0, Math.ceil(remainingProcessed.length / rowsPerPage) - 1);
+          setPage((currentPage) => Math.min(currentPage, maxPage));
+          return remainingUsers;
+        });
+        setSelectedIds((prev) => prev.filter((id) => !succeededIds.has(id)));
+      }
+      setDeleteTargetUsers(null);
+    }
+  };
+
+  const handleRequestDeleteBulk = () => {
+    const targets = users.filter((u) => selectedIds.includes(u.id));
+    if (targets.length > 0) {
+      setDeleteTargetUsers(targets);
+    }
+  };
+
+  const handleAddUser = async (newUserData: NewUserData) => {
+    if (!newUserData.password?.trim()) {
+      toast.error('A password must be provided for user account creation.', 'Password Required');
+      return;
+    }
+    try {
+      const created = await apiService.createUser({
+        name: newUserData.name,
+        email: newUserData.email,
+        globalRole: newUserData.role,
+        password: newUserData.password.trim(),
+      });
+
+      const nowIso = new Date().toISOString();
+      const newUserEntity: UserDirectoryEntity = {
+        id: created?.id || `usr-${Date.now()}`,
+        name: newUserData.name,
+        handle: newUserData.handle || newUserData.email.split('@')[0],
+        email: newUserData.email,
+        role: newUserData.role,
+        institutionType: newUserData.institutionType,
+        institutionName: newUserData.institutionName || 'Independent',
+        twoFactorEnabled: false,
+        lastLoginAt: 'Never',
+        lastLoginIp: '–',
+        createdAt: 'Just now',
+        createdAtRaw: created?.createdAt || nowIso,
+        status: newUserData.sendInviteEmail ? 'Invited' : 'Active',
+        avatarColor: '#2563EB',
+      };
+
+      setUsers((prev) => [newUserEntity, ...prev]);
+      setIsCreateModalOpen(false);
+      toast.success(
+        `Provisioned ${newUserEntity.name} (${newUserEntity.role.replace('_', ' ')}).`,
+        'User Created'
+      );
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to create user account.', 'Creation Failed');
+    }
+  };
+
+  // Process and Filter Users
   const processedUsers = useMemo(() => {
     return users
       .filter((user) => {
-        if (selectedRoleFilter !== 'ALL' && user.role !== selectedRoleFilter) return false;
-        if (selectedStatusFilter !== 'ALL' && user.status !== selectedStatusFilter) return false;
-        if (twoFactorFilter === 'ENABLED' && !user.twoFactorEnabled) return false;
-        if (twoFactorFilter === 'DISABLED' && user.twoFactorEnabled) return false;
-
-        if (
-          searchQuery &&
-          !user.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !user.handle.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !user.email.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !user.institutionName.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !user.role.toLowerCase().includes(searchQuery.toLowerCase())
-        ) {
+        if (selectedRoleFilter !== 'ALL' && user.role !== selectedRoleFilter) {
           return false;
+        }
+        if (selectedStatusFilter !== 'ALL' && user.status !== selectedStatusFilter) {
+          return false;
+        }
+        if (twoFactorFilter === 'ENABLED' && !user.twoFactorEnabled) {
+          return false;
+        }
+        if (twoFactorFilter === 'DISABLED' && user.twoFactorEnabled) {
+          return false;
+        }
+        const q = searchQuery.trim().toLowerCase();
+        if (q) {
+          const matchName = user.name.toLowerCase().includes(q);
+          const matchHandle = user.handle.toLowerCase().includes(q);
+          const matchEmail = user.email.toLowerCase().includes(q);
+          const matchInst = user.institutionName.toLowerCase().includes(q);
+          const matchRole = user.role.toLowerCase().includes(q);
+          if (!matchName && !matchHandle && !matchEmail && !matchInst && !matchRole) {
+            return false;
+          }
         }
         return true;
       })
       .sort((a, b) => {
-        let valA: any =
-          sortField === 'lastLoginAt'
-            ? a.lastLoginAtRaw || ''
-            : sortField === 'createdAt'
-            ? a.createdAtRaw || ''
-            : a[sortField];
-        let valB: any =
-          sortField === 'lastLoginAt'
-            ? b.lastLoginAtRaw || ''
-            : sortField === 'createdAt'
-            ? b.createdAtRaw || ''
-            : b[sortField];
-
-        if (typeof valA === 'string') {
-          valA = valA.toLowerCase();
-          valB = valB.toLowerCase();
+        let valA: string = (a[sortField] ?? '') as string;
+        let valB: string = (b[sortField] ?? '') as string;
+        if (sortField === 'lastLoginAt') {
+          valA = a.lastLoginAtRaw || (a.lastLoginAt === 'Never' ? '0' : a.lastLoginAt);
+          valB = b.lastLoginAtRaw || (b.lastLoginAt === 'Never' ? '0' : b.lastLoginAt);
         }
-
-        if (sortDirection === 'asc') {
-          return valA > valB ? 1 : -1;
-        } else {
-          return valA < valB ? 1 : -1;
+        if (sortField === 'createdAt') {
+          valA = a.createdAtRaw || (a.createdAt === 'Just now' ? '9999' : a.createdAt);
+          valB = b.createdAtRaw || (b.createdAt === 'Just now' ? '9999' : b.createdAt);
         }
+        const comp = valA.localeCompare(valB, undefined, { numeric: true });
+        return sortDirection === 'asc' ? comp : -comp;
       });
   }, [users, selectedRoleFilter, selectedStatusFilter, twoFactorFilter, searchQuery, sortField, sortDirection]);
 
-  // Pagination slice
-  const paginatedUsers = useMemo(() => {
-    const start = page * rowsPerPage;
-    return processedUsers.slice(start, start + rowsPerPage);
-  }, [processedUsers, page, rowsPerPage]);
-
-  const totalPages = Math.max(1, Math.ceil(processedUsers.length / rowsPerPage));
-
-  // Selection handlers
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedIds(processedUsers.map((u) => u.id));
-    } else {
-      setSelectedIds([]);
-    }
-  };
-
-  const handleToggleSelectRow = (id: string) => {
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
-  };
-
-  // Stats Counters
+  // High-level statistics
   const totalCount = users.length;
   const superAdminCount = users.filter((u) => u.role === 'SUPER_ADMIN').length;
   const instituteAdminCount = users.filter((u) => u.role === 'COLLEGE_ADMIN').length;
-  const adminCount = users.filter((u) => u.role.includes('ADMIN')).length;
   const facultyCount = users.filter((u) => u.role === 'FACULTY').length;
   const recruiterCount = users.filter((u) => u.role === 'RECRUITER').length;
-  const twoFaRate = Math.round((users.filter((u) => u.twoFactorEnabled).length / (users.length || 1)) * 100);
+  const adminCount = superAdminCount + instituteAdminCount;
+  const twoFaEnabledCount = users.filter((u) => u.twoFactorEnabled).length;
+  const twoFaRate = totalCount > 0 ? Math.round((twoFaEnabledCount / totalCount) * 100) : 0;
+  const activeCount = users.filter((u) => u.status === 'Active').length;
+  const activeRate = totalCount > 0 ? Math.round((activeCount / totalCount) * 100) : 0;
 
-  // Add new user handler
-  const handleAddUser = async (newData: NewUserData) => {
-    const tempId = `usr-${Date.now()}`;
-    const nowIso = new Date().toISOString();
-    const newUser: UserDirectoryEntity = {
-      id: tempId,
-      name: newData.name,
-      handle: newData.handle,
-      email: newData.email,
-      role: newData.role,
-      institutionType: newData.institutionType,
-      institutionName: newData.institutionName,
-      twoFactorEnabled: false,
-      lastLoginAt: 'Invited (Pending)',
-      lastLoginAtRaw: '',
-      lastLoginIp: '–',
-      createdAt: 'Just now',
-      createdAtRaw: nowIso,
-      status: 'Invited',
-      avatarColor: '#2563EB',
-    };
-    setUsers((prev) => [newUser, ...prev]);
-
-    const assignedPassword = newData.password?.trim() || 'TemporaryPass123!';
-    try {
-      const created = await apiService.createUser({
-        name: newData.name,
-        email: newData.email,
-        password: assignedPassword,
-        rollNo: newData.handle,
-        globalRole:
-          newData.role === 'SUPER_ADMIN'
-            ? 'SUPER_ADMIN'
-            : newData.role === 'COLLEGE_ADMIN'
-            ? 'COLLEGE_ADMIN'
-            : newData.role === 'STUDENT'
-            ? 'STUDENT'
-            : 'FACULTY',
-      });
-      if (created?.id) {
-        setUsers((prev) =>
-          prev.map((u) => (u.id === tempId ? { ...u, id: created.id } : u))
-        );
-      }
-      toast.success(
-        `User "${newData.name}" provisioned. Password: "${assignedPassword}"`,
-        'User Created'
-      );
-    } catch {
-      toast.info(`User "${newData.name}" added to local platform directory.`, 'User Registered');
-    }
-  };
-
-  // Export handlers
-  const getExportData = () => {
-    const listToExport = selectedIds.length > 0 ? users.filter((u) => selectedIds.includes(u.id)) : processedUsers;
-    return listToExport.map((u) => ({
-      UserID: u.id,
-      Name: u.name,
-      Handle: u.handle,
-      Email: u.email,
-      Role: u.role,
-      InstitutionType: u.institutionType,
-      Institution: u.institutionName,
-      TwoFactorAuth: u.twoFactorEnabled ? 'Enabled' : 'Disabled',
-      LastLogin: u.lastLoginAt,
-      LastIP: u.lastLoginIp,
-      CreatedAt: u.createdAt,
-      Status: u.status,
-    }));
-  };
-
+  // Exports
   const handleExportCSV = () => {
-    setExportMenuAnchor(null);
-    const data = getExportData();
-    if (data.length === 0) {
-      toast.warning('No records available to export', 'Export Notice');
-      return;
-    }
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map((obj) => Object.values(obj).map((v) => `"${v}"`).join(','));
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const data = selectedIds.length > 0 ? users.filter((u) => selectedIds.includes(u.id)) : processedUsers;
+    const headers = ['ID', 'Name', 'Handle', 'Email', 'Role', 'Affiliation', '2FA Status', 'Last Login', 'Created At', 'Status'];
+    const rows = data.map((u) => [
+      sanitizeCsvField(u.id),
+      sanitizeCsvField(u.name),
+      sanitizeCsvField(u.handle),
+      sanitizeCsvField(u.email),
+      sanitizeCsvField(u.role),
+      sanitizeCsvField(u.institutionName),
+      sanitizeCsvField(u.twoFactorEnabled ? 'Enabled' : 'Disabled'),
+      sanitizeCsvField(u.lastLoginAt),
+      sanitizeCsvField(u.createdAt),
+      sanitizeCsvField(u.status),
+    ]);
+    const csvContent = [headers.map(sanitizeCsvField).join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `users_directory_${Date.now()}.csv`);
+    link.href = url;
+    link.download = `users_export_${Date.now()}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     toast.success(`Exported ${data.length} user records to CSV`, 'Data Export');
   };
 
   const handleExportExcel = () => {
-    setExportMenuAnchor(null);
-    const data = getExportData();
-    if (data.length === 0) {
-      toast.warning('No records available to export', 'Export Notice');
-      return;
-    }
-    let table = '<table border="1"><tr>' + Object.keys(data[0]).map((k) => `<th>${k}</th>`).join('') + '</tr>';
-    data.forEach((row) => {
-      table += '<tr>' + Object.values(row).map((val) => `<td>${val}</td>`).join('') + '</tr>';
+    const data = selectedIds.length > 0 ? users.filter((u) => selectedIds.includes(u.id)) : processedUsers;
+    let table = '<table border="1"><tr><th>ID</th><th>Name</th><th>Handle</th><th>Email</th><th>Role</th><th>Institution</th><th>2FA Enabled</th><th>Last Login</th><th>Created At</th><th>Status</th></tr>';
+    data.forEach((u) => {
+      table += `<tr><td>${escapeHtml(sanitizeSpreadsheetField(u.id))}</td><td>${escapeHtml(sanitizeSpreadsheetField(u.name))}</td><td>${escapeHtml(sanitizeSpreadsheetField(u.handle))}</td><td>${escapeHtml(sanitizeSpreadsheetField(u.email))}</td><td>${escapeHtml(sanitizeSpreadsheetField(u.role))}</td><td>${escapeHtml(sanitizeSpreadsheetField(u.institutionName))}</td><td>${escapeHtml(sanitizeSpreadsheetField(u.twoFactorEnabled ? 'Yes' : 'No'))}</td><td>${escapeHtml(sanitizeSpreadsheetField(u.lastLoginAt))}</td><td>${escapeHtml(sanitizeSpreadsheetField(u.createdAt))}</td><td>${escapeHtml(sanitizeSpreadsheetField(u.status))}</td></tr>`;
     });
     table += '</table>';
-    const blob = new Blob([table], { type: 'application/vnd.ms-excel' });
+    const blob = new Blob([table], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -508,21 +475,6 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success(`Exported ${data.length} user records to Excel`, 'Data Export');
-  };
-
-  const getRoleBadgeStyle = (role: UserRole) => {
-    switch (role) {
-      case 'SUPER_ADMIN':
-        return { bg: '#FAF5FF', text: '#7C3AED', border: '#E9D5FF' };
-      case 'COLLEGE_ADMIN':
-        return { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' };
-      case 'FACULTY':
-        return { bg: '#ECFEFF', text: '#0891B2', border: '#A5F3FC' };
-      case 'STUDENT':
-        return { bg: '#FFFBEB', text: '#D97706', border: '#FDE68A' };
-      default:
-        return { bg: '#F1F5F9', text: '#64748B', border: '#CBD5E1' };
-    }
   };
 
   return (
@@ -547,193 +499,27 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
 
       {/* Main Content Area */}
       <Box component="main" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Unified Layout Container: Navbar + Page Content */}
         <Box sx={{ maxWidth: 1400, width: '100%', mx: 'auto', px: { xs: 3, md: 5 }, display: 'flex', flexDirection: 'column', gap: 4, pb: { xs: 4, md: 6 } }}>
           {/* 2. Top Header Navbar */}
           <Navbar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
-          {/* Header Summary & Actions */}
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
-            <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                <Box
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '10px',
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <SupervisorAccountRoundedIcon sx={{ fontSize: 22 }} />
-                </Box>
-                <Typography variant="h5" sx={{ fontWeight: 800, fontSize: { xs: '1.3rem', md: '1.6rem' }, color: '#0F172A', letterSpacing: '-0.02em' }}>
-                  Users & Identity Management
-                </Typography>
-                <Chip
-                  label={`${totalCount} Accounts`}
-                  size="small"
-                  sx={{
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
-                    fontWeight: 700,
-                    fontSize: '0.75rem',
-                    borderRadius: '9999px',
-                  }}
-                />
-              </Box>
-              <Typography sx={{ color: '#64748B', fontSize: '0.86rem', mt: 0.5, fontWeight: 500 }}>
-                Role-based access control (RBAC), multi-tenant administration, security audits & authentication
-              </Typography>
-            </Box>
+          {/* 3. Header Summary & Actions + Metrics */}
+          <UsersStatsBanner
+            totalCount={totalCount}
+            adminCount={adminCount}
+            facultyCount={facultyCount}
+            recruiterCount={recruiterCount}
+            twoFaRate={twoFaRate}
+            activeCount={activeCount}
+            activeRate={activeRate}
+            selectedCount={selectedIds.length}
+            onExportExcel={handleExportExcel}
+            onExportCSV={handleExportCSV}
+            onOpenBulkInvite={() => setIsBulkInviteOpen(true)}
+            onOpenCreateUser={() => setIsCreateModalOpen(true)}
+          />
 
-            {/* Actions: Export, Bulk Invite & Add User */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-              <Tooltip title="Export Users Directory">
-                <Button
-                  onClick={(e) => setExportMenuAnchor(e.currentTarget)}
-                  startIcon={<FileDownloadRoundedIcon sx={{ fontSize: 18 }} />}
-                  sx={{
-                    bgcolor: '#FFFFFF',
-                    color: '#475569',
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: '9999px',
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    fontSize: '0.84rem',
-                    px: 2,
-                    py: 0.75,
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                    '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
-                  }}
-                >
-                  Export {selectedIds.length > 0 ? `(${selectedIds.length})` : 'Data'}
-                </Button>
-              </Tooltip>
-
-              <Menu
-                anchorEl={exportMenuAnchor}
-                open={Boolean(exportMenuAnchor)}
-                onClose={() => setExportMenuAnchor(null)}
-                slotProps={{
-                  paper: {
-                    elevation: 4,
-                    sx: {
-                      borderRadius: '14px',
-                      border: '1px solid #E2E8F0',
-                      mt: 1,
-                      minWidth: 210,
-                      p: 0.5,
-                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.08)',
-                    },
-                  },
-                }}
-              >
-                <MenuItem onClick={handleExportExcel} sx={{ borderRadius: '8px', py: 1 }}>
-                  <ListItemIcon sx={{ minWidth: 32 }}>
-                    <TableChartRoundedIcon sx={{ fontSize: 18, color: '#16A34A' }} />
-                  </ListItemIcon>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
-                    Download Excel (.xls)
-                  </Typography>
-                </MenuItem>
-                <MenuItem onClick={handleExportCSV} sx={{ borderRadius: '8px', py: 1 }}>
-                  <ListItemIcon sx={{ minWidth: 32 }}>
-                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
-                  </ListItemIcon>
-                  <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
-                    Download CSV (.csv)
-                  </Typography>
-                </MenuItem>
-              </Menu>
-
-              {/* Bulk Invite */}
-              <Button
-                variant="outlined"
-                onClick={() => setIsBulkInviteOpen(true)}
-                startIcon={<GroupAddRoundedIcon sx={{ fontSize: 18 }} />}
-                sx={{
-                  bgcolor: '#FFFFFF',
-                  color: '#2563EB',
-                  border: '1px solid #BFDBFE',
-                  borderRadius: '9999px',
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.84rem',
-                  px: 2,
-                  py: 0.75,
-                  '&:hover': { bgcolor: '#EFF6FF', borderColor: '#2563EB' },
-                }}
-              >
-                Bulk Invite
-              </Button>
-
-              {/* Add User */}
-              <Button
-                variant="contained"
-                onClick={() => setIsCreateModalOpen(true)}
-                startIcon={<PersonAddRoundedIcon sx={{ fontSize: 18 }} />}
-                sx={{
-                  bgcolor: '#2563EB',
-                  color: '#FFFFFF',
-                  borderRadius: '9999px',
-                  textTransform: 'none',
-                  fontWeight: 700,
-                  fontSize: '0.84rem',
-                  px: 2.25,
-                  py: 0.75,
-                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
-                }}
-              >
-                Provision User
-              </Button>
-            </Box>
-          </Box>
-
-          {/* 4 Summary Metric Cards (Light Royal Blue Standard) */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <StatsCard
-              title="Total Accounts"
-              value={totalCount}
-              icon={<SupervisorAccountRoundedIcon sx={{ fontSize: 20 }} />}
-              variant="blue"
-              shape="orbital"
-              subtitle={`${adminCount} Admins • ${facultyCount} Faculty • ${recruiterCount} Recruiters`}
-            />
-
-            <StatsCard
-              title="Platform Administrators"
-              value={adminCount}
-              icon={<AdminPanelSettingsRoundedIcon sx={{ fontSize: 20 }} />}
-              variant="black"
-              shape="topography"
-              subtitle="Super & Tenant Admins"
-            />
-
-            <StatsCard
-              title="2FA Adoption Rate"
-              value={`${twoFaRate}%`}
-              icon={<SecurityRoundedIcon sx={{ fontSize: 20 }} />}
-              variant="blue"
-              shape="hex-grid"
-              subtitle="High Security Tier"
-            />
-
-            <StatsCard
-              title="Active Session Health"
-              value="99.8%"
-              icon={<VerifiedUserRoundedIcon sx={{ fontSize: 20 }} />}
-              variant="black"
-              shape="aurora-waves"
-              subtitle="Zero active lockouts"
-            />
-          </Box>
-
-          {/* Filter Toolbar Card with MUI Tabs */}
+          {/* 4. Filter Toolbar Card */}
           <Card
             elevation={0}
             sx={{
@@ -746,219 +532,44 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
               overflow: 'hidden',
             }}
           >
-            {/* MUI Tabs for Role Categories */}
-            <Box sx={{ borderBottom: `1px solid ${borderColor}`, px: { xs: 2, md: 3 }, pt: 0.5, bgcolor: '#FFFFFF' }}>
-              <Tabs
-                value={selectedRoleFilter}
-                onChange={(_, newValue) => {
-                  setSelectedRoleFilter(newValue);
-                  setPage(0);
-                }}
-                variant="scrollable"
-                scrollButtons="auto"
-                sx={{
-                  minHeight: 48,
-                  '& .MuiTabs-indicator': {
-                    backgroundColor: '#2563EB',
-                    height: 3,
-                    borderRadius: '3px 3px 0 0',
-                  },
-                  '& .MuiTabs-flexContainer': {
-                    gap: { xs: 0.5, sm: 1.5 },
-                  },
-                }}
-              >
-                {[
-                  { id: 'ALL', label: 'All Users', count: totalCount },
-                  { id: 'SUPER_ADMIN', label: 'Super Admins', count: superAdminCount },
-                  { id: 'COLLEGE_ADMIN', label: 'Institute Admins', count: instituteAdminCount },
-                  { id: 'FACULTY', label: 'Faculty', count: facultyCount },
-                  { id: 'RECRUITER', label: 'Recruiters', count: recruiterCount },
-                ].map((tab) => (
-                  <Tab
-                    key={tab.id}
-                    value={tab.id}
-                    label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography sx={{ fontWeight: selectedRoleFilter === tab.id ? 700 : 600, fontSize: '0.84rem' }}>
-                          {tab.label}
-                        </Typography>
-                        <Chip
-                          label={tab.count}
-                          size="small"
-                          sx={{
-                            height: 20,
-                            fontSize: '0.68rem',
-                            fontWeight: 700,
-                            borderRadius: '9999px',
-                            bgcolor: selectedRoleFilter === tab.id ? '#EFF6FF' : '#F1F5F9',
-                            color: selectedRoleFilter === tab.id ? '#2563EB' : '#64748B',
-                            border: '1px solid',
-                            borderColor: selectedRoleFilter === tab.id ? '#BFDBFE' : '#E2E8F0',
-                            pointerEvents: 'none',
-                          }}
-                        />
-                      </Box>
-                    }
-                    disableRipple
-                    sx={{
-                      minHeight: 48,
-                      py: 1,
-                      px: 1.25,
-                      textTransform: 'none',
-                      color: selectedRoleFilter === tab.id ? '#2563EB !important' : '#64748B',
-                      '&:hover': {
-                        color: '#0F172A',
-                      },
-                    }}
-                  />
-                ))}
-              </Tabs>
-            </Box>
-
-            {/* Search Bar & Secondary Dropdowns */}
-            <Box
-              sx={{
-                p: { xs: 2, md: 2.5 },
-                display: 'flex',
-                flexDirection: { xs: 'column', lg: 'row' },
-                gap: 2,
-                alignItems: { xs: 'stretch', lg: 'center' },
-                justifyContent: 'space-between',
+            <UsersFilterToolbar
+              selectedRoleFilter={selectedRoleFilter}
+              onRoleFilterChange={(r) => {
+                setSelectedRoleFilter(r);
+                setPage(0);
               }}
-            >
-              {/* Search Input */}
-              <TextField
-                size="small"
-                placeholder="Search by user name, @handle, email, institution, or role..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setPage(0);
-                }}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: '#94A3B8', fontSize: 20 }} />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                sx={{
-                  flex: 1,
-                  maxWidth: { xs: '100%', lg: 460 },
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '9999px',
-                    bgcolor: '#F8FAFC',
-                    color: '#0F172A',
-                    fontSize: '0.85rem',
-                    '& fieldset': { borderColor: '#E2E8F0' },
-                    '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
-                  },
-                }}
-              />
-
-              {/* Row 2: Secondary Dropdown Filters & Reset */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, mr: 0.5 }}>
-                  SECURITY & STATUS:
-                </Typography>
-
-                {/* 2FA Status */}
-                <Select
-                  size="small"
-                  value={twoFactorFilter}
-                  onChange={(e) => {
-                    setTwoFactorFilter(e.target.value);
-                    setPage(0);
-                  }}
-                  sx={{
-                    bgcolor: '#F8FAFC',
-                    color: '#0F172A',
-                    borderRadius: '9999px',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    height: 32,
-                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-                    '& .MuiSvgIcon-root': { color: '#64748B' },
-                  }}
-                >
-                  <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>All 2FA States</MenuItem>
-                  <MenuItem value="ENABLED" sx={{ fontSize: '0.8rem' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <VerifiedUserRoundedIcon sx={{ fontSize: 15, color: '#16A34A' }} />
-                      2FA Enabled
-                    </Box>
-                  </MenuItem>
-                  <MenuItem value="DISABLED" sx={{ fontSize: '0.8rem' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                      <GppBadRoundedIcon sx={{ fontSize: 15, color: '#D97706' }} />
-                      2FA Disabled
-                    </Box>
-                  </MenuItem>
-                </Select>
-
-                {/* Status */}
-                <Select
-                  size="small"
-                  value={selectedStatusFilter}
-                  onChange={(e) => {
-                    setSelectedStatusFilter(e.target.value);
-                    setPage(0);
-                  }}
-                  sx={{
-                    bgcolor: '#F8FAFC',
-                    color: '#0F172A',
-                    borderRadius: '9999px',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    height: 32,
-                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-                    '& .MuiSvgIcon-root': { color: '#64748B' },
-                  }}
-                >
-                  <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>All Statuses</MenuItem>
-                  <MenuItem value="Active" sx={{ fontSize: '0.8rem' }}>Active Only</MenuItem>
-                  <MenuItem value="Invited" sx={{ fontSize: '0.8rem' }}>Invited (Pending)</MenuItem>
-                  <MenuItem value="Suspended" sx={{ fontSize: '0.8rem' }}>Suspended</MenuItem>
-                </Select>
-
-                {/* Reset Pill */}
-                {isFilterActive && (
-                  <Button
-                    size="small"
-                    onClick={handleResetFilters}
-                    startIcon={<FilterAltOffRoundedIcon sx={{ fontSize: '0.9rem' }} />}
-                    sx={{
-                      borderRadius: '9999px',
-                      color: '#DC2626',
-                      bgcolor: '#FEF2F2',
-                      border: '1px solid #FECACA',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      textTransform: 'none',
-                      height: 32,
-                      px: 1.5,
-                      '&:hover': { bgcolor: '#FEE2E2' },
-                    }}
-                  >
-                    Reset Filters
-                  </Button>
-                )}
-              </Box>
-            </Box>
+              searchQuery={searchQuery}
+              onSearchChange={(q) => {
+                setSearchQuery(q);
+                setPage(0);
+              }}
+              twoFactorFilter={twoFactorFilter}
+              onTwoFactorFilterChange={(f) => {
+                setTwoFactorFilter(f);
+                setPage(0);
+              }}
+              selectedStatusFilter={selectedStatusFilter}
+              onStatusFilterChange={(s) => {
+                setSelectedStatusFilter(s);
+                setPage(0);
+              }}
+              onResetFilters={handleResetFilters}
+              isFilterActive={isFilterActive}
+              totalCount={totalCount}
+              superAdminCount={superAdminCount}
+              instituteAdminCount={instituteAdminCount}
+              facultyCount={facultyCount}
+              recruiterCount={recruiterCount}
+            />
           </Card>
 
-          {/* Floating Fixed Bottom Bulk Action Bar */}
+          {/* 5. Floating Fixed Bottom Bulk Action Bar */}
           <BulkActionBar
             selectedCount={selectedIds.length}
             onClear={() => setSelectedIds([])}
             onExport={handleExportExcel}
             onDelete={handleRequestDeleteBulk}
           >
-            {/* Batch Reset Password */}
             <Button
               size="small"
               variant="outlined"
@@ -980,656 +591,30 @@ export default function UsersDirectoryClient({ initialUsers }: UsersDirectoryCli
             </Button>
           </BulkActionBar>
 
-          {/* Structured List Table (RULE 10 STANDARD - LIGHT THEME) */}
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: '16px',
-              bgcolor: '#FFFFFF',
-              border: `1px solid ${borderColor}`,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
-              overflow: 'hidden',
+          {/* 6. Structured List Table (RULE 10 STANDARD) */}
+          <UsersDataTable
+            users={processedUsers}
+            selectedIds={selectedIds}
+            onToggleSelectRow={handleToggleSelectRow}
+            onSelectAll={handleSelectAll}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setPage}
+            onRowsPerPageChange={(r) => {
+              setRowsPerPage(r);
+              setPage(0);
             }}
-          >
-            <TableContainer>
-              <Table sx={{ minWidth: 1050 }}>
-                <TableHead>
-                  <TableRow sx={{ bgcolor: '#F8FAFC' }}>
-                    {/* Checkbox Column */}
-                    <TableCell padding="checkbox" sx={{ pl: 2.5, borderColor: '#E2E8F0' }}>
-                      <Checkbox
-                        indeterminate={selectedIds.length > 0 && selectedIds.length < processedUsers.length}
-                        checked={processedUsers.length > 0 && selectedIds.length === processedUsers.length}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                        sx={{
-                          color: '#CBD5E1',
-                          '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#2563EB' },
-                        }}
-                      />
-                    </TableCell>
-
-                    {/* User & Handle Header (Sortable) */}
-                    <TableCell
-                      onClick={() => handleSort('name')}
-                      sx={{
-                        color: '#64748B',
-                        fontWeight: 700,
-                        fontSize: '0.74rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        borderColor: '#E2E8F0',
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        User & Handle
-                        {sortField === 'name' &&
-                          (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ))}
-                      </Box>
-                    </TableCell>
-
-                    {/* Role / Access Tier (Sortable) */}
-                    <TableCell
-                      onClick={() => handleSort('role')}
-                      sx={{
-                        color: '#64748B',
-                        fontWeight: 700,
-                        fontSize: '0.74rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        borderColor: '#E2E8F0',
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        Role & Access Tier
-                        {sortField === 'role' &&
-                          (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ))}
-                      </Box>
-                    </TableCell>
-
-                    {/* Institution Affiliation (Sortable) */}
-                    <TableCell
-                      onClick={() => handleSort('institutionName')}
-                      sx={{
-                        color: '#64748B',
-                        fontWeight: 700,
-                        fontSize: '0.74rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        borderColor: '#E2E8F0',
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        Assigned Tenant / Org
-                        {sortField === 'institutionName' &&
-                          (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ))}
-                      </Box>
-                    </TableCell>
-
-                    {/* 2FA Security Status */}
-                    <TableCell
-                      sx={{
-                        color: '#64748B',
-                        fontWeight: 700,
-                        fontSize: '0.74rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        borderColor: '#E2E8F0',
-                      }}
-                    >
-                      2FA Auth
-                    </TableCell>
-
-                    {/* Last Login (Sortable) */}
-                    <TableCell
-                      onClick={() => handleSort('lastLoginAt')}
-                      sx={{
-                        color: '#64748B',
-                        fontWeight: 700,
-                        fontSize: '0.74rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        borderColor: '#E2E8F0',
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        Last Active
-                        {sortField === 'lastLoginAt' &&
-                          (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ))}
-                      </Box>
-                    </TableCell>
-
-                    {/* Status */}
-                    <TableCell
-                      sx={{
-                        color: '#64748B',
-                        fontWeight: 700,
-                        fontSize: '0.74rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        borderColor: '#E2E8F0',
-                      }}
-                    >
-                      Status
-                    </TableCell>
-
-                    {/* Actions */}
-                    <TableCell
-                      align="right"
-                      sx={{
-                        color: '#64748B',
-                        fontWeight: 700,
-                        fontSize: '0.74rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        borderColor: '#E2E8F0',
-                        pr: 3,
-                      }}
-                    >
-                      Actions
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-
-                <TableBody>
-                  {paginatedUsers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} sx={{ textAlign: 'center', py: 8, borderColor: '#E2E8F0' }}>
-                        <Typography variant="subtitle1" sx={{ color: '#64748B', fontWeight: 600 }}>
-                          No users found matching your criteria.
-                        </Typography>
-                        <Button
-                          size="small"
-                          onClick={handleResetFilters}
-                          sx={{ mt: 1.5, color: '#2563EB', borderRadius: '9999px', textTransform: 'none' }}
-                        >
-                          Reset All Filters
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedUsers.map((user) => {
-                      const isSelected = selectedIds.includes(user.id);
-                      const roleStyle = getRoleBadgeStyle(user.role);
-                      const isCurrentUser = Boolean(
-                        currentUser &&
-                          (currentUser.id === user.id ||
-                            (currentUser.email && user.email && currentUser.email.toLowerCase() === user.email.toLowerCase()))
-                      );
-
-                      return (
-                        <TableRow
-                          key={user.id}
-                          selected={isSelected}
-                          sx={{
-                            transition: 'all 0.15s ease',
-                            borderColor: '#E2E8F0',
-                            bgcolor: isSelected ? '#EFF6FF' : isCurrentUser ? '#F8FAFC' : '#FFFFFF',
-                            '&:hover': {
-                              bgcolor: isSelected ? '#DBEAFE' : '#F8FAFC',
-                            },
-                          }}
-                        >
-                          {/* Row Checkbox */}
-                          <TableCell padding="checkbox" sx={{ pl: 2.5, borderColor: '#E2E8F0' }}>
-                            <Checkbox
-                              checked={isSelected}
-                              onChange={() => handleToggleSelectRow(user.id)}
-                              sx={{
-                                color: '#CBD5E1',
-                                '&.Mui-checked': { color: '#2563EB' },
-                              }}
-                            />
-                          </TableCell>
-
-                          {/* User Info Column */}
-                          <TableCell sx={{ borderColor: '#E2E8F0' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Avatar
-                                src={user.avatarUrl}
-                                sx={{
-                                  width: 38,
-                                  height: 38,
-                                  bgcolor: user.avatarColor,
-                                  fontWeight: 800,
-                                  fontSize: '0.85rem',
-                                  border: '2px solid #E2E8F0',
-                                }}
-                              >
-                                {user.name.charAt(0)}
-                              </Avatar>
-                              <Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, flexWrap: 'wrap' }}>
-                                  <Typography
-                                    onClick={() => setPeekUser(user)}
-                                    sx={{
-                                      fontWeight: 700,
-                                      color: '#0F172A',
-                                      fontSize: '0.88rem',
-                                      cursor: 'pointer',
-                                      '&:hover': { color: '#2563EB', textDecoration: 'underline' },
-                                    }}
-                                  >
-                                    {user.name}
-                                  </Typography>
-                                  {isCurrentUser && <YouBadge />}
-                                  <Typography
-                                    sx={{
-                                      color: '#2563EB',
-                                      fontSize: '0.75rem',
-                                      fontFamily: 'monospace',
-                                      fontWeight: 600,
-                                    }}
-                                  >
-                                    @{user.handle}
-                                  </Typography>
-                                </Box>
-                                <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
-                                  UID: {user.id} • {user.email}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </TableCell>
-
-                          {/* Role Badge */}
-                          <TableCell sx={{ borderColor: '#E2E8F0' }}>
-                            <Chip
-                              label={user.role.replace('_', ' ')}
-                              size="small"
-                              sx={{
-                                height: 22,
-                                fontSize: '0.68rem',
-                                fontWeight: 800,
-                                borderRadius: '9999px',
-                                bgcolor: roleStyle.bg,
-                                color: roleStyle.text,
-                                border: `1px solid ${roleStyle.border}`,
-                              }}
-                            />
-                          </TableCell>
-
-                          {/* Institution Affiliation */}
-                          <TableCell sx={{ borderColor: '#E2E8F0' }}>
-                            <Box>
-                              <Typography
-                                sx={{
-                                  fontWeight: 600,
-                                  color: '#0F172A',
-                                  fontSize: '0.82rem',
-                                  maxWidth: 220,
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {user.institutionName}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.72rem' }}>
-                                {user.institutionType} Affiliate
-                              </Typography>
-                            </Box>
-                          </TableCell>
-
-                          {/* 2FA Status */}
-                          <TableCell sx={{ borderColor: '#E2E8F0' }}>
-                            {user.twoFactorEnabled ? (
-                              <Chip
-                                icon={<VerifiedUserRoundedIcon sx={{ color: '#16A34A !important', fontSize: '0.85rem !important' }} />}
-                                label="Enabled"
-                                size="small"
-                                sx={{
-                                  height: 20,
-                                  fontSize: '0.68rem',
-                                  fontWeight: 700,
-                                  borderRadius: '9999px',
-                                  bgcolor: '#F0FDF4',
-                                  color: '#16A34A',
-                                  border: '1px solid #BBF7D0',
-                                }}
-                              />
-                            ) : (
-                              <Chip
-                                icon={<GppBadRoundedIcon sx={{ color: '#D97706 !important', fontSize: '0.85rem !important' }} />}
-                                label="Disabled"
-                                size="small"
-                                sx={{
-                                  height: 20,
-                                  fontSize: '0.68rem',
-                                  fontWeight: 700,
-                                  borderRadius: '9999px',
-                                  bgcolor: '#FFFBEB',
-                                  color: '#D97706',
-                                  border: '1px solid #FDE68A',
-                                }}
-                              />
-                            )}
-                          </TableCell>
-
-                          {/* Last Active */}
-                          <TableCell sx={{ borderColor: '#E2E8F0' }}>
-                            <Box>
-                              <Typography sx={{ fontWeight: 600, color: '#0F172A', fontSize: '0.8rem' }}>
-                                {user.lastLoginAt}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.7rem' }}>
-                                IP: {user.lastLoginIp}
-                              </Typography>
-                            </Box>
-                          </TableCell>
-
-                          {/* Status */}
-                          <TableCell sx={{ borderColor: '#E2E8F0' }}>
-                            <Chip
-                              label={user.status}
-                              size="small"
-                              sx={{
-                                height: 22,
-                                fontSize: '0.7rem',
-                                fontWeight: 700,
-                                borderRadius: '9999px',
-                                bgcolor:
-                                  user.status === 'Active'
-                                    ? '#F0FDF4'
-                                    : user.status === 'Invited'
-                                    ? '#FFFBEB'
-                                    : '#FEF2F2',
-                                color:
-                                  user.status === 'Active'
-                                    ? '#16A34A'
-                                    : user.status === 'Invited'
-                                    ? '#D97706'
-                                    : '#DC2626',
-                                border: '1px solid',
-                                borderColor:
-                                  user.status === 'Active'
-                                    ? '#BBF7D0'
-                                    : user.status === 'Invited'
-                                    ? '#FDE68A'
-                                    : '#FECACA',
-                              }}
-                            />
-                          </TableCell>
-
-                          {/* Actions */}
-                          <TableCell align="right" sx={{ pr: 2.5, borderColor: '#E2E8F0' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
-                              {/* Peek Quick View */}
-                              <Tooltip title="Quick Peek Profile">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => setPeekUser(user)}
-                                  sx={{
-                                    color: '#64748B',
-                                    borderRadius: '9999px',
-                                    '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' },
-                                  }}
-                                >
-                                  <VisibilityRoundedIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-
-                              {/* Edit User Details */}
-                              <Tooltip title="Edit User Details">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => setEditingUser(user)}
-                                  sx={{
-                                    color: '#64748B',
-                                    borderRadius: '9999px',
-                                    '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' },
-                                  }}
-                                >
-                                  <EditRoundedIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-
-                              {/* Assign Active Institute */}
-                              <Tooltip title="Assign Active Institute">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => setAssigningUser(user)}
-                                  sx={{
-                                    color: '#64748B',
-                                    borderRadius: '9999px',
-                                    '&:hover': { color: '#16A34A', bgcolor: '#F0FDF4' },
-                                  }}
-                                >
-                                  <AccountBalanceRoundedIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-
-                              {/* More Actions Menu Button */}
-                              <Tooltip title="More Actions">
-                                <IconButton
-                                  size="small"
-                                  onClick={(e) => handleOpenActionMenu(e, user)}
-                                  sx={{
-                                    color: '#64748B',
-                                    borderRadius: '9999px',
-                                    '&:hover': { color: '#0F172A', bgcolor: '#F1F5F9' },
-                                  }}
-                                >
-                                  <MoreVertRoundedIcon fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-
-                              {/* Full Profile Link */}
-                              <Link href={`/superadmin/users/${user.id}`} passHref style={{ textDecoration: 'none' }}>
-                                <IconButton
-                                  size="small"
-                                  sx={{
-                                    color: '#64748B',
-                                    borderRadius: '9999px',
-                                    '&:hover': { color: '#0F172A', bgcolor: '#F1F5F9' },
-                                  }}
-                                >
-                                  <FluidArrowRight size={16} />
-                                </IconButton>
-                              </Link>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            {/* Full-Pill Pagination Bar (Rule 10 & Pill Standards - Light Theme) */}
-            <Box
-              sx={{
-                p: '16px 24px',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 2,
-                borderTop: `1px solid ${borderColor}`,
-                bgcolor: '#FFFFFF',
-              }}
-            >
-              {/* Left: Total Range & Rows Per Page */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                <Typography variant="body2" sx={{ color: '#64748B', fontSize: '0.82rem' }}>
-                  Showing{' '}
-                  <Typography component="span" sx={{ color: '#0F172A', fontWeight: 700 }}>
-                    {processedUsers.length === 0 ? 0 : page * rowsPerPage + 1}–
-                    {Math.min((page + 1) * rowsPerPage, processedUsers.length)}
-                  </Typography>{' '}
-                  of{' '}
-                  <Typography component="span" sx={{ color: '#0F172A', fontWeight: 700 }}>
-                    {processedUsers.length}
-                  </Typography>{' '}
-                  users
-                </Typography>
-
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography variant="caption" sx={{ color: '#64748B' }}>
-                    Rows per page:
-                  </Typography>
-                  <Select
-                    size="small"
-                    value={rowsPerPage}
-                    onChange={(e) => {
-                      setRowsPerPage(Number(e.target.value));
-                      setPage(0);
-                    }}
-                    sx={{
-                      bgcolor: '#FFFFFF',
-                      color: '#0F172A',
-                      borderRadius: '9999px',
-                      fontSize: '0.78rem',
-                      height: 28,
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-                      '& .MuiSvgIcon-root': { color: '#64748B' },
-                    }}
-                  >
-                    <MenuItem value={10}>10</MenuItem>
-                    <MenuItem value={25}>25</MenuItem>
-                    <MenuItem value={50}>50</MenuItem>
-                    <MenuItem value={100}>100</MenuItem>
-                  </Select>
-                </Box>
-              </Box>
-
-              {/* Right: Full-Pill Navigation Controls */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                <IconButton
-                  size="small"
-                  disabled={page === 0}
-                  onClick={() => setPage(0)}
-                  sx={{
-                    borderRadius: '9999px',
-                    width: 32,
-                    height: 32,
-                    border: '1px solid #E2E8F0',
-                    color: '#64748B',
-                    bgcolor: '#FFFFFF',
-                    '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
-                    '&.Mui-disabled': { color: '#CBD5E1', borderColor: '#F1F5F9' },
-                  }}
-                >
-                  <FirstPageRoundedIcon fontSize="small" />
-                </IconButton>
-
-                <IconButton
-                  size="small"
-                  disabled={page === 0}
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                  sx={{
-                    borderRadius: '9999px',
-                    width: 32,
-                    height: 32,
-                    border: '1px solid #E2E8F0',
-                    color: '#64748B',
-                    bgcolor: '#FFFFFF',
-                    '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
-                    '&.Mui-disabled': { color: '#CBD5E1', borderColor: '#F1F5F9' },
-                  }}
-                >
-                  <ChevronLeftRoundedIcon fontSize="small" />
-                </IconButton>
-
-                {/* Page Number Pills */}
-                {Array.from({ length: totalPages }, (_, i) => i)
-                  .filter((p) => p === 0 || p === totalPages - 1 || Math.abs(p - page) <= 1)
-                  .map((p, idx, arr) => {
-                    const showEllipsis = idx > 0 && p - arr[idx - 1] > 1;
-                    return (
-                      <React.Fragment key={p}>
-                        {showEllipsis && (
-                          <Typography variant="caption" sx={{ color: '#94A3B8', px: 0.5 }}>
-                            …
-                          </Typography>
-                        )}
-                        <Button
-                          size="small"
-                          onClick={() => setPage(p)}
-                          sx={{
-                            minWidth: 32,
-                            height: 32,
-                            p: 0,
-                            borderRadius: '9999px',
-                            fontSize: '0.78rem',
-                            fontWeight: page === p ? 800 : 500,
-                            bgcolor: page === p ? '#2563EB' : '#FFFFFF',
-                            color: page === p ? '#FFFFFF' : '#64748B',
-                            border: '1px solid',
-                            borderColor: page === p ? '#2563EB' : '#E2E8F0',
-                            '&:hover': {
-                              bgcolor: page === p ? '#1D4ED8' : '#F1F5F9',
-                              color: page === p ? '#FFFFFF' : '#0F172A',
-                            },
-                          }}
-                        >
-                          {p + 1}
-                        </Button>
-                      </React.Fragment>
-                    );
-                  })}
-
-                <IconButton
-                  size="small"
-                  disabled={page >= totalPages - 1 || totalPages === 0}
-                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                  sx={{
-                    borderRadius: '9999px',
-                    width: 32,
-                    height: 32,
-                    border: '1px solid #E2E8F0',
-                    color: '#64748B',
-                    bgcolor: '#FFFFFF',
-                    '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
-                    '&.Mui-disabled': { color: '#CBD5E1', borderColor: '#F1F5F9' },
-                  }}
-                >
-                  <ChevronRightRoundedIcon fontSize="small" />
-                </IconButton>
-
-                <IconButton
-                  size="small"
-                  disabled={page >= totalPages - 1 || totalPages === 0}
-                  onClick={() => setPage(totalPages - 1)}
-                  sx={{
-                    borderRadius: '9999px',
-                    width: 32,
-                    height: 32,
-                    border: '1px solid #E2E8F0',
-                    color: '#64748B',
-                    bgcolor: '#FFFFFF',
-                    '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
-                    '&.Mui-disabled': { color: '#CBD5E1', borderColor: '#F1F5F9' },
-                  }}
-                >
-                  <LastPageRoundedIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            </Box>
-          </Card>
+            onPeekUser={setPeekUser}
+            onEditUser={setEditingUser}
+            onAssignUser={setAssigningUser}
+            onOpenActionMenu={handleOpenActionMenu}
+            onResetFilters={handleResetFilters}
+            currentUserId={currentUser?.id}
+            currentUserEmail={currentUser?.email}
+          />
         </Box>
       </Box>
 

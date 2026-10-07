@@ -585,11 +585,25 @@ export const apiService = {
   // ----------------------------------------------------
   // PROBLEMS & CODING CHALLENGES
   // ----------------------------------------------------
-  async getProblems(params?: { page?: number; limit?: number; search?: string; difficulty?: string; status?: string }) {
+  async getProblems(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    difficulty?: string;
+    status?: string;
+    institutionId?: string;
+    collegeId?: string;
+    courseId?: string;
+  }) {
     try {
+      const cleanParams: Record<string, any> = { ...(params || {}) };
+      if (cleanParams.collegeId && !cleanParams.institutionId) {
+        cleanParams.institutionId = cleanParams.collegeId;
+      }
+      delete cleanParams.collegeId;
       const data = await deduplicatedQuery<{ problems: { items: any[]; meta: any } }>(
         PROBLEMS_QUERY,
-        params || {},
+        cleanParams,
       );
       return data.problems;
     } catch (err) {
@@ -620,6 +634,9 @@ export const apiService = {
     status?: string;
     institutionId?: string;
     collegeId?: string;
+    courseId?: string;
+    moduleId?: string;
+    lessonId?: string;
     code?: string;
     category?: string;
     tags?: string[];
@@ -634,11 +651,19 @@ export const apiService = {
     }>;
   }) {
     const institutionId = input.institutionId || input.collegeId;
+    const {
+      code: _code,
+      category: _category,
+      tags: _tags,
+      points: _points,
+      collegeId: _collegeId,
+      institutionId: _institutionId,
+      ...declaredFields
+    } = input;
     const data = await fetchGraphQL<{ createProblem: any }>(CREATE_PROBLEM_MUTATION, {
       input: {
-        ...input,
-        institutionId,
-        collegeId: institutionId,
+        ...declaredFields,
+        ...(institutionId ? { institutionId, collegeId: institutionId } : {}),
       },
     });
     return data.createProblem;
@@ -654,8 +679,25 @@ export const apiService = {
     timeLimit?: number;
     memoryLimit?: number;
     status?: string;
+    institutionId?: string;
+    collegeId?: string;
+    courseId?: string;
+    moduleId?: string;
+    lessonId?: string;
   }) {
-    const data = await fetchGraphQL<{ updateProblem: any }>(UPDATE_PROBLEM_MUTATION, { id, input });
+    const institutionId = input.institutionId !== undefined ? input.institutionId : input.collegeId;
+    const {
+      collegeId: _collegeId,
+      institutionId: _institutionId,
+      ...declaredFields
+    } = input;
+    const data = await fetchGraphQL<{ updateProblem: any }>(UPDATE_PROBLEM_MUTATION, {
+      id,
+      input: {
+        ...declaredFields,
+        ...(institutionId !== undefined ? { institutionId } : {}),
+      },
+    });
     return data.updateProblem;
   },
 
@@ -671,8 +713,46 @@ export const apiService = {
     isHidden?: boolean;
     order?: number;
   }) {
-    const data = await fetchGraphQL<{ addProblemTestCase: any }>(ADD_PROBLEM_TEST_CASE_MUTATION, { problemId, input });
-    return data.addProblemTestCase;
+    try {
+      const res = await apiClient.post(`/problems/${problemId}/testcases`, input);
+      return res.data?.data ?? res.data;
+    } catch {
+      const data = await fetchGraphQL<{ addProblemTestCase: any }>(ADD_PROBLEM_TEST_CASE_MUTATION, { problemId, input });
+      return data.addProblemTestCase;
+    }
+  },
+
+  async updateProblemTestCase(problemId: string, testCaseId: string, input: {
+    input?: string;
+    expectedOutput?: string;
+    explanation?: string;
+    isHidden?: boolean;
+    order?: number;
+  }) {
+    try {
+      const res = await apiClient.patch(`/problems/${problemId}/testcases/${testCaseId}`, input);
+      return res.data?.data ?? res.data;
+    } catch {
+      const res = await fetch(`/api/problems/${problemId}/testcases/${testCaseId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      });
+      if (res.ok) return await res.json();
+      return null;
+    }
+  },
+
+  async deleteProblemTestCase(problemId: string, testCaseId: string) {
+    try {
+      const res = await apiClient.delete(`/problems/${problemId}/testcases/${testCaseId}`);
+      return res.data?.data ?? res.data ?? true;
+    } catch {
+      const res = await fetch(`/api/problems/${problemId}/testcases/${testCaseId}`, {
+        method: 'DELETE',
+      });
+      return res.ok;
+    }
   },
 
   // ----------------------------------------------------
@@ -1339,8 +1419,56 @@ export const apiService = {
     return res.data?.data ?? res.data;
   },
 
+  async chatWithAssistantAI(input: {
+    message: string;
+    title: string;
+    statement: string;
+    difficulty?: string;
+    tags?: string[];
+    currentCode?: string;
+    language?: string;
+  }) {
+    const res = await apiClient.post('/ai-coach/chat', input);
+    return res.data?.data ?? res.data;
+  },
+
   async clearAICoachHistory() {
     const res = await apiClient.delete('/ai-coach/history');
+    return res.data?.data ?? res.data;
+  },
+
+  async explainProblemAI(data: { title: string; statement: string; difficulty?: string; tags?: string[] }) {
+    const res = await apiClient.post('/ai-coach/explain', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async getProgressiveHintAI(data: { title: string; statement: string; level: number; currentCode?: string; language?: string }) {
+    const res = await apiClient.post('/ai-coach/hint', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async diagnoseFailureAI(data: {
+    title: string;
+    currentCode: string;
+    language?: string;
+    verdict?: string;
+    failedInput?: string;
+    expectedOutput?: string;
+    actualOutput?: string;
+  }) {
+    const res = await apiClient.post('/ai-coach/diagnose', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async generateProblemAI(data: {
+    prompt?: string;
+    title?: string;
+    category?: string;
+    difficulty?: string;
+    statement?: string;
+    taskType?: 'full_problem' | 'statement_only' | 'test_cases' | 'constraints_only';
+  }) {
+    const res = await apiClient.post('/ai-coach/generate-problem', data);
     return res.data?.data ?? res.data;
   },
 
@@ -1354,6 +1482,21 @@ export const apiService = {
 
   async setPotd(input: { problemId: string; date?: string; bonusPoints?: number }) {
     const res = await apiClient.post('/problems/potd/set', input);
+    return res.data?.data ?? res.data;
+  },
+
+  async queuePotd(input: { startDate?: string; problemIds: string[]; bonusPoints?: number }) {
+    const res = await apiClient.post('/problems/potd/queue', input);
+    return res.data?.data ?? res.data;
+  },
+
+  async deletePotd(date: string) {
+    const res = await apiClient.delete(`/problems/potd/${encodeURIComponent(date)}`);
+    return res.data?.data ?? res.data;
+  },
+
+  async getPotdSchedule(days = 30) {
+    const res = await apiClient.get(`/problems/potd/schedule?days=${days}`);
     return res.data?.data ?? res.data;
   },
 

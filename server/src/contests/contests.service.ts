@@ -1,5 +1,8 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { ContestStatus, Prisma, Role } from '@prisma/client';
+import { AppCacheService } from '../common/cache/app-cache.service.js';
+import { AppEvents, SubmissionEvaluatedEvent } from '../common/events/app-events.js';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import { CurrentUserPayload } from '../common/types/current-user.interface.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -14,7 +17,30 @@ import { Subject, Observable, map, filter, interval, merge } from 'rxjs';
 export class ContestsService {
   private readonly contestEvents$ = new Subject<{ contestId: string; type: string; data: any }>();
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Optional() private cacheService?: AppCacheService,
+  ) {}
+
+  @OnEvent(AppEvents.SUBMISSION_EVALUATED)
+  async handleSubmissionEvaluated(event: SubmissionEvaluatedEvent) {
+    if (event.contestId) {
+      if (this.cacheService) {
+        try {
+          await this.cacheService.invalidate(`leaderboard:contest:${event.contestId}`);
+          await this.cacheService.invalidate(`leaderboard:${event.contestId}`);
+          await this.cacheService.invalidatePrefix(`leaderboard:contest:${event.contestId}:`);
+        } catch {
+          // Cache invalidation failure must not block real-time contest broadcast
+        }
+      }
+      this.broadcastContestUpdate(event.contestId, 'LEADERBOARD_UPDATE', {
+        submissionId: event.submissionId,
+        userId: event.userId,
+        verdict: event.verdict,
+      });
+    }
+  }
 
   public broadcastContestUpdate(contestId: string, type = 'LEADERBOARD_UPDATE', data: any = {}) {
     this.contestEvents$.next({ contestId, type, data: { ...data, timestamp: new Date().toISOString() } });

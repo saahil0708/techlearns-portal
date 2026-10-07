@@ -39,6 +39,7 @@ import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import KeyboardArrowUpRoundedIcon from '@mui/icons-material/KeyboardArrowUpRounded';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 
 import type { OnMount, BeforeMount } from '@monaco-editor/react';
 import { useToast } from '@/context/ToastContext';
@@ -172,10 +173,79 @@ func main() {
   },
 };
 
+export function getStarterTemplate(lang: SupportedLanguage, problemTitle?: string): string {
+  const isGeneric = !problemTitle || problemTitle === 'Online Compiler & Execution Arena';
+
+  if (isGeneric) {
+    return LANGUAGES[lang]?.defaultCode || '';
+  }
+
+  if (lang === 'python') {
+    return `class Solution:
+    def solve(self, A: list[int]) -> int:
+        # Write your code here
+        pass
+`;
+  }
+
+  if (lang === 'cpp') {
+    return `#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    long long solve(vector<long long>& A) {
+        // Write your code here
+        return 0;
+    }
+};
+`;
+  }
+
+  if (lang === 'java') {
+    return `import java.util.*;
+
+class Solution {
+    public long solve(long[] A) {
+        // Write your code here
+        return 0;
+    }
+}
+`;
+  }
+
+  if (lang === 'javascript') {
+    return `/**
+ * @param {number[]} A
+ * @return {number}
+ */
+var solve = function(A) {
+    // Write your code here
+};
+`;
+  }
+
+  if (lang === 'typescript') {
+    return `function solve(A: number[]): number {
+    // Write your code here
+    return 0;
+}
+`;
+  }
+
+  return LANGUAGES[lang]?.defaultCode || '';
+}
+
 export interface CodeEditorWorkspaceProps {
   initialCode?: string;
   initialLanguage?: SupportedLanguage;
   problemTitle?: string;
+  problemStatement?: string;
+  problemDifficulty?: string;
+  problemTags?: string[];
   initialCustomInput?: string;
   sampleTestCases?: Array<{
     input: string;
@@ -191,6 +261,9 @@ export default function CodeEditorWorkspace({
   initialCode,
   initialLanguage = 'python',
   problemTitle = 'Online Compiler & Execution Arena',
+  problemStatement,
+  problemDifficulty,
+  problemTags,
   initialCustomInput,
   sampleTestCases,
   onCodeChange,
@@ -200,7 +273,10 @@ export default function CodeEditorWorkspace({
   const toast = useToast();
 
   const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(initialLanguage);
-  const [code, setCode] = useState<string>(initialCode || LANGUAGES[initialLanguage].defaultCode);
+  const [code, setCode] = useState<string>(() => {
+    if (initialCode && initialCode.trim().length > 0) return initialCode;
+    return getStarterTemplate(initialLanguage, problemTitle);
+  });
   const [selectedCaseIdx, setSelectedCaseIdx] = useState<number>(0);
   const [customInput, setCustomInput] = useState<string>(() => {
     if (initialCustomInput !== undefined) return initialCustomInput;
@@ -317,7 +393,7 @@ export default function CodeEditorWorkspace({
 
   const handleLanguageSelect = (newLang: SupportedLanguage) => {
     setSelectedLang(newLang);
-    const newDefaultCode = LANGUAGES[newLang].defaultCode;
+    const newDefaultCode = getStarterTemplate(newLang, problemTitle);
     setCode(newDefaultCode);
     setOutput('');
     setStderr('');
@@ -335,7 +411,7 @@ export default function CodeEditorWorkspace({
   };
 
   const handleReset = () => {
-    const defaultSnippet = LANGUAGES[selectedLang].defaultCode;
+    const defaultSnippet = getStarterTemplate(selectedLang, problemTitle);
     setCode(defaultSnippet);
     toast.info(`Reset code editor to default ${LANGUAGES[selectedLang].name} template.`, 'Reset Complete');
   };
@@ -424,7 +500,7 @@ export default function CodeEditorWorkspace({
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      onSubmit?.(code, selectedLang);
+      await onSubmit?.(code, selectedLang);
     } catch (err: any) {
       toast.error('Submission failed', 'Error');
     } finally {

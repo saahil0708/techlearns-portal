@@ -159,6 +159,7 @@ export class JudgeService {
 
     let passedTestCases = 0;
     let maxRuntime = 0;
+    let maxMemory = 0;
     for (const testCase of testCases) {
       const startedAt = Date.now();
       const execution = await this.executeInSandbox(
@@ -168,44 +169,47 @@ export class JudgeService {
         timeLimit,
         memoryLimit,
       );
-      const runtime = Date.now() - startedAt;
+      const runtime = execution.executionTimeMs !== undefined ? execution.executionTimeMs : (Date.now() - startedAt);
       maxRuntime = Math.max(maxRuntime, runtime);
+      if (execution.memory !== undefined && execution.memory > 0) {
+        maxMemory = Math.max(maxMemory, execution.memory);
+      }
 
       if (execution.timedOut) {
         return {
           verdict: SubmissionVerdict.TIME_LIMIT_EXCEEDED,
-          runtime,
-          memory: execution.memory,
+          runtime: maxRuntime,
+          memory: maxMemory || execution.memory || 0,
           passedTestCases,
           totalTestCases: testCases.length,
-          errorMessage: 'Execution exceeded the problem time limit',
+          errorMessage: `Time Limit Exceeded: Execution exceeded ${timeLimit}ms budget`,
         };
       }
       if (execution.memoryLimitExceeded) {
         return {
           verdict: SubmissionVerdict.MEMORY_LIMIT_EXCEEDED,
-          runtime,
-          memory: execution.memory,
+          runtime: maxRuntime,
+          memory: maxMemory || memoryLimit,
           passedTestCases,
           totalTestCases: testCases.length,
-          errorMessage: 'Execution exceeded the problem memory limit',
+          errorMessage: `Memory Limit Exceeded: Process exceeded ${memoryLimit}MB budget`,
         };
       }
       if (execution.outputLimitExceeded) {
         return {
           verdict: SubmissionVerdict.RUNTIME_ERROR,
-          runtime,
-          memory: execution.memory,
+          runtime: maxRuntime,
+          memory: maxMemory || execution.memory || 0,
           passedTestCases,
           totalTestCases: testCases.length,
-          errorMessage: execution.runtimeError || 'Execution exceeded output limit (512KB)',
+          errorMessage: execution.runtimeError || 'Output Limit Exceeded (exceeded 512KB stdout buffer)',
         };
       }
       if (execution.compilationError) {
         return {
           verdict: SubmissionVerdict.COMPILATION_ERROR,
-          runtime,
-          memory: execution.memory,
+          runtime: maxRuntime,
+          memory: maxMemory || execution.memory || 0,
           passedTestCases,
           totalTestCases: testCases.length,
           errorMessage: execution.compilationError,
@@ -214,8 +218,8 @@ export class JudgeService {
       if (execution.systemError) {
         return {
           verdict: SubmissionVerdict.SYSTEM_ERROR,
-          runtime,
-          memory: execution.memory,
+          runtime: maxRuntime,
+          memory: maxMemory || execution.memory || 0,
           passedTestCases,
           totalTestCases: testCases.length,
           errorMessage: execution.systemError,
@@ -224,8 +228,8 @@ export class JudgeService {
       if (execution.runtimeError) {
         return {
           verdict: SubmissionVerdict.RUNTIME_ERROR,
-          runtime,
-          memory: execution.memory,
+          runtime: maxRuntime,
+          memory: maxMemory || execution.memory || 0,
           passedTestCases,
           totalTestCases: testCases.length,
           errorMessage: execution.runtimeError,
@@ -235,10 +239,10 @@ export class JudgeService {
         return {
           verdict: SubmissionVerdict.WRONG_ANSWER,
           runtime: maxRuntime,
-          memory: execution.memory,
+          memory: maxMemory || execution.memory || 0,
           passedTestCases,
           totalTestCases: testCases.length,
-          errorMessage: `Test case failed at input: ${testCase.input.slice(0, 50)}`,
+          errorMessage: `Wrong Answer on Test Case #${passedTestCases + 1}`,
         };
       }
       passedTestCases++;
@@ -247,7 +251,7 @@ export class JudgeService {
     return {
       verdict: SubmissionVerdict.ACCEPTED,
       runtime: Math.max(maxRuntime, 1),
-      memory: 0,
+      memory: maxMemory || 0,
       passedTestCases,
       totalTestCases: testCases.length,
     };

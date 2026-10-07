@@ -4,80 +4,43 @@ import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  Chip,
   Button,
-  TextField,
-  InputAdornment,
-  IconButton,
-  Tooltip,
   ListItemIcon,
-  LinearProgress,
   Menu,
   MenuItem,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContainer,
-  Select,
-  Tabs,
-  Tab,
-  Checkbox,
+  Tooltip,
 } from '@mui/material';
-import Link from 'next/link';
-import SearchIcon from '@mui/icons-material/Search';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
-import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import FirstPageRoundedIcon from '@mui/icons-material/FirstPageRounded';
-import LastPageRoundedIcon from '@mui/icons-material/LastPageRounded';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
-import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
-import FilterAltOffRoundedIcon from '@mui/icons-material/FilterAltOffRounded';
-import { FluidArrowRight } from '@/utils/fluid_arrow';
-import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
-import RadioButtonUncheckedRoundedIcon from '@mui/icons-material/RadioButtonUncheckedRounded';
-import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
-import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import WhatshotRoundedIcon from '@mui/icons-material/WhatshotRounded';
-import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
-import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
-
+import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded';
 import dynamic from 'next/dynamic';
 
 import FloatingSidebar from '@/components/superadmin/layout/CurvedSidebar';
 import Navbar from '@/components/superadmin/layout/Navbar';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
+import ProblemsStatsBanner from './directory/ProblemsStatsBanner';
+import ProblemsFilterToolbar from './directory/ProblemsFilterToolbar';
+import ProblemsDataTable, { SortField, SortDirection } from './directory/ProblemsDataTable';
+import {
+  ProblemEntity,
+  ProblemCategory,
+  NewProblemData,
+} from '@/types/problem';
 
 const ProblemQuickPeekDrawer = dynamic(() => import('@/components/superadmin/problems/ProblemQuickPeekDrawer'), { loading: () => null });
 const CreateProblemModal = dynamic(() => import('@/components/superadmin/problems/CreateProblemModal'), { loading: () => null });
 const BulkImportProblemsModal = dynamic(() => import('@/components/superadmin/problems/BulkImportProblemsModal'), { loading: () => null });
 const SetPotdModal = dynamic(() => import('@/components/superadmin/problems/SetPotdModal'), { loading: () => null });
-import CloudUploadRoundedIcon from '@mui/icons-material/CloudUploadRounded';
-import StatsCard from '@/components/superadmin/shared/StatsCard';
 const BulkActionBar = dynamic(() => import('@/components/superadmin/shared/BulkActionBar'), { loading: () => null });
-import {
-  ProblemEntity,
-  ProblemCategory,
-  ProblemDifficulty,
-  ProblemStatus,
-  NewProblemData,
-} from '@/types/problem';
 
 interface ProblemsDirectoryClientProps {
   initialProblems: ProblemEntity[];
 }
-
-type SortField = 'code' | 'title' | 'difficulty' | 'acceptanceRate' | 'totalSubmissions' | 'points';
-type SortDirection = 'asc' | 'desc';
 
 export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDirectoryClientProps) {
   const toast = useToast();
@@ -121,21 +84,29 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
               }
             }
 
+            const diff = item.difficulty === 'HARD' ? 'Hard' : item.difficulty === 'MEDIUM' ? 'Medium' : 'Easy';
+            const totalSubmissions = item.totalSubmissions ?? item._count?.submissions ?? 0;
+            const acceptedSubmissions = item.acceptedSubmissions ?? item.acceptedCount ?? 0;
+            const acceptanceRate = item.acceptanceRate !== undefined && item.acceptanceRate !== null
+              ? item.acceptanceRate
+              : (totalSubmissions > 0 ? Number(((acceptedSubmissions / totalSubmissions) * 100).toFixed(1)) : 0);
+            const points = item.points || (diff === 'Easy' ? 100 : diff === 'Hard' ? 350 : 200);
+
             return {
               id: item.id,
               code: item.code || `PROB-${String(idx + 1).padStart(3, '0')}`,
               slug: item.slug,
               title: item.title,
               category,
-              difficulty: item.difficulty === 'HARD' ? 'Hard' : item.difficulty === 'MEDIUM' ? 'Medium' : 'Easy',
-              acceptanceRate: item.acceptanceRate ?? 65.0,
-              totalSubmissions: item._count?.submissions || item.totalSubmissions || 0,
-              acceptedSubmissions: item.acceptedSubmissions ?? Math.floor((item._count?.submissions || item.totalSubmissions || 0) * 0.65),
+              difficulty: diff,
+              acceptanceRate,
+              totalSubmissions,
+              acceptedSubmissions,
               testCasesCount: item._count?.testCases || item.testCasesCount || 0,
               authorName: item.authorName || 'Faculty',
               tags,
               status: item.status === 'PUBLISHED' ? 'Published' : 'Draft',
-              points: item.points || (item.difficulty === 'HARD' ? 200 : item.difficulty === 'MEDIUM' ? 120 : 70),
+              points,
               timeLimitMs: item.timeLimit || item.timeLimitMs || 1000,
               memoryLimitMb: item.memoryLimit || item.memoryLimitMb || 256,
               likes: item.likes || 0,
@@ -192,7 +163,6 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
       }
     }
     if (failedIds.length > 0) {
-      // Only remove successfully deleted items from local state
       setProblems((prev) => prev.filter((p) => !idsToDelete.includes(p.id) || failedIds.includes(p.id)));
       toast.error(`Failed to delete ${failedIds.length} problem${failedIds.length > 1 ? 's' : ''}. They remain on the server.`, 'Partial Failure');
     } else {
@@ -222,7 +192,6 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
     }
   };
 
-  // KPI calculations
   // KPI calculations
   const totalCount = problems.length;
   const publishedCount = problems.filter((p) => p.status === 'Published').length;
@@ -280,7 +249,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
   // Pagination calculation
   const totalEntries = filteredProblems.length;
   const totalPages = Math.max(1, Math.ceil(totalEntries / rowsPerPage));
-  const currentPage = Math.min(page, totalPages - 1);
+  const currentPage = Math.max(0, Math.min(page, totalPages - 1));
   const paginatedProblems = filteredProblems.slice(
     currentPage * rowsPerPage,
     currentPage * rowsPerPage + rowsPerPage
@@ -288,11 +257,13 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
   const startEntry = totalEntries === 0 ? 0 : currentPage * rowsPerPage + 1;
   const endEntry = Math.min((currentPage + 1) * rowsPerPage, totalEntries);
 
-  const handleCreateProblem = async (data: NewProblemData) => {
+  const handleCreateProblem = async (data: NewProblemData): Promise<void> => {
     const tempId = `prob-${Date.now()}`;
-    const sampleCases = (data.testCases && data.testCases.filter((tc) => !tc.isHidden).length > 0)
-      ? data.testCases.filter((tc) => !tc.isHidden).map((tc) => ({ input: tc.input, output: tc.expectedOutput, explanation: tc.explanation }))
-      : [{ input: data.sampleInput, output: data.sampleOutput, explanation: data.sampleExplanation }];
+    const sampleCases = data.testCases
+      ? data.testCases
+          .filter((tc) => !tc.isHidden)
+          .map((tc) => ({ input: tc.input, output: tc.expectedOutput, explanation: tc.explanation }))
+      : [];
 
     const newEntry: ProblemEntity = {
       id: tempId,
@@ -323,9 +294,13 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
     try {
       const created = await apiService.createProblem({
         title: data.title,
+        slug: data.slug || undefined,
+        code: data.code || undefined,
         statement: data.statementMarkdown,
-        inputFormat: data.sampleInput,
-        outputFormat: data.sampleOutput,
+        category: data.category,
+        tags: data.tags,
+        status: data.status === 'Draft' ? 'DRAFT' : 'PUBLISHED',
+        points: data.points,
         difficulty:
           data.difficulty === 'Hard'
             ? 'HARD'
@@ -334,6 +309,10 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
             : 'MEDIUM',
         timeLimit: data.timeLimitMs,
         memoryLimit: data.memoryLimitMb,
+        institutionId: data.institutionId || undefined,
+        courseId: data.courseId || undefined,
+        moduleId: data.moduleId || undefined,
+        lessonId: data.lessonId || undefined,
         testCases: data.testCases && data.testCases.length > 0 ? data.testCases : undefined,
       });
       if (created?.id) {
@@ -342,8 +321,10 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
         );
       }
       toast.success(`Problem "${data.title}" created with ${data.testCases?.length ?? 0} test case(s).`, 'Problem Created');
-    } catch {
-      toast.info(`Problem "${data.title}" saved locally to repository.`, 'Problem Registered');
+    } catch (err: any) {
+      setProblems((prev) => prev.filter((p) => p.id !== tempId));
+      toast.error(err?.message || `Failed to create problem "${data.title}".`, 'Creation Failed');
+      throw err;
     }
   };
 
@@ -434,12 +415,6 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
     handleCloseDownloadMenu();
   };
 
-  const difficultyChipStyles = {
-    Easy: { bgcolor: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' },
-    Medium: { bgcolor: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A' },
-    Hard: { bgcolor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' },
-  };
-
   const borderColor = '#E2E8F0';
 
   return (
@@ -483,7 +458,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
           {/* Header Summary & Actions */}
           <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
             <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Box
                   sx={{
                     width: 36,
@@ -569,25 +544,24 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
 
               <Button
                 variant="outlined"
-                startIcon={<WhatshotRoundedIcon sx={{ fontSize: 18, color: '#D97706' }} />}
                 onClick={() => {
                   setPotdSelectedProblem(null);
                   setIsSetPotdModalOpen(true);
                 }}
                 sx={{
-                  borderColor: '#FDE68A',
-                  bgcolor: '#FFFBEB',
-                  color: '#B45309',
+                  borderColor: '#CBD5E1',
+                  bgcolor: '#FFFFFF',
+                  color: '#0F172A',
                   borderRadius: '8px',
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '0.85rem',
                   px: 2,
                   py: 0.75,
-                  '&:hover': { bgcolor: '#FEF3C7', borderColor: '#F59E0B' },
+                  '&:hover': { bgcolor: '#F8FAFC', borderColor: '#94A3B8' },
                 }}
               >
-                Set Problem of the Day
+                Manage POTD & Queue
               </Button>
 
               <Button
@@ -632,292 +606,51 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
           </Box>
 
           {/* 3. Stats Metric Ribbon Cards */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2.5 }}>
-            <StatsCard
-              title="Total Problem Bank"
-              value={totalCount}
-              icon={<CodeRoundedIcon sx={{ fontSize: 20 }} />}
-              variant="blue"
-              shape="orbital"
-              subtitle={
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <Typography sx={{ fontSize: '0.72rem', color: '#4ADE80', fontWeight: 700 }}>
-                    {easyCount} Easy
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>•</Typography>
-                  <Typography sx={{ fontSize: '0.72rem', color: '#FBBF24', fontWeight: 700 }}>
-                    {mediumCount} Med
-                  </Typography>
-                  <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>•</Typography>
-                  <Typography sx={{ fontSize: '0.72rem', color: '#F87171', fontWeight: 700 }}>
-                    {hardCount} Hard
-                  </Typography>
-                </Box>
-              }
-            />
-
-            <StatsCard
-              title="Published & Active"
-              value={
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.75 }}>
-                  <span>{publishedCount}</span>
-                  <span style={{ fontSize: '0.95rem', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>
-                    / {totalCount}
-                  </span>
-                </Box>
-              }
-              icon={<CheckCircleRoundedIcon sx={{ fontSize: 20 }} />}
-              variant="black"
-              shape="topography"
-              subtitle={
-                <Box sx={{ width: '100%', mt: 0.5 }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={Math.round((publishedCount / (totalCount || 1)) * 100)}
-                    sx={{
-                      height: 5,
-                      borderRadius: 3,
-                      bgcolor: 'rgba(255, 255, 255, 0.15)',
-                      '& .MuiLinearProgress-bar': { bgcolor: '#34D399', borderRadius: 3 },
-                    }}
-                  />
-                </Box>
-              }
-            />
-
-            <StatsCard
-              title="Evaluated Submissions"
-              value={totalPlatformSubmissions.toLocaleString()}
-              icon={<BoltRoundedIcon sx={{ fontSize: 20 }} />}
-              variant="blue"
-              shape="hex-grid"
-              subtitle="Across all testbench runs"
-            />
-
-            <StatsCard
-              title="Platform Avg Pass Rate"
-              value={`${avgAcceptance}%`}
-              icon={<EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />}
-              variant="black"
-              shape="aurora-waves"
-              subtitle={`${underReviewCount} under review • ${draftCount} drafts`}
-            />
-          </Box>
+          <ProblemsStatsBanner
+            totalCount={totalCount}
+            easyCount={easyCount}
+            mediumCount={mediumCount}
+            hardCount={hardCount}
+            publishedCount={publishedCount}
+            underReviewCount={underReviewCount}
+            draftCount={draftCount}
+            totalPlatformSubmissions={totalPlatformSubmissions}
+            avgAcceptance={avgAcceptance}
+          />
 
           {/* 4. Controls & Filters Toolbar with MUI Tabs */}
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: '16px',
-              bgcolor: '#FFFFFF',
-              border: `1px solid ${borderColor}`,
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.02)',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
+          <ProblemsFilterToolbar
+            searchQuery={searchQuery}
+            onSearchChange={(val) => {
+              setSearchQuery(val);
+              setPage(0);
             }}
-          >
-            {/* MUI Tabs for Algorithmic Topic Categories */}
-            <Box sx={{ borderBottom: `1px solid ${borderColor}`, px: { xs: 2, md: 3 }, pt: 0.5, bgcolor: '#FFFFFF' }}>
-              <Tabs
-                value={selectedCategory}
-                onChange={(_, newValue) => {
-                  setSelectedCategory(newValue);
-                  setPage(0);
-                }}
-                variant="scrollable"
-                scrollButtons="auto"
-                sx={{
-                  minHeight: 48,
-                  '& .MuiTabs-indicator': {
-                    backgroundColor: '#2563EB',
-                    height: 3,
-                    borderRadius: '3px 3px 0 0',
-                  },
-                  '& .MuiTabs-flexContainer': {
-                    gap: { xs: 0.5, sm: 1.5 },
-                  },
-                }}
-              >
-                {[
-                  'All Topics',
-                  'Dynamic Programming',
-                  'Graph Theory & BFS/DFS',
-                  'Trees & Binary Search Trees',
-                  'Arrays & Two Pointers',
-                  'Strings & Tries',
-                  'Math & Number Theory',
-                  'Greedy & Heuristics',
-                ].map((cat) => (
-                  <Tab
-                    key={cat}
-                    value={cat}
-                    label={
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography sx={{ fontWeight: selectedCategory === cat ? 700 : 600, fontSize: '0.84rem' }}>
-                          {cat}
-                        </Typography>
-                        <Chip
-                          label={getCategoryCount(cat)}
-                          size="small"
-                          sx={{
-                            height: 20,
-                            fontSize: '0.68rem',
-                            fontWeight: 700,
-                            borderRadius: '9999px',
-                            bgcolor: selectedCategory === cat ? '#EFF6FF' : '#F1F5F9',
-                            color: selectedCategory === cat ? '#2563EB' : '#64748B',
-                            border: '1px solid',
-                            borderColor: selectedCategory === cat ? '#BFDBFE' : '#E2E8F0',
-                            pointerEvents: 'none',
-                          }}
-                        />
-                      </Box>
-                    }
-                    disableRipple
-                    sx={{
-                      minHeight: 48,
-                      py: 1,
-                      px: 1.25,
-                      textTransform: 'none',
-                      color: selectedCategory === cat ? '#2563EB !important' : '#64748B',
-                      '&:hover': { color: '#0F172A' },
-                    }}
-                  />
-                ))}
-              </Tabs>
-            </Box>
-
-            {/* Search Bar & Dropdown Filters Row */}
-            <Box
-              sx={{
-                p: { xs: 2, md: 2.5 },
-                display: 'flex',
-                flexDirection: { xs: 'column', md: 'row' },
-                gap: 2,
-                alignItems: { xs: 'stretch', md: 'center' },
-                justifyContent: 'space-between',
-              }}
-            >
-              {/* Search Input */}
-              <TextField
-                size="small"
-                placeholder="Search by problem title, code, tag, company..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setPage(0);
-                }}
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ color: '#94A3B8', fontSize: 18 }} />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                sx={{
-                  flex: 1,
-                  maxWidth: { xs: '100%', md: 380 },
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: '9999px',
-                    bgcolor: '#F8FAFC',
-                    color: '#0F172A',
-                    fontSize: '0.85rem',
-                    '& fieldset': { borderColor: '#E2E8F0' },
-                    '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
-                  },
-                }}
-              />
-
-              {/* Filter Controls */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700 }}>
-                  DIFFICULTY:
-                </Typography>
-                <Select
-                  size="small"
-                  value={selectedDifficulty}
-                  onChange={(e) => {
-                    setSelectedDifficulty(e.target.value);
-                    setPage(0);
-                  }}
-                  sx={{
-                    height: 32,
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    color: '#0F172A',
-                    bgcolor: '#F8FAFC',
-                    borderRadius: '9999px',
-                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-                    '& .MuiSvgIcon-root': { color: '#64748B', fontSize: 18 },
-                  }}
-                >
-                  <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>All Difficulties</MenuItem>
-                  <MenuItem value="Easy" sx={{ fontSize: '0.8rem' }}>Easy</MenuItem>
-                  <MenuItem value="Medium" sx={{ fontSize: '0.8rem' }}>Medium</MenuItem>
-                  <MenuItem value="Hard" sx={{ fontSize: '0.8rem' }}>Hard</MenuItem>
-                </Select>
-
-                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, ml: 0.5 }}>
-                  STATUS:
-                </Typography>
-                <Select
-                  size="small"
-                  value={selectedStatus}
-                  onChange={(e) => {
-                    setSelectedStatus(e.target.value);
-                    setPage(0);
-                  }}
-                  sx={{
-                    height: 32,
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    color: '#0F172A',
-                    bgcolor: '#F8FAFC',
-                    borderRadius: '9999px',
-                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-                    '& .MuiSvgIcon-root': { color: '#64748B', fontSize: 18 },
-                  }}
-                >
-                  <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>All Statuses</MenuItem>
-                  <MenuItem value="Published" sx={{ fontSize: '0.8rem' }}>Published</MenuItem>
-                  <MenuItem value="Under Review" sx={{ fontSize: '0.8rem' }}>Under Review</MenuItem>
-                  <MenuItem value="Draft" sx={{ fontSize: '0.8rem' }}>Draft</MenuItem>
-                  <MenuItem value="Archived" sx={{ fontSize: '0.8rem' }}>Archived</MenuItem>
-                </Select>
-
-                {(searchQuery || selectedCategory !== 'All Topics' || selectedDifficulty !== 'ALL' || selectedStatus !== 'ALL') && (
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      setSearchQuery('');
-                      setSelectedCategory('All Topics');
-                      setSelectedDifficulty('ALL');
-                      setSelectedStatus('ALL');
-                      setPage(0);
-                    }}
-                    startIcon={<FilterAltOffRoundedIcon sx={{ fontSize: 16 }} />}
-                    sx={{
-                      color: '#EF4444',
-                      bgcolor: '#FEF2F2',
-                      borderRadius: '9999px',
-                      textTransform: 'none',
-                      fontSize: '0.76rem',
-                      fontWeight: 700,
-                      height: 32,
-                      px: 1.5,
-                      '&:hover': { bgcolor: '#FEE2E2' },
-                    }}
-                  >
-                    Reset Filters
-                  </Button>
-                )}
-              </Box>
-            </Box>
-          </Card>
+            selectedCategory={selectedCategory}
+            onCategoryChange={(cat) => {
+              setSelectedCategory(cat);
+              setPage(0);
+            }}
+            selectedDifficulty={selectedDifficulty}
+            onDifficultyChange={(diff) => {
+              setSelectedDifficulty(diff);
+              setPage(0);
+            }}
+            selectedStatus={selectedStatus}
+            onStatusChange={(status) => {
+              setSelectedStatus(status);
+              setPage(0);
+            }}
+            onResetFilters={() => {
+              setSearchQuery('');
+              setSelectedCategory('All Topics');
+              setSelectedDifficulty('ALL');
+              setSelectedStatus('ALL');
+              setPage(0);
+            }}
+            getCategoryCount={getCategoryCount}
+            filteredCount={filteredProblems.length}
+            totalCount={totalCount}
+          />
 
           {/* Floating Fixed Bottom Bulk Action Bar */}
           <BulkActionBar
@@ -929,702 +662,51 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
           />
 
           {/* 5. Main Content: List Table View (Rule 10 Standard) */}
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: '16px',
-              border: `1px solid ${borderColor}`,
-              bgcolor: '#FFFFFF',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
-              overflow: 'hidden',
+          <ProblemsDataTable
+            problems={problems}
+            paginatedProblems={paginatedProblems}
+            selectedIds={selectedIds}
+            onToggleSelectRow={handleToggleSelectRow}
+            onSelectAll={handleSelectAll}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            onPeek={(p) => setPeekProblem(p)}
+            onSetPotd={(p) => {
+              setPotdSelectedProblem(p);
+              setIsSetPotdModalOpen(true);
             }}
-          >
-            <TableContainer>
-              <Table size="small">
-                <TableHead sx={{ bgcolor: '#F8FAFC' }}>
-                  <TableRow>
-                    {/* Checkbox Select All */}
-                    <TableCell padding="checkbox" sx={{ pl: 2.5, borderColor: '#E2E8F0' }}>
-                      <Checkbox
-                        indeterminate={selectedIds.length > 0 && selectedIds.length < filteredProblems.length}
-                        checked={filteredProblems.length > 0 && selectedIds.length === filteredProblems.length}
-                        onChange={(e) => handleSelectAll(e.target.checked)}
-                        sx={{
-                          color: '#CBD5E1',
-                          '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#2563EB' },
-                        }}
-                      />
-                    </TableCell>
-
-                    {/* Status Indicator */}
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5, width: 60 }}>
-                      STATUS
-                    </TableCell>
-
-                    {/* Problem Title & Code (Sortable) */}
-                    <TableCell
-                      onClick={() => handleSort('title')}
-                      sx={{
-                        fontSize: '0.74rem',
-                        fontWeight: 700,
-                        color: '#64748B',
-                        py: 1.5,
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                        minWidth: 280,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        PROBLEM TITLE
-                        {sortField === 'title' &&
-                          (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ))}
-                      </Box>
-                    </TableCell>
-
-                    {/* Difficulty (Sortable) */}
-                    <TableCell
-                      onClick={() => handleSort('difficulty')}
-                      sx={{
-                        fontSize: '0.74rem',
-                        fontWeight: 700,
-                        color: '#64748B',
-                        py: 1.5,
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                        width: 120,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        DIFFICULTY
-                        {sortField === 'difficulty' &&
-                          (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ))}
-                      </Box>
-                    </TableCell>
-
-                    {/* Acceptance Rate (Sortable) */}
-                    <TableCell
-                      onClick={() => handleSort('acceptanceRate')}
-                      sx={{
-                        fontSize: '0.74rem',
-                        fontWeight: 700,
-                        color: '#64748B',
-                        py: 1.5,
-                        minWidth: 150,
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        ACCEPTANCE
-                        {sortField === 'acceptanceRate' &&
-                          (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ))}
-                      </Box>
-                    </TableCell>
-
-                    {/* Submissions (Sortable) */}
-                    <TableCell
-                      onClick={() => handleSort('totalSubmissions')}
-                      sx={{
-                        fontSize: '0.74rem',
-                        fontWeight: 700,
-                        color: '#64748B',
-                        py: 1.5,
-                        cursor: 'pointer',
-                        userSelect: 'none',
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        SUBMISSIONS
-                        {sortField === 'totalSubmissions' &&
-                          (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
-                          ))}
-                      </Box>
-                    </TableCell>
-
-                    {/* Algorithmic Tags */}
-                    <TableCell sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', py: 1.5 }}>
-                      TOPICS & PATTERNS
-                    </TableCell>
-
-                    {/* Actions */}
-                    <TableCell align="right" sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', pr: 3, py: 1.5 }}>
-                      ACTIONS
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-
-                <TableBody>
-                  {paginatedProblems.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} sx={{ py: 8, textAlign: 'center' }}>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                          <Box sx={{ p: 2, borderRadius: '50%', bgcolor: '#EFF6FF', color: '#2563EB' }}>
-                            <SearchIcon sx={{ fontSize: 32 }} />
-                          </Box>
-                          <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '1rem' }}>
-                            No problems match your filters
-                          </Typography>
-                          <Typography sx={{ color: '#64748B', fontSize: '0.84rem' }}>
-                            Try adjusting your topic tab, search query, or difficulty filters.
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedProblems.map((prob) => {
-                      const isSelected = selectedIds.includes(prob.id);
-                      const diffStyle = difficultyChipStyles[prob.difficulty];
-
-                      return (
-                        <TableRow
-                          key={prob.id}
-                          hover
-                          selected={isSelected}
-                          sx={{
-                            '& td': { borderBottom: '1px solid #F1F5F9' },
-                            bgcolor: isSelected ? '#EFF6FF !important' : 'inherit',
-                            '&:hover': { bgcolor: isSelected ? '#DBEAFE !important' : '#F8FAFC !important' },
-                          }}
-                        >
-                          {/* Checkbox */}
-                          <TableCell padding="checkbox" sx={{ pl: 2.5 }}>
-                            <Checkbox
-                              checked={isSelected}
-                              onChange={() => handleToggleSelectRow(prob.id)}
-                              sx={{
-                                color: '#CBD5E1',
-                                '&.Mui-checked': { color: '#2563EB' },
-                              }}
-                            />
-                          </TableCell>
-
-                          {/* Status Pill */}
-                          <TableCell>
-                            <Chip
-                              label={prob.status}
-                              size="small"
-                              sx={{
-                                height: 22,
-                                fontSize: '0.7rem',
-                                fontWeight: 700,
-                                borderRadius: '9999px',
-                                bgcolor:
-                                  prob.status === 'Published'
-                                    ? '#F0FDF4'
-                                    : prob.status === 'Under Review'
-                                    ? '#FFFBEB'
-                                    : '#F1F5F9',
-                                color:
-                                  prob.status === 'Published'
-                                    ? '#16A34A'
-                                    : prob.status === 'Under Review'
-                                    ? '#D97706'
-                                    : '#64748B',
-                                border: '1px solid',
-                                borderColor:
-                                  prob.status === 'Published'
-                                    ? '#BBF7D0'
-                                    : prob.status === 'Under Review'
-                                    ? '#FDE68A'
-                                    : '#CBD5E1',
-                              }}
-                            />
-                          </TableCell>
-
-                          {/* Title & Code */}
-                          <TableCell sx={{ py: 1.75 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Typography
-                                    component={Link}
-                                    href={`/superadmin/problems/${prob.slug}`}
-                                    sx={{
-                                      fontSize: '0.9rem',
-                                      fontWeight: 700,
-                                      color: '#0F172A',
-                                      textDecoration: 'none',
-                                      '&:hover': { color: '#2563EB', textDecoration: 'underline' },
-                                    }}
-                                  >
-                                    {prob.code}. {prob.title}
-                                  </Typography>
-                                  {prob.points >= 150 && (
-                                    <Tooltip title={`${prob.points} points challenge`}>
-                                      <WhatshotRoundedIcon sx={{ fontSize: 16, color: '#DC2626' }} />
-                                    </Tooltip>
-                                  )}
-                                </Box>
-
-                                {/* Company Badges */}
-                                {prob.companies && prob.companies.length > 0 && (
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
-                                    <Typography sx={{ fontSize: '0.7rem', color: '#94A3B8', fontWeight: 600 }}>
-                                      Asked at:
-                                    </Typography>
-                                    {prob.companies.slice(0, 3).map((comp) => (
-                                      <Typography
-                                        key={comp}
-                                        sx={{
-                                          fontSize: '0.68rem',
-                                          color: '#64748B',
-                                          bgcolor: '#F1F5F9',
-                                          px: 0.75,
-                                          py: 0.1,
-                                          borderRadius: '4px',
-                                          fontWeight: 600,
-                                        }}
-                                      >
-                                        {comp}
-                                      </Typography>
-                                    ))}
-                                    {prob.companies.length > 3 && (
-                                      <Typography sx={{ fontSize: '0.68rem', color: '#94A3B8' }}>
-                                        +{prob.companies.length - 3}
-                                      </Typography>
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
-                            </Box>
-                          </TableCell>
-
-                          {/* Difficulty Chip */}
-                          <TableCell sx={{ py: 1.75 }}>
-                            <Chip
-                              label={prob.difficulty}
-                              size="small"
-                              sx={{
-                                height: 24,
-                                fontSize: '0.74rem',
-                                fontWeight: 800,
-                                borderRadius: '9999px',
-                                ...diffStyle,
-                              }}
-                            />
-                          </TableCell>
-
-                          {/* Acceptance Rate */}
-                          <TableCell sx={{ py: 1.75 }}>
-                            <Box sx={{ minWidth: 120 }}>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A' }}>
-                                  {prob.acceptanceRate}%
-                                </Typography>
-                                <Typography sx={{ fontSize: '0.7rem', color: '#94A3B8', fontWeight: 600 }}>
-                                  {prob.points} pts
-                                </Typography>
-                              </Box>
-                              <LinearProgress
-                                variant="determinate"
-                                value={prob.acceptanceRate}
-                                sx={{
-                                  height: 5,
-                                  borderRadius: 3,
-                                  bgcolor: '#E2E8F0',
-                                  '& .MuiLinearProgress-bar': {
-                                    bgcolor: prob.acceptanceRate > 60 ? '#16A34A' : prob.acceptanceRate > 40 ? '#2563EB' : '#D97706',
-                                    borderRadius: 3,
-                                  },
-                                }}
-                              />
-                            </Box>
-                          </TableCell>
-
-                          {/* Submissions */}
-                          <TableCell sx={{ py: 1.75 }}>
-                            <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>
-                              {prob.totalSubmissions.toLocaleString()}
-                            </Typography>
-                            <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>
-                              {prob.acceptedSubmissions.toLocaleString()} accepted
-                            </Typography>
-                          </TableCell>
-
-                          {/* Topics & Tags */}
-                          <TableCell sx={{ py: 1.75 }}>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxWidth: 260 }}>
-                              {prob.tags.slice(0, 2).map((tag) => (
-                                <Chip
-                                  key={tag}
-                                  label={tag}
-                                  size="small"
-                                  sx={{
-                                    height: 20,
-                                    fontSize: '0.68rem',
-                                    fontWeight: 600,
-                                    bgcolor: '#F1F5F9',
-                                    color: '#475569',
-                                    borderRadius: '6px',
-                                    border: '1px solid #E2E8F0',
-                                  }}
-                                />
-                              ))}
-                              {prob.tags.length > 2 && (
-                                <Tooltip title={prob.tags.slice(2).join(', ')}>
-                                  <Chip
-                                    label={`+${prob.tags.length - 2}`}
-                                    size="small"
-                                    sx={{
-                                      height: 20,
-                                      fontSize: '0.68rem',
-                                      fontWeight: 700,
-                                      bgcolor: '#EFF6FF',
-                                      color: '#2563EB',
-                                      borderRadius: '6px',
-                                    }}
-                                  />
-                                </Tooltip>
-                              )}
-                            </Box>
-                          </TableCell>
-
-                          {/* Actions: Peek & Solve */}
-                          <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
-                              <Tooltip title="Quick Peek Problem">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => setPeekProblem(prob)}
-                                  sx={{
-                                    color: '#64748B',
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: '8px',
-                                    border: '1px solid #E2E8F0',
-                                    '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF', borderColor: '#BFDBFE' },
-                                  }}
-                                >
-                                  <VisibilityRoundedIcon sx={{ fontSize: 18 }} />
-                                </IconButton>
-                              </Tooltip>
-
-                              <Tooltip title={prob.status === 'Published' ? 'Set as Problem of the Day' : 'Only published problems can be set as POTD'}>
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    disabled={prob.status !== 'Published'}
-                                    onClick={() => {
-                                      setPotdSelectedProblem(prob);
-                                      setIsSetPotdModalOpen(true);
-                                    }}
-                                    sx={{
-                                      color: '#D97706',
-                                      width: 32,
-                                      height: 32,
-                                      borderRadius: '8px',
-                                      border: '1px solid #FEF3C7',
-                                      bgcolor: '#FFFBEB',
-                                      '&:hover': { color: '#B45309', bgcolor: '#FEF3C7', borderColor: '#FDE68A' },
-                                      '&.Mui-disabled': {
-                                        color: '#9CA3AF',
-                                        bgcolor: '#F3F4F6',
-                                        borderColor: '#E5E7EB',
-                                      },
-                                    }}
-                                  >
-                                    <WhatshotRoundedIcon sx={{ fontSize: 18 }} />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-
-                              <Tooltip title="Delete Problem">
-                                <IconButton
-                                  size="small"
-                                  onClick={() => handleDeleteSingleProblem(prob.id)}
-                                  sx={{
-                                    color: '#EF4444',
-                                    width: 32,
-                                    height: 32,
-                                    borderRadius: '8px',
-                                    border: '1px solid #FEE2E2',
-                                    bgcolor: '#FEF2F2',
-                                    '&:hover': { color: '#DC2626', bgcolor: '#FEE2E2', borderColor: '#FECACA' },
-                                  }}
-                                >
-                                  <DeleteOutlineRoundedIcon sx={{ fontSize: 18 }} />
-                                </IconButton>
-                              </Tooltip>
-
-                              <Button
-                                component={Link}
-                                href={`/superadmin/problems/${prob.slug}`}
-                                size="small"
-                                variant="outlined"
-                                endIcon={<FluidArrowRight size={14} />}
-                                sx={{
-                                  textTransform: 'none',
-                                  fontWeight: 700,
-                                  fontSize: '0.76rem',
-                                  color: '#2563EB',
-                                  borderColor: '#DBEAFE',
-                                  bgcolor: '#EFF6FF',
-                                  borderRadius: '8px',
-                                  px: 1.5,
-                                  py: 0.4,
-                                  whiteSpace: 'nowrap',
-                                  '&:hover': {
-                                    bgcolor: '#DBEAFE',
-                                    borderColor: '#93C5FD',
-                                  },
-                                }}
-                              >
-                                Manage
-                              </Button>
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            {/* 6. Full-Pill Pagination Footer Toolbar */}
-            <Box
-              sx={{
-                p: '16px 24px',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 2,
-                borderTop: `1px solid ${borderColor}`,
-                bgcolor: '#FFFFFF',
-              }}
-            >
-              <Typography sx={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 600 }}>
-                Showing <strong style={{ color: '#0F172A' }}>{startEntry}–{endEntry}</strong> of <strong style={{ color: '#0F172A' }}>{totalEntries}</strong> problems
-              </Typography>
-
-              {/* Rows Per Page & Page Numbers */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ fontSize: '0.76rem', color: '#64748B', fontWeight: 600 }}>Rows:</Typography>
-                  <Select
-                    value={rowsPerPage}
-                    onChange={(e) => {
-                      setRowsPerPage(Number(e.target.value));
-                      setPage(0);
-                    }}
-                    size="small"
-                    sx={{
-                      height: 28,
-                      fontSize: '0.76rem',
-                      fontWeight: 700,
-                      color: '#0F172A',
-                      bgcolor: '#FFFFFF',
-                      borderRadius: '9999px',
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0', borderRadius: '9999px' },
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-                      '& .MuiSvgIcon-root': { color: '#64748B', fontSize: 18 },
-                    }}
-                  >
-                    <MenuItem value={5}>5</MenuItem>
-                    <MenuItem value={10}>10</MenuItem>
-                    <MenuItem value={25}>25</MenuItem>
-                    <MenuItem value={50}>50</MenuItem>
-                  </Select>
-                </Box>
-
-                {/* Pagination Controls */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <IconButton
-                    size="small"
-                    disabled={currentPage === 0}
-                    onClick={() => setPage(0)}
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      color: '#64748B',
-                      bgcolor: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
-                      borderRadius: '9999px',
-                      p: 0.5,
-                      '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
-                      '&.Mui-disabled': { opacity: 0.4, color: '#94A3B8' },
-                    }}
-                  >
-                    <FirstPageRoundedIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
-
-                  <IconButton
-                    size="small"
-                    disabled={currentPage === 0}
-                    onClick={() => setPage(Math.max(0, currentPage - 1))}
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      color: '#64748B',
-                      bgcolor: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
-                      borderRadius: '9999px',
-                      p: 0.5,
-                      '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
-                      '&.Mui-disabled': { opacity: 0.4, color: '#94A3B8' },
-                    }}
-                  >
-                    <ChevronLeftRoundedIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
-
-                  {/* Page Pill Buttons */}
-                  {(() => {
-                    const pages = [];
-                    const maxVisible = 5;
-                    let start = Math.max(0, currentPage - Math.floor(maxVisible / 2));
-                    let end = Math.min(totalPages, start + maxVisible);
-
-                    if (end - start < maxVisible) {
-                      start = Math.max(0, end - maxVisible);
-                    }
-
-                    if (start > 0) {
-                      pages.push(0);
-                      if (start > 1) pages.push('ellipsis-start');
-                    }
-
-                    for (let i = start; i < end; i++) {
-                      if (!pages.includes(i)) pages.push(i);
-                    }
-
-                    if (end < totalPages) {
-                      if (end < totalPages - 1) pages.push('ellipsis-end');
-                      pages.push(totalPages - 1);
-                    }
-
-                    return pages.map((item, idx) => {
-                      if (typeof item === 'string') {
-                        return (
-                          <Box
-                            key={`ellipsis-${idx}`}
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: '#94A3B8',
-                              fontSize: '0.8rem',
-                              fontWeight: 700,
-                              userSelect: 'none',
-                            }}
-                          >
-                            •••
-                          </Box>
-                        );
-                      }
-
-                      const pageIndex = item as number;
-                      const isActive = currentPage === pageIndex;
-
-                      return (
-                        <Box
-                          key={pageIndex}
-                          onClick={() => setPage(pageIndex)}
-                          sx={{
-                            minWidth: 32,
-                            height: 32,
-                            px: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRadius: '9999px',
-                            cursor: 'pointer',
-                            fontSize: '0.78rem',
-                            fontWeight: isActive ? 800 : 600,
-                            color: isActive ? '#FFFFFF' : '#64748B',
-                            bgcolor: isActive ? '#2563EB' : '#FFFFFF',
-                            border: isActive ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                            boxShadow: isActive ? '0 2px 8px rgba(37, 99, 235, 0.3)' : 'none',
-                            transition: 'all 0.15s ease',
-                            '&:hover': {
-                              bgcolor: isActive ? '#1D4ED8' : '#F1F5F9',
-                              color: isActive ? '#FFFFFF' : '#0F172A',
-                              borderColor: isActive ? '#1D4ED8' : '#CBD5E1',
-                            },
-                          }}
-                        >
-                          {pageIndex + 1}
-                        </Box>
-                      );
-                    });
-                  })()}
-
-                  <IconButton
-                    size="small"
-                    disabled={currentPage >= totalPages - 1}
-                    onClick={() => setPage(Math.min(totalPages - 1, currentPage + 1))}
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      color: '#64748B',
-                      bgcolor: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
-                      borderRadius: '9999px',
-                      p: 0.5,
-                      '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
-                      '&.Mui-disabled': { opacity: 0.4, color: '#94A3B8' },
-                    }}
-                  >
-                    <ChevronRightRoundedIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
-
-                  <IconButton
-                    size="small"
-                    disabled={currentPage >= totalPages - 1}
-                    onClick={() => setPage(totalPages - 1)}
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      color: '#64748B',
-                      bgcolor: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
-                      borderRadius: '9999px',
-                      p: 0.5,
-                      '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
-                      '&.Mui-disabled': { opacity: 0.4, color: '#94A3B8' },
-                    }}
-                  >
-                    <LastPageRoundedIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
-                </Box>
-              </Box>
-            </Box>
-          </Card>
+            onDeleteSingle={handleDeleteSingleProblem}
+            page={currentPage}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setPage}
+            onRowsPerPageChange={(rows) => {
+              setRowsPerPage(rows);
+              setPage(0);
+            }}
+            startEntry={startEntry}
+            endEntry={endEntry}
+            totalEntries={filteredProblems.length}
+            totalPages={totalPages}
+          />
         </Box>
       </Box>
 
-      {/* 7. Quick Peek Drawer */}
+      {/* 6. Quick Peek Drawer */}
       <ProblemQuickPeekDrawer
         problem={peekProblem}
         open={Boolean(peekProblem)}
         onClose={() => setPeekProblem(null)}
       />
 
-      {/* 8. Create Problem Modal */}
+      {/* 7. Create Problem Modal */}
       <CreateProblemModal
         open={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSubmit={handleCreateProblem}
       />
 
-      {/* 9. Bulk Import Problems Modal */}
+      {/* 8. Bulk Import Problems Modal */}
       <BulkImportProblemsModal
         open={isBulkImportModalOpen}
         onClose={() => setIsBulkImportModalOpen(false)}
@@ -1633,7 +715,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
         }}
       />
 
-      {/* 10. Set Problem of the Day Modal */}
+      {/* 9. Set Problem of the Day Modal */}
       <SetPotdModal
         open={isSetPotdModalOpen}
         onClose={() => {

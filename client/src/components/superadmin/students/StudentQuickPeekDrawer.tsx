@@ -33,9 +33,10 @@ export default function StudentQuickPeekDrawer({
   student,
 }: StudentQuickPeekDrawerProps) {
   const toast = useToast();
+  const [copied, setCopied] = React.useState(false);
+
   if (!student) return null;
 
-  const [copied, setCopied] = React.useState(false);
   const borderColor = '#E2E8F0';
 
   const handleCopyEmail = () => {

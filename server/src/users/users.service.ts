@@ -106,15 +106,15 @@ export class UsersService {
     @Optional() private configService?: ConfigService,
     @Optional() private mailService?: MailService,
   ) {
-    const currentKey = this.configService?.get<string>('auth.totp.encryptionKey') || process.env.TOTP_ENCRYPTION_KEY;
+    const currentKey = this.configService?.get<string>('auth.totp.encryptionKey') || process.env.TOTP_ENCRYPTION_KEY || process.env.JWT_SECRET;
     const previousKeys = this.configService?.get<string[]>('auth.totp.previousEncryptionKeys') ||
       process.env.TOTP_PREVIOUS_ENCRYPTION_KEYS?.split(',').map((key) => key.trim()).filter(Boolean) || [];
 
     const configuredKeys = [currentKey, ...previousKeys].filter((key): key is string => Boolean(key));
-    const rawKeys = configuredKeys.length > 0 ? configuredKeys : [];
-    if (rawKeys.length === 0 && process.env.NODE_ENV !== 'development') {
+    if (configuredKeys.length === 0 && process.env.NODE_ENV !== 'test') {
       throw new Error('Encryption key is required for TOTP; set auth.totp.encryptionKey or JWT secret');
     }
+    const rawKeys = configuredKeys.length > 0 ? configuredKeys : ['codeplatform-dev-encryption-key-fallback'];
     this.encryptionKeys = rawKeys.map((key) =>
       Buffer.from(createHmac('sha256', key).update('codeplatform:invitation:v1').digest()),
     );
@@ -302,14 +302,18 @@ export class UsersService {
     let solvedEasy = 0;
     let solvedMedium = 0;
     let solvedHard = 0;
+    let totalScore = 0;
 
     for (const problem of acceptedProblems) {
       if (problem.difficulty === 'EASY') {
         solvedEasy++;
+        totalScore += 100;
       } else if (problem.difficulty === 'MEDIUM') {
         solvedMedium++;
+        totalScore += 200;
       } else if (problem.difficulty === 'HARD') {
         solvedHard++;
+        totalScore += 350;
       }
     }
 
@@ -442,6 +446,9 @@ export class UsersService {
       contestRating: user.contestRating || 1500,
       ratingTier: user.ratingTier || 'Novice',
       globalRank: 1,
+      totalPoints: totalScore,
+      score: totalScore,
+      earnedPoints: totalScore,
       solvedTotal,
       solvedEasy,
       solvedMedium,
@@ -1260,6 +1267,7 @@ const decryptedUrl = this.decryptActivationUrl(delivery.activationUrl);
     }
 
     const totalSolved = solvedProblemIds.size;
+    const totalScore = easyCount * 100 + mediumCount * 200 + hardCount * 350;
     const totalSubmissions = submissions.length;
     const acceptedSubmissions = submissions.filter((s) => s.verdict === 'ACCEPTED').length;
     const acceptanceRate = totalSubmissions > 0 ? Math.round((acceptedSubmissions / totalSubmissions) * 100) : 0;
@@ -1279,6 +1287,10 @@ const decryptedUrl = this.decryptActivationUrl(delivery.activationUrl);
         hard: hardCount,
         total: totalSolved,
       },
+      totalPoints: totalScore,
+      score: totalScore,
+      points: totalScore,
+      earnedPoints: totalScore,
       submissionsCount: totalSubmissions,
       acceptanceRate,
       contestRating: user?.contestRating ?? 1500,

@@ -165,6 +165,15 @@ export class ComparativeLeaderboardService {
       }
     }
 
+    if (this.cacheService) {
+      return this.cacheService.getOrSet(`leaderboard:batch:${institutionId}`, 15, () =>
+        this.computeBatchLeaderboard(institutionId),
+      );
+    }
+    return this.computeBatchLeaderboard(institutionId);
+  }
+
+  private async computeBatchLeaderboard(institutionId: string): Promise<BatchLeaderboardRow[]> {
     const batches = await this.prisma.batch.findMany({
       where: { institutionId, status: 'ACTIVE' },
       include: {
@@ -257,6 +266,54 @@ export class ComparativeLeaderboardService {
   ): Promise<ContestMatrixRow[]> {
     const contest = await this.prisma.contest.findUnique({
       where: { id: contestId },
+      select: { institutionId: true, createdById: true },
+    });
+
+    const isSuperAdmin = Boolean(
+      user &&
+      (user.globalRole === Role.SUPER_ADMIN ||
+        user.globalRole === Role.PLATFORM_ADMIN ||
+        (user as any).role === Role.SUPER_ADMIN ||
+        (user as any).role === Role.PLATFORM_ADMIN),
+    );
+
+    const isAuthor = Boolean(
+      user &&
+      contest?.createdById === user.id &&
+      (!contest?.institutionId ||
+        user.memberships?.some((m) => m.institutionId === contest.institutionId)),
+    );
+
+    const isAuthorizedInstitutionStaff = Boolean(
+      user &&
+      contest?.institutionId &&
+      user.memberships?.some(
+        (m) =>
+          m.institutionId === contest.institutionId &&
+          (m.role === Role.INSTITUTION_ADMIN || m.role === Role.FACULTY || m.role === ('COLLEGE_ADMIN' as any)),
+      ),
+    );
+
+    const canAccessEmails = isSuperAdmin || isAuthor || isAuthorizedInstitutionStaff;
+
+    let rows: ContestMatrixRow[];
+    if (this.cacheService) {
+      rows = await this.cacheService.getOrSet(`leaderboard:contest:${contestId}`, 5, () =>
+        this.computeContestMatrixLeaderboard(contestId),
+      );
+    } else {
+      rows = await this.computeContestMatrixLeaderboard(contestId);
+    }
+
+    if (!canAccessEmails) {
+      return rows.map(({ email: _email, ...rest }) => rest as ContestMatrixRow);
+    }
+    return rows;
+  }
+
+  private async computeContestMatrixLeaderboard(contestId: string): Promise<ContestMatrixRow[]> {
+    const contest = await this.prisma.contest.findUnique({
+      where: { id: contestId },
       include: {
         problems: {
           select: {
@@ -287,17 +344,6 @@ export class ComparativeLeaderboardService {
       throw new NotFoundException(`Contest ${contestId} not found`);
     }
 
-    const hasAdminRole =
-      user &&
-      (user.globalRole === Role.SUPER_ADMIN ||
-        user.globalRole === Role.PLATFORM_ADMIN ||
-        user.globalRole === Role.INSTITUTION_ADMIN ||
-        user.globalRole === Role.FACULTY ||
-        (user as any).role === Role.SUPER_ADMIN ||
-        (user as any).role === Role.PLATFORM_ADMIN ||
-        (user as any).role === Role.INSTITUTION_ADMIN ||
-        (user as any).role === Role.FACULTY);
-
     const participantMap = new Map<string, ContestMatrixRow>();
 
     for (const reg of contest.registrations) {
@@ -305,7 +351,7 @@ export class ComparativeLeaderboardService {
         rank: 0,
         userId: reg.userId,
         name: reg.user.name,
-        email: hasAdminRole ? reg.user.email : undefined,
+        email: reg.user.email,
         contestRating: reg.user.contestRating,
         totalScore: 0,
         totalPenalty: 0,

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, Typography, Card } from '@mui/material';
+import { Box, Typography, Card, Chip } from '@mui/material';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import LocalFireDepartmentRoundedIcon from '@mui/icons-material/LocalFireDepartmentRounded';
@@ -13,9 +13,11 @@ interface StudentMetricsGridProps {
 }
 
 export default function StudentMetricsGrid({ profile }: StudentMetricsGridProps) {
+  const totalPoints = (profile.totalPoints ?? profile.score) || ((profile.solvedEasy * 100) + (profile.solvedMedium * 200) + (profile.solvedHard * 350));
+
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 2.5, mb: 3.5 }}>
-      {/* Card 1: Solved Problems */}
+      {/* Card 1: Solved Problems & Points */}
       <Card elevation={0} sx={{ p: 2.5, borderRadius: '20px', border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
           <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
@@ -25,9 +27,23 @@ export default function StudentMetricsGrid({ profile }: StudentMetricsGridProps)
             <CodeRoundedIcon sx={{ fontSize: 20 }} />
           </Box>
         </Box>
-        <Typography variant="h4" sx={{ fontWeight: 800, color: '#0F172A', mb: 1 }}>
-          {profile.solvedTotal}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: '#0F172A' }}>
+            {profile.solvedTotal}
+          </Typography>
+          <Chip
+            label={`${totalPoints.toLocaleString()} pts`}
+            size="small"
+            sx={{
+              fontWeight: 800,
+              fontSize: '0.74rem',
+              bgcolor: '#EFF6FF',
+              color: '#1D4ED8',
+              border: '1px solid #BFDBFE',
+              borderRadius: '6px',
+            }}
+          />
+        </Box>
         <Box sx={{ display: 'flex', gap: 1, fontSize: '0.74rem' }}>
           <Typography sx={{ color: '#16A34A', fontWeight: 700 }}>{profile.solvedEasy} Easy</Typography>
           <Typography sx={{ color: '#94A3B8' }}>•</Typography>

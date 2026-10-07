@@ -220,13 +220,19 @@ export default function StudentSubmissionsTab({
     }
   };
 
+  const pointsEarned = useMemo(() => {
+    return submissions
+      .filter((s) => s.verdict === 'Accepted')
+      .reduce((acc, s) => acc + (s.difficulty === 'Easy' ? 100 : s.difficulty === 'Hard' ? 350 : 200), 0);
+  }, [submissions]);
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
       {/* ========================================================================= */}
       {/* 1. TOP STATS CARDS */}
       {/* ========================================================================= */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2 }}>
-        {/* Card 1: Total Submissions */}
+        {/* Card 1: Points Earned */}
         <Card
           elevation={0}
           sx={{
@@ -241,15 +247,15 @@ export default function StudentSubmissionsTab({
           }}
         >
           <Box>
-            <Typography sx={{ color: '#64748B', fontSize: '0.74rem', fontWeight: 700 }}>Total Submissions</Typography>
+            <Typography sx={{ color: '#64748B', fontSize: '0.74rem', fontWeight: 700 }}>Points Earned</Typography>
             <Typography sx={{ color: '#0F172A', fontSize: '1.45rem', fontWeight: 900, mt: 0.3 }}>
-              {totalSubmissions}
+              {pointsEarned.toLocaleString()} <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2563EB' }}>pts</span>
             </Typography>
             <Typography sx={{ color: '#2563EB', fontSize: '0.7rem', fontWeight: 700 }}>
-              {filteredSubmissions.length} shown
+              {totalSubmissions} runs • {acceptedCount} solved
             </Typography>
           </Box>
-          <CircularMetricGauge percentage={100} size={48} strokeWidth={4.5} color="#2563EB" label={`${totalSubmissions}`} />
+          <CircularMetricGauge percentage={100} size={48} strokeWidth={4.5} color="#2563EB" label={`${pointsEarned}`} />
         </Card>
 
         {/* Card 2: Acceptance Rate */}
@@ -541,20 +547,36 @@ export default function StudentSubmissionsTab({
                         </Typography>
                       </TableCell>
 
-                      {/* Difficulty */}
+                      {/* Difficulty & Points */}
                       <TableCell sx={{ borderColor: '#F1F5F9' }}>
-                        <Chip
-                          label={sub.difficulty}
-                          size="small"
-                          sx={{
-                            bgcolor: diffStyle.bg,
-                            color: diffStyle.color,
-                            border: `1px solid ${diffStyle.border}`,
-                            fontWeight: 800,
-                            fontSize: '0.68rem',
-                            height: 20,
-                          }}
-                        />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                          <Chip
+                            label={sub.difficulty}
+                            size="small"
+                            sx={{
+                              bgcolor: diffStyle.bg,
+                              color: diffStyle.color,
+                              border: `1px solid ${diffStyle.border}`,
+                              fontWeight: 800,
+                              fontSize: '0.68rem',
+                              height: 20,
+                            }}
+                          />
+                          {sub.verdict === 'Accepted' && (
+                            <Chip
+                              label={sub.difficulty === 'Easy' ? '+100 pts' : sub.difficulty === 'Hard' ? '+350 pts' : '+200 pts'}
+                              size="small"
+                              sx={{
+                                bgcolor: '#F0FDF4',
+                                color: '#16A34A',
+                                border: '1px solid #BBF7D0',
+                                fontWeight: 800,
+                                fontSize: '0.66rem',
+                                height: 20,
+                              }}
+                            />
+                          )}
+                        </Box>
                       </TableCell>
 
                       {/* Language */}

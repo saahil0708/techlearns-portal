@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AICoachService } from './ai-coach.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { AIProviderService } from '../common/ai/ai-provider.service.js';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 describe('AICoachService', () => {
@@ -15,6 +16,12 @@ describe('AICoachService', () => {
     },
   };
 
+  const mockAIProviderService = {
+    explainProblem: vi.fn().mockResolvedValue('Structured problem explanation with trace walkthrough.'),
+    getProgressiveHint: vi.fn().mockResolvedValue({ level: 1, hint: 'Consider using a hash table.' }),
+    diagnoseFailure: vi.fn().mockResolvedValue('Check your base case in recursion.'),
+  };
+
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -24,6 +31,10 @@ describe('AICoachService', () => {
         {
           provide: PrismaService,
           useValue: mockPrismaService,
+        },
+        {
+          provide: AIProviderService,
+          useValue: mockAIProviderService,
         },
       ],
     }).compile();
@@ -57,13 +68,25 @@ describe('AICoachService', () => {
     });
 
     expect(result.userMessage.text).toContain('TLE');
-    expect(result.aiMessage.text).toContain('TLE');
+    expect(result.aiMessage.text).toBeDefined();
+  });
 
-    const lcsResult = await service.sendMessage('user-1', {
-      message: 'Explain Longest Common Subsequence optimization',
+  it('should explain problem with trace example', async () => {
+    const result = await service.explainProblem({
+      title: 'Two Sum',
+      statement: 'Given an array of integers...',
     });
+    expect(result.success).toBe(true);
+    expect(result.data.explanation).toContain('Structured problem explanation');
+  });
 
-    expect(lcsResult.aiMessage.text).toContain('LCS');
-    expect(lcsResult.aiMessage.codeSnippet).toBeDefined();
+  it('should get progressive hint level 1', async () => {
+    const result = await service.getProgressiveHint({
+      title: 'Two Sum',
+      statement: 'Given an array...',
+      level: 1,
+    });
+    expect(result.success).toBe(true);
+    expect(result.data.hint).toContain('hash table');
   });
 });

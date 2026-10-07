@@ -46,6 +46,26 @@ export class UpdateProblemInput {
   @Max(1024)
   memoryLimit?: number;
 
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  institutionId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  courseId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  moduleId?: string;
+
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  lessonId?: string;
+
   @Field(() => ProblemStatus, { nullable: true })
   @IsOptional()
   @IsEnum(ProblemStatus)
