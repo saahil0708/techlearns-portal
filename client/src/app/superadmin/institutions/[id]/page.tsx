@@ -63,13 +63,77 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
     logoColor: '#3B82F6',
   };
 
+  const [batchesData] = await Promise.allSettled([
+    apiService.getBatchesByInstitution(id),
+  ]);
+
+  let initialBatches: any[] = [];
+  if (batchesData.status === 'fulfilled' && Array.isArray(batchesData.value)) {
+    initialBatches = batchesData.value.map((b: any) => {
+      const assignedFaculty = Array.isArray(b.faculty) ? b.faculty : [];
+      const leadName = assignedFaculty.length > 0
+        ? (assignedFaculty.length === 1 ? (assignedFaculty[0].user?.name || assignedFaculty[0].name) : `${assignedFaculty.length} Mentors`)
+        : 'Unassigned';
+      return {
+        id: b.id,
+        name: b.name,
+        code: b.code || b.name.substring(0, 8).toUpperCase(),
+        studentsCount: b._count?.students ?? b._count?.enrollments ?? b.studentsCount ?? 0,
+        maxCapacity: b.maxCapacity || 60,
+        facultyLead: leadName,
+        faculty: assignedFaculty,
+        facultyIds: assignedFaculty.map((f: any) => f.userId || f.user?.id || f.id).filter(Boolean),
+        coursesAssigned: b._count?.courses ?? 0,
+        year: b.year || '2026',
+        status: b.status === 'ACTIVE' ? 'Active' : b.status === 'COMPLETED' ? 'Completed' : 'Upcoming',
+        avgAccuracy: '0%',
+      };
+    });
+  }
+
+  const initialStudents: any[] = [];
+  const initialFaculty: any[] = [];
+
+  if (Array.isArray(liveInstitution.memberships)) {
+    liveInstitution.memberships.forEach((m: any, idx: number) => {
+      const u = m.user || {};
+      if (m.role === 'STUDENT' || u.globalRole === 'STUDENT') {
+        initialStudents.push({
+          id: u.id || m.userId,
+          name: u.name || 'Student Coder',
+          email: u.email || '',
+          rollNo: u.rollNo || u.studentId || `STU-${String(idx + 1).padStart(3, '0')}`,
+          batch: 'General',
+          problemsSolved: u._count?.submissions ?? 0,
+          totalSubmissions: u._count?.submissions ?? 0,
+          accuracy: '0%',
+          activeStreak: 0,
+          lastActive: 'Recently',
+          status: 'Active',
+        });
+      } else if (m.role === 'FACULTY' || m.role === 'INSTITUTION_ADMIN' || m.role === 'COLLEGE_ADMIN' || u.globalRole === 'FACULTY') {
+        initialFaculty.push({
+          id: u.id || m.userId,
+          name: u.name || 'Faculty Mentor',
+          email: u.email || '',
+          department: 'Computer Science & Engineering',
+          role: m.role === 'INSTITUTION_ADMIN' ? 'HOD' : 'Professor',
+          activeBatches: initialBatches.length,
+          problemsCreated: 0,
+          joinedDate: new Date(m.createdAt || Date.now()).toLocaleDateString(),
+          status: 'Active',
+        });
+      }
+    });
+  }
+
   return (
     <InstitutionDetailClient
       institution={institution}
-      initialBatches={[]}
-      initialStudents={[]}
+      initialBatches={initialBatches}
+      initialStudents={initialStudents}
       initialCourses={[]}
-      initialFaculty={[]}
+      initialFaculty={initialFaculty}
     />
   );
 }

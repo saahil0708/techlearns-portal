@@ -46,6 +46,7 @@ import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import RadioButtonCheckedRoundedIcon from '@mui/icons-material/RadioButtonCheckedRounded';
 import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
+import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 
 import { FluidArrowRight } from '@/utils/fluid_arrow';
@@ -89,23 +90,26 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
         if (liveData?.items && liveData.items.length > 0) {
           const mapped: ContestEntity[] = liveData.items.map((item: any, idx: number) => ({
             id: item.id,
-            code: `CNT-${String(idx + 1).padStart(3, '0')}`,
-            slug: item.title ? item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `contest-${idx + 1}`,
+            code: item.code || `CNT-${String(idx + 1).padStart(3, '0')}`,
+            slug: item.slug || (item.title ? item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : `contest-${idx + 1}`),
             title: item.title,
-            description: item.description || 'Competitive programming tournament.',
-            scope: 'Global',
+            description: item.description || 'Competitive programming tournament & assessment.',
+            scope: item.batch || item.batchId ? 'Batch Assessment (Cohort-Specific)' : (item.institutionId ? 'Institute League' : 'Global'),
             scoringFormat: 'ICPC (Penalty Time)',
             status: item.status || 'UPCOMING',
             startTime: item.startTime || new Date().toISOString(),
             endTime: item.endTime || new Date(Date.now() + 7200000).toISOString(),
-            durationMinutes: 120,
-            problemsCount: item._count?.problems || 0,
-            registeredParticipants: item._count?.registrations || 0,
-            submissionsCount: item._count?.submissions || 0,
-            organizer: 'CodePlatform Global',
+            durationMinutes: item.durationMinutes || 120,
+            problemsCount: item._count?.problems ?? item.problemsCount ?? 0,
+            registeredParticipants: item._count?.registrations ?? item.registeredParticipants ?? 0,
+            submissionsCount: item._count?.submissions ?? item.submissionsCount ?? 0,
+            organizer: item.organizer || 'CodePlatform Global',
             bannerColor: '#2563EB',
-            tags: ['Competitive', 'Algorithms'],
-            rated: true,
+            tags: item.tags || ['Competitive', 'Algorithms'],
+            rated: item.rated ?? true,
+            institutionId: item.institutionId || item.collegeId,
+            batchId: item.batchId,
+            batch: item.batch ? { id: item.batch.id, name: item.batch.name } : undefined,
           }));
           setContests(mapped);
         }
@@ -271,6 +275,19 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
       bannerColor: '#2563EB',
       tags: data.tags,
       rated: data.rated,
+      institutionId: data.institutionId,
+      batchId: data.batchId,
+      batch: data.batch,
+      problemIds: data.problemIds,
+      isProctored: data.isProctored,
+      enforceFullScreen: data.enforceFullScreen,
+      tabSwitchLimit: data.tabSwitchLimit,
+      disableCopyPaste: data.disableCopyPaste,
+      webcamProctoring: data.webcamProctoring,
+      audioProctoring: data.audioProctoring,
+      plagiarismCheck: data.plagiarismCheck,
+      windowType: data.windowType,
+      shuffleQuestions: data.shuffleQuestions,
     };
     setContests((prev) => [newEntry, ...prev]);
 
@@ -280,15 +297,33 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
         description: data.description,
         startTime: new Date(data.startTime),
         endTime: new Date(end),
+        institutionId: data.institutionId,
+        collegeId: data.institutionId,
+        batchId: data.batchId,
+        problemIds: data.problemIds,
+        status: data.status,
+        code: data.code,
+        slug: data.slug,
+        durationMinutes: data.durationMinutes,
+        isProctored: data.isProctored,
+        enforceFullScreen: data.enforceFullScreen,
+        tabSwitchLimit: data.tabSwitchLimit,
+        disableCopyPaste: data.disableCopyPaste,
+        webcamProctoring: data.webcamProctoring,
+        audioProctoring: data.audioProctoring,
+        plagiarismCheck: data.plagiarismCheck,
+        scoringFormat: data.scoringFormat,
+        windowType: data.windowType,
+        shuffleQuestions: data.shuffleQuestions,
       });
       if (created?.id) {
         setContests((prev) =>
-          prev.map((c) => (c.id === tempId ? { ...c, id: created.id } : c))
+          prev.map((c) => (c.id === tempId ? { ...c, id: created.id, batch: created.batch || data.batch } : c))
         );
       }
-      toast.success(`Contest "${data.title}" created and scheduled.`, 'Contest Created');
+      toast.success(`Proctored Assessment "${data.title}" created successfully.`, 'Assessment Published');
     } catch {
-      toast.info(`Contest "${data.title}" saved locally.`, 'Contest Registered');
+      toast.info(`Assessment "${data.title}" saved locally.`, 'Assessment Registered');
     }
   };
 
@@ -797,8 +832,9 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                   }}
                 >
                   <MenuItem value="ALL" sx={{ fontSize: '0.8rem' }}>All Scopes</MenuItem>
-                  <MenuItem value="Global" sx={{ fontSize: '0.8rem' }}>Global</MenuItem>
+                  <MenuItem value="Batch Assessment (Cohort-Specific)" sx={{ fontSize: '0.8rem' }}>Batch Assessment</MenuItem>
                   <MenuItem value="Institute League" sx={{ fontSize: '0.8rem' }}>Institute League</MenuItem>
+                  <MenuItem value="Global" sx={{ fontSize: '0.8rem' }}>Global</MenuItem>
                   <MenuItem value="Institutional Invitational" sx={{ fontSize: '0.8rem' }}>Institutional Invitational</MenuItem>
                   <MenuItem value="Internal Faculty Assessment" sx={{ fontSize: '0.8rem' }}>Faculty Internal</MenuItem>
                 </Select>
@@ -1107,6 +1143,22 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                                   <Typography sx={{ fontSize: '0.73rem', color: '#64748B', fontFamily: 'monospace', whiteSpace: 'nowrap', fontWeight: 600 }}>
                                     {contest.code}
                                   </Typography>
+                                  {contest.batch && (
+                                    <Chip
+                                      icon={<GroupsRoundedIcon sx={{ fontSize: '13px !important', color: '#047857 !important' }} />}
+                                      label={`Cohort: ${contest.batch.name}`}
+                                      size="small"
+                                      sx={{
+                                        height: 19,
+                                        fontSize: '0.67rem',
+                                        fontWeight: 700,
+                                        bgcolor: '#ECFDF5',
+                                        color: '#065F46',
+                                        border: '1px solid #A7F3D0',
+                                        borderRadius: '4px',
+                                      }}
+                                    />
+                                  )}
                                   <Typography sx={{ fontSize: '0.73rem', color: '#94A3B8' }}>•</Typography>
                                   <Typography sx={{ fontSize: '0.73rem', color: '#64748B', whiteSpace: 'nowrap' }}>
                                     Hosted by {contest.organizer}

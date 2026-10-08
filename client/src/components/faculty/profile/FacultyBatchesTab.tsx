@@ -26,12 +26,15 @@ import PersonAddAlt1RoundedIcon from '@mui/icons-material/PersonAddAlt1Rounded';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import dynamic from 'next/dynamic';
 
 import FacultyInviteStudentsModal from './FacultyInviteStudentsModal';
 import FacultyCreateBatchModal from './FacultyCreateBatchModal';
 import FacultyBatchRosterDrawer from './FacultyBatchRosterDrawer';
 import { useToast } from '@/context/ToastContext';
 import { generateSafeCsv, downloadCsvBlob } from '@/utils/csv';
+import { apiService } from '@/lib/api-service';
 import type { FacultyBatchItem } from '@/data';
 
 export type { FacultyBatchItem };

@@ -26,6 +26,9 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get<number>('port') || 8000;
 
+  // Trust proxy for reverse proxies, cloud load balancers, and campus NAT networks (fixed hop count)
+  (app.getHttpAdapter().getInstance() as any).set('trust proxy', 1);
+
   // Support payload body limit for base64 avatars and documents
   app.use(json({ limit: '20mb' }));
   app.use(urlencoded({ extended: true, limit: '20mb' }));

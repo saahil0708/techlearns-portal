@@ -2,8 +2,8 @@
 # AZURE DEVOPS CI/CD PIPELINE (TechLearns / CodePlatform)
 # Automates:
 #   1. Validation: Linting, Vitest Server Tests & Next.js Typechecking/Build
-#   2. Infrastructure: Azure Bicep Deployment (PostgreSQL, Redis, ACA, ACR, Key Vault)
-#   3. Containerization: Docker Build & Push to ACR, update Container Apps
+#   2. Infrastructure: Azure Bicep Deployment (PostgreSQL, Service Bus, ACA, ACR, Key Vault)
+#   3. Containerization: Docker Build & Push to ACR (Backend, Frontend, Judge Worker)
 # ==============================================================================
 
 trigger:
@@ -123,12 +123,17 @@ stages:
                 docker push $ACR_LOGIN_SERVER/codeplatform-backend:$(Build.BuildId)
                 docker push $ACR_LOGIN_SERVER/codeplatform-backend:latest
                 
-                # 4. Build & Push Frontend Docker Image
+                # 4. Build & Push Judge Worker Docker Image
+                docker build --target judge-worker -t $ACR_LOGIN_SERVER/codeplatform-judge-worker:$(Build.BuildId) -t $ACR_LOGIN_SERVER/codeplatform-judge-worker:latest .
+                docker push $ACR_LOGIN_SERVER/codeplatform-judge-worker:$(Build.BuildId)
+                docker push $ACR_LOGIN_SERVER/codeplatform-judge-worker:latest
+
+                # 5. Build & Push Frontend Docker Image
                 docker build --target frontend -t $ACR_LOGIN_SERVER/codeplatform-frontend:$(Build.BuildId) -t $ACR_LOGIN_SERVER/codeplatform-frontend:latest .
                 docker push $ACR_LOGIN_SERVER/codeplatform-frontend:$(Build.BuildId)
                 docker push $ACR_LOGIN_SERVER/codeplatform-frontend:latest
                 
-                # 5. Update Azure Container Apps to use newly published image tags
+                # 6. Update Azure Container Apps to use newly published image tags
                 az containerapp update \
                   --name "ca-$(APP_PREFIX)-backend-$(ENVIRONMENT)" \
                   --resource-group $(RESOURCE_GROUP_NAME) \

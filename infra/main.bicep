@@ -27,6 +27,9 @@ param customStorageAccountName string = ''
 @description('Optional override for the PostgreSQL server name to preserve existing databases during incremental deployments')
 param customDbServerName string = ''
 
+@description('Optional override for the Azure Service Bus namespace to preserve existing resources during incremental deployments')
+param customServiceBusNamespaceName string = ''
+
 @description('JWT authentication secret key')
 @secure()
 param jwtSecret string
@@ -66,8 +69,8 @@ var keyVaultName = take('kv-${take(normalizedAppPrefix, 10)}-${cleanEnv}-${take(
 // 5. Azure Database for PostgreSQL: psql-<workload>-<env>-<unique> (3-63 chars, alphanumeric + hyphens)
 var dbServerName = !empty(customDbServerName) ? customDbServerName : take('psql-${normalizedAppPrefix}-${cleanEnv}-${uniqueSuffix}', 63)
 
-// 6. Azure Cache for Redis: redis-<workload>-<env>-<unique>
-var redisName = take('redis-${normalizedAppPrefix}-${cleanEnv}-${uniqueSuffix}', 63)
+// 6. Azure Service Bus: sb-<workload>-<env>-<unique>
+var serviceBusNamespaceName = !empty(customServiceBusNamespaceName) ? customServiceBusNamespaceName : take('sb-${normalizedAppPrefix}-${cleanEnv}-${uniqueSuffix}', 50)
 
 // 7. Log Analytics Workspace: log-<workload>-<env>-<unique>
 var logAnalyticsName = take('log-${normalizedAppPrefix}-${cleanEnv}-${uniqueSuffix}', 63)
@@ -172,24 +175,16 @@ module databaseModule 'modules/database.bicep' = {
 }
 
 // ============================================================================
-// 6. Azure Cache for Redis
+// 6. Azure Service Bus (Message Broker for Sandbox Code Evaluation Queue)
 // ============================================================================
-module redisModule 'modules/redis.bicep' = {
-  name: 'redisDeployment'
+module serviceBusModule 'modules/servicebus.bicep' = {
+  name: 'serviceBusDeployment'
   params: {
     location: location
-    redisName: redisName
-    redisSku: environment == 'prod' ? 'Standard' : 'Basic'
-    redisFamily: 'C'
-    redisCapacity: environment == 'prod' ? 1 : 0
+    serviceBusNamespaceName: serviceBusNamespaceName
+    skuName: 'Standard'
+    queueName: 'submissions'
   }
-}
-
-resource redisExisting 'Microsoft.Cache/redis@2023-08-01' existing = {
-  name: redisName
-  dependsOn: [
-    redisModule
-  ]
 }
 
 // ============================================================================
@@ -232,8 +227,8 @@ module backendAppModule 'modules/container-app.bicep' = {
         value: 'postgresql://${dbAdminUsername}:${uriComponent(dbAdminPassword)}@${databaseModule.outputs.postgresFqdn}:5432/codeplatform?schema=public&sslmode=require'
       }
       {
-        name: 'redis-password'
-        value: redisExisting.listKeys().primaryKey
+        name: 'service-bus-connection-string'
+        value: serviceBusModule.outputs.primaryConnectionString
       }
       {
         name: 'storage-connection-string'
@@ -258,19 +253,15 @@ module backendAppModule 'modules/container-app.bicep' = {
         secretRef: 'db-connection-string'
       }
       {
-        name: 'REDIS_HOST'
-        value: redisModule.outputs.redisHostName
+        name: 'AZURE_SERVICE_BUS_CONNECTION_STRING'
+        secretRef: 'service-bus-connection-string'
       }
       {
-        name: 'REDIS_PORT'
-        value: string(redisModule.outputs.redisSslPort)
+        name: 'AZURE_SERVICE_BUS_QUEUE_NAME'
+        value: 'submissions'
       }
       {
-        name: 'REDIS_PASSWORD'
-        secretRef: 'redis-password'
-      }
-      {
-        name: 'REDIS_TLS'
+        name: 'DISABLE_IN_PROCESS_JUDGE'
         value: 'true'
       }
       {
@@ -342,7 +333,8 @@ output blobContainerName string = blobContainerName
 output publicMediaContainerName string = publicMediaContainerName
 output keyVaultName string = keyVaultModule.outputs.keyVaultName
 output postgresFqdn string = databaseModule.outputs.postgresFqdn
-output redisHost string = redisModule.outputs.redisHostName
+output serviceBusNamespaceName string = serviceBusModule.outputs.serviceBusNamespaceName
+output serviceBusQueueName string = serviceBusModule.outputs.queueName
 output backendAppName string = backendAppName
 output frontendAppName string = frontendAppName
 output backendApiUrl string = backendAppModule.outputs.url

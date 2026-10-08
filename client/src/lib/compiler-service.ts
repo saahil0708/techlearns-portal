@@ -155,6 +155,129 @@ try {
     return code + jsHarness;
   }
 
+  if (lang === 'java') {
+    const hasMain = /public\s+static\s+void\s+main\s*\(/m.test(code);
+
+    if (hasMain) {
+      // If a class containing main() exists but is not named Main, normalize it to class Main
+      if (!/\bclass\s+Main\b/.test(code)) {
+        return code.replace(
+          /\b(?:public\s+)?class\s+([A-Za-z0-9_]+)((?:(?!class\b)[\s\S])*?public\s+static\s+void\s+main\s*\()/m,
+          'class Main$2',
+        );
+      }
+      return code;
+    }
+
+    // LeetCode-style solution without main method: inject driver harness
+    const javaHarness = `
+
+// --- Auto-Injected Test Harness ---
+class Main {
+    public static void main(String[] args) {
+        try {
+            java.util.Scanner sc = new java.util.Scanner(System.in);
+            if (!sc.hasNext()) return;
+            java.util.List<Long> nums = new java.util.ArrayList<>();
+            while (sc.hasNextLong()) {
+                nums.add(sc.nextLong());
+            }
+            if (nums.isEmpty()) return;
+
+            long[] arr;
+            if (nums.size() > 1 && nums.get(0) == nums.size() - 1) {
+                arr = new long[nums.size() - 1];
+                for (int i = 1; i < nums.size(); i++) arr[i - 1] = nums.get(i);
+            } else {
+                arr = new long[nums.size()];
+                for (int i = 0; i < nums.size(); i++) arr[i] = nums.get(i);
+            }
+
+            Solution solver = new Solution();
+            java.lang.reflect.Method[] methods = Solution.class.getDeclaredMethods();
+            int[] intArr = new int[arr.length];
+            for (int i = 0; i < arr.length; i++) intArr[i] = (int) arr[i];
+
+            for (java.lang.reflect.Method m : methods) {
+                if (m.getName().startsWith("_") || java.lang.reflect.Modifier.isStatic(m.getModifiers())) continue;
+                m.setAccessible(true);
+                Class<?>[] pTypes = m.getParameterTypes();
+                Object res = null;
+                boolean matched = false;
+
+                if (pTypes.length == 1) {
+                    if (pTypes[0].equals(int[].class)) {
+                        res = m.invoke(solver, (Object) intArr);
+                        matched = true;
+                    } else if (pTypes[0].equals(long[].class)) {
+                        res = m.invoke(solver, (Object) arr);
+                        matched = true;
+                    } else if (pTypes[0].equals(int.class) && intArr.length > 0) {
+                        res = m.invoke(solver, intArr[0]);
+                        matched = true;
+                    } else if (pTypes[0].equals(long.class) && arr.length > 0) {
+                        res = m.invoke(solver, arr[0]);
+                        matched = true;
+                    }
+                } else if (pTypes.length == 2) {
+                    if (pTypes[0].equals(int[].class) && pTypes[1].equals(int.class) && intArr.length > 1) {
+                        int target = intArr[intArr.length - 1];
+                        int[] prefix = java.util.Arrays.copyOf(intArr, intArr.length - 1);
+                        res = m.invoke(solver, prefix, target);
+                        matched = true;
+                    } else if (pTypes[0].equals(int.class) && pTypes[1].equals(int[].class) && intArr.length > 1) {
+                        int target = intArr[0];
+                        int[] suffix = java.util.Arrays.copyOfRange(intArr, 1, intArr.length);
+                        res = m.invoke(solver, target, suffix);
+                        matched = true;
+                    }
+                }
+
+                if (matched) {
+                    if (res != null) {
+                        if (res instanceof long[]) {
+                            long[] a = (long[]) res;
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < a.length; i++) {
+                                if (i > 0) sb.append(' ');
+                                sb.append(a[i]);
+                            }
+                            System.out.println(sb.toString());
+                        } else if (res instanceof int[]) {
+                            int[] a = (int[]) res;
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < a.length; i++) {
+                                if (i > 0) sb.append(' ');
+                                sb.append(a[i]);
+                            }
+                            System.out.println(sb.toString());
+                        } else if (res instanceof Object[]) {
+                            Object[] a = (Object[]) res;
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < a.length; i++) {
+                                if (i > 0) sb.append(' ');
+                                sb.append(a[i]);
+                            }
+                            System.out.println(sb.toString());
+                        } else {
+                            System.out.println(res);
+                        }
+                    }
+                    break;
+                }
+            }
+        } catch (Throwable e) {
+            e.printStackTrace(System.err);
+            System.exit(1);
+        }
+    }
+}
+`;
+    // Strip public keyword from user's Solution class so it can co-exist with Main in Main.java
+    const normalizedCode = code.replace(/\bpublic\s+class\s+([A-Za-z0-9_]+)/g, 'class $1');
+    return normalizedCode + javaHarness;
+  }
+
   return code;
 }
 

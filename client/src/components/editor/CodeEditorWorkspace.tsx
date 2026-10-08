@@ -112,7 +112,7 @@ print("Hello World")`,
 import java.lang.*;
 import java.io.*;
 
-class CodePlatform {
+public class Solution {
     public static void main (String[] args) throws java.lang.Exception {
         // cook your dish here
         System.out.println("Hello World");
@@ -208,7 +208,7 @@ public:
   if (lang === 'java') {
     return `import java.util.*;
 
-class Solution {
+public class Solution {
     public long solve(long[] A) {
         // Write your code here
         return 0;

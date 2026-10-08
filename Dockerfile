@@ -2,6 +2,7 @@
 # UNIFIED DOCKERFILE (CodePlatform Server & Client in a Single File)
 # Targets:
 #   - docker build --target backend -t codeplatform-backend .
+#   - docker build --target judge-worker -t codeplatform-judge-worker .
 #   - docker build --target frontend -t codeplatform-frontend .
 # ==============================================================================
 
@@ -55,6 +56,22 @@ COPY --from=backend-builder --chown=nestuser:nestgroup /app/server/package.json 
 USER nestuser
 EXPOSE 8000
 CMD ["node", "dist/main"]
+
+# A4. Dedicated Judge Worker Production Runner Target
+FROM node:22-alpine AS judge-worker
+WORKDIR /app/server
+ENV NODE_ENV=production
+
+# Install Docker CLI so the worker can invoke `docker run` on the host daemon
+RUN apk add --no-cache docker-cli
+
+COPY --from=backend-deps /app/node_modules /app/node_modules
+COPY --from=backend-deps /app/server/node_modules ./node_modules
+COPY --from=backend-deps /app/server/prisma ./prisma
+COPY --from=backend-builder /app/server/dist ./dist
+COPY --from=backend-builder /app/server/package.json ./package.json
+
+CMD ["node", "dist/judge-worker.main"]
 
 # ==============================================================================
 # SECTION B: NEXT.JS FRONTEND (CLIENT)

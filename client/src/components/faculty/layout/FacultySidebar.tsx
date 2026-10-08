@@ -23,6 +23,7 @@ import LeaderboardRoundedIcon from '@mui/icons-material/LeaderboardRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import AssignmentIndRoundedIcon from '@mui/icons-material/AssignmentIndRounded';
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logoutUser } from '@/store/slices/authSlice';
@@ -135,6 +136,7 @@ export default function FacultySidebar() {
       ? [{ label: 'Department Faculty & Mentors', icon: <AssignmentIndRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=faculty' }]
       : []),
     { label: 'Assigned Cohorts & Batches', icon: <SchoolRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=batches' },
+    { label: 'Skillos Proctored Tests', icon: <ShieldRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=skillos' },
     { label: 'College Students Roster', icon: <GroupRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=students' },
     { label: 'Curriculum & Courses', icon: <MenuBookRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=courses' },
     { label: 'Lab Challenges & Question Bank', icon: <CodeRoundedIcon sx={{ fontSize: 21 }} />, path: '/faculty/profile?tab=problems' },
@@ -149,6 +151,9 @@ export default function FacultySidebar() {
     if (itemPath === '/faculty/profile?tab=batches') {
       return pathname.startsWith('/faculty') && currentTab === 'batches';
     }
+    if (itemPath === '/faculty/profile?tab=skillos') {
+      return pathname.startsWith('/faculty') && currentTab === 'skillos';
+    }
     if (itemPath === '/faculty/profile?tab=students') {
       return pathname.startsWith('/faculty') && currentTab === 'students';
     }
@@ -162,6 +167,7 @@ export default function FacultySidebar() {
       return (
         pathname.startsWith('/faculty') &&
         currentTab !== 'batches' &&
+        currentTab !== 'skillos' &&
         currentTab !== 'students' &&
         currentTab !== 'courses' &&
         currentTab !== 'problems'

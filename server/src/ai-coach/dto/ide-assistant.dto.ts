@@ -25,6 +25,39 @@ export class ExplainProblemDto {
   tags?: string[];
 }
 
+export class AnalyzeComplexityDto {
+  @ApiProperty({ description: 'Problem title' })
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @ApiProperty({ description: 'Problem statement in markdown/HTML' })
+  @IsString()
+  @IsNotEmpty()
+  statement: string;
+
+  @ApiPropertyOptional({ description: 'Problem difficulty' })
+  @IsString()
+  @IsOptional()
+  difficulty?: string;
+
+  @ApiPropertyOptional({ description: 'Problem tags', type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  tags?: string[];
+
+  @ApiPropertyOptional({ description: 'Current code in editor' })
+  @IsString()
+  @IsOptional()
+  currentCode?: string;
+
+  @ApiPropertyOptional({ description: 'Programming language' })
+  @IsString()
+  @IsOptional()
+  language?: string;
+}
+
 export class ProgressiveHintDto {
   @ApiProperty({ description: 'Problem title' })
   @IsString()

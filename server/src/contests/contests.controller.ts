@@ -105,6 +105,7 @@ export class ContestsController {
     @Query('search') search?: string,
     @Query('status') status?: ContestStatus,
     @Query('institutionId') institutionId?: string,
+    @Query('batchId') batchId?: string,
     @CurrentUser() user?: CurrentUserPayload,
   ) {
     return this.contestsService.findPaginated(
@@ -116,6 +117,7 @@ export class ContestsController {
       status,
       institutionId,
       user,
+      batchId,
     );
   }
 

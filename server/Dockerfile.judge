@@ -1,0 +1,39 @@
+# Stage 1: Build
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+RUN npm install -g pnpm
+
+COPY package.json ./
+COPY prisma ./prisma/
+
+RUN pnpm install
+RUN pnpm prisma:generate
+
+COPY tsconfig*.json nest-cli.json ./
+COPY src ./src/
+
+RUN pnpm build
+
+# Stage 2: Production Judge Worker Runner (with Docker CLI)
+FROM node:22-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Install Docker CLI so the worker can invoke `docker run` on the host daemon
+RUN apk add --no-cache docker-cli
+
+RUN npm install -g pnpm
+
+COPY package.json ./
+COPY prisma ./prisma/
+
+RUN pnpm install --prod
+RUN pnpm prisma:generate
+
+COPY --from=builder /app/dist ./dist
+
+CMD ["node", "dist/judge-worker.main.js"]

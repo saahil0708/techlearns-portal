@@ -1,13 +1,13 @@
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { createObserveModule } from '@nestjs/observe';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AppCacheModule } from './common/cache/app-cache.module.js';
+import { JudgeQueueModule } from './common/queue/judge-queue.module.js';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { AuthModule } from './auth/auth.module.js';
@@ -74,24 +74,13 @@ const dynamicObserveImports = hasValidObserveKeys
       verboseMemoryLeak: true,
     }),
     AppCacheModule,
+    JudgeQueueModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60_000,
-        limit: 100,
+        limit: 1000,
       },
     ]),
-    BullModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        connection: {
-          host: configService.get<string>('redis.host', 'localhost'),
-          port: configService.get<number>('redis.port', 6379),
-          password: configService.get<string>('redis.password') || undefined,
-          maxRetriesPerRequest: null,
-          enableReadyCheck: false,
-        },
-      }),
-    }),
     ...dynamicObserveImports,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,

@@ -5,6 +5,8 @@ export interface BatchItem {
   studentsCount: number;
   maxCapacity: number;
   facultyLead: string;
+  faculty?: Array<{ id?: string; userId?: string; user?: { id: string; name: string; email?: string; department?: string; avatarUrl?: string }; role?: string }>;
+  facultyIds?: string[];
   coursesAssigned: number;
   year: string;
   status: 'Active' | 'Upcoming' | 'Completed';

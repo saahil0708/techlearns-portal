@@ -52,13 +52,14 @@ interface CreateProblemModalProps {
 }
 
 const CATEGORIES: ProblemCategory[] = [
-  'Dynamic Programming',
-  'Graph Theory & BFS/DFS',
-  'Trees & Binary Search Trees',
+  'Basic Programming & Loops',
   'Arrays & Two Pointers',
   'Strings & Tries',
   'Math & Number Theory',
   'Greedy & Heuristics',
+  'Trees & Binary Search Trees',
+  'Graph Theory & BFS/DFS',
+  'Dynamic Programming',
 ];
 
 const DIFFICULTIES: ProblemDifficulty[] = ['Easy', 'Medium', 'Hard'];
@@ -70,6 +71,27 @@ interface LocalTestCase {
   explanation?: string;
   isHidden: boolean;
 }
+
+const DEFAULT_FORM: NewProblemData = {
+  title: '',
+  slug: '',
+  code: '',
+  category: 'Basic Programming & Loops',
+  difficulty: 'Easy',
+  status: 'Published',
+  points: 100,
+  timeLimitMs: 1000,
+  memoryLimitMb: 256,
+  testCasesCount: 20,
+  tags: ['Basic Programming', 'Loops', 'Algorithms'],
+  statementMarkdown: '',
+  sampleInput: '',
+  sampleOutput: '',
+  sampleExplanation: '',
+  inputFormat: '',
+  outputFormat: '',
+  constraints: '',
+};
 
 export default function CreateProblemModal({
   open,
@@ -84,26 +106,7 @@ export default function CreateProblemModal({
   const [aiPrompt, setAiPrompt] = useState('');
   const [showAiBar, setShowAiBar] = useState(true);
 
-  const [formData, setFormData] = useState<NewProblemData>({
-    title: '',
-    slug: '',
-    code: '',
-    category: 'Dynamic Programming',
-    difficulty: 'Medium',
-    status: 'Published',
-    points: 200,
-    timeLimitMs: 1000,
-    memoryLimitMb: 256,
-    testCasesCount: 20,
-    tags: ['Dynamic Programming', 'Algorithms'],
-    statementMarkdown: '',
-    sampleInput: '',
-    sampleOutput: '',
-    sampleExplanation: '',
-    inputFormat: '',
-    outputFormat: '',
-    constraints: '',
-  });
+  const [formData, setFormData] = useState<NewProblemData>(DEFAULT_FORM);
 
   const [testCaseTab, setTestCaseTab] = useState<'sample' | 'hidden'>('sample');
   const [institutions, setInstitutions] = useState<Array<{ id: string; name: string }>>([]);
@@ -129,7 +132,7 @@ export default function CreateProblemModal({
     },
   ]);
 
-  const [tagInput, setTagInput] = useState('Dynamic Programming, Algorithms');
+  const [tagInput, setTagInput] = useState(DEFAULT_FORM.tags.join(', '));
 
   useEffect(() => {
     if (open) {
@@ -225,27 +228,8 @@ export default function CreateProblemModal({
   }, [courses, formData.institutionId]);
 
   const resetForm = () => {
-    setFormData({
-      title: '',
-      slug: '',
-      code: '',
-      category: 'Dynamic Programming',
-      difficulty: 'Medium',
-      status: 'Published',
-      points: 100,
-      timeLimitMs: 1000,
-      memoryLimitMb: 256,
-      testCasesCount: 20,
-      tags: ['Dynamic Programming', 'Algorithms'],
-      statementMarkdown: '',
-      sampleInput: '',
-      sampleOutput: '',
-      sampleExplanation: '',
-      inputFormat: '',
-      outputFormat: '',
-      constraints: '',
-    });
-    setTagInput('Dynamic Programming, Algorithms');
+    setFormData(DEFAULT_FORM);
+    setTagInput(DEFAULT_FORM.tags.join(', '));
     setAiPrompt('');
     setTestCaseTab('sample');
     setPublicTestCases([
@@ -330,11 +314,12 @@ export default function CreateProblemModal({
 
     setAiGenerating(true);
     try {
+      const hasCustomPrompt = Boolean(aiPrompt.trim());
       const res = await apiService.generateProblemAI({
-        prompt: aiPrompt || formData.title,
-        title: formData.title,
-        category: formData.category,
-        difficulty: formData.difficulty,
+        prompt: aiPrompt.trim() || formData.title,
+        title: hasCustomPrompt ? undefined : formData.title,
+        category: hasCustomPrompt ? undefined : formData.category,
+        difficulty: hasCustomPrompt ? undefined : formData.difficulty,
         taskType: 'full_problem',
       });
 
@@ -343,22 +328,67 @@ export default function CreateProblemModal({
         throw new Error('No problem data returned from AI service');
       }
 
-      setFormData((prev) => ({
-        ...prev,
-        title: generated.title || prev.title,
-        slug: generated.slug || prev.slug || (generated.title ? generated.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : prev.slug),
-        code: generated.code || prev.code || (generated.title ? generated.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : prev.code),
-        category: (generated.category as ProblemCategory) || prev.category,
-        difficulty: (generated.difficulty as ProblemDifficulty) || prev.difficulty,
-        statementMarkdown: generated.statementHtml || generated.statementMarkdown || prev.statementMarkdown,
-        inputFormat: generated.inputFormat || prev.inputFormat,
-        outputFormat: generated.outputFormat || prev.outputFormat,
-        constraints: generated.constraints || prev.constraints,
-        sampleInput: generated.sampleInput || prev.sampleInput,
-        sampleOutput: generated.sampleOutput || prev.sampleOutput,
-        sampleExplanation: generated.sampleExplanation || prev.sampleExplanation,
-        tags: Array.isArray(generated.tags) && generated.tags.length > 0 ? generated.tags : prev.tags,
-      }));
+      setFormData((prev) => {
+        const rawDiff = generated.difficulty || '';
+        const diff: ProblemDifficulty = rawDiff === 'Easy' || rawDiff === 'Hard' ? rawDiff : (rawDiff === 'Medium' ? 'Medium' : prev.difficulty || 'Easy');
+        const pts = typeof generated.points === 'number' ? generated.points : (diff === 'Easy' ? 100 : diff === 'Hard' ? 350 : 200);
+        const timeLimit = typeof generated.timeLimitMs === 'number' ? generated.timeLimitMs : (prev.timeLimitMs || 1000);
+        const memoryLimit = typeof generated.memoryLimitMb === 'number' ? generated.memoryLimitMb : (prev.memoryLimitMb || 256);
+
+        // Intelligent category matching
+        let mappedCat: ProblemCategory = prev.category;
+        if (typeof generated.category === 'string' && generated.category.trim()) {
+          const genCatLower = generated.category.trim().toLowerCase();
+          const matched = CATEGORIES.find((c) => {
+            const cLower = c.toLowerCase();
+            return cLower === genCatLower ||
+              genCatLower.includes(cLower) ||
+              (genCatLower.length >= 4 && cLower.includes(genCatLower));
+          });
+          if (matched) {
+            mappedCat = matched;
+          } else if (genCatLower.includes('loop') || genCatLower.includes('basic')) {
+            mappedCat = 'Basic Programming & Loops';
+          } else if (genCatLower.includes('array')) {
+            mappedCat = 'Arrays & Two Pointers';
+          } else if (genCatLower.includes('tree')) {
+            mappedCat = 'Trees & Binary Search Trees';
+          } else if (genCatLower.includes('graph')) {
+            mappedCat = 'Graph Theory & BFS/DFS';
+          } else if (genCatLower.includes('dp') || genCatLower.includes('dynamic')) {
+            mappedCat = 'Dynamic Programming';
+          } else if (genCatLower.includes('string')) {
+            mappedCat = 'Strings & Tries';
+          } else if (genCatLower.includes('math')) {
+            mappedCat = 'Math & Number Theory';
+          } else if (genCatLower.includes('greedy')) {
+            mappedCat = 'Greedy & Heuristics';
+          }
+        }
+
+        const derivedSlug = generated.slug || (generated.title ? generated.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : '');
+        const derivedCode = generated.code || (generated.title ? generated.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : '');
+
+        return {
+          ...prev,
+          title: generated.title || prev.title,
+          slug: prev.slug || derivedSlug,
+          code: prev.code || derivedCode,
+          category: mappedCat,
+          difficulty: diff,
+          points: pts,
+          timeLimitMs: timeLimit,
+          memoryLimitMb: memoryLimit,
+          statementMarkdown: generated.statementHtml || generated.statementMarkdown || prev.statementMarkdown,
+          inputFormat: generated.inputFormat || prev.inputFormat,
+          outputFormat: generated.outputFormat || prev.outputFormat,
+          constraints: generated.constraints || prev.constraints,
+          sampleInput: generated.sampleInput || prev.sampleInput,
+          sampleOutput: generated.sampleOutput || prev.sampleOutput,
+          sampleExplanation: generated.sampleExplanation || prev.sampleExplanation,
+          tags: Array.isArray(generated.tags) && generated.tags.length > 0 ? generated.tags : prev.tags,
+        };
+      });
 
       if (Array.isArray(generated.tags) && generated.tags.length > 0) {
         setTagInput(generated.tags.join(', '));
@@ -836,7 +866,7 @@ export default function CreateProblemModal({
               {/* Prompt Input */}
               <TextField
                 size="small"
-                placeholder="e.g. Dynamic Programming on 2D Grid with Obstacles and K teleports..."
+                placeholder="e.g. Amazon fulfillment package sorting, Uber dynamic surge driver matching, Netflix video chunk caching..."
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
                 disabled={aiGenerating}

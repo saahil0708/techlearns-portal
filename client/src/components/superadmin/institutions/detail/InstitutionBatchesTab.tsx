@@ -111,7 +111,7 @@ export default function InstitutionBatchesTab({
             <TableHead sx={{ bgcolor: '#F8FAFC' }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem', py: 1.5 }}>BATCH NAME & CODE</TableCell>
-                <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem' }}>FACULTY LEAD</TableCell>
+                <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem' }}>FACULTY MENTORS</TableCell>
                 <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem' }}>CAPACITY & ENROLLED</TableCell>
                 <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem' }}>COURSES</TableCell>
                 <TableCell sx={{ fontWeight: 800, color: '#475569', fontSize: '0.8rem' }}>AVG ACCURACY</TableCell>
@@ -133,7 +133,38 @@ export default function InstitutionBatchesTab({
                       </Typography>
                     </TableCell>
                     <TableCell sx={{ color: '#475569', fontSize: '0.86rem', fontWeight: 600 }}>
-                      {b.facultyLead}
+                      {b.faculty && b.faculty.length > 0 ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap', maxWidth: 220 }}>
+                          {b.faculty.slice(0, 2).map((f: any, fIdx: number) => (
+                            <Chip
+                              key={f.id || f.user?.id || fIdx}
+                              label={f.user?.name || 'Faculty'}
+                              size="small"
+                              sx={{
+                                height: 22,
+                                fontSize: '0.72rem',
+                                fontWeight: 600,
+                                bgcolor: '#EEF2FF',
+                                color: '#4F46E5',
+                                border: '1px solid #C7D2FE',
+                              }}
+                            />
+                          ))}
+                          {b.faculty.length > 2 && (
+                            <Tooltip title={b.faculty.map((f: any) => f.user?.name).filter(Boolean).join(', ')}>
+                              <Chip
+                                label={`+${b.faculty.length - 2} more`}
+                                size="small"
+                                sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#F1F5F9', color: '#475569' }}
+                              />
+                            </Tooltip>
+                          )}
+                        </Box>
+                      ) : (
+                        <Typography sx={{ color: '#94A3B8', fontSize: '0.82rem', fontStyle: 'italic' }}>
+                          {b.facultyLead || 'Unassigned'}
+                        </Typography>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 140 }}>

@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
-import { Role, SubmissionVerdict } from '@prisma/client';
+import { Role, SubmissionStatus, SubmissionVerdict } from '@prisma/client';
 import { AppCacheService } from '../common/cache/app-cache.service.js';
 import { CurrentUserPayload } from '../common/types/current-user.interface.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -374,6 +374,15 @@ export class ComparativeLeaderboardService {
 
       const probScore = row.problemScores[sub.problemId];
       if (probScore.solved) continue; // Already solved
+
+      // Ignore in-flight submissions (QUEUED/PROCESSING) or system errors
+      if (
+        sub.status === SubmissionStatus.QUEUED ||
+        sub.status === SubmissionStatus.PROCESSING ||
+        sub.verdict === SubmissionVerdict.SYSTEM_ERROR
+      ) {
+        continue;
+      }
 
       probScore.attempts += 1;
       if (sub.verdict === SubmissionVerdict.ACCEPTED) {

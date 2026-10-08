@@ -2,7 +2,7 @@
 
 > **Document Version**: `1.2.0`  
 > **Status**: Production Architecture Baseline  
-> **Stack**: NestJS 12 · Next.js 19 (React 19) · PostgreSQL · Prisma 6 · Redis · BullMQ · Docker Sandbox  
+> **Stack**: NestJS 12 · Next.js 19 (React 19) · PostgreSQL · Prisma 6 · Azure Service Bus · AppCacheService L1 · Docker Sandbox (JudgeBox)  
 
 ---
 
@@ -18,7 +18,7 @@ mindmap
       Interactive Leaves as Client Components
       Zero Hydration Mismatch
     🛡️ Zero-Trust Sandbox Security
-      Hardened Docker Containers
+      Hardened Docker Containers (JudgeBox)
       Read-Only Filesystem & cgroups
       Network Disabled & seccomp
     🏛️ Multi-Tenant Isolation
@@ -26,9 +26,9 @@ mindmap
       Role-Based Guard Hierarchy
       Audit Logging Outbox
     🔄 Event-Driven Queueing
-      BullMQ Submissions Processing
-      Real-Time WebSocket Feedback
-      Exponential Backoff Retries
+      Azure Service Bus Queueing
+      Real-Time SSE Feedback
+      Decoupled Worker Architecture
     📊 Strict Structured Tables
       Clean List Tables with Pagination
       Zero Card Grid Data Presentation
@@ -58,25 +58,26 @@ flowchart TB
         ContM["🏆 Contests & Arena Module"]
         PotdM["📅 POTD & Daily Streak Module"]
         PlagM["🛡️ Plagiarism & Code Similarity Engine"]
-        JudgeWorker["⚙️ BullMQ Judge Worker Pool"]
+        CacheM["⚡ In-Memory AppCacheService (L1)"]
         
-        AuthM --- InstM --- CourseM --- ProbM --- SubmM --- ContM --- PotdM --- PlagM
+        AuthM --- InstM --- CourseM --- ProbM --- SubmM --- ContM --- PotdM --- PlagM --- CacheM
     end
 
     subgraph DATA_TIER ["🗄️ Persistence & Messaging Tier"]
         Postgres[("🐘 PostgreSQL 16\n(Prisma ORM Managed)")]
-        RedisStore[("🔴 Redis 7+\n(Job Queues & Session Cache)")]
+        ServiceBus[("☁️ Azure Service Bus\n(Submissions Queue)")]
     end
 
-    subgraph JUDGE_SANDBOX ["🔒 Docker Isolated Execution Engine"]
-        SandboxContainer["🐳 Polyglot Docker Sandbox\n(GCC 13 / OpenJDK 21 / Python 3.12 / Node 20)"]
+    subgraph JUDGE_SANDBOX ["🔒 Dedicated JudgeBox Worker Microservice"]
+        JudgeWorker["⚙️ JudgeWorkerService Daemon\n(judgebox/)"]
+        SandboxContainer["🐳 Polyglot Docker Sandbox\n(GCC 13 / OpenJDK 21 / Python 3.12 / Node 22)"]
+        JudgeWorker -->|Spawn Sandbox & Stream I/O| SandboxContainer
     end
 
-    ClientLeaves <-->|REST API & GraphQL & WebSocket| GATEWAY_API
+    ClientLeaves <-->|REST API & GraphQL & SSE| GATEWAY_API
     GATEWAY_API -->|Type-safe Queries & Mutations| Postgres
-    GATEWAY_API -->|Enqueue Submissions & Events| RedisStore
-    RedisStore -->|Dequeue Submissions| JudgeWorker
-    JudgeWorker -->|Spawn Sandbox & Stream I/O| SandboxContainer
+    GATEWAY_API -->|Enqueue Submissions| ServiceBus
+    ServiceBus -->|Pull Submissions| JudgeWorker
     SandboxContainer -->|Return Verdict & Memory/Time| JudgeWorker
     JudgeWorker -->|Persist Verdict & Leaderboard Score| Postgres
 ```
@@ -96,9 +97,9 @@ The backend is built as a modular, extensible, and type-safe NestJS application 
 | **Batches** | [`server/src/batches/`](../server/src/batches/) | `BatchesController`, `BatchesService` | Student cohort creation, batch rosters, bulk CSV invitation ingestion, student roll numbers. |
 | **Courses** | [`server/src/courses/`](../server/src/courses/) | `CoursesController`, `CoursesService`, `ModulesService` | Course catalog, hierarchical modules, markdown lessons, student enrollment, and granular progress tracking. |
 | **Problems** | [`server/src/problems/`](../server/src/problems/) | `ProblemsController`, `ProblemsService` | Problem authoring, markdown statements, numerical ratings, public/hidden test case storage, subtask allocations. |
-| **Submissions** | [`server/src/submissions/`](../server/src/submissions/) | `SubmissionsController`, `SubmissionsService` | Code submission intake, validation, BullMQ job creation, submission status history. |
-| **Judge** | [`server/src/judge/`](../server/src/judge/) | `JudgeProcessor`, `DockerSandboxService` | BullMQ worker consuming submission jobs, spawning Docker sandboxes, enforcing limits, compiling/executing code, evaluating subtask verdicts. |
-| **Contests** | [`server/src/contests/`](../server/src/contests/) | `ContestsController`, `ContestsService`, `LeaderboardService` | Competitive programming contests, problem mappings, contest timers, real-time START256 matrix leaderboards. |
+| **Submissions** | [`server/src/submissions/`](../server/src/submissions/) | `SubmissionsController`, `SubmissionsService`, `JudgeQueueService` | Code submission intake, validation, Azure Service Bus job dispatching, submission status history. |
+| **Judge Worker** | [`server/src/judge/`](../server/src/judge/) | `JudgeWorkerService`, `JudgeService` | Standalone worker daemon consuming queue jobs, spawning Docker sandboxes, enforcing limits, compiling/executing code, evaluating subtask verdicts. |
+| **Contests** | [`server/src/contests/`](../server/src/contests/) | `ContestsController`, `ContestsService`, `ComparativeLeaderboardService` | Competitive programming contests, problem mappings, contest timers, real-time START256 matrix leaderboards. |
 | **Users** | [`server/src/users/`](../server/src/users/) | `UsersController`, `UsersService` | User identity management, competitive profile stats, 365-day activity heatmaps, contest rating history. |
 
 ---
@@ -174,18 +175,18 @@ sequenceDiagram
     actor Student as 🧑‍🎓 Student
     participant IDE as 💻 Monaco Workspace
     participant API as 🚀 Submissions API
-    participant Redis as 🔴 Redis (BullMQ)
-    participant Worker as ⚙️ Judge Worker
+    participant SB as ☁️ Azure Service Bus
+    participant Worker as ⚙️ JudgeBox Worker
     participant Docker as 🐳 Docker Sandbox
     participant DB as 🐘 PostgreSQL
 
     Student->>IDE: Click 'Submit Solution'
     IDE->>API: POST /submissions {problemId, language, sourceCode}
-    API->>DB: Create Submission (Status: QUEUED)
-    API->>Redis: Add Job to 'submission-queue'
-    API-->>IDE: Return Submission ID
+    API->>DB: Create Submission (Status: PENDING)
+    API->>SB: Enqueue message to 'submissions'
+    API-->>IDE: Return Submission ID (202 Accepted)
     
-    Worker->>Redis: Dequeue Submission Job
+    Worker->>SB: Pull Submission Job
     Worker->>DB: Update Submission (Status: PROCESSING)
     
     Worker->>Docker: Spawn Container (cgroups: 256MB, CPU: 100%, net: none)
@@ -204,7 +205,7 @@ sequenceDiagram
     opt Contest Mode
         Worker->>DB: Update Leaderboard Score & Penalty Time
     end
-    Worker-->>IDE: Push Real-Time Verdict via WebSocket
+    Worker-->>IDE: Stream Real-Time Verdict via SSE / Live Stream
 ```
 
 ### 5.1 Sandbox Isolation Specifications

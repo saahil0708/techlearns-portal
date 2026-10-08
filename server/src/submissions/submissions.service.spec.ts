@@ -1,12 +1,14 @@
 import { NotFoundException } from '@nestjs/common';
 import { ProgrammingLanguage, SubmissionStatus } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { JudgeQueueService } from '../common/queue/judge-queue.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { SubmissionsService } from './submissions.service.js';
 
 describe('SubmissionsService', () => {
   let service: SubmissionsService;
   let prisma: PrismaService;
+  let judgeQueueService: JudgeQueueService;
 
   const mockSubmission = {
     id: 'sub-1',
@@ -42,11 +44,11 @@ describe('SubmissionsService', () => {
       },
     } as unknown as PrismaService;
 
-    const mockQueue = {
-      add: vi.fn().mockResolvedValue({ id: 'job-1' }),
-    } as any;
+    judgeQueueService = {
+      sendSubmissionJob: vi.fn().mockResolvedValue(undefined),
+    } as unknown as JudgeQueueService;
 
-    service = new SubmissionsService(prisma, mockQueue);
+    service = new SubmissionsService(prisma, judgeQueueService);
   });
 
   it('should be defined', () => {
@@ -73,6 +75,7 @@ describe('SubmissionsService', () => {
 
       expect(result).toEqual(mockSubmission);
       expect(prisma.submission.create).toHaveBeenCalled();
+      expect(judgeQueueService.sendSubmissionJob).toHaveBeenCalledWith('sub-1');
     });
 
     it('should throw NotFoundException if problem does not exist', async () => {

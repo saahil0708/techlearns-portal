@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # 1. Database Microservice
+  postgres:
+    image: postgres:16-alpine
+    container_name: codeplatform-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: codeplatform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. Core API Microservice (Azure Container Apps Target)
+  api-service:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: backend
+    container_name: codeplatform-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      NODE_ENV: development
+      PORT: 8000
+      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/codeplatform?schema=public"
+      JWT_SECRET: "development-secret-key-replace-in-production-min-32-chars"
+      AZURE_SERVICE_BUS_CONNECTION_STRING: "${AZURE_SERVICE_BUS_CONNECTION_STRING:-}"
+      AZURE_SERVICE_BUS_QUEUE_NAME: "${AZURE_SERVICE_BUS_QUEUE_NAME:-submissions}"
+    depends_on:
+      - postgres
+
+  # 3. Dedicated Judge Worker Microservice (VM Target)
+  judge-worker:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: judge-worker
+    container_name: codeplatform-judge-worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/codeplatform?schema=public"
+      AZURE_SERVICE_BUS_CONNECTION_STRING: "${AZURE_SERVICE_BUS_CONNECTION_STRING:-}"
+      AZURE_SERVICE_BUS_QUEUE_NAME: "${AZURE_SERVICE_BUS_QUEUE_NAME:-submissions}"
+      MAX_CONCURRENT_JOBS: 5
+      JUDGE_IMAGE: "python:3.11-alpine"
+    volumes:
+      # Mount host Docker socket so worker can spawn sandboxes
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:

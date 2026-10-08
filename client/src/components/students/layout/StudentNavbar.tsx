@@ -88,9 +88,14 @@ export default function StudentNavbar({
   const pathname = usePathname();
   const dispatch = useAppDispatch();
 
+  const [isMounted, setIsMounted] = useState(false);
   const user = useAppSelector((state) => state.auth.user);
   const [activeUser, setActiveUser] = useState(user);
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const effectiveStreak =
     typeof streakDays === 'number' && streakDays > 0
@@ -318,7 +323,7 @@ export default function StudentNavbar({
             </IconButton>
 
             {/* Greeting: Hello, <User Name> */}
-            {displayName ? (
+            {isMounted && displayName ? (
               <Typography
                 sx={{
                   display: { xs: 'none', sm: 'block' },
@@ -461,7 +466,7 @@ export default function StudentNavbar({
           {/* ========================================================================= */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {/* Daily Practice Streak Badge */}
-            {effectiveStreak > 0 && (
+            {isMounted && effectiveStreak > 0 && (
               <Tooltip title={`${effectiveStreak} Days Daily Practice Streak`}>
                 <Chip
                   icon={<LocalFireDepartmentRoundedIcon sx={{ fontSize: 16, color: '#EA580C !important' }} />}
@@ -494,7 +499,7 @@ export default function StudentNavbar({
                 }}
               >
                 <Badge
-                  badgeContent={unreadCount}
+                  badgeContent={isMounted ? unreadCount : 0}
                   color="error"
                   max={99}
                   sx={{
@@ -562,7 +567,7 @@ export default function StudentNavbar({
                       boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
                     }}
                   >
-                    {initials ? initials : <PersonRoundedIcon sx={{ fontSize: 18 }} />}
+                    {isMounted && initials ? initials : <PersonRoundedIcon sx={{ fontSize: 18 }} />}
                   </Avatar>
 
                   {/* Online/Rating Indicator Pill */}

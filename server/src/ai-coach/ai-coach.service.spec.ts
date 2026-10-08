@@ -18,6 +18,7 @@ describe('AICoachService', () => {
 
   const mockAIProviderService = {
     explainProblem: vi.fn().mockResolvedValue('Structured problem explanation with trace walkthrough.'),
+    analyzeComplexity: vi.fn().mockResolvedValue('Optimal Time: O(N), Space: O(1).'),
     getProgressiveHint: vi.fn().mockResolvedValue({ level: 1, hint: 'Consider using a hash table.' }),
     diagnoseFailure: vi.fn().mockResolvedValue('Check your base case in recursion.'),
   };
@@ -78,6 +79,15 @@ describe('AICoachService', () => {
     });
     expect(result.success).toBe(true);
     expect(result.data.explanation).toContain('Structured problem explanation');
+  });
+
+  it('should analyze problem complexity', async () => {
+    const result = await service.analyzeComplexity({
+      title: 'Two Sum',
+      statement: 'Given an array of integers...',
+    });
+    expect(result.success).toBe(true);
+    expect(result.data.analysis).toContain('Optimal Time: O(N)');
   });
 
   it('should get progressive hint level 1', async () => {

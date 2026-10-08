@@ -46,19 +46,7 @@ export class EnvironmentVariables {
 
   @IsString()
   @IsOptional()
-  REDIS_HOST: string = 'localhost';
-
-  @IsNumber()
-  @IsOptional()
-  REDIS_PORT: number = 6379;
-
-  @IsString()
-  @IsOptional()
-  REDIS_PASSWORD?: string;
-
-  @IsString()
-  @IsOptional()
-  JUDGE_QUEUE_NAME: string = 'submission-queue';
+  JUDGE_QUEUE_NAME: string = 'submissions';
 
   @IsString()
   @IsOptional()
@@ -75,6 +63,14 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   AZURE_STORAGE_ACCOUNT_NAME?: string;
+
+  @IsString()
+  @IsOptional()
+  AZURE_SERVICE_BUS_CONNECTION_STRING?: string;
+
+  @IsString()
+  @IsOptional()
+  AZURE_SERVICE_BUS_QUEUE_NAME?: string = 'submissions';
 }
 
 export function validateEnvironment(config: Record<string, unknown>) {

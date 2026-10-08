@@ -4,8 +4,8 @@
 **Document Version** : 1.0
 **Generated Date**   : September 22, 2026
 **Platform Style**   : **CodeChef & LeetCode Style** Competitive & Learning Ecosystem
-**Technology Stack** : **Next.js 16 (SSR-First App Router)** + **NestJS 11** + **Prisma ORM** +
-                       **PostgreSQL** + **Redis & BullMQ** + **Docker Sandbox Engine**
+**Technology Stack** : **Next.js 19 (SSR-First App Router)** + **NestJS 12** + **Prisma ORM** +
+                       **PostgreSQL** + **Azure Service Bus & AppCacheService L1** + **Docker JudgeBox**
 
 --------------------------------------------------------------------------------
 **TABLE OF CONTENTS**
@@ -28,21 +28,22 @@
 1. **EXECUTIVE SYSTEM ARCHITECTURE**
 ================================================================================
 [**Client Layer**]
-  - **Framework**: **Next.js 16** (React 19, TypeScript)
+  - **Framework**: **Next.js 19** (React 19, TypeScript)
   - **Strategy** : **SSR-First** (React Server Components by default; Client Components
                    strictly for interactive state and event handlers)
   - **Data Sync**: Centralized typed API Client with **Axios & GraphQL**
 
 [**API Gateway Layer**]
-  - **Framework**: **NestJS 11** (TypeScript, Node.js ESM)
+  - **Framework**: **NestJS 12** (TypeScript, Node.js ESM)
   - **Security** : **Passport.js JWT Auth**, **Role-Based Access Control (RBAC)**,
                    **CollegeAccessGuard** for multi-tenant data isolation
+  - **Caching**  : **AppCacheService** high-speed generational in-memory L1 cache
 
 [**Data & Worker Layer**]
   - **Database** : **PostgreSQL with Prisma ORM**
-  - **Queue**    : **Redis & BullMQ** for asynchronous code execution and mail outbox
-  - **Sandbox**  : **Docker Sandbox / Judge0 CE** supporting C++, Java, Python, Go,
-                   Rust, C, JavaScript, and TypeScript
+  - **Queue**    : **Azure Service Bus** for asynchronous code execution and mail outbox
+  - **Sandbox**  : **Dedicated JudgeBox Worker / Docker Sandbox** supporting C++, Java,
+                   Python, Go, Rust, C, JavaScript, and TypeScript
 
 
 ================================================================================
@@ -57,8 +58,8 @@ health diagnostics, and global problem curation.
 
 * **Platform Control Dashboard (/superadmin)**:
   - Real-time submission activity telemetry and system velocity metrics.
-  - Live diagnostics for database replication, Redis queue throughput, and
-    judge execution workers.
+  - Live diagnostics for database replication, Azure Service Bus throughput, and
+    JudgeBox execution workers.
   - **Endpoint**: GraphQL **ADMIN_METRICS_QUERY**
 
 * **Institution & College Management (/superadmin/institutions, /superadmin/colleges)**:
@@ -74,7 +75,7 @@ health diagnostics, and global problem curation.
 
 * **Problem of the Day (POTD) Scheduler**:
   - Calendar-based scheduling of daily challenges with custom bonus points.
-  - Multi-tier persistence (**PostgreSQL database -> Redis -> memory fallback**).
+  - Multi-tier persistence (**PostgreSQL database -> In-Memory AppCacheService**).
   - **Endpoint**: **POST /problems/potd/set**
 
 * **User Directory & Role Promotion (/superadmin/users)**:

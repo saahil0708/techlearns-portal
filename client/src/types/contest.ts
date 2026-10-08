@@ -8,6 +8,7 @@ export type ScoringFormat =
 
 export type ContestScope =
   | 'Global'
+  | 'Batch Assessment (Cohort-Specific)'
   | 'Institute League'
   | 'Institutional Invitational'
   | 'Internal Faculty Assessment';
@@ -34,6 +35,20 @@ export interface ContestEntity {
   division?: 'Div 1' | 'Div 2' | 'Div 3' | 'Div 4' | 'All';
   ratingRange?: string;
   prizePool?: string;
+  institutionId?: string;
+  batchId?: string;
+  batch?: { id: string; name: string };
+  problemIds?: string[];
+  isProctored?: boolean;
+  enforceFullScreen?: boolean;
+  tabSwitchLimit?: number;
+  disableCopyPaste?: boolean;
+  webcamProctoring?: boolean;
+  audioProctoring?: boolean;
+  plagiarismCheck?: boolean;
+  windowType?: 'FIXED' | 'FLEXIBLE';
+  shuffleQuestions?: boolean;
+  ipRestriction?: string;
 }
 
 export interface NewContestData {
@@ -50,4 +65,18 @@ export interface NewContestData {
   organizer: string;
   rated: boolean;
   tags: string[];
+  institutionId?: string;
+  batchId?: string;
+  batch?: { id: string; name: string };
+  problemIds?: string[];
+  isProctored?: boolean;
+  enforceFullScreen?: boolean;
+  tabSwitchLimit?: number;
+  disableCopyPaste?: boolean;
+  webcamProctoring?: boolean;
+  audioProctoring?: boolean;
+  plagiarismCheck?: boolean;
+  windowType?: 'FIXED' | 'FLEXIBLE';
+  shuffleQuestions?: boolean;
+  ipRestriction?: string;
 }

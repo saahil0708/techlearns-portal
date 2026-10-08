@@ -10,12 +10,14 @@ import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import AssignmentIndRoundedIcon from '@mui/icons-material/AssignmentIndRounded';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 
 import FacultySidebar from '@/components/faculty/layout/FacultySidebar';
 import FacultyNavbar from '@/components/faculty/layout/FacultyNavbar';
 import FacultyMetricsRow from '@/components/faculty/profile/FacultyMetricsRow';
 import FacultyAnalyticsSection from '@/components/faculty/profile/FacultyAnalyticsSection';
 import FacultyBatchesTab from '@/components/faculty/profile/FacultyBatchesTab';
+import FacultySkillosTab from '@/components/faculty/profile/FacultySkillosTab';
 import FacultyStudentsTab from '@/components/faculty/profile/FacultyStudentsTab';
 import FacultyRosterTab from '@/components/faculty/profile/FacultyRosterTab';
 import FacultyCoursesTab from '@/components/faculty/profile/FacultyCoursesTab';
@@ -178,11 +180,12 @@ export default function FacultyProfileClient({
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam === 'batches') setActiveTab(1);
-    else if (tabParam === 'students') setActiveTab(2);
-    else if ((tabParam === 'faculty' || tabParam === 'mentors') && isInstitutionAdmin) setActiveTab(3);
-    else if (tabParam === 'courses') setActiveTab(isInstitutionAdmin ? 4 : 3);
-    else if (tabParam === 'problems') setActiveTab(isInstitutionAdmin ? 5 : 4);
-    else if (tabParam === 'security') setActiveTab(isInstitutionAdmin ? 6 : 5);
+    else if (tabParam === 'skillos') setActiveTab(2);
+    else if (tabParam === 'students') setActiveTab(3);
+    else if ((tabParam === 'faculty' || tabParam === 'mentors') && isInstitutionAdmin) setActiveTab(4);
+    else if (tabParam === 'courses') setActiveTab(isInstitutionAdmin ? 5 : 4);
+    else if (tabParam === 'problems') setActiveTab(isInstitutionAdmin ? 6 : 5);
+    else if (tabParam === 'security') setActiveTab(isInstitutionAdmin ? 7 : 6);
     else if (tabParam === 'bio' || tabParam === 'overview') setActiveTab(0);
     else setActiveTab(0);
   }, [searchParams, isInstitutionAdmin]);
@@ -483,6 +486,7 @@ export default function FacultyProfileClient({
             >
               <Tab icon={<AccountCircleRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Academic Overview & Analytics" />
               <Tab icon={<SchoolRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Assigned Cohorts" />
+              <Tab icon={<ShieldRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Skillos Proctored Tests" />
               <Tab icon={<GroupRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="College Students Roster" />
               {isInstitutionAdmin && (
                 <Tab icon={<AssignmentIndRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Department Faculty" />
@@ -524,8 +528,16 @@ export default function FacultyProfileClient({
             />
           )}
 
-          {/* TAB 2: College Students Roster & Management */}
+          {/* TAB 2: Skillos Proctored Assessments Suite */}
           {activeTab === 2 && (
+            <FacultySkillosTab
+              collegeId={activeCollegeId}
+              collegeName={profile.collegeName}
+            />
+          )}
+
+          {/* TAB 3: College Students Roster & Management */}
+          {activeTab === 3 && (
             <FacultyStudentsTab
               collegeId={activeCollegeId}
               collegeName={profile.collegeName}
@@ -536,8 +548,8 @@ export default function FacultyProfileClient({
             />
           )}
 
-          {/* TAB 3: Department Faculty Roster & Mentors (Admin Only) */}
-          {isInstitutionAdmin && activeTab === 3 && (
+          {/* TAB 4: Department Faculty Roster & Mentors (Admin Only) */}
+          {isInstitutionAdmin && activeTab === 4 && (
             <FacultyRosterTab
               collegeId={activeCollegeId}
               collegeName={profile.collegeName}
@@ -545,7 +557,7 @@ export default function FacultyProfileClient({
           )}
 
           {/* TAB: Courses & Lab Curriculum */}
-          {activeTab === (isInstitutionAdmin ? 4 : 3) && (
+          {activeTab === (isInstitutionAdmin ? 5 : 4) && (
             <FacultyCoursesTab
               courses={visibleCourses}
               collegeName={profile.collegeName}
@@ -555,7 +567,7 @@ export default function FacultyProfileClient({
           )}
 
           {/* TAB: Lab Challenges & Question Bank */}
-          {activeTab === (isInstitutionAdmin ? 5 : 4) && (
+          {activeTab === (isInstitutionAdmin ? 6 : 5) && (
             <FacultyProblemBankTab
               problems={visibleProblems}
               collegeName={profile.collegeName}
@@ -565,7 +577,7 @@ export default function FacultyProfileClient({
           )}
 
           {/* TAB: Security & Preferences */}
-          {activeTab === (isInstitutionAdmin ? 6 : 5) && (
+          {activeTab === (isInstitutionAdmin ? 7 : 6) && (
             <FacultySecurityTab
               twoFactorEnabled={profile.twoFactorEnabled}
             />

@@ -17,13 +17,8 @@ export default () => ({
         .filter(Boolean),
     },
   },
-  redis: {
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379', 10),
-    password: process.env.REDIS_PASSWORD || undefined,
-  },
   judge: {
-    queueName: process.env.JUDGE_QUEUE_NAME || 'submission-queue',
+    queueName: process.env.AZURE_SERVICE_BUS_QUEUE_NAME || 'submissions',
     image: process.env.JUDGE_IMAGE || undefined,
   },
   mail: {
@@ -39,5 +34,9 @@ export default () => ({
     connectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
     containerName: process.env.AZURE_STORAGE_CONTAINER_NAME || 'techlearns-uploads',
     accountName: process.env.AZURE_STORAGE_ACCOUNT_NAME || 'techlearnsstorage01',
+  },
+  azureServiceBus: {
+    connectionString: process.env.AZURE_SERVICE_BUS_CONNECTION_STRING,
+    queueName: process.env.AZURE_SERVICE_BUS_QUEUE_NAME || 'submissions',
   },
 });

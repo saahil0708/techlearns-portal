@@ -1,4 +1,4 @@
-export const JUDGE_QUEUE_NAME = 'submission-queue';
+export const JUDGE_QUEUE_NAME = 'submissions';
 export const EVALUATE_SUBMISSION_JOB = 'evaluate-submission';
 
 export interface EvaluateSubmissionJobData {

@@ -366,6 +366,14 @@ export const apiService = {
     return res.data?.data ?? res.data;
   },
 
+  async getBatches(institutionId?: string) {
+    if (institutionId) {
+      return this.getBatchesByInstitution(institutionId);
+    }
+    const res = await apiClient.get('/batches');
+    return res.data?.data ?? res.data ?? [];
+  },
+
   async getBatchesByCollege(collegeId: string) {
     return this.getBatchesByInstitution(collegeId);
   },
@@ -383,6 +391,7 @@ export const apiService = {
     code?: string;
     startDate?: string;
     endDate?: string;
+    facultyIds?: string[];
   }) {
     const institutionId = input.institutionId || input.collegeId;
     const res = await apiClient.post('/batches', {
@@ -392,6 +401,7 @@ export const apiService = {
       maxCapacity: input.maxCapacity,
       startDate: input.startDate,
       endDate: input.endDate,
+      facultyIds: input.facultyIds,
     });
     return res.data?.data ?? res.data;
   },
@@ -402,6 +412,7 @@ export const apiService = {
     startDate?: string;
     endDate?: string;
     status?: string;
+    facultyIds?: string[];
   }) {
     const res = await apiClient.patch(`/batches/${id}`, input);
     return res.data?.data ?? res.data;
@@ -420,6 +431,21 @@ export const apiService = {
   async getStudentsInBatch(id: string) {
     const res = await apiClient.get(`/batches/${id}/students`);
     return res.data?.data ?? res.data;
+  },
+
+  async assignFacultyToBatch(id: string, facultyIds: string[], role: string = 'MENTOR') {
+    const res = await apiClient.post(`/batches/${id}/faculty`, { facultyIds, role });
+    return res.data?.data ?? res.data;
+  },
+
+  async getFacultyInBatch(id: string) {
+    const res = await apiClient.get(`/batches/${id}/faculty`);
+    return res.data?.data ?? res.data;
+  },
+
+  async removeFacultyFromBatch(id: string, userId: string) {
+    const res = await apiClient.delete(`/batches/${id}/faculty/${userId}`);
+    return res.data?.data ?? (res.data || true);
   },
 
   async removeStudentFromBatch(id: string, userId: string) {
@@ -758,7 +784,7 @@ export const apiService = {
   // ----------------------------------------------------
   // CONTESTS & TOURNAMENTS
   // ----------------------------------------------------
-  async getContests(params?: { page?: number; limit?: number; search?: string; status?: string }) {
+  async getContests(params?: { page?: number; limit?: number; search?: string; status?: string; institutionId?: string; collegeId?: string }) {
     try {
       const data = await deduplicatedQuery<{ contests: { items: any[]; meta: any } }>(
         CONTESTS_QUERY,
@@ -783,9 +809,21 @@ export const apiService = {
     endTime: string | Date;
     status?: string;
     collegeId?: string;
+    institutionId?: string;
+    batchId?: string;
+    problemIds?: string[];
+    [key: string]: any;
   }) {
-    const data = await fetchGraphQL<{ createContest: any }>(CREATE_CONTEST_MUTATION, { input });
-    return data.createContest;
+    try {
+      const res = await apiClient.post('/contests', input);
+      return res.data?.data ?? res.data;
+    } catch (err: any) {
+      if (err?.status || err?.response?.status) {
+        throw err;
+      }
+      const data = await fetchGraphQL<{ createContest: any }>(CREATE_CONTEST_MUTATION, { input });
+      return data.createContest;
+    }
   },
 
   async updateContest(id: string, input: {
@@ -1439,6 +1477,18 @@ export const apiService = {
 
   async explainProblemAI(data: { title: string; statement: string; difficulty?: string; tags?: string[] }) {
     const res = await apiClient.post('/ai-coach/explain', data);
+    return res.data?.data ?? res.data;
+  },
+
+  async analyzeComplexityAI(data: {
+    title: string;
+    statement: string;
+    difficulty?: string;
+    tags?: string[];
+    currentCode?: string;
+    language?: string;
+  }) {
+    const res = await apiClient.post('/ai-coach/complexity', data);
     return res.data?.data ?? res.data;
   },
 

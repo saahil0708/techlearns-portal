@@ -61,31 +61,126 @@ export class ContestsService {
   }
 
   async create(input: CreateContestInput, creatorId: string, user?: CurrentUserPayload) {
-    const institutionId = input.institutionId || input.collegeId;
+    let institutionId = input.institutionId || input.collegeId;
+
+    if (input.batchId) {
+      const batch = await this.prisma.batch.findUnique({
+        where: { id: input.batchId },
+        select: { id: true, institutionId: true },
+      });
+      if (!batch) {
+        throw new NotFoundException(`Batch with ID ${input.batchId} not found`);
+      }
+      if (!institutionId) {
+        institutionId = batch.institutionId;
+      } else if (batch.institutionId !== institutionId) {
+        throw new BadRequestException('Batch does not belong to the selected institution');
+      }
+    }
+
     this.assertInstitutionAssignment(institutionId, user);
     if (input.endTime <= input.startTime) {
       throw new BadRequestException('Contest end time must be after its start time');
     }
-    return this.prisma.contest.create({
-      data: {
-        title: input.title,
-        description: input.description,
-        startTime: input.startTime,
-        endTime: input.endTime,
-        institutionId,
-        createdById: creatorId,
-        status: input.status || ContestStatus.UPCOMING,
-      },
-      include: {
-        _count: {
-          select: {
-            problems: true,
-            registrations: true,
-            submissions: true,
-          },
+
+    if (input.problemIds && input.problemIds.length > 0) {
+      const problems = await this.prisma.problem.findMany({
+        where: { id: { in: input.problemIds } },
+      });
+
+      if (problems.length !== input.problemIds.length) {
+        throw new NotFoundException('One or more problems not found');
+      }
+
+      for (const problem of problems) {
+        if (problem.status !== 'PUBLISHED') {
+          throw new ForbiddenException('Only published problems can be added to a contest');
+        }
+
+        if (problem.institutionId) {
+          if (institutionId !== problem.institutionId) {
+            throw new ForbiddenException('Institution problems can only be added to contests from the same institution');
+          }
+
+          const canAccessProblem =
+            user?.globalRole === Role.SUPER_ADMIN ||
+            user?.globalRole === Role.PLATFORM_ADMIN ||
+            problem.createdById === user?.id ||
+            user?.memberships?.some(
+              (membership) =>
+                membership.institutionId === problem.institutionId &&
+                (membership.role === Role.FACULTY || membership.role === Role.INSTITUTION_ADMIN),
+            );
+          if (!canAccessProblem) {
+            throw new ForbiddenException('You do not have access to this problem');
+          }
+        }
+      }
+    }
+
+    const contest = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.contest.create({
+        data: {
+          title: input.title,
+          slug: input.slug || input.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now().toString(36),
+          code: input.code,
+          description: input.description,
+          startTime: input.startTime,
+          endTime: input.endTime,
+          durationMinutes: input.durationMinutes ?? 90,
+          isProctored: input.isProctored ?? false,
+          enforceFullScreen: input.enforceFullScreen ?? true,
+          tabSwitchLimit: input.tabSwitchLimit ?? 3,
+          disableCopyPaste: input.disableCopyPaste ?? true,
+          webcamProctoring: input.webcamProctoring ?? false,
+          audioProctoring: input.audioProctoring ?? false,
+          plagiarismCheck: input.plagiarismCheck ?? true,
+          scoringFormat: input.scoringFormat ?? 'ICPC',
+          windowType: input.windowType ?? 'FIXED',
+          shuffleQuestions: input.shuffleQuestions ?? false,
+          ipRestriction: input.ipRestriction,
+          institutionId,
+          batchId: input.batchId,
+          createdById: creatorId,
+          status: input.status || ContestStatus.UPCOMING,
         },
-      },
+      });
+
+      // Auto-link selected problems if provided
+      if (input.problemIds && input.problemIds.length > 0) {
+        await tx.contestProblem.createMany({
+          data: input.problemIds.map((pid, idx) => ({
+            contestId: created.id,
+            problemId: pid,
+            order: idx,
+            points: 100,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      // Auto-register all students in the assigned batch
+      if (input.batchId) {
+        const batchStudents = await tx.batchStudent.findMany({
+          where: { batchId: input.batchId },
+          select: { userId: true },
+        });
+
+        if (batchStudents.length > 0) {
+          await tx.contestRegistration.createMany({
+            data: batchStudents.map((bs) => ({
+              contestId: created.id,
+              userId: bs.userId,
+            })),
+            skipDuplicates: true,
+          });
+        }
+      }
+
+      return created;
     });
+
+    return this.findById(contest.id, user);
   }
 
   async findPaginated(
@@ -93,6 +188,7 @@ export class ContestsService {
     status?: ContestStatus,
     institutionId?: string,
     user?: CurrentUserPayload,
+    batchId?: string,
   ) {
     const page = args.page || 1;
     const limit = args.limit || 10;
@@ -110,6 +206,10 @@ export class ContestsService {
 
     if (status) {
       where.status = status;
+    }
+
+    if (batchId) {
+      where.batchId = batchId;
     }
 
     const isSuperAdmin =
@@ -157,6 +257,12 @@ export class ContestsService {
         take: limit,
         orderBy,
         include: {
+          batch: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           problems: {
             include: {
               problem: true,
@@ -192,6 +298,12 @@ export class ContestsService {
     const contest = await this.prisma.contest.findUnique({
       where: { id },
       include: {
+        batch: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         problems: {
           include: {
             problem: true,

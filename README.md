@@ -9,7 +9,7 @@
 - **Code Management & CI/CD**: GitHub repo integrated with Azure DevOps pipelines for automated linting, test suites, and containerized image publishing.
 - **Cloud Infrastructure**: Azure Container Apps hosting Next.js 19 SSR frontend and NestJS API backend.
 - **Multi-Channel Notifications**: Email (Azure Communication Services / AWS SES), SMS, WhatsApp Business API, and Web Push notifications via transactional outbox worker.
-- **Database & State**: PostgreSQL (Azure Flexible Server) with Prisma ORM + Redis / BullMQ for high-throughput queues and caching.
+- **Database & State**: PostgreSQL (Azure Flexible Server) with Prisma ORM + Azure Service Bus for high-throughput queues and In-Memory AppCacheService.
 - **Polyglot Sandboxed Judge**: Docker-isolated execution environment (C#, Java, C++, Python, Rust, Go) with cgroups/seccomp security, sub-second test execution, and real-time result streaming.
 - **Monaco Code Editor & AI Workspace**: React 19 Monaco editor wrapper with custom themes, test runner console, and AI Copilot assistant.
 
@@ -31,7 +31,7 @@ Detailed system documentation and engineering guidelines are available in [`docs
 ### Backend
 - **Framework**: NestJS (TypeScript, Node.js, ESM)
 - **Database & ORM**: PostgreSQL, Prisma ORM
-- **Cache & Message Queue**: Redis, BullMQ
+- **Cache & Message Queue**: Azure Service Bus, In-Memory AppCacheService
 - **Authentication**: JWT, WebAuthn Passkeys, TOTP 2FA, bcryptjs
 - **API Formats**: GraphQL (`/graphql`) & REST OpenAPI (`/api/docs`)
 - **Testing & Quality**: Vitest, Supertest, Oxlint

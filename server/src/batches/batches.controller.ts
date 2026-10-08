@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import { BatchesService } from './batches.service.js';
 import { AssignStudentsDto } from './dto/assign-students.dto.js';
+import { AssignFacultyDto } from './dto/assign-faculty.dto.js';
 import { CreateBatchDto } from './dto/create-batch.dto.js';
 import { UpdateBatchDto } from './dto/update-batch.dto.js';
 
@@ -34,6 +35,14 @@ export class BatchesController {
   @ApiResponse({ status: 201, description: 'Batch created successfully' })
   async create(@Body() dto: CreateBatchDto) {
     return this.batchesService.create(dto);
+  }
+
+  @Get()
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN)
+  @ApiOperation({ summary: 'List all batches or filter by institution' })
+  @ApiResponse({ status: 200, description: 'List of batches' })
+  async findAll(@Param() params: any, @Body() body: any) {
+    return this.batchesService.findAll();
   }
 
   @Get('institution/:institutionId')
@@ -109,5 +118,32 @@ export class BatchesController {
   @ApiResponse({ status: 200, description: 'Student removed from batch successfully' })
   async removeStudent(@Param('id') id: string, @Param('userId') userId: string) {
     return this.batchesService.removeStudent(id, userId);
+  }
+
+  @Post(':id/faculty')
+  @UseGuards(BatchAccessGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiOperation({ summary: 'Assign multiple faculty mentors to a batch' })
+  @ApiResponse({ status: 201, description: 'Faculty assigned to batch successfully' })
+  async assignFaculty(@Param('id') id: string, @Body() dto: AssignFacultyDto) {
+    return this.batchesService.assignFaculty(id, dto.facultyIds, dto.role);
+  }
+
+  @Get(':id/faculty')
+  @UseGuards(BatchAccessGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiOperation({ summary: 'List all faculty mentors assigned to a batch' })
+  @ApiResponse({ status: 200, description: 'List of assigned faculty members' })
+  async getFaculty(@Param('id') id: string) {
+    return this.batchesService.getFaculty(id);
+  }
+
+  @Delete(':id/faculty/:userId')
+  @UseGuards(BatchAccessGuard)
+  @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN, Role.INSTITUTION_ADMIN, Role.FACULTY)
+  @ApiOperation({ summary: 'Remove a faculty mentor from a batch' })
+  @ApiResponse({ status: 200, description: 'Faculty removed from batch successfully' })
+  async removeFaculty(@Param('id') id: string, @Param('userId') userId: string) {
+    return this.batchesService.removeFaculty(id, userId);
   }
 }

@@ -17,7 +17,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
 import { AICoachService } from './ai-coach.service.js';
 import { SendCoachMessageDto } from './dto/send-coach-message.dto.js';
-import { ExplainProblemDto, ProgressiveHintDto, DiagnoseFailureDto, ChatAssistantDto } from './dto/ide-assistant.dto.js';
+import { ExplainProblemDto, AnalyzeComplexityDto, ProgressiveHintDto, DiagnoseFailureDto, ChatAssistantDto } from './dto/ide-assistant.dto.js';
 import { GenerateProblemDto } from './dto/generate-problem.dto.js';
 
 @ApiTags('ai-coach')
@@ -60,6 +60,12 @@ export class AICoachController {
   @ApiOperation({ summary: 'Generate structured problem explanation with step-by-step trace walkthrough' })
   async explainProblem(@Body() dto: ExplainProblemDto) {
     return this.aiCoachService.explainProblem(dto);
+  }
+
+  @Post('complexity')
+  @ApiOperation({ summary: 'Analyze optimal Big-O time and space complexity and constraint operation bounds' })
+  async analyzeComplexity(@Body() dto: AnalyzeComplexityDto) {
+    return this.aiCoachService.analyzeComplexity(dto);
   }
 
   @Post('hint')

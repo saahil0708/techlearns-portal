@@ -123,6 +123,7 @@ model User {
 
   memberships          InstitutionMembership[]
   batchEnrollments     BatchStudent[]
+  facultyBatches       BatchFaculty[]
   createdCourses       Course[]              @relation("CourseCreator")
   enrollments          Enrollment[]
   lessonProgress       LessonProgress[]
@@ -328,6 +329,8 @@ model Batch {
 
   institution Institution    @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   students    BatchStudent[]
+  faculty     BatchFaculty[]
+  contests    Contest[]
 
   @@index([institutionId, status])
   @@map("batches")
@@ -347,6 +350,22 @@ model BatchStudent {
   @@index([userId])
   @@index([batchId])
   @@map("batch_students")
+}
+
+model BatchFaculty {
+  id         String   @id @default(uuid())
+  batchId    String
+  userId     String
+  role       String?  @default("MENTOR") // e.g. "LEAD", "MENTOR", "COORDINATOR", "INSTRUCTOR"
+  assignedAt DateTime @default(now())
+
+  batch Batch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, userId])
+  @@index([userId])
+  @@index([batchId])
+  @@map("batch_faculty")
 }
 
 model Course {
@@ -557,18 +576,34 @@ model Submission {
 }
 
 model Contest {
-  id            String        @id @default(uuid())
-  title         String
-  description   String?       @db.Text
-  startTime     DateTime
-  endTime       DateTime
-  institutionId String?
-  createdById   String
-  status        ContestStatus @default(UPCOMING)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                String        @id @default(uuid())
+  title             String
+  slug              String?
+  code              String?
+  description       String?       @db.Text
+  startTime         DateTime
+  endTime           DateTime
+  durationMinutes   Int           @default(90)
+  isProctored       Boolean       @default(false)
+  enforceFullScreen Boolean       @default(true)
+  tabSwitchLimit    Int           @default(3)
+  disableCopyPaste  Boolean       @default(true)
+  webcamProctoring  Boolean       @default(false)
+  audioProctoring   Boolean       @default(false)
+  plagiarismCheck   Boolean       @default(true)
+  scoringFormat     String        @default("ICPC")
+  windowType        String        @default("FIXED")
+  shuffleQuestions  Boolean       @default(false)
+  ipRestriction     String?
+  institutionId     String?
+  batchId           String?
+  createdById       String
+  status            ContestStatus @default(UPCOMING)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   institution        Institution?          @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  batch              Batch?                @relation(fields: [batchId], references: [id], onDelete: SetNull)
   createdBy          User                  @relation("ContestCreator", fields: [createdById], references: [id], onDelete: Restrict)
   problems           ContestProblem[]
   registrations      ContestRegistration[]
@@ -577,6 +612,7 @@ model Contest {
 
   @@index([status, startTime, endTime])
   @@index([institutionId, status])
+  @@index([batchId, status])
   @@index([createdById, status])
   @@map("contests")
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AIProviderService } from '../common/ai/ai-provider.service.js';
 import { SendCoachMessageDto } from './dto/send-coach-message.dto.js';
-import { ExplainProblemDto, ProgressiveHintDto, DiagnoseFailureDto } from './dto/ide-assistant.dto.js';
+import { ExplainProblemDto, AnalyzeComplexityDto, ProgressiveHintDto, DiagnoseFailureDto } from './dto/ide-assistant.dto.js';
 import { GenerateProblemDto } from './dto/generate-problem.dto.js';
 
 @Injectable()
@@ -97,6 +97,21 @@ export class AICoachService {
       tags: dto.tags,
     });
     return { success: true, data: { explanation } };
+  }
+
+  /**
+   * Analyze target Time & Space complexity and operations bounds
+   */
+  async analyzeComplexity(dto: AnalyzeComplexityDto) {
+    const analysis = await this.aiProvider.analyzeComplexity({
+      title: dto.title,
+      statement: dto.statement,
+      difficulty: dto.difficulty,
+      tags: dto.tags,
+      currentCode: dto.currentCode,
+      language: dto.language,
+    });
+    return { success: true, data: { analysis } };
   }
 
   /**

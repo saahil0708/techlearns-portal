@@ -1,7 +1,5 @@
-import { Injectable, Logger, Optional, NotFoundException, BadRequestException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ProblemStatus, SubmissionVerdict } from '@prisma/client';
-import { Redis } from 'ioredis';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 export interface PotdResponse {
@@ -33,33 +31,11 @@ export interface StreakDetailResponse {
 @Injectable()
 export class PotdService {
   private readonly logger = new Logger(PotdService.name);
-  private redis: Redis | null = null;
   private readonly memoryFallbackMap = new Map<string, { problemId: string; bonusPoints?: number }>();
 
   constructor(
     private prisma: PrismaService,
-    @Optional() private configService?: ConfigService,
-  ) {
-    if (this.configService) {
-      try {
-        const host = this.configService.get<string>('redis.host', 'localhost');
-        const port = this.configService.get<number>('redis.port', 6379);
-        const password = this.configService.get<string>('redis.password');
-        this.redis = new Redis({
-          host,
-          port,
-          password: password || undefined,
-          lazyConnect: true,
-          maxRetriesPerRequest: 1,
-        });
-        this.redis.connect().catch((err) => {
-          this.logger.warn(`Redis connection for POTD persistence not available: ${err.message}`);
-        });
-      } catch (err: any) {
-        this.logger.warn(`Failed to initialize Redis client for POTD: ${err.message}`);
-      }
-    }
-  }
+  ) {}
 
   /**
    * Helper to retrieve stored assignment from database (problemOfTheDay), Redis cache, or memory fallback
@@ -78,17 +54,6 @@ export class PotdService {
       }
     }
 
-    if (this.redis) {
-      try {
-        const raw = await this.redis.hget('potd:assignments', dateStr);
-        if (raw) {
-          return JSON.parse(raw);
-        }
-      } catch (err: any) {
-        this.logger.warn(`Failed to read POTD from Redis for ${dateStr}: ${err.message}`);
-      }
-    }
-
     return this.memoryFallbackMap.get(dateStr) || null;
   }
 
@@ -97,20 +62,6 @@ export class PotdService {
    */
   private async getAllStoredAssignments(): Promise<Map<string, { problemId: string; bonusPoints?: number }>> {
     const map = new Map<string, { problemId: string; bonusPoints?: number }>(this.memoryFallbackMap);
-    if (this.redis) {
-      try {
-        const all = await this.redis.hgetall('potd:assignments');
-        if (all) {
-          for (const [dateStr, raw] of Object.entries(all)) {
-            try {
-              map.set(dateStr, JSON.parse(raw));
-            } catch {}
-          }
-        }
-      } catch (err: any) {
-        this.logger.warn(`Failed to read all POTDs from Redis: ${err.message}`);
-      }
-    }
 
     if ((this.prisma as any).problemOfTheDay) {
       try {
@@ -176,17 +127,8 @@ export class PotdService {
       });
     }
 
-    // Update process-local and Redis caches (non-fatal)
+    // Update process-local cache
     this.memoryFallbackMap.set(dateStr, { problemId, bonusPoints });
-
-    if (this.redis) {
-      try {
-        const payload = JSON.stringify({ problemId, bonusPoints, setAt: new Date().toISOString() });
-        await this.redis.hset('potd:assignments', dateStr, payload);
-      } catch (err: any) {
-        this.logger.warn(`Failed to update POTD Redis cache: ${err.message}`);
-      }
-    }
 
     this.logger.log(`POTD configured for ${dateStr}: "${problem.title}" (${problem.id}) by user ${user?.id || 'admin'}`);
 
@@ -211,20 +153,12 @@ export class PotdService {
         await (this.prisma as any).problemOfTheDay.delete({
           where: { date: dateStr },
         });
-      } catch (err: any) {
+      } catch (_err: any) {
         // Non-fatal if already deleted or does not exist
       }
     }
 
     this.memoryFallbackMap.delete(dateStr);
-
-    if (this.redis) {
-      try {
-        await this.redis.hdel('potd:assignments', dateStr);
-      } catch (err: any) {
-        this.logger.warn(`Failed to delete POTD from Redis for ${dateStr}: ${err.message}`);
-      }
-    }
 
     this.logger.log(`POTD custom assignment deleted for ${dateStr} by user ${user?.id || 'admin'}`);
 
@@ -339,7 +273,7 @@ export class PotdService {
 
     for (let i = -7; i <= futureDays; i++) {
       const d = new Date(today);
-      d.setDate(d.getDate() + i);
+      d.setUTCDate(d.getUTCDate() + i);
       const iso = this.getIsoDate(d);
 
       let problem: any = null;
@@ -585,7 +519,7 @@ export class PotdService {
 
     for (let i = 0; i < days; i++) {
       const d = new Date(today);
-      d.setDate(d.getDate() - i);
+      d.setUTCDate(d.getUTCDate() - i);
       const iso = this.getIsoDate(d);
       
       let problem = publishedProblems[this.hashDateToIndex(iso, publishedProblems.length)];
@@ -664,7 +598,7 @@ export class PotdService {
 
     const todayStr = this.getIsoDate();
     const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
     const yesterdayStr = this.getIsoDate(yesterday);
 
     const streakActiveToday = dateCountMap.has(todayStr);
@@ -688,7 +622,7 @@ export class PotdService {
         const iso = this.getIsoDate(tempDate);
         if (dateCountMap.has(iso)) {
           currentStreak++;
-          tempDate.setDate(tempDate.getDate() - 1);
+          tempDate.setUTCDate(tempDate.getUTCDate() - 1);
         } else {
           break;
         }
@@ -724,11 +658,11 @@ export class PotdService {
     // Format activity history for last 60 days
     const activityHistory: { date: string; count: number }[] = [];
     const historyStart = new Date();
-    historyStart.setDate(historyStart.getDate() - 60);
+    historyStart.setUTCDate(historyStart.getUTCDate() - 60);
 
     for (let i = 0; i <= 60; i++) {
       const d = new Date(historyStart);
-      d.setDate(d.getDate() + i);
+      d.setUTCDate(d.getUTCDate() + i);
       const iso = this.getIsoDate(d);
       activityHistory.push({
         date: iso,

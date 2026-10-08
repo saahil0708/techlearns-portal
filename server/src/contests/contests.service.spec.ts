@@ -26,6 +26,7 @@ describe('ContestsService', () => {
 
   beforeEach(() => {
     prisma = {
+      $transaction: vi.fn(async (cb: any) => (typeof cb === 'function' ? cb(prisma) : Promise.all(cb))),
       contest: {
         findUnique: vi.fn(),
         findMany: vi.fn(),
@@ -34,15 +35,24 @@ describe('ContestsService', () => {
         update: vi.fn(),
         delete: vi.fn(),
       },
+      batch: {
+        findUnique: vi.fn(),
+      },
+      batchStudent: {
+        findMany: vi.fn(),
+      },
       contestRegistration: {
         findUnique: vi.fn(),
         create: vi.fn(),
+        createMany: vi.fn(),
       },
       contestProblem: {
         upsert: vi.fn(),
+        createMany: vi.fn(),
       },
       problem: {
         findUnique: vi.fn(),
+        findMany: vi.fn(),
       },
     } as unknown as PrismaService;
 
@@ -56,6 +66,7 @@ describe('ContestsService', () => {
   describe('create', () => {
     it('should create a contest', async () => {
       vi.mocked(prisma.contest.create).mockResolvedValue(mockContest as any);
+      vi.mocked(prisma.contest.findUnique).mockResolvedValue(mockContest as any);
 
       const result = await service.create(
         {

@@ -1,5 +1,4 @@
-import { InjectQueue } from '@nestjs/bullmq';
-import { ForbiddenException, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   ContestStatus,
   Prisma,
@@ -7,14 +6,9 @@ import {
   SubmissionStatus,
   SubmissionVerdict,
 } from '@prisma/client';
-import { Queue } from 'bullmq';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import type { CurrentUserPayload } from '../common/types/current-user.interface.js';
-import {
-  EVALUATE_SUBMISSION_JOB,
-  EvaluateSubmissionJobData,
-  JUDGE_QUEUE_NAME,
-} from '../judge/judge.constants.js';
+import { JudgeQueueService } from '../common/queue/judge-queue.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { userSanitizedSelect } from '../users/users.service.js';
 import { CreateSubmissionInput } from './dto/create-submission.input.js';
@@ -25,9 +19,7 @@ export class SubmissionsService {
 
   constructor(
     private prisma: PrismaService,
-    @Optional()
-    @InjectQueue(JUDGE_QUEUE_NAME)
-    private submissionQueue?: Queue<EvaluateSubmissionJobData>,
+    private judgeQueueService: JudgeQueueService,
   ) {}
 
   async create(input: CreateSubmissionInput, userId: string, user?: CurrentUserPayload) {
@@ -104,41 +96,19 @@ export class SubmissionsService {
       },
     });
 
-    // Enqueue to BullMQ worker for evaluation
-    if (this.submissionQueue) {
-      try {
-        await this.submissionQueue.add(EVALUATE_SUBMISSION_JOB, {
-          submissionId: submission.id,
-        });
-      } catch (err: any) {
-        this.logger.warn(
-          `Failed to enqueue submission ${submission.id} to BullMQ: ${err.message}`,
-        );
-        return this.prisma.submission.update({
-          where: { id: submission.id },
-          data: {
-            status: SubmissionStatus.FAILED,
-            verdict: SubmissionVerdict.SYSTEM_ERROR,
-            errorMessage: `Failed to enqueue submission for evaluation: ${err.message}`,
-          },
-          include: {
-            user: {
-              select: userSanitizedSelect,
-            },
-            problem: true,
-          },
-        });
-      }
-    } else {
+    // Enqueue to Azure Service Bus / Judge Worker queue for evaluation
+    try {
+      await this.judgeQueueService.sendSubmissionJob(submission.id);
+    } catch (err: any) {
       this.logger.warn(
-        `Submission queue is unavailable for submission ${submission.id}`,
+        `Failed to enqueue submission ${submission.id} to judge queue: ${err.message}`,
       );
       return this.prisma.submission.update({
         where: { id: submission.id },
         data: {
           status: SubmissionStatus.FAILED,
           verdict: SubmissionVerdict.SYSTEM_ERROR,
-          errorMessage: 'Judge submission queue is unavailable',
+          errorMessage: `Failed to enqueue submission for evaluation: ${err.message}`,
         },
         include: {
           user: {

@@ -16,30 +16,21 @@ All resources and storage containers strictly adhere to the official Azure namin
 | **Container Registry (ACR)** | `cr` | `cr<workload><env><unique>` | 5-50, **lowercase alphanumeric only** (no hyphens) | `crcodeplatformprod1a2b3` |
 | **Key Vault** | `kv-` | `kv-<workload>-<env>-<unique>` | 3-24, alphanumeric + hyphens | `kv-codeplat-prod-1a2b3` |
 | **PostgreSQL Flexible Server** | `psql-` | `psql-<workload>-<env>-<unique>` | 3-63, alphanumeric + hyphens | `psql-codeplatform-prod-1a2b3c4` |
-| **Azure Cache for Redis** | `redis-` | `redis-<workload>-<env>-<unique>` | 1-63, alphanumeric + hyphens | `redis-codeplatform-prod-1a2b3c4` |
+| **Azure Service Bus** | `sb-` | `sb-<workload>-<env>-<unique>` | 1-50, alphanumeric + hyphens | `sb-codeplatform-prod-1a2b3c4` |
 | **Log Analytics Workspace** | `log-` | `log-<workload>-<env>-<unique>` | 4-63, alphanumeric + hyphens | `log-codeplatform-prod-1a2b3c4` |
 | **Container Apps Environment** | `cae-` | `cae-<workload>-<env>-<unique>` | 2-32, alphanumeric + hyphens | `cae-codeplatform-prod-1a2b3c4` |
-| **Container App (Backend)** | `ca-` | `ca-<workload>-backend-<env>` | 2-32, alphanumeric + hyphens | `ca-codeplatform-backend-prod` |
-| **Container App (Frontend)** | `ca-` | `ca-<workload>-frontend-<env>` | 2-32, alphanumeric + hyphens | `ca-codeplatform-frontend-prod` |
+| **Container App (Backend API)** | `ca-` | `ca-<workload>-backend-<env>` | 2-32, alphanumeric + hyphens | `ca-codeplatform-backend-prod` |
+| **Container App (Frontend SSR)**| `ca-` | `ca-<workload>-frontend-<env>` | 2-32, alphanumeric + hyphens | `ca-codeplatform-frontend-prod` |
 | **User Assigned Identity** | `id-` | `id-<workload>-<purpose>-<env>-<unique>` | 3-128, alphanumeric + hyphens | `id-codeplatform-acrpull-prod-1a2b3` |
 
 ---
 
-## Storage Container Naming Rules (Azure Blob Standard)
+## Architecture
 
-1. **Length**: Between 3 and 63 characters.
-2. **Character Set**: Lowercase letters (`a-z`), numbers (`0-9`), and hyphens (`-`).
-3. **Hyphen Rules**: Every hyphen must be preceded and followed by a letter or number; no consecutive hyphens (`--`).
-4. **Case**: Must be strictly lowercase.
-5. **Start/End**: Must start and end with a letter or number.
-
-**Default Blob Container Folders inside `cnt-codeplatform-uploads-prod`**:
-- `avatars/` — User & faculty profile avatars
-- `institutions/` — College & school banners/logos
-- `courses/` — Course thumbnails & lecture attachments
-- `blogs/` — Technical blog covers & embedded media
-- `problems/` — Coding problem assets & diagrams
-- `attachments/` — General platform uploads & submissions
+1. **Stateless API Tier (Azure Container Apps)**: Next.js SSR frontend and NestJS API backend running in auto-scaling container apps with in-memory LRU caching.
+2. **Message Broker (Azure Service Bus)**: High-throughput `submissions` queue for zero-loss code evaluation dispatches.
+3. **Sandbox Execution Tier (Dedicated VM Judge Worker)**: Standalone Linux worker VM pulling submissions from Service Bus and evaluating untrusted code in Docker sandboxes.
+4. **Relational Data & Storage**: Azure Database for PostgreSQL Flexible Server and Azure Blob Storage.
 
 ---
 
@@ -54,7 +45,7 @@ infra/
     ├── acr.bicep               # Azure Container Registry (cr...)
     ├── storage.bicep           # Azure Storage Account & Blob Container (st... & cnt-...)
     ├── database.bicep          # PostgreSQL Flexible Server (psql-...)
-    ├── redis.bicep             # Azure Cache for Redis (redis-...)
+    ├── servicebus.bicep        # Azure Service Bus & Submissions Queue (sb-...)
     ├── keyvault.bicep          # Azure Key Vault (kv-...)
     ├── container-app-env.bicep # Log Analytics & ACA Environment (log-... & cae-...)
     └── container-app.bicep     # Container App Microservice (ca-...)

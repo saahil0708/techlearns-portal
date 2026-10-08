@@ -62,8 +62,8 @@ pie title Task Distribution Across Phases
 | :---: | :--- | :---: | :--- | :---: | :--- |
 | **TSK-PROB-01** | **Problem Repository & Test Case Storage** | `P0` | `server/src/problems/` | ✅ Done | Slug generation, difficulty ratings, time/memory limits, public/hidden tests. |
 | **TSK-PROB-02** | **Subtask Allocation & Partial Scoring** | `P1` | `server/src/problems/` | ✅ Done | Multi-test subtask weighting (e.g. Subtask 1: 30 pts, Subtask 2: 70 pts). |
-| **TSK-JDG-01** | **BullMQ Submission Ingestion Queue** | `P0` | `server/src/submissions/` | ✅ Done | Asynchronous queuing of submissions with Redis persistence and retry policies. |
-| **TSK-JDG-02** | **Docker Sandbox Isolation Engine** | `P0` | `server/src/judge/` | ✅ Done | Hardened container runner (C++, Java, Python, C, JS) with cgroups/seccomp limits. |
+| **TSK-JDG-01** | **Azure Service Bus Submission Ingestion Queue** | `P0` | `server/src/submissions/` | ✅ Done | Asynchronous queuing of submissions via Azure Service Bus with retry policies. |
+| **TSK-JDG-02** | **Docker Sandbox Isolation Engine (JudgeBox)** | `P0` | `server/src/judge/` | ✅ Done | Hardened container runner (C++, Java, Python, C, JS) with cgroups/seccomp limits. |
 | **TSK-JDG-03** | **Verdict Evaluation Engine** | `P0` | `server/src/judge/` | ✅ Done | Precise verdicts: `ACCEPTED`, `WA`, `TLE`, `MLE`, `CE`, `RE` within $\le 1.5\text{s}$ per test. |
 | **TSK-PROB-03** | **Monaco Editor Split-Pane Problem Solver** | `P0` | `client/src/components/problems/` | ✅ Done | Split-pane IDE, custom test runner console, subtasks tab, real-time score pills. |
 | **TSK-PROB-04** | **Problem Archive List Table (Rule #10)** | `P0` | `client/src/components/problems/` | ✅ Done | Clean list table with search, difficulty filter, star ratings, and solve CTA. |
@@ -108,11 +108,11 @@ pie title Task Distribution Across Phases
 
 ## 📈 3. Sprint Velocity & Progress Checklist
 
-- [x] **Core Architecture & Monorepo Setup** (NestJS + Next.js 19 + Prisma + Redis)
+- [x] **Core Architecture & Monorepo Setup** (NestJS + Next.js 19 + Prisma + AppCacheService)
 - [x] **Authentication & Passkey Security** (JWT + WebAuthn + TOTP 2FA)
 - [x] **Multi-Tenancy & Student Batches** (`CollegeAccessGuard` + Rosters)
 - [x] **Course Curricula & Progress Engine** (Courses $\rightarrow$ Modules $\rightarrow$ Lessons)
-- [x] **Sandboxed Polyglot Judge Worker** (Docker + BullMQ + cgroups)
+- [x] **Sandboxed Polyglot Judge Worker Microservice** (Docker + Azure Service Bus + cgroups)
 - [x] **CodeChef Feature Parity** (1★-7★ Ratings, Div 1-4, START256 Matrix Leaderboard)
 - [x] **Strict List Table Data Standard (Rule #10)** applied across all dataset views
 - [x] **Multi-Channel Outbox Notification Worker** (`OutboxService` background processor)

@@ -301,11 +301,19 @@ async function main() {
       update: problemInput,
       create: {
         ...problemInput,
-        testCases: {
-          create: testCases,
-        },
       },
     });
+
+    if (testCases && testCases.length > 0) {
+      await prisma.testCase.deleteMany({ where: { problemId: prob.id } });
+      await prisma.testCase.createMany({
+        data: testCases.map((tc) => ({
+          ...tc,
+          problemId: prob.id,
+        })),
+      });
+    }
+
     createdProblems.push(prob);
   }
 

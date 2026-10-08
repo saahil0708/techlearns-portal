@@ -11,6 +11,22 @@ export interface StudentAssignment {
   rollNo?: string;
 }
 
+const batchStandardInclude = {
+  institution: {
+    select: { id: true, name: true, code: true },
+  },
+  faculty: {
+    include: {
+      user: {
+        select: { id: true, name: true, email: true, avatarUrl: true, department: true },
+      },
+    },
+  },
+  _count: {
+    select: { students: true, faculty: true },
+  },
+};
+
 @Injectable()
 export class BatchesService {
   constructor(private prisma: PrismaService) {}
@@ -29,7 +45,21 @@ export class BatchesService {
       throw new NotFoundException(`Institution with ID ${institutionId} not found`);
     }
 
-    return this.prisma.batch.create({
+    if (dto.facultyIds && dto.facultyIds.length > 0) {
+      const uniqueFacultyIds = Array.from(new Set(dto.facultyIds.filter(Boolean)));
+      const facultyUsers = await this.prisma.user.findMany({
+        where: { id: { in: uniqueFacultyIds } },
+        select: {
+          id: true,
+          memberships: { where: { institutionId }, select: { id: true } },
+        },
+      });
+      if (facultyUsers.length !== uniqueFacultyIds.length || facultyUsers.some((user) => user.memberships.length === 0)) {
+        throw new ForbiddenException('All assigned faculty must belong to the batch institution');
+      }
+    }
+
+    const batch = await this.prisma.batch.create({
       data: {
         name: dto.name,
         institutionId,
@@ -37,35 +67,40 @@ export class BatchesService {
         status: dto.status || 'ACTIVE',
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         endDate: dto.endDate ? new Date(dto.endDate) : null,
+        ...(dto.facultyIds && dto.facultyIds.length > 0
+          ? {
+              faculty: {
+                createMany: {
+                  data: Array.from(new Set(dto.facultyIds.filter(Boolean))).map((userId) => ({ userId, role: 'MENTOR' })),
+                  skipDuplicates: true,
+                },
+              },
+            }
+          : {}),
       },
-      include: {
-        institution: {
-          select: { id: true, name: true, code: true },
-        },
-        _count: {
-          select: { students: true },
-        },
-      },
+      include: batchStandardInclude,
     });
+
+    return batch;
   }
 
   async findByInstitution(institutionId: string) {
     return this.prisma.batch.findMany({
       where: { institutionId },
-      include: {
-        institution: {
-          select: { id: true, name: true, code: true },
-        },
-        _count: {
-          select: { students: true },
-        },
-      },
+      include: batchStandardInclude,
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async findByCollege(collegeId: string) {
     return this.findByInstitution(collegeId);
+  }
+
+  async findAll() {
+    return this.prisma.batch.findMany({
+      include: batchStandardInclude,
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findPaginated(args: PaginationArgs, institutionId?: string) {
@@ -91,14 +126,7 @@ export class BatchesService {
         orderBy: args.sortBy
           ? { [args.sortBy]: (args.sortOrder?.toLowerCase() as 'asc' | 'desc') || 'desc' }
           : { createdAt: 'desc' },
-        include: {
-          institution: {
-            select: { id: true, name: true, code: true },
-          },
-          _count: {
-            select: { students: true },
-          },
-        },
+        include: batchStandardInclude,
       }),
     ]);
 
@@ -120,14 +148,7 @@ export class BatchesService {
   async findOne(id: string) {
     const batch = await this.prisma.batch.findUnique({
       where: { id },
-      include: {
-        institution: {
-          select: { id: true, name: true, code: true },
-        },
-        _count: {
-          select: { students: true },
-        },
-      },
+      include: batchStandardInclude,
     });
 
     if (!batch) {
@@ -138,7 +159,35 @@ export class BatchesService {
   }
 
   async update(id: string, dto: UpdateBatchDto) {
-    await this.findOne(id);
+    const batch = await this.findOne(id);
+
+    if (dto.facultyIds !== undefined) {
+      const uniqueFacultyIds = Array.from(new Set((dto.facultyIds || []).filter(Boolean)));
+      if (uniqueFacultyIds.length > 0) {
+        const facultyUsers = await this.prisma.user.findMany({
+          where: { id: { in: uniqueFacultyIds } },
+          select: {
+            id: true,
+            memberships: { where: { institutionId: batch.institutionId }, select: { id: true } },
+          },
+        });
+        if (facultyUsers.length !== uniqueFacultyIds.length || facultyUsers.some((user) => user.memberships.length === 0)) {
+          throw new ForbiddenException('All assigned faculty must belong to the batch institution');
+        }
+      }
+
+      await this.prisma.$transaction(async (tx) => {
+        await (tx as any).batchFaculty.deleteMany({
+          where: { batchId: id },
+        });
+        if (uniqueFacultyIds.length > 0) {
+          await (tx as any).batchFaculty.createMany({
+            data: uniqueFacultyIds.map((userId) => ({ batchId: id, userId, role: 'MENTOR' })),
+            skipDuplicates: true,
+          });
+        }
+      });
+    }
 
     return this.prisma.batch.update({
       where: { id },
@@ -149,14 +198,74 @@ export class BatchesService {
         startDate: dto.startDate ? new Date(dto.startDate) : undefined,
         endDate: dto.endDate ? new Date(dto.endDate) : undefined,
       },
-      include: {
-        institution: {
-          select: { id: true, name: true, code: true },
+      include: batchStandardInclude,
+    });
+  }
+
+  async assignFaculty(batchId: string, facultyIds: string[], role: string = 'MENTOR') {
+    const batch = await this.findOne(batchId);
+
+    const uniqueFacultyIds = Array.from(new Set((facultyIds || []).filter(Boolean)));
+    if (uniqueFacultyIds.length === 0) {
+      return this.getFaculty(batchId);
+    }
+
+    const facultyUsers = await this.prisma.user.findMany({
+      where: { id: { in: uniqueFacultyIds } },
+      select: {
+        id: true,
+        memberships: { where: { institutionId: batch.institutionId }, select: { id: true } },
+      },
+    });
+    if (facultyUsers.length !== uniqueFacultyIds.length || facultyUsers.some((user) => user.memberships.length === 0)) {
+      throw new ForbiddenException('All assigned faculty must belong to the batch institution');
+    }
+
+    const operations = uniqueFacultyIds.map((userId) => {
+      return (this.prisma as any).batchFaculty.upsert({
+        where: {
+          batchId_userId: {
+            batchId,
+            userId,
+          },
         },
-        _count: {
-          select: { students: true },
+        update: { role },
+        create: {
+          batchId,
+          userId,
+          role,
+        },
+      });
+    });
+
+    await (this.prisma as any).$transaction(operations);
+    return this.getFaculty(batchId);
+  }
+
+  async removeFaculty(batchId: string, userId: string) {
+    await this.findOne(batchId);
+
+    return (this.prisma as any).batchFaculty.delete({
+      where: {
+        batchId_userId: {
+          batchId,
+          userId,
         },
       },
+    });
+  }
+
+  async getFaculty(batchId: string) {
+    await this.findOne(batchId);
+
+    return (this.prisma as any).batchFaculty.findMany({
+      where: { batchId },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, avatarUrl: true, department: true },
+        },
+      },
+      orderBy: { assignedAt: 'desc' },
     });
   }
 

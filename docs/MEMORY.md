@@ -13,7 +13,7 @@ timeline
     title Key Architectural Decisions Log
     2026-08 : ADR-001 : Next.js 19 SSR-First & Tailwind/MUI
             : ADR-002 : NestJS 12 Modular Monolith (REST + GraphQL)
-    2026-08 : ADR-003 : Redis & BullMQ Judge Sandbox Architecture
+    2026-08 : ADR-003 : Azure Service Bus & JudgeBox Sandbox Architecture
             : ADR-004 : WebAuthn Passkeys & TOTP 2FA Auth
     2026-09 : ADR-005 : CodeChef Parity Engine (1★ to 7★ & START256 Matrix)
             : ADR-006 : Strict List Table Standard (Rule #10)
@@ -37,10 +37,10 @@ timeline
 
 ---
 
-### 📌 ADR-003: Asynchronous BullMQ & Docker Sandbox Judge System
+### 📌 ADR-003: Asynchronous Azure Service Bus & Docker JudgeBox Sandbox System
 - **Context**: Evaluating untrusted user code poses security risks, unpredictable runtime loads, and potential Denial-of-Service.
-- **Decision**: Decouple submission intake from code execution using Redis BullMQ queues. Worker processes spawn hardened, isolated Docker containers with Linux `cgroups`, `seccomp`, read-only roots, and `--network none`.
-- **Consequences**: Zero host security vulnerability; predictable throughput with horizontal worker auto-scaling.
+- **Decision**: Decouple submission intake from code execution using Azure Service Bus queues and a dedicated JudgeBox worker microservice (`judgebox/`). Worker processes spawn hardened, isolated Docker containers with Linux `cgroups`, `seccomp`, read-only roots, and `--network none`.
+- **Consequences**: Zero host security vulnerability; predictable throughput with horizontal worker auto-scaling and zero Redis infrastructure dependencies.
 
 ---
 
@@ -116,7 +116,8 @@ timeline
 | **GraphQL Apollo Server** | `GraphQL` | `8000` | Endpoint: `http://localhost:8000/graphql` |
 | **Swagger API Docs** | `OpenAPI Docs` | `8000` | Endpoint: `http://localhost:8000/api/docs` |
 | **PostgreSQL Database** | `Postgres Wire`| `5432` | `DATABASE_URL=postgresql://user:pass@localhost:5432/codeplatform` |
-| **Redis Cache / BullMQ**| `RESP` | `6379` | `REDIS_HOST=localhost`, `REDIS_PORT=6379` |
+| **Azure Service Bus**   | `AMQP / HTTPS` | `5671 / 443` | `AZURE_SERVICE_BUS_CONNECTION_STRING` |
+| **In-Memory Cache**     | `Process RAM`  | In-Process | `AppCacheService` (Built-in L1 Cache) |
 
 ---
 

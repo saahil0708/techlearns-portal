@@ -16,6 +16,8 @@ import {
   Select,
   MenuItem,
   Typography,
+  Checkbox,
+  Chip,
 } from '@mui/material';
 import dynamic from 'next/dynamic';
 
@@ -76,6 +78,7 @@ export default function InstitutionDetailClient({
   const [newBatchCode, setNewBatchCode] = useState('');
   const [newBatchCapacity, setNewBatchCapacity] = useState(60);
   const [newBatchYear, setNewBatchYear] = useState('2026');
+  const [selectedFacultyIds, setSelectedFacultyIds] = useState<string[]>([]);
   const [isSubmittingBatch, setIsSubmittingBatch] = useState(false);
 
   const [isInviteFacultyOpen, setIsInviteFacultyOpen] = useState(false);
@@ -130,30 +133,39 @@ export default function InstitutionDetailClient({
   const reloadStudentsAndBatches = async () => {
     await refreshLiveInstitution();
     try {
-      const [batchesRes, usersRes] = await Promise.allSettled([
-        apiService.getBatchesByInstitution(liveInstitution.id || institution.id),
+      const targetInstId = liveInstitution.id || institution.id;
+      const [batchesRes, usersRes, facultyRes] = await Promise.allSettled([
+        apiService.getBatchesByInstitution(targetInstId),
         apiService.getUsers({ role: 'STUDENT', limit: 100 }),
+        apiService.getInstitutionMembers(targetInstId),
       ]);
 
       if (batchesRes.status === 'fulfilled' && Array.isArray(batchesRes.value)) {
-        const mappedBatches: BatchItem[] = batchesRes.value.map((b: any) => ({
-          id: b.id,
-          name: b.name,
-          code: b.code || b.name.substring(0, 8).toUpperCase(),
-          studentsCount: b._count?.enrollments ?? b.studentsCount ?? 0,
-          maxCapacity: b.maxCapacity || 60,
-          facultyLead: b.facultyLead?.name || 'Unassigned',
-          coursesAssigned: b._count?.courses ?? 0,
-          year: b.year || '2026',
-          status: b.status === 'ACTIVE' ? 'Active' : b.status === 'COMPLETED' ? 'Completed' : 'Upcoming',
-          avgAccuracy: '0%',
-        }));
+        const mappedBatches: BatchItem[] = batchesRes.value.map((b: any) => {
+          const assignedFaculty = Array.isArray(b.faculty) ? b.faculty : [];
+          const leadName = assignedFaculty.length > 0
+            ? (assignedFaculty.length === 1 ? assignedFaculty[0].user?.name : `${assignedFaculty.length} Mentors`)
+            : 'Unassigned';
+          return {
+            id: b.id,
+            name: b.name,
+            code: b.code || b.name.substring(0, 8).toUpperCase(),
+            studentsCount: b._count?.students ?? b._count?.enrollments ?? b.studentsCount ?? 0,
+            maxCapacity: b.maxCapacity || 60,
+            facultyLead: leadName,
+            faculty: assignedFaculty,
+            facultyIds: assignedFaculty.map((f: any) => f.userId || f.user?.id).filter(Boolean),
+            coursesAssigned: b._count?.courses ?? 0,
+            year: b.year || '2026',
+            status: b.status === 'ACTIVE' ? 'Active' : b.status === 'COMPLETED' ? 'Completed' : 'Upcoming',
+            avgAccuracy: '0%',
+          };
+        });
         setBatches(mappedBatches);
       }
 
       if (usersRes.status === 'fulfilled') {
         const rawUsers = usersRes.value?.items || (Array.isArray(usersRes.value) ? usersRes.value : []);
-        const targetInstId = liveInstitution.id || institution.id;
         const instUsers = rawUsers.filter((u: any) =>
           u.institutionId === targetInstId ||
           (Array.isArray(u.memberships) && u.memberships.some((m: any) => m.institutionId === targetInstId || m.collegeId === targetInstId))
@@ -175,13 +187,37 @@ export default function InstitutionDetailClient({
           setStudents(mappedStudents);
         }
       }
+
+      if (facultyRes.status === 'fulfilled') {
+        const rawMembers = facultyRes.value?.items || (Array.isArray(facultyRes.value) ? facultyRes.value : []);
+        const instFaculty = rawMembers.filter((m: any) =>
+          m.role === 'FACULTY' || m.role === 'INSTITUTION_ADMIN' || m.role === 'COLLEGE_ADMIN' || m.user?.globalRole === 'FACULTY'
+        );
+        if (instFaculty.length > 0) {
+          const mappedFaculty: FacultyItem[] = instFaculty.map((m: any) => {
+            const u = m.user || m;
+            return {
+              id: u.id || m.userId,
+              name: u.name || 'Faculty Mentor',
+              email: u.email || '',
+              department: m.department || 'Computer Science & Engineering',
+              role: (m.role === 'INSTITUTION_ADMIN' ? 'Professor' : 'Professor') as 'Professor' | 'HOD' | 'Dean' | 'Lab Assistant',
+              activeBatches: batches.length || 1,
+              problemsCreated: u._count?.createdProblems ?? 0,
+              joinedDate: new Date(u.createdAt || m.createdAt || Date.now()).toLocaleDateString(),
+              status: 'Active',
+            };
+          });
+          setFaculty(mappedFaculty);
+        }
+      }
     } catch {
       // background refresh fallback
     }
   };
 
   useEffect(() => {
-    refreshLiveInstitution();
+    reloadStudentsAndBatches();
   }, [institution.id]);
 
   const handleSaveSettings = async () => {
@@ -226,6 +262,7 @@ const escapeHtml = (unsafe: any): string => {
     setNewBatchCode('');
     setNewBatchCapacity(60);
     setNewBatchYear('2026');
+    setSelectedFacultyIds([]);
   };
 
   const handleCreateBatch = async () => {
@@ -235,12 +272,20 @@ const escapeHtml = (unsafe: any): string => {
     }
     setIsSubmittingBatch(true);
     try {
+      const assignedFacultyObjs = faculty
+        .filter((f) => selectedFacultyIds.includes(f.id))
+        .map((f) => ({ id: f.id, user: { id: f.id, name: f.name, email: f.email, department: f.department } }));
+      const leadName = assignedFacultyObjs.length > 0
+        ? (assignedFacultyObjs.length === 1 ? assignedFacultyObjs[0].user?.name : `${assignedFacultyObjs.length} Mentors`)
+        : 'Unassigned';
+
       if (editingBatch?.id) {
         const oldBatchName = editingBatch.name;
         const trimmedNewName = newBatchName.trim();
         await apiService.updateBatch(editingBatch.id, {
           name: trimmedNewName,
           maxCapacity: newBatchCapacity,
+          facultyIds: selectedFacultyIds,
         });
         setBatches((prev) =>
           prev.map((b) =>
@@ -249,6 +294,9 @@ const escapeHtml = (unsafe: any): string => {
                   ...b,
                   name: trimmedNewName,
                   maxCapacity: newBatchCapacity,
+                  facultyLead: leadName,
+                  faculty: assignedFacultyObjs,
+                  facultyIds: selectedFacultyIds,
                 }
               : b
           )
@@ -260,13 +308,14 @@ const escapeHtml = (unsafe: any): string => {
               : s
           )
         );
-        toast.success(`Batch "${trimmedNewName}" updated successfully.`, 'Batch Updated');
+        toast.success(`Batch "${trimmedNewName}" updated with ${selectedFacultyIds.length} faculty mentor(s).`, 'Batch Updated');
       } else {
         const created = await apiService.createBatch({
           name: newBatchName.trim(),
           code: newBatchCode.trim().toUpperCase(),
           institutionId: liveInstitution.id,
           maxCapacity: newBatchCapacity || 60,
+          facultyIds: selectedFacultyIds,
         });
 
         const newBatchItem: BatchItem = {
@@ -275,7 +324,9 @@ const escapeHtml = (unsafe: any): string => {
           code: newBatchCode.trim().toUpperCase(),
           studentsCount: 0,
           maxCapacity: newBatchCapacity,
-          facultyLead: 'Unassigned',
+          facultyLead: leadName,
+          faculty: assignedFacultyObjs,
+          facultyIds: selectedFacultyIds,
           coursesAssigned: 0,
           year: newBatchYear,
           status: 'Active',
@@ -283,7 +334,7 @@ const escapeHtml = (unsafe: any): string => {
         };
 
         setBatches((prev) => [newBatchItem, ...prev]);
-        toast.success(`Batch "${newBatchName}" created successfully.`, 'Batch Created');
+        toast.success(`Batch "${newBatchName}" created with ${selectedFacultyIds.length} faculty mentor(s).`, 'Batch Created');
       }
       handleCloseBatchDialog();
     } catch (err: any) {
@@ -584,6 +635,7 @@ const escapeHtml = (unsafe: any): string => {
                 setNewBatchCode('');
                 setNewBatchCapacity(60);
                 setNewBatchYear('2026');
+                setSelectedFacultyIds([]);
                 setIsCreateBatchOpen(true);
               }}
               onOpenEditBatch={(b) => {
@@ -592,6 +644,7 @@ const escapeHtml = (unsafe: any): string => {
                 setNewBatchCode(b.code);
                 setNewBatchCapacity(b.maxCapacity);
                 setNewBatchYear(b.year);
+                setSelectedFacultyIds(b.facultyIds || b.faculty?.map((f: any) => f.userId || f.user?.id || f.id).filter(Boolean) || []);
                 setIsCreateBatchOpen(true);
               }}
               onDeleteBatch={handleDeleteBatch}
@@ -686,6 +739,81 @@ const escapeHtml = (unsafe: any): string => {
             fullWidth
             size="small"
           />
+
+          {/* Multiple Faculty Mentors Selection */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#334155' }}>
+                Assign Faculty Mentors & Coordinators
+              </Typography>
+              <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600 }}>
+                {selectedFacultyIds.length} Selected
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                maxHeight: 160,
+                overflowY: 'auto',
+                border: '1px solid #E2E8F0',
+                borderRadius: '8px',
+                p: 1,
+                bgcolor: '#F8FAFC',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 0.75,
+              }}
+            >
+              {faculty.length === 0 ? (
+                <Typography sx={{ fontSize: '0.78rem', color: '#94A3B8', p: 1, textAlign: 'center' }}>
+                  No faculty mentors registered under this institution.
+                </Typography>
+              ) : (
+                faculty.map((f) => {
+                  const isSelected = selectedFacultyIds.includes(f.id);
+                  return (
+                    <Box
+                      key={f.id}
+                      onClick={() => {
+                        setSelectedFacultyIds((prev) =>
+                          prev.includes(f.id) ? prev.filter((id) => id !== f.id) : [...prev, f.id]
+                        );
+                      }}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        p: '6px 10px',
+                        borderRadius: '6px',
+                        bgcolor: isSelected ? '#EFF6FF' : '#FFFFFF',
+                        border: isSelected ? '1px solid #93C5FD' : '1px solid #E2E8F0',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        '&:hover': { bgcolor: isSelected ? '#DBEAFE' : '#F1F5F9' },
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Checkbox checked={isSelected} size="small" sx={{ p: 0, color: '#CBD5E1', '&.Mui-checked': { color: '#2563EB' } }} />
+                        <Box>
+                          <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>
+                            {f.name}
+                          </Typography>
+                          <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>
+                            {f.email} • {f.department || 'Faculty'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Chip
+                        label={f.role}
+                        size="small"
+                        sx={{ height: 20, fontSize: '0.68rem', fontWeight: 600, bgcolor: '#F1F5F9', color: '#475569' }}
+                      />
+                    </Box>
+                  );
+                })
+              )}
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2.5, gap: 1 }}>
           <Button onClick={handleCloseBatchDialog} sx={{ color: '#64748B', fontWeight: 700 }}>

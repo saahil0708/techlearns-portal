@@ -237,6 +237,33 @@ export default function ContestQuickPeekDrawer({
           </Box>
         </Box>
 
+        {/* Target Batch / Cohort if assigned */}
+        {contest.batch && (
+          <Box>
+            <Typography sx={{ fontSize: '0.76rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', mb: 1, letterSpacing: '0.04em' }}>
+              Target Cohort & Auto-Enrollment
+            </Typography>
+            <Box sx={{ p: 2, borderRadius: '12px', bgcolor: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                <PeopleAltRoundedIcon sx={{ color: '#16A34A', fontSize: 20 }} />
+                <Box>
+                  <Typography sx={{ fontWeight: 800, color: '#15803D', fontSize: '0.88rem' }}>
+                    {contest.batch.name}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.75rem', color: '#166534' }}>
+                    All enrolled students in this cohort have automatic test access.
+                  </Typography>
+                </Box>
+              </Box>
+              <Chip
+                label="Active Batch"
+                size="small"
+                sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#DCFCE7', color: '#15803D' }}
+              />
+            </Box>
+          </Box>
+        )}
+
         {/* Scoring Rules & Format */}
         <Box>
           <Typography sx={{ fontSize: '0.76rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', mb: 1, letterSpacing: '0.04em' }}>

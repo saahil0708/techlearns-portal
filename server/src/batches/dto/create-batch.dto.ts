@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsDateString, IsOptional, IsString } from 'class-validator';
 
 export class CreateBatchDto {
   @ApiProperty({
@@ -55,4 +55,13 @@ export class CreateBatchDto {
   @IsOptional()
   @IsDateString()
   endDate?: string;
+
+  @ApiPropertyOptional({
+    example: ['faculty-uuid-1', 'faculty-uuid-2'],
+    description: 'IDs of faculty mentors/coordinators assigned to this cohort',
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  facultyIds?: string[];
 }

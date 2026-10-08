@@ -284,8 +284,8 @@ export const CREATE_PROBLEM_MUTATION = `
 `;
 
 export const CONTESTS_QUERY = `
-  query GetContests($page: Int, $limit: Int, $search: String, $status: ContestStatus) {
-    contests(page: $page, limit: $limit, search: $search, status: $status) {
+  query GetContests($page: Int, $limit: Int, $search: String, $status: ContestStatus, $institutionId: String, $collegeId: String) {
+    contests(page: $page, limit: $limit, search: $search, status: $status, institutionId: $institutionId, collegeId: $collegeId) {
       items {
         id
         title

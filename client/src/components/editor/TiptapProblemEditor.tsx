@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -44,6 +44,8 @@ export default function TiptapProblemEditor({
   placeholder = 'Write problem statement, narrative, background, and input/output descriptions...',
   minHeight = 260,
 }: TiptapProblemEditorProps) {
+  const lastEmittedRef = useRef<string>(content || '');
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -69,15 +71,18 @@ export default function TiptapProblemEditor({
     content: content || '',
     immediatelyRender: false,
     onUpdate: ({ editor: ed }) => {
-      onChange(ed.getHTML());
+      const html = ed.getHTML();
+      lastEmittedRef.current = html;
+      onChange(html);
     },
   });
 
-  // Sync external content changes if editor is ready and content differs
+  // Sync external content changes if editor is ready and content differs from local edits
   useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      // Avoid resetting cursor if editor is focused
-      if (!editor.isFocused) {
+    if (editor) {
+      const currentHtml = editor.getHTML();
+      if (content !== lastEmittedRef.current && content !== currentHtml) {
+        lastEmittedRef.current = content || '';
         editor.commands.setContent(content || '', { emitUpdate: false });
       }
     }

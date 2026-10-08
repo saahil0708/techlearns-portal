@@ -8,8 +8,7 @@
 
 ### Backend (`/server`)
 - **Framework**: NestJS (TypeScript, Node.js, ESM)
-- **Database & ORM**: PostgreSQL, Prisma ORM
-- **Cache & Message Queue**: Redis, BullMQ
+- **Cache & Message Queue**: Azure Service Bus, In-Memory Generational L1 Cache (AppCacheService)
 - **Authentication**: JWT, Passport.js, bcryptjs
 - **API Documentation**: Swagger / OpenAPI (`/api/docs`)
 - **Testing**: Vitest, Supertest, Oxlint

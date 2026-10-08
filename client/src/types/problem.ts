@@ -3,6 +3,7 @@ export type ProblemStatus = 'Published' | 'Draft' | 'Under Review' | 'Archived';
 
 export type ProblemCategory =
   | 'All Topics'
+  | 'Basic Programming & Loops'
   | 'Dynamic Programming'
   | 'Graph Theory & BFS/DFS'
   | 'Trees & Binary Search Trees'

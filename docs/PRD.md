@@ -49,7 +49,7 @@ mindmap
 
 | Metric Category | Target SLA / KPI | Verification Method |
 | :--- | :--- | :--- |
-| **Judge Latency** | $\le 1.5\text{s}$ per single test case; $\le 12\text{s}$ batch suite | BullMQ metric counters & Redis timestamps |
+| **Judge Latency** | $\le 1.5\text{s}$ per single test case; $\le 12\text{s}$ batch suite | Azure Service Bus metrics & worker execution telemetry |
 | **System Availability** | $99.9\%$ uptime for contest arena | Cloud health probes & Application Insights |
 | **Concurrent Submissions** | $1,000+$ simultaneous executions | KEDA auto-scaling worker nodes |
 | **Data Isolation** | $100\%$ tenant isolation between institutions | Automated multi-tenant integration test suite |
@@ -214,7 +214,7 @@ flowchart TD
 | **🔒 Security** | Zero plain-text passwords, zero hidden test leaks, AES-256 encrypted TOTP keys | Prisma middleware, Bcrypt (12 rounds), Security unit tests |
 | **⚡ Performance** | Server-Side Rendering (SSR) by default; client components strictly for interactive leaves | Next.js 19 App Router & React Server Components |
 | **📦 Sandbox Isolation** | Read-only container root, `--network none`, cgroups memory/cpu limit, unprivileged user | Docker Engine API & Linux security profiles |
-| **🌐 Reliability** | Redis BullMQ retry policies, exponential backoff, dead-letter queues | BullMQ automatic job retry & recovery hooks |
+| **🌐 Reliability** | Azure Service Bus durable queueing, exponential backoff, dead-letter recovery | Azure Service Bus automatic message retry & dead-letter queue |
 | **📱 Cross-Platform** | Fully responsive across Desktop ($1920\text{px}$), Laptop ($1366\text{px}$), and Mobile ($375\text{px}$) | Tailwind CSS responsive utility classes & MUI v9 |
 
 ---

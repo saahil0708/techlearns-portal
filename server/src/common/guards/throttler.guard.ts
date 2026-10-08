@@ -15,4 +15,8 @@ export class GqlThrottlerGuard extends ThrottlerGuard {
 
     return super.getRequestResponse(context);
   }
+
+  protected override async getTracker(req: Record<string, any>): Promise<string> {
+    return req.user?.id || req.ip || 'anonymous';
+  }
 }

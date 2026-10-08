@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import OpenAI from 'openai';
 
 export type ProgressiveHintLevel = 1 | 2 | 3;
@@ -211,7 +212,55 @@ Rules: Be extremely brief. Do NOT provide full code solutions.`;
   }
 
   /**
-   * 3. Diagnose Compilation / Test Case Failure (Token Budget: max 140 tokens)
+   * 3. Analyze Time & Space Complexity and Constraint Limits (Token Budget: max 200 tokens)
+   */
+  async analyzeComplexity(context: ProblemContextPayload): Promise<string> {
+    const cleanTitle = (context.title || 'Challenge').trim();
+    const cleanStatement = this.cleanText(context.statement, 450);
+    const statementHash = createHash('sha256').update(cleanStatement).digest('hex').slice(0, 16);
+    const cacheKey = `complexity_${cleanTitle}_${statementHash}`;
+
+    const cached = this.getFromCache(cacheKey);
+    if (cached) {
+      this.logger.debug(`analyzeComplexity: cache hit for [${cleanTitle}]`);
+      return cached;
+    }
+
+    if (!this.client) {
+      return this.getLocalComplexityAnalysis(context);
+    }
+
+    try {
+      const systemPrompt = `You are an algorithmic complexity analyst in a competitive programming platform.
+Analyze the target Big-O time and space complexity strictly in GitHub Markdown under 140 words:
+1. **Target Complexity**: Optimal Time & Space Big-O notation.
+2. **Why It Matters**: Map input size/constraints (e.g., N <= 10^5) to operation budgets (~10^8 ops/sec).
+3. **Brute Force vs Optimal**: 1-sentence comparison of why naive solutions TLE.
+Rules: Strictly conceptual Big-O analysis. Do NOT provide executable code solutions.`;
+
+      const userPrompt = `Title: ${cleanTitle} (${context.difficulty || 'Medium'})\nStatement: ${cleanStatement}\nConstraints excerpt: ${cleanStatement.slice(0, 200)}`;
+
+      const response = await this.client.chat.completions.create({
+        model: this.modelName,
+        temperature: 0.2,
+        max_tokens: 220,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+      });
+
+      const result = response.choices[0]?.message?.content?.trim() || this.getLocalComplexityAnalysis(context);
+      this.setInCache(cacheKey, result);
+      return result;
+    } catch (err: any) {
+      this.logger.error(`analyzeComplexity failed: ${err?.message}`, err?.stack);
+      return this.getLocalComplexityAnalysis(context);
+    }
+  }
+
+  /**
+   * 4. Diagnose Compilation / Test Case Failure (Token Budget: max 140 tokens)
    */
   async diagnoseFailure(context: ProblemContextPayload): Promise<string> {
     if (!this.client) {
@@ -256,55 +305,133 @@ Rules: Under 80 words. Do NOT provide full rewritten code.`;
     taskType?: 'full_problem' | 'statement_only' | 'test_cases' | 'constraints_only';
   }): Promise<any> {
     const taskType = params.taskType || 'full_problem';
-    const category = params.category || 'Dynamic Programming';
-    const difficulty = params.difficulty || 'Medium';
-    const seedTitle = params.title || (params.prompt ? params.prompt.slice(0, 40) : 'Algorithmic Optimization Challenge');
+    const rawContext = (params.prompt || params.statement || params.title || 'Create a unique, creative algorithmic challenge').trim();
+    const lowerPrompt = rawContext.toLowerCase();
+
+    // Dynamically detect difficulty from prompt if not explicitly passed
+    let difficulty = params.difficulty;
+    if (!difficulty || difficulty === 'Medium') {
+      if (
+        lowerPrompt.includes('beginner') ||
+        lowerPrompt.includes('easy') ||
+        lowerPrompt.includes('basic') ||
+        lowerPrompt.includes('simple') ||
+        lowerPrompt.includes('introductory') ||
+        lowerPrompt.includes('fundamentals') ||
+        lowerPrompt.includes('starter')
+      ) {
+        difficulty = 'Easy';
+      } else if (
+        lowerPrompt.includes('hard') ||
+        lowerPrompt.includes('advanced') ||
+        lowerPrompt.includes('complex') ||
+        lowerPrompt.includes('expert')
+      ) {
+        difficulty = 'Hard';
+      } else if (!params.difficulty) {
+        difficulty = 'Medium';
+      }
+    }
+
+    // Dynamically detect category from prompt if not explicitly passed
+    let category = params.category;
+    if (!category || category === 'Dynamic Programming') {
+      if (
+        lowerPrompt.includes('loop') ||
+        lowerPrompt.includes('iteration') ||
+        lowerPrompt.includes('for loop') ||
+        lowerPrompt.includes('while loop') ||
+        lowerPrompt.includes('pattern') ||
+        lowerPrompt.includes('condition') ||
+        lowerPrompt.includes('beginner') ||
+        lowerPrompt.includes('basic')
+      ) {
+        category = 'Basic Programming & Loops';
+      } else if (lowerPrompt.includes('tree') || lowerPrompt.includes('bst') || lowerPrompt.includes('binary tree')) {
+        category = 'Trees & Binary Search Trees';
+      } else if (lowerPrompt.includes('graph') || lowerPrompt.includes('bfs') || lowerPrompt.includes('dfs') || lowerPrompt.includes('dijkstra')) {
+        category = 'Graph Theory & BFS/DFS';
+      } else if (lowerPrompt.includes('string') || lowerPrompt.includes('trie') || lowerPrompt.includes('palindrome')) {
+        category = 'Strings & Tries';
+      } else if (lowerPrompt.includes('two pointer') || lowerPrompt.includes('sliding window') || lowerPrompt.includes('array')) {
+        category = 'Arrays & Two Pointers';
+      } else if (lowerPrompt.includes('math') || lowerPrompt.includes('number theory') || lowerPrompt.includes('prime')) {
+        category = 'Math & Number Theory';
+      } else if (lowerPrompt.includes('greedy')) {
+        category = 'Greedy & Heuristics';
+      } else if (lowerPrompt.includes('dp') || lowerPrompt.includes('dynamic programming')) {
+        category = 'Dynamic Programming';
+      } else if (!params.category) {
+        category = 'Arrays & Loops';
+      }
+    }
 
     if (!this.client) {
-      return this.getLocalGeneratedProblem(params);
+      return this.getLocalGeneratedProblem({ ...params, prompt: rawContext, category, difficulty });
     }
 
     try {
-      const systemPrompt = `You are a competitive programming problem creator and judge architect.
-Return ONLY compact, valid JSON matching this exact structure without markdown backticks or commentary:
+      const defaultPoints = difficulty === 'Easy' ? 100 : difficulty === 'Hard' ? 350 : 200;
+
+      const systemPrompt = `You are a World-Class Competitive Programming Problem Author and Computer Science Educator (LeetCode, Codeforces, ICPC, and University Exam Architect).
+Your goal is to author an ORIGINAL, immersive coding challenge strictly matching the requested DIFFICULTY, TOPIC, and USER PROMPT.
+
+CRITICAL DIFFICULTY & TOPIC ALIGNMENT:
+- If Difficulty is "Easy" or topic mentions "Beginner", "Loops", "Basic", "Conditionals":
+  * Create a straightforward, accessible problem testing fundamentals (e.g. counting event occurrences, iterating over inventory numbers, calculating simple running sums, reversing numbers, validating PINs, filtering even/odd records).
+  * DO NOT introduce Dynamic Programming, Monotonic Queues, Bitmask DP, or advanced data structures for beginner/loop problems!
+  * Constraints should be simple (e.g. 1 <= N <= 1000, numbers <= 10^4).
+  * Solution must be easily solvable with basic for/while loops and if/else conditions.
+- If Difficulty is "Medium" or "Hard":
+  * Use standard LeetCode Medium/Hard algorithmic rigor with realistic constraints ($10^5$).
+
+Return ONLY valid JSON matching this exact structure without markdown fences or commentary:
 {
-  "title": "${seedTitle}",
+  "title": "Clear Problem Title matching the prompt theme",
   "category": "${category}",
   "difficulty": "${difficulty}",
-  "statementHtml": "<p>Rich HTML problem description with rules and examples.</p>",
-  "statementMarkdown": "Markdown version of problem description",
-  "inputFormat": "Input details",
-  "outputFormat": "Expected output details",
-  "constraints": "1 <= N <= 10^5, Time Limit: 1.0s",
-  "sampleInput": "4\\n1 2 3 4",
-  "sampleOutput": "10",
-  "sampleExplanation": "Example 1: Standard case",
+  "points": ${defaultPoints},
+  "timeLimitMs": 1000,
+  "memoryLimitMb": 256,
+  "statementHtml": "<p>Clear real-world scenario explaining the problem clearly without jargon.</p>",
+  "statementMarkdown": "Markdown version of the problem statement with clear input/output rules and examples",
+  "inputFormat": "Input specification with simple, clear variable names...",
+  "outputFormat": "Expected output specification...",
+  "constraints": "1 <= N <= 1000\\nTime Limit: 1.0s, Memory Limit: 256 MB",
+  "sampleInput": "5\\n10 20 30 40 50",
+  "sampleOutput": "150",
+  "sampleExplanation": "Clear step-by-step walkthrough showing the loop execution result",
   "publicTestCases": [
-    { "input": "4\\n1 2 3 4", "expectedOutput": "10", "explanation": "Example 1: Standard array" },
-    { "input": "1\\n5", "expectedOutput": "5", "explanation": "Example 2: Single element" },
-    { "input": "5\\n-2 -5 10 -3 4", "expectedOutput": "11", "explanation": "Example 3: Mixed positive and negative values" }
+    { "input": "...", "expectedOutput": "...", "explanation": "Example 1: Standard case" },
+    { "input": "...", "expectedOutput": "...", "explanation": "Example 2: Small or boundary case" },
+    { "input": "...", "expectedOutput": "...", "explanation": "Example 3: Alternate case" }
   ],
   "hiddenTestCases": [
-    { "input": "10\\n...", "expectedOutput": "...", "explanation": "Hidden edge case: large values" },
-    { "input": "...", "expectedOutput": "...", "explanation": "Hidden edge case: boundary limits" }
+    { "input": "...", "expectedOutput": "...", "explanation": "Hidden Case 1: Minimum scale (N=1)" },
+    { "input": "...", "expectedOutput": "...", "explanation": "Hidden Case 2: Maximum scale" },
+    { "input": "...", "expectedOutput": "...", "explanation": "Hidden Case 3: Edge condition" },
+    { "input": "...", "expectedOutput": "...", "explanation": "Hidden Case 4: Zero or negative values" },
+    { "input": "...", "expectedOutput": "...", "explanation": "Hidden Case 5: Randomized verification case" }
   ],
-  "tags": ["${category}", "Algorithms"]
+  "tags": ["Loops", "Basics", "${category}"]
 }
 
-Important Rules:
-- Provide 2 to 3 distinct, accurate 'publicTestCases' (Example 1, Example 2, Example 3).
-- Ensure all expectedOutputs in publicTestCases and hiddenTestCases are mathematically exact and logically consistent with the problem rules.`;
+Rules:
+1. Strict Difficulty Honor: NEVER generate a Dynamic Programming or advanced algorithm problem when the prompt asks for beginner/loops.
+2. Verified Math: Every expectedOutput in both public and hidden test cases MUST be 100% mathematically exact and correct for the given input.
+3. 3 Public Test Cases + 5 Hidden Cases.`;
 
-      const userPrompt = `Task: ${taskType}\nTitle: ${seedTitle}\nTopic: ${category}\nDifficulty: ${difficulty}\nContext/Statement:\n${this.cleanText(params.prompt || params.statement || 'Create algorithmic challenge with accurate public and hidden test cases.', 450)}`;
+      const userPrompt = `User Prompt: ${rawContext}\nTarget Topic: ${category}\nTarget Difficulty: ${difficulty}\nTask: ${taskType}`;
 
       const response = await this.client.chat.completions.create({
         model: this.modelName,
-        temperature: 0.3,
-        max_tokens: 950,
+        temperature: 0.65,
+        max_tokens: 1800,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
+        response_format: { type: 'json_object' },
       });
 
       const raw = response.choices[0]?.message?.content?.trim() || '';
@@ -312,7 +439,8 @@ Important Rules:
 
       try {
         const parsed = JSON.parse(cleanJson);
-        const fallback = this.getLocalGeneratedProblem(params);
+        const fallback = this.getLocalGeneratedProblem({ prompt: rawContext, category, difficulty });
+
         const publicTestCases = Array.isArray(parsed.publicTestCases) && parsed.publicTestCases.length > 0
           ? parsed.publicTestCases.map((tc: any, idx: number) => ({
               input: String(tc.input ?? ''),
@@ -322,30 +450,45 @@ Important Rules:
             }))
           : fallback.publicTestCases;
 
-        const firstSample = publicTestCases[0] || { input: parsed.sampleInput || '', expectedOutput: parsed.sampleOutput || '', explanation: parsed.sampleExplanation || '' };
+        const firstSample = publicTestCases[0] || {
+          input: parsed.sampleInput || '',
+          expectedOutput: parsed.sampleOutput || '',
+          explanation: parsed.sampleExplanation || '',
+        };
+
+        const hiddenTestCases = Array.isArray(parsed.hiddenTestCases) && parsed.hiddenTestCases.length > 0
+          ? parsed.hiddenTestCases.map((tc: any, idx: number) => ({
+              input: String(tc.input ?? ''),
+              expectedOutput: String(tc.expectedOutput ?? tc.output ?? ''),
+              explanation: tc.explanation ? String(tc.explanation) : `Hidden case #${idx + 1}`,
+              isHidden: true,
+            }))
+          : fallback.hiddenTestCases;
+
+        const diff = parsed.difficulty || difficulty || 'Medium';
+        const points = typeof parsed.points === 'number' ? parsed.points : diff === 'Easy' ? 100 : diff === 'Hard' ? 350 : 200;
+        const timeLimitMs = typeof parsed.timeLimitMs === 'number' ? parsed.timeLimitMs : 1000;
+        const memoryLimitMb = typeof parsed.memoryLimitMb === 'number' ? parsed.memoryLimitMb : 256;
 
         return {
           ...fallback,
           ...parsed,
+          difficulty: diff,
+          points,
+          timeLimitMs,
+          memoryLimitMb,
           sampleInput: firstSample.input,
           sampleOutput: firstSample.expectedOutput,
           sampleExplanation: firstSample.explanation,
           publicTestCases,
-          hiddenTestCases: Array.isArray(parsed.hiddenTestCases)
-            ? parsed.hiddenTestCases.map((tc: any, idx: number) => ({
-                input: String(tc.input ?? ''),
-                expectedOutput: String(tc.expectedOutput ?? tc.output ?? ''),
-                explanation: tc.explanation ? String(tc.explanation) : `Hidden case #${idx + 1}`,
-                isHidden: true,
-              }))
-            : fallback.hiddenTestCases,
+          hiddenTestCases,
         };
       } catch {
-        return this.getLocalGeneratedProblem(params);
+        return this.getLocalGeneratedProblem({ prompt: rawContext, category, difficulty });
       }
     } catch (err: any) {
       this.logger.error(`generateProblem failed: ${err?.message}`, err?.stack);
-      return this.getLocalGeneratedProblem(params);
+      return this.getLocalGeneratedProblem({ ...params, prompt: rawContext, category, difficulty });
     }
   }
 
@@ -487,19 +630,49 @@ Instructions:
     category?: string;
     difficulty?: string;
   }) {
-    const title = params.title || (params.prompt ? params.prompt.slice(0, 40) : 'Maximum Subarray Target Partition');
-    const category = params.category || 'Dynamic Programming';
-    const difficulty = params.difficulty || 'Medium';
+    const raw = (params.prompt || params.title || '').toLowerCase();
+    let category = params.category || 'Dynamic Programming';
+    let title = params.title || 'Dynamic Subarray Capacity Optimization';
+    let difficulty = (params.difficulty as 'Easy' | 'Medium' | 'Hard') || 'Medium';
+    let timeLimitMs = 1000;
+    let memoryLimitMb = 256;
+
+    if (raw.includes('graph') || raw.includes('bfs') || raw.includes('dfs') || raw.includes('teleport') || raw.includes('city') || raw.includes('network')) {
+      category = 'Graph Theory & BFS/DFS';
+      title = params.title || 'Quantum Grid Teleportation Routing';
+      timeLimitMs = 1500;
+    } else if (raw.includes('tree') || raw.includes('bst') || raw.includes('ancestor') || raw.includes('leaf')) {
+      category = 'Trees & Binary Search Trees';
+      title = params.title || 'Hierarchical Tree Energy Propagation';
+    } else if (raw.includes('string') || raw.includes('trie') || raw.includes('palindrome') || raw.includes('prefix')) {
+      category = 'Strings & Tries';
+      title = params.title || 'Lexicographical Substring Transformation';
+      memoryLimitMb = 512;
+    } else if (raw.includes('greedy') || raw.includes('interval') || raw.includes('schedule') || raw.includes('robot')) {
+      category = 'Greedy & Heuristics';
+      title = params.title || 'Optimal Energy Recharging Schedule';
+    } else if (raw.includes('math') || raw.includes('prime') || raw.includes('gcd') || raw.includes('modular')) {
+      category = 'Math & Number Theory';
+      title = params.title || 'Prime Spiral Modulo Congruence';
+    } else if (raw.includes('array') || raw.includes('pointer') || raw.includes('window')) {
+      category = 'Arrays & Two Pointers';
+      title = params.title || 'Dynamic Sliding Window Frequency';
+    }
+
+    const points = difficulty === 'Easy' ? 100 : difficulty === 'Hard' ? 350 : 200;
 
     return {
       title,
       category,
       difficulty,
-      statementHtml: `<p>Given an array of integers <code>nums</code> and an integer <code>k</code>, return the maximum sum of a non-empty contiguous subarray such that the length of the subarray is at most <code>k</code>.</p><p>An optimal solution should run in <strong>O(N)</strong> or <strong>O(N log N)</strong> time.</p>`,
-      statementMarkdown: `Given an array of integers \`nums\` and an integer \`k\`, return the maximum sum of a non-empty contiguous subarray such that the length of the subarray is at most \`k\`.\n\nAn optimal solution should run in **O(N)** or **O(N log N)** time.`,
+      points,
+      timeLimitMs,
+      memoryLimitMb,
+      statementHtml: `<p>Given an array of integers <code>nums</code> of length <code>N</code> and an integer <code>k</code>, return the maximum sum of a non-empty contiguous subarray such that the length of the subarray is at most <code>k</code>.</p><p>An optimal solution must run in <strong>O(N)</strong> or <strong>O(N log N)</strong> time.</p>`,
+      statementMarkdown: `Given an array of integers \`nums\` of length \`N\` and an integer \`k\`, return the maximum sum of a non-empty contiguous subarray such that the length of the subarray is at most \`k\`.\n\nAn optimal solution must run in **O(N)** or **O(N log N)** time.`,
       inputFormat: `The first line contains two integers N and k (1 <= N <= 10^5, 1 <= k <= N).\nThe second line contains N space-separated integers representing nums.`,
       outputFormat: `Output a single integer representing the maximum subarray sum satisfying the length constraint.`,
-      constraints: `1 <= N <= 100,000\n1 <= k <= N\n-10^4 <= nums[i] <= 10^4\nTime Limit: 1000 ms\nMemory Limit: 256 MB`,
+      constraints: `1 <= N <= 100,000\n1 <= k <= N\n-10^4 <= nums[i] <= 10^4\nTime Limit: ${timeLimitMs} ms\nMemory Limit: ${memoryLimitMb} MB`,
       sampleInput: `5 2\n-1 2 4 -3 5`,
       sampleOutput: `6`,
       sampleExplanation: `The subarray [2, 4] has length 2 <= 2 and yields the maximum sum of 2 + 4 = 6.`,
@@ -509,12 +682,13 @@ Instructions:
         { input: `3 1\n-5 -2 -8`, expectedOutput: `-2`, explanation: `Example 3: All negative values with k=1, max element is -2.`, isHidden: false },
       ],
       hiddenTestCases: [
-        { input: `1 1\n-5`, expectedOutput: `-5`, explanation: `Single negative element`, isHidden: true },
-        { input: `4 4\n1 2 3 4`, expectedOutput: `10`, explanation: `All positive elements`, isHidden: true },
-        { input: `6 3\n10 -20 15 20 -5 30`, expectedOutput: `45`, explanation: `Mixed values with window boundary`, isHidden: true },
-        { input: `5 1\n-1 -2 -3 -4 -5`, expectedOutput: `-1`, explanation: `All negative values with k=1`, isHidden: true },
+        { input: `1 1\n-5`, expectedOutput: `-5`, explanation: `Hidden Case 1: Single negative element N=1`, isHidden: true },
+        { input: `4 4\n1 2 3 4`, expectedOutput: `10`, explanation: `Hidden Case 2: All positive elements`, isHidden: true },
+        { input: `6 3\n10 -20 15 20 -5 30`, expectedOutput: `45`, explanation: `Hidden Case 3: Mixed values with window boundary`, isHidden: true },
+        { input: `5 1\n-1 -2 -3 -4 -5`, expectedOutput: `-1`, explanation: `Hidden Case 4: All negative values with k=1`, isHidden: true },
+        { input: `5 5\n100 200 500 1000 2000`, expectedOutput: `3800`, explanation: `Hidden Case 5: Large values stress case`, isHidden: true },
       ],
-      tags: [category, 'Algorithms', 'Arrays'],
+      tags: [category, 'Algorithms', 'Optimization'],
     };
   }
 
@@ -526,5 +700,22 @@ Instructions:
     if (level === 1) return `Consider what data structure enables fast O(1) or O(log N) lookups for this problem.`;
     if (level === 2) return `Target an optimal Time Complexity of O(N) or O(N log N) by avoiding nested brute-force loops.`;
     return `Maintain state tracking seen elements, iterate through the input once, and handle boundary conditions before returning.`;
+  }
+
+  private getLocalComplexityAnalysis(context: ProblemContextPayload): string {
+    const title = context.title || 'the problem';
+    return `### Optimal Complexity Analysis for **${title}**
+
+- **Target Time Complexity**: **$O(N)$** or **$O(N \\log N)$** based on input bounds ($N \\le 10^5$).
+- **Target Space Complexity**: **$O(1)$** auxiliary memory (or **$O(N)$** if a frequency map or stack is required).
+
+### Complexity Comparison
+
+| Approach | Time Complexity | Space Complexity | Feasibility |
+| :--- | :--- | :--- | :--- |
+| **Brute Force** | $O(N^2)$ or $O(2^N)$ | $O(1)$ | ❌ **TLE** ($> 10^8$ ops for large $N$) |
+| **Optimal Pattern** | **$O(N)$** / **$O(N \\log N)$** | **$O(1)$** / **$O(N)$** | ✅ **Passes within 1.0s limit** |
+
+> 💡 **Constraint Tip**: Competitive judges limit execution to $\\approx 10^8$ basic operations per second. For $N = 10^5$, an $O(N^2)$ algorithm requires $10^{10}$ operations and will trigger Time Limit Exceeded.`;
   }
 }
