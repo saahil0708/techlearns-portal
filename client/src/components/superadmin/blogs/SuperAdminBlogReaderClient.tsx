@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { FluidArrowBack } from '@/utils/fluid_arrow';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -86,7 +87,7 @@ export default function SuperAdminBlogReaderClient({
     tags: (initialBlog.tags || []).join(', '),
     status: initialBlog.status || 'Published',
     authorName: initialBlog.author?.name || 'Platform Administrator',
-    authorCollege: initialBlog.author?.college || 'CodePlatform HQ',
+    authorCollege: initialBlog.author?.college || 'TechLearns HQ',
     content: initialBlog.content || '',
   });
 
@@ -104,7 +105,7 @@ export default function SuperAdminBlogReaderClient({
       tags: (initialBlog.tags || []).join(', '),
       status: initialBlog.status || 'Published',
       authorName: initialBlog.author?.name || 'Platform Administrator',
-      authorCollege: initialBlog.author?.college || 'CodePlatform HQ',
+      authorCollege: initialBlog.author?.college || 'TechLearns HQ',
       content: initialBlog.content || '',
     });
   }, [initialBlog]);
@@ -204,9 +205,9 @@ export default function SuperAdminBlogReaderClient({
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         py: { xs: 2, sm: 2.5, md: 3 },
@@ -253,7 +254,7 @@ export default function SuperAdminBlogReaderClient({
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Button
                 variant="outlined"
-                startIcon={<ArrowBackRoundedIcon />}
+                startIcon={<FluidArrowBack />}
                 onClick={() => router.push('/superadmin/blogs')}
                 sx={{
                   borderRadius: '10px',
@@ -277,9 +278,9 @@ export default function SuperAdminBlogReaderClient({
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '0.84rem',
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Edit Article
@@ -319,12 +320,12 @@ export default function SuperAdminBlogReaderClient({
               <Chip
                 label={blog.category}
                 sx={{
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   fontWeight: 800,
                   fontSize: '0.8rem',
                   borderRadius: '8px',
-                  border: '1px solid #BFDBFE',
+                  border: '1px solid #F3E8FF',
                 }}
               />
               <Chip
@@ -409,7 +410,7 @@ export default function SuperAdminBlogReaderClient({
                 <Box>
                   <Typography sx={{ fontWeight: 800, fontSize: '0.94rem', color: '#0F172A', display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     {blog.author.name}
-                    {blog.author.isVerified && <CheckCircleRoundedIcon sx={{ fontSize: 16, color: '#2563EB' }} />}
+                    {blog.author.isVerified && <CheckCircleRoundedIcon sx={{ fontSize: 16, color: '#0B1F3A' }} />}
                   </Typography>
                   <Typography sx={{ fontSize: '0.78rem', color: '#64748B' }}>
                     {blog.author.role} • {blog.author.college}
@@ -485,8 +486,8 @@ export default function SuperAdminBlogReaderClient({
                     borderRadius: '10px',
                     textTransform: 'none',
                     fontWeight: 700,
-                    borderColor: '#2563EB',
-                    color: '#2563EB',
+                    borderColor: '#0B1F3A',
+                    color: '#0B1F3A',
                   }}
                 >
                   Edit This Article
@@ -538,8 +539,8 @@ export default function SuperAdminBlogReaderClient({
                 width: 36,
                 height: 36,
                 borderRadius: '10px',
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -692,7 +693,7 @@ export default function SuperAdminBlogReaderClient({
                       borderRadius: '8px',
                       overflow: 'hidden',
                       cursor: 'pointer',
-                      border: editForm.coverImage === imgUrl ? '2px solid #2563EB' : '1px solid #CBD5E1',
+                      border: editForm.coverImage === imgUrl ? '2px solid #0B1F3A' : '1px solid #CBD5E1',
                     }}
                   >
                     <Box component="img" src={imgUrl} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -761,12 +762,12 @@ export default function SuperAdminBlogReaderClient({
             disabled={isSaving}
             onClick={handleSaveEdit}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               textTransform: 'none',
               fontWeight: 700,
               borderRadius: '8px',
               px: 3,
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             {isSaving ? 'Saving Changes...' : 'Save & Publish Updates'}

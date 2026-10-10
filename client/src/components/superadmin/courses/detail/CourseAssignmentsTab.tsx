@@ -51,11 +51,11 @@ export default function CourseAssignmentsTab({
             size="small"
             startIcon={<AddRoundedIcon />}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               borderRadius: '9999px',
               textTransform: 'none',
               fontWeight: 700,
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Create Assignment
@@ -101,8 +101,8 @@ export default function CourseAssignmentsTab({
                         label={asg.type}
                         size="small"
                         sx={{
-                          bgcolor: '#EFF6FF',
-                          color: '#2563EB',
+                          bgcolor: '#FAF5FF',
+                          color: '#0B1F3A',
                           fontWeight: 700,
                           fontSize: '0.72rem',
                           borderRadius: '6px',

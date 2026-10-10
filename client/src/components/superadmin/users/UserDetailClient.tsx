@@ -236,12 +236,12 @@ function PaginationToolbar({
                     borderRadius: '9999px',
                     fontSize: '0.78rem',
                     fontWeight: safePage === p ? 800 : 500,
-                    bgcolor: safePage === p ? '#2563EB' : '#FFFFFF',
+                    bgcolor: safePage === p ? '#0B1F3A' : '#FFFFFF',
                     color: safePage === p ? '#FFFFFF' : '#64748B',
                     border: '1px solid',
-                    borderColor: safePage === p ? '#2563EB' : '#E2E8F0',
+                    borderColor: safePage === p ? '#0B1F3A' : '#E2E8F0',
                     '&:hover': {
-                      bgcolor: safePage === p ? '#1D4ED8' : '#F1F5F9',
+                      bgcolor: safePage === p ? '#17366E' : '#F1F5F9',
                       color: safePage === p ? '#FFFFFF' : '#0F172A',
                     },
                   }}
@@ -412,9 +412,9 @@ export default function UserDetailClient({
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -468,7 +468,7 @@ export default function UserDetailClient({
                     px: 2,
                     py: 0.75,
                     boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                    '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+                    '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A', borderColor: '#D8B4FE' },
                   }}
                 >
                   Export Audit Trail
@@ -503,7 +503,7 @@ export default function UserDetailClient({
                 </MenuItem>
                 <MenuItem onClick={handleExportCSV} sx={{ borderRadius: '8px', py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 32 }}>
-                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                   </ListItemIcon>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                     Download CSV (.csv)
@@ -538,8 +538,8 @@ export default function UserDetailClient({
                   bgcolor: user.avatarColor,
                   fontWeight: 800,
                   fontSize: '1.6rem',
-                  border: '3px solid #BFDBFE',
-                  boxShadow: '0 8px 24px rgba(37,99,235,0.18)',
+                  border: '3px solid #F3E8FF',
+                  boxShadow: '0 8px 24px rgba(91, 45, 144, 0.18)',
                 }}
               >
                 {user.name.charAt(0)}
@@ -554,9 +554,9 @@ export default function UserDetailClient({
                     label={user.role.replace('_', ' ')}
                     size="small"
                     sx={{
-                      bgcolor: '#EFF6FF',
-                      color: '#2563EB',
-                      border: '1px solid #BFDBFE',
+                      bgcolor: '#FAF5FF',
+                      color: '#0B1F3A',
+                      border: '1px solid #F3E8FF',
                       fontWeight: 800,
                       fontSize: '0.72rem',
                       borderRadius: '9999px',
@@ -577,7 +577,7 @@ export default function UserDetailClient({
                 </Box>
 
                 <Typography variant="body2" sx={{ color: '#64748B', mt: 0.3 }}>
-                  <span style={{ color: '#2563EB', fontWeight: 600, fontFamily: 'monospace' }}>@{user.handle}</span> • {user.email} • UID: <span style={{ fontFamily: 'monospace' }}>{user.id}</span>
+                  <span style={{ color: '#0B1F3A', fontWeight: 600, fontFamily: 'monospace' }}>@{user.handle}</span> • {user.email} • UID: <span style={{ fontFamily: 'monospace' }}>{user.id}</span>
                 </Typography>
 
                 <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mt: 0.5 }}>
@@ -608,14 +608,14 @@ export default function UserDetailClient({
                 variant="contained"
                 sx={{
                   borderRadius: '9999px',
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '0.82rem',
                   px: 2.5,
-                  boxShadow: '0 4px 12px rgba(37,99,235,0.25)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Modify Permissions
@@ -675,10 +675,10 @@ export default function UserDetailClient({
                   color: '#64748B',
                   minHeight: 48,
                   px: 2.5,
-                  '&.Mui-selected': { color: '#2563EB' },
+                  '&.Mui-selected': { color: '#0B1F3A' },
                 },
                 '& .MuiTabs-indicator': {
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   height: 3,
                   borderRadius: '3px 3px 0 0',
                 },
@@ -776,8 +776,8 @@ export default function UserDetailClient({
                                 fontSize: '0.68rem',
                                 fontWeight: 700,
                                 borderRadius: '9999px',
-                                bgcolor: '#EFF6FF',
-                                color: '#2563EB',
+                                bgcolor: '#FAF5FF',
+                                color: '#0B1F3A',
                               }}
                             />
                           </TableCell>
@@ -873,7 +873,7 @@ export default function UserDetailClient({
                               sx={{ fontSize: '0.68rem', fontWeight: 700, borderRadius: '9999px', bgcolor: '#F1F5F9' }}
                             />
                           </TableCell>
-                          <TableCell sx={{ color: '#2563EB', fontWeight: 700, fontSize: '0.82rem' }}>
+                          <TableCell sx={{ color: '#0B1F3A', fontWeight: 700, fontSize: '0.82rem' }}>
                             {m.roleInTenant}
                           </TableCell>
                           <TableCell sx={{ color: '#64748B', fontSize: '0.82rem' }}>
@@ -960,7 +960,7 @@ export default function UserDetailClient({
                                 <Chip
                                   label="Current Session"
                                   size="small"
-                                  sx={{ fontSize: '0.65rem', fontWeight: 800, borderRadius: '9999px', bgcolor: '#EFF6FF', color: '#2563EB' }}
+                                  sx={{ fontSize: '0.65rem', fontWeight: 800, borderRadius: '9999px', bgcolor: '#FAF5FF', color: '#0B1F3A' }}
                                 />
                               )}
                             </Box>
@@ -1052,7 +1052,7 @@ export default function UserDetailClient({
                               sx={{ fontSize: '0.68rem', fontWeight: 700, borderRadius: '9999px', bgcolor: '#F1F5F9' }}
                             />
                           </TableCell>
-                          <TableCell sx={{ color: '#2563EB', fontWeight: 700, fontSize: '0.82rem' }}>
+                          <TableCell sx={{ color: '#0B1F3A', fontWeight: 700, fontSize: '0.82rem' }}>
                             {p.currentValue}
                           </TableCell>
                           <TableCell align="right" sx={{ color: '#64748B', fontSize: '0.8rem', pr: 3 }}>

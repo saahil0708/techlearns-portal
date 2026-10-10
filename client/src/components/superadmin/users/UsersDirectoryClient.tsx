@@ -358,7 +358,7 @@ const escapeHtml = (unsafe: any): string => {
         createdAt: 'Just now',
         createdAtRaw: created?.createdAt || nowIso,
         status: newUserData.sendInviteEmail ? 'Invited' : 'Active',
-        avatarColor: '#2563EB',
+        avatarColor: '#0B1F3A',
       };
 
       setUsers((prev) => [newUserEntity, ...prev]);
@@ -484,9 +484,9 @@ const escapeHtml = (unsafe: any): string => {
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -680,7 +680,7 @@ const escapeHtml = (unsafe: any): string => {
           }}
           sx={{ fontSize: '0.82rem', fontWeight: 600, borderRadius: '8px', color: '#0F172A' }}
         >
-          <ListItemIcon sx={{ minWidth: '28px !important', color: '#2563EB' }}>
+          <ListItemIcon sx={{ minWidth: '28px !important', color: '#0B1F3A' }}>
             <VisibilityRoundedIcon fontSize="small" />
           </ListItemIcon>
           Quick Peek Profile
@@ -693,7 +693,7 @@ const escapeHtml = (unsafe: any): string => {
           }}
           sx={{ fontSize: '0.82rem', fontWeight: 600, borderRadius: '8px', color: '#0F172A' }}
         >
-          <ListItemIcon sx={{ minWidth: '28px !important', color: '#2563EB' }}>
+          <ListItemIcon sx={{ minWidth: '28px !important', color: '#0B1F3A' }}>
             <EditRoundedIcon fontSize="small" />
           </ListItemIcon>
           Edit User Details

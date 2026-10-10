@@ -93,12 +93,12 @@ export default function ModuleAuthoringModal({
               width: 42,
               height: 42,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           >
             <LayersRoundedIcon sx={{ fontSize: 22 }} />
@@ -149,7 +149,7 @@ export default function ModuleAuthoringModal({
                     bgcolor: '#F8FAFC',
                     '& fieldset': { borderColor: borderColor },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 },
               }}
@@ -179,7 +179,7 @@ export default function ModuleAuthoringModal({
                     bgcolor: '#F8FAFC',
                     '& fieldset': { borderColor: borderColor },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 },
               }}
@@ -209,7 +209,7 @@ export default function ModuleAuthoringModal({
             startIcon={isSubmitting ? <CircularProgress size={16} sx={{ color: '#FFFFFF' }} /> : null}
             sx={{
               borderRadius: '10px',
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               textTransform: 'none',
               fontWeight: 700,
@@ -217,7 +217,7 @@ export default function ModuleAuthoringModal({
               px: 3,
               py: 0.8,
               boxShadow: 'none',
-              '&:hover': { bgcolor: '#1D4ED8', boxShadow: '0 4px 14px rgba(37,99,235,0.25)' },
+              '&:hover': { bgcolor: '#17366E', boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)' },
             }}
           >
             {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Module'}

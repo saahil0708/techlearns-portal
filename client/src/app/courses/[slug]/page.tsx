@@ -21,12 +21,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!course) {
     return {
-      title: 'Course Not Found | CodePlatform',
+      title: 'Course Not Found | TechLearns',
     };
   }
 
   return {
-    title: `${course.title} (${course.code}) | CodePlatform Learning Portal`,
+    title: `${course.title} (${course.code}) | TechLearns Learning Portal`,
     description: course.description || `Interactive curriculum for ${course.title} with lesson materials, practice coding sandbox, and real-time progress.`,
   };
 }

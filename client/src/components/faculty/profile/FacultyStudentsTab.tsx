@@ -94,7 +94,7 @@ export default function FacultyStudentsTab({
 
   const borderColor = '#E2E8F0';
 
-  const avatarColors = ['#2563EB', '#3B82F6', '#10B981', '#7C3AED', '#DC2626', '#0284C7', '#059669'];
+  const avatarColors = ['#0B1F3A', '#5B2D90', '#10B981', '#7C3AED', '#DC2626', '#5B2D90', '#059669'];
 
   const loadCollegeStudents = useCallback(async () => {
     if (!collegeId) return;
@@ -314,12 +314,12 @@ export default function FacultyStudentsTab({
               label={`${students.length} Total Enrolled`}
               size="small"
               sx={{
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 fontWeight: 700,
                 fontSize: '0.74rem',
                 borderRadius: '9999px',
-                border: '1px solid #BFDBFE',
+                border: '1px solid #F3E8FF',
               }}
             />
           </Box>
@@ -339,7 +339,7 @@ export default function FacultyStudentsTab({
                 border: `1px solid ${borderColor}`,
                 borderRadius: '9999px',
                 p: 0.85,
-                '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB' },
+                '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A' },
               }}
             >
               <RefreshRoundedIcon sx={{ fontSize: 19, animation: loading ? 'spin 1s linear infinite' : 'none' }} />
@@ -360,7 +360,7 @@ export default function FacultyStudentsTab({
               fontSize: '0.84rem',
               px: 2,
               py: 0.75,
-              '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+              '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A', borderColor: '#D8B4FE' },
             }}
           >
             Export Roster
@@ -387,7 +387,7 @@ export default function FacultyStudentsTab({
             </MenuItem>
             <MenuItem onClick={handleExportCSV} sx={{ borderRadius: '8px', py: 1 }}>
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               </ListItemIcon>
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                 Download CSV (.csv)
@@ -401,7 +401,7 @@ export default function FacultyStudentsTab({
             onClick={() => setIsInviteModalOpen(true)}
             startIcon={<PersonAddAlt1RoundedIcon sx={{ fontSize: 18 }} />}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               borderRadius: '9999px',
               textTransform: 'none',
@@ -409,8 +409,8 @@ export default function FacultyStudentsTab({
               fontSize: '0.84rem',
               px: 2.25,
               py: 0.75,
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Invite Students
@@ -456,7 +456,7 @@ export default function FacultyStudentsTab({
               fontSize: '0.85rem',
               '& fieldset': { borderColor: '#E2E8F0' },
               '&:hover fieldset': { borderColor: '#CBD5E1' },
-              '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+              '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
             },
           }}
         />
@@ -577,7 +577,7 @@ export default function FacultyStudentsTab({
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                    <CircularProgress size={32} sx={{ color: '#2563EB' }} />
+                    <CircularProgress size={32} sx={{ color: '#0B1F3A' }} />
                     <Typography sx={{ fontSize: '0.84rem', color: '#64748B', mt: 1.5, fontWeight: 600 }}>
                       Loading students for {collegeName}...
                     </Typography>
@@ -601,13 +601,13 @@ export default function FacultyStudentsTab({
                       startIcon={<PersonAddAlt1RoundedIcon sx={{ fontSize: 17 }} />}
                       sx={{
                         mt: 2,
-                        bgcolor: '#2563EB',
+                        bgcolor: '#0B1F3A',
                         color: '#FFFFFF',
                         borderRadius: '9999px',
                         textTransform: 'none',
                         fontWeight: 700,
                         fontSize: '0.82rem',
-                        '&:hover': { bgcolor: '#1D4ED8' },
+                        '&:hover': { bgcolor: '#17366E' },
                       }}
                     >
                       Invite Students via CSV / Email
@@ -637,11 +637,11 @@ export default function FacultyStudentsTab({
                             sx={{
                               width: 36,
                               height: 36,
-                              bgcolor: '#EFF6FF',
+                              bgcolor: '#FAF5FF',
                               color: stu.avatarColor,
                               fontWeight: 800,
                               fontSize: '0.8rem',
-                              border: '1px solid #BFDBFE',
+                              border: '1px solid #F3E8FF',
                             }}
                           >
                             {initials}
@@ -663,7 +663,7 @@ export default function FacultyStudentsTab({
                       {/* Roll No / Student ID */}
                       <TableCell>
                         <Chip
-                          icon={<BadgeRoundedIcon sx={{ fontSize: '14px !important', color: '#2563EB' }} />}
+                          icon={<BadgeRoundedIcon sx={{ fontSize: '14px !important', color: '#0B1F3A' }} />}
                           label={stu.rollNo}
                           size="small"
                           sx={{
@@ -691,7 +691,7 @@ export default function FacultyStudentsTab({
                                 setStudentToReassign(stu);
                                 setTargetBatchId(stu.batchId || (batches[0]?.id ?? ''));
                               }}
-                              sx={{ color: '#94A3B8', p: 0.5, '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' } }}
+                              sx={{ color: '#94A3B8', p: 0.5, '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' } }}
                             >
                               <DriveFileRenameOutlineRoundedIcon sx={{ fontSize: 16 }} />
                             </IconButton>
@@ -702,7 +702,7 @@ export default function FacultyStudentsTab({
                       {/* Contest Rating & Tier */}
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography sx={{ fontSize: '0.84rem', fontWeight: 800, color: '#2563EB' }}>
+                          <Typography sx={{ fontSize: '0.84rem', fontWeight: 800, color: '#0B1F3A' }}>
                             {stu.contestRating}
                           </Typography>
                           <Chip
@@ -818,11 +818,11 @@ export default function FacultyStudentsTab({
             disabled={isReassigning || !targetBatchId}
             onClick={handleConfirmReassignBatch}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               textTransform: 'none',
               fontWeight: 700,
               borderRadius: '8px',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             {isReassigning ? 'Assigning...' : 'Save Assignment'}

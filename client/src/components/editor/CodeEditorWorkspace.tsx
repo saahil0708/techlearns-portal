@@ -62,7 +62,7 @@ const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
         color: '#94A3B8',
       }}
     >
-      <CircularProgress size={28} sx={{ color: '#38BDF8' }} />
+      <CircularProgress size={28} sx={{ color: '#C084FC' }} />
       <Typography sx={{ fontSize: '0.85rem', fontFamily: 'monospace' }}>
         Loading Monaco Editor...
       </Typography>
@@ -334,11 +334,11 @@ export default function CodeEditorWorkspace({
       inherit: true,
       rules: [
         { token: 'comment', foreground: '64748B', fontStyle: 'italic' },
-        { token: 'keyword', foreground: '38BDF8', fontStyle: 'bold' },
+        { token: 'keyword', foreground: 'C084FC', fontStyle: 'bold' },
         { token: 'string', foreground: '4ADE80' },
         { token: 'number', foreground: 'FBBF24' },
-        { token: 'type', foreground: '818CF8' },
-        { token: 'function', foreground: 'A78BFA' },
+        { token: 'type', foreground: 'A78BFA' },
+        { token: 'function', foreground: 'E9D5FF' },
         { token: 'operator', foreground: 'F472B6' },
         { token: 'variable', foreground: 'F8FAFC' },
       ],
@@ -347,11 +347,11 @@ export default function CodeEditorWorkspace({
         'editor.foreground': '#F8FAFC',
         'editor.lineHighlightBackground': '#111827',
         'editorLineNumber.foreground': '#475569',
-        'editorLineNumber.activeForeground': '#38BDF8',
+        'editorLineNumber.activeForeground': '#C084FC',
         'editorIndentGuide.background': '#1F2937',
-        'editorIndentGuide.activeBackground': '#38BDF8',
-        'editorCursor.foreground': '#38BDF8',
-        'editor.selectionBackground': '#1E3A8A',
+        'editorIndentGuide.activeBackground': '#5B2D90',
+        'editorCursor.foreground': '#C084FC',
+        'editor.selectionBackground': '#0B1F3A',
         'editor.inactiveSelectionBackground': '#1F2937',
       },
     });
@@ -577,13 +577,16 @@ export default function CodeEditorWorkspace({
                         fontWeight: 600,
                         py: 0.8,
                         '&:hover': {
-                          bgcolor: 'rgba(56, 189, 248, 0.12)',
-                          color: '#38BDF8',
+                          bgcolor: 'rgba(91, 45, 144, 0.18)',
+                          color: '#FFFFFF',
                         },
                         '&.Mui-selected': {
-                          bgcolor: 'rgba(56, 189, 248, 0.2)',
-                          color: '#38BDF8',
+                          bgcolor: '#5B2D90',
+                          color: '#FFFFFF',
                           fontWeight: 700,
+                          '&:hover': {
+                            bgcolor: '#4A2377',
+                          },
                         },
                       },
                     },
@@ -599,7 +602,7 @@ export default function CodeEditorWorkspace({
                 height: 36,
                 '& fieldset': { borderColor: '#CBD5E1' },
                 '&:hover fieldset': { borderColor: '#94A3B8' },
-                '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
               }}
             >
               {Object.values(LANGUAGES).map((l) => (
@@ -626,7 +629,7 @@ export default function CodeEditorWorkspace({
               )
             }
             sx={{
-              background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+              background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
               color: '#FFFFFF',
               borderRadius: '8px',
               textTransform: 'none',
@@ -634,9 +637,9 @@ export default function CodeEditorWorkspace({
               fontSize: '0.86rem',
               px: 2.2,
               py: 0.65,
-              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.35)',
+              boxShadow: '0 2px 8px rgba(11, 31, 58, 0.35)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)',
+                background: 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)',
               },
             }}
           >
@@ -651,7 +654,7 @@ export default function CodeEditorWorkspace({
               onClick={handleSubmit}
               startIcon={
                 isSubmitting ? (
-                  <CircularProgress size={15} sx={{ color: '#2563EB' }} />
+                  <CircularProgress size={15} sx={{ color: '#0B1F3A' }} />
                 ) : (
                   <SendRoundedIcon sx={{ fontSize: 16 }} />
                 )
@@ -812,9 +815,9 @@ export default function CodeEditorWorkspace({
                 px: 1.5,
                 py: 0.3,
                 borderRadius: '6px',
-                bgcolor: consoleTab === 'input' && consoleOpen ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-                color: consoleTab === 'input' && consoleOpen ? '#38BDF8' : '#94A3B8',
-                '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.1)', color: '#38BDF8' },
+                bgcolor: consoleTab === 'input' && consoleOpen ? 'rgba(192, 132, 252, 0.15)' : 'transparent',
+                color: consoleTab === 'input' && consoleOpen ? '#C084FC' : '#94A3B8',
+                '&:hover': { bgcolor: 'rgba(192, 132, 252, 0.1)', color: '#C084FC' },
               }}
             >
               Testcase (stdin)
@@ -833,9 +836,9 @@ export default function CodeEditorWorkspace({
                 px: 1.5,
                 py: 0.3,
                 borderRadius: '6px',
-                bgcolor: consoleTab === 'output' && consoleOpen ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-                color: consoleTab === 'output' && consoleOpen ? '#38BDF8' : '#94A3B8',
-                '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.1)', color: '#38BDF8' },
+                bgcolor: consoleTab === 'output' && consoleOpen ? 'rgba(192, 132, 252, 0.15)' : 'transparent',
+                color: consoleTab === 'output' && consoleOpen ? '#C084FC' : '#94A3B8',
+                '&:hover': { bgcolor: 'rgba(192, 132, 252, 0.1)', color: '#C084FC' },
               }}
             >
               Console Output
@@ -915,10 +918,10 @@ export default function CodeEditorWorkspace({
                             borderRadius: '6px',
                             px: 1.4,
                             py: 0.2,
-                            bgcolor: selectedCaseIdx === idx ? 'rgba(56, 189, 248, 0.2)' : '#1F2937',
-                            color: selectedCaseIdx === idx ? '#38BDF8' : '#94A3B8',
-                            border: selectedCaseIdx === idx ? '1px solid #38BDF8' : '1px solid #374151',
-                            '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.15)', color: '#38BDF8' },
+                            bgcolor: selectedCaseIdx === idx ? 'rgba(192, 132, 252, 0.2)' : '#1F2937',
+                            color: selectedCaseIdx === idx ? '#C084FC' : '#94A3B8',
+                            border: selectedCaseIdx === idx ? '1px solid #C084FC' : '1px solid #374151',
+                            '&:hover': { bgcolor: 'rgba(192, 132, 252, 0.15)', color: '#C084FC' },
                           }}
                         >
                           Case {idx + 1}
@@ -936,10 +939,10 @@ export default function CodeEditorWorkspace({
                           borderRadius: '6px',
                           px: 1.2,
                           py: 0.2,
-                          bgcolor: selectedCaseIdx === -1 ? 'rgba(56, 189, 248, 0.2)' : '#1F2937',
-                          color: selectedCaseIdx === -1 ? '#38BDF8' : '#94A3B8',
-                          border: selectedCaseIdx === -1 ? '1px solid #38BDF8' : '1px solid #374151',
-                          '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.15)', color: '#38BDF8' },
+                          bgcolor: selectedCaseIdx === -1 ? 'rgba(192, 132, 252, 0.2)' : '#1F2937',
+                          color: selectedCaseIdx === -1 ? '#C084FC' : '#94A3B8',
+                          border: selectedCaseIdx === -1 ? '1px solid #C084FC' : '1px solid #374151',
+                          '&:hover': { bgcolor: 'rgba(192, 132, 252, 0.15)', color: '#C084FC' },
                         }}
                       >
                         + Custom
@@ -958,13 +961,13 @@ export default function CodeEditorWorkspace({
                             fontSize: '0.68rem',
                             fontWeight: 700,
                             textTransform: 'none',
-                            color: '#38BDF8',
-                            bgcolor: 'rgba(56, 189, 248, 0.1)',
+                            color: '#C084FC',
+                            bgcolor: 'rgba(192, 132, 252, 0.1)',
                             px: 1,
                             py: 0.2,
                             minWidth: 0,
                             borderRadius: '4px',
-                            '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.2)' },
+                            '&:hover': { bgcolor: 'rgba(192, 132, 252, 0.2)' },
                           }}
                         >
                           + Sample Array
@@ -1009,7 +1012,7 @@ export default function CodeEditorWorkspace({
                       style={{
                         width: '100%',
                         backgroundColor: '#111827',
-                        color: '#38BDF8',
+                        color: '#C084FC',
                         fontFamily: 'Menlo, Monaco, "Courier New", monospace',
                         fontSize: '13px',
                         lineHeight: '1.5',
@@ -1091,7 +1094,7 @@ export default function CodeEditorWorkspace({
                           navigator.clipboard.writeText(output || stderr);
                           toast.success('Output copied to clipboard!', 'Copied');
                         }}
-                        sx={{ color: '#64748B', p: 0.2, '&:hover': { color: '#38BDF8' } }}
+                        sx={{ color: '#64748B', p: 0.2, '&:hover': { color: '#C084FC' } }}
                       >
                         <ContentCopyRoundedIcon sx={{ fontSize: 14 }} />
                       </IconButton>
@@ -1116,7 +1119,7 @@ export default function CodeEditorWorkspace({
                 >
                   {isRunning ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 2, justifyContent: 'center' }}>
-                      <CircularProgress size={16} sx={{ color: '#38BDF8' }} />
+                      <CircularProgress size={16} sx={{ color: '#C084FC' }} />
                       <Typography sx={{ color: '#94A3B8', fontSize: '0.8rem', fontFamily: 'monospace' }}>
                         Compiling & executing code...
                       </Typography>
@@ -1167,7 +1170,7 @@ export default function CodeEditorWorkspace({
         </span>
         <span>Spaces: {tabSize}</span>
         <span>UTF-8</span>
-        <span style={{ color: '#38BDF8', fontWeight: 700 }}>{LANGUAGES[selectedLang].version}</span>
+        <span style={{ color: '#C084FC', fontWeight: 700 }}>{LANGUAGES[selectedLang].version}</span>
       </Box>
 
       {/* ========================================================================= */}
@@ -1203,8 +1206,8 @@ export default function CodeEditorWorkspace({
               fontSize: '0.82rem',
               fontWeight: 600,
               borderRadius: '6px',
-              bgcolor: themeName === t ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
-              color: themeName === t ? '#38BDF8' : '#F1F5F9',
+              bgcolor: themeName === t ? 'rgba(192, 132, 252, 0.15)' : 'transparent',
+              color: themeName === t ? '#C084FC' : '#F1F5F9',
             }}
           >
             {t === 'deep-space' ? 'Deep Space Dark' : t === 'vs-dark' ? 'VS Code Dark+' : 'High Contrast Black'}
@@ -1224,7 +1227,7 @@ export default function CodeEditorWorkspace({
               size="small"
               onClick={() => setFontSize(s)}
               sx={{
-                bgcolor: fontSize === s ? '#38BDF8' : '#1E293B',
+                bgcolor: fontSize === s ? '#C084FC' : '#1E293B',
                 color: fontSize === s ? '#0B0F19' : '#F1F5F9',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -1241,7 +1244,7 @@ export default function CodeEditorWorkspace({
               size="small"
               checked={showMinimap}
               onChange={(e) => setShowMinimap(e.target.checked)}
-              sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#38BDF8' } }}
+              sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#C084FC' } }}
             />
           }
           label={<Typography sx={{ fontSize: '0.8rem', color: '#E2E8F0' }}>Minimap</Typography>}
@@ -1253,7 +1256,7 @@ export default function CodeEditorWorkspace({
               size="small"
               checked={wordWrap === 'on'}
               onChange={(e) => setWordWrap(e.target.checked ? 'on' : 'off')}
-              sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#38BDF8' } }}
+              sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#C084FC' } }}
             />
           }
           label={<Typography sx={{ fontSize: '0.8rem', color: '#E2E8F0' }}>Word Wrap</Typography>}

@@ -153,7 +153,7 @@ export function CodingLabTab({
                 fontFamily: 'monospace',
                 fontSize: '0.85rem',
                 bgcolor: '#0F172A',
-                color: '#38BDF8',
+                color: '#C084FC',
                 '& textarea': { color: '#F1F5F9' },
               },
             },
@@ -199,7 +199,7 @@ export function CodingLabTab({
             size="small"
             onClick={handleAddTestCase}
             startIcon={<AddCircleOutlineRoundedIcon sx={{ fontSize: 16 }} />}
-            sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', color: '#2563EB' }}
+            sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', color: '#0B1F3A' }}
           >
             Add Test Case
           </Button>
@@ -254,8 +254,8 @@ export function CodingLabTab({
                   cursor: 'pointer',
                   fontWeight: 700,
                   fontSize: '0.74rem',
-                  bgcolor: tc.isHidden ? '#FEF3C7' : '#EFF6FF',
-                  color: tc.isHidden ? '#B45309' : '#2563EB',
+                  bgcolor: tc.isHidden ? '#FEF3C7' : '#FAF5FF',
+                  color: tc.isHidden ? '#B45309' : '#0B1F3A',
                 }}
               />
               <IconButton

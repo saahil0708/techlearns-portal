@@ -137,8 +137,8 @@ export function MuiChartLoader({ height = 340 }: { height?: number }) {
             height: 4,
             borderRadius: 2,
             position: 'absolute',
-            bgcolor: 'rgba(37, 99, 235, 0.12)',
-            '& .MuiLinearProgress-bar': { bgcolor: '#2563EB', borderRadius: 2 },
+            bgcolor: 'rgba(91, 45, 144, 0.12)',
+            '& .MuiLinearProgress-bar': { bgcolor: '#0B1F3A', borderRadius: 2 },
           }}
         />
       </Box>

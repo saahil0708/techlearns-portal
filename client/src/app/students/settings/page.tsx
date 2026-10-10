@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import StudentProfileClient from '@/components/students/profile/StudentProfileClient';
 
 export const metadata: Metadata = {
-  title: 'Account Settings & Security | CodePlatform',
+  title: 'Account Settings & Security | TechLearns',
   description: 'Manage account security, change password, two-factor authentication, and notification preferences.',
 };
 

@@ -81,7 +81,7 @@ export default function SkillPassportClient() {
         metrics: '45ms median cold-start · Complete memory & syscall isolation',
         evaluationScore: 96,
         completionDate: 'Aug 28, 2026',
-        verifiedBy: 'CodePlatform Academic Council',
+        verifiedBy: 'TechLearns Academic Council',
         repositoryUrl: 'https://github.com/alexvance/code-sandbox-runner',
         liveDemoUrl: 'https://sandbox.techlearns.in',
       },

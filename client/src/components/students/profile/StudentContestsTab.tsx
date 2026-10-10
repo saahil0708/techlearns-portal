@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { FluidArrowForward } from '@/utils/fluid_arrow';
 import Link from 'next/link';
 import {
   Box,
@@ -125,11 +126,11 @@ export default function StudentContestsTab({ contests }: StudentContestsTabProps
             <Typography sx={{ color: '#0F172A', fontSize: '1.45rem', fontWeight: 900, mt: 0.3 }}>
               {totalContests > 0 ? latestRating : '-'} <span style={{ fontSize: '0.76rem', color: '#64748B', fontWeight: 600 }}>pts</span>
             </Typography>
-            <Typography sx={{ color: '#2563EB', fontSize: '0.7rem', fontWeight: 700 }}>
+            <Typography sx={{ color: '#0B1F3A', fontSize: '0.7rem', fontWeight: 700 }}>
               {totalContests > 0 ? `Tier: ${getRatingTier(latestRating)}` : 'Unrated'}
             </Typography>
           </Box>
-          <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <EmojiEventsRoundedIcon sx={{ fontSize: 24 }} />
           </Box>
         </Card>
@@ -181,11 +182,11 @@ export default function StudentContestsTab({ contests }: StudentContestsTabProps
             <Typography sx={{ color: '#0F172A', fontSize: '1.45rem', fontWeight: 900, mt: 0.3 }}>
               {totalContests}
             </Typography>
-            <Typography sx={{ color: '#0284C7', fontSize: '0.7rem', fontWeight: 700 }}>
+            <Typography sx={{ color: '#5B2D90', fontSize: '0.7rem', fontWeight: 700 }}>
               {totalContests > 0 ? `${totalContests} recorded rounds` : 'No rounds attended'}
             </Typography>
           </Box>
-          <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: '#F0F9FF', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: '#FAF5FF', color: '#5B2D90', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <WorkspacePremiumRoundedIcon sx={{ fontSize: 24 }} />
           </Box>
         </Card>
@@ -276,13 +277,13 @@ export default function StudentContestsTab({ contests }: StudentContestsTabProps
                 borderRadius: '8px',
                 textTransform: 'none',
                 fontWeight: 800,
-                color: '#2563EB',
-                borderColor: '#BFDBFE',
-                bgcolor: '#EFF6FF',
+                color: '#0B1F3A',
+                borderColor: '#D8B4FE',
+                bgcolor: '#FAF5FF',
                 fontSize: '0.78rem',
                 px: 1.5,
                 py: 0.6,
-                '&:hover': { bgcolor: '#DBEAFE', borderColor: '#2563EB' },
+                '&:hover': { bgcolor: '#E9D5FF', borderColor: '#0B1F3A' },
               }}
             >
               Export CSV
@@ -344,7 +345,7 @@ export default function StudentContestsTab({ contests }: StudentContestsTabProps
                       </TableCell>
 
                       <TableCell sx={{ borderColor: '#F1F5F9' }}>
-                        <Typography sx={{ fontWeight: 800, color: '#2563EB', fontSize: '0.86rem' }}>
+                        <Typography sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '0.86rem' }}>
                           #{c.rank}{' '}
                           <span style={{ color: '#64748B', fontSize: '0.74rem', fontWeight: 500 }}>
                             / {c.totalParticipants?.toLocaleString()}
@@ -382,13 +383,13 @@ export default function StudentContestsTab({ contests }: StudentContestsTabProps
                           <Button
                             variant="text"
                             size="small"
-                            endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 13 }} />}
+                            endIcon={<FluidArrowForward sx={{ fontSize: 13 }} />}
                             sx={{
                               textTransform: 'none',
                               fontWeight: 800,
-                              color: '#2563EB',
+                              color: '#0B1F3A',
                               fontSize: '0.74rem',
-                              '&:hover': { bgcolor: '#EFF6FF' },
+                              '&:hover': { bgcolor: '#FAF5FF' },
                             }}
                           >
                             Standings

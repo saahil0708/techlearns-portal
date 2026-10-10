@@ -51,7 +51,7 @@ import { apiService } from '@/lib/api-service';
 
 const LEVEL_COLORS: Record<CourseLevel, { bg: string; text: string }> = {
   Beginner: { bg: 'rgba(22, 163, 74, 0.1)', text: '#16A34A' },
-  Intermediate: { bg: 'rgba(37, 99, 235, 0.1)', text: '#2563EB' },
+  Intermediate: { bg: 'rgba(91, 45, 144, 0.1)', text: '#0B1F3A' },
   Advanced: { bg: 'rgba(124, 58, 237, 0.1)', text: '#7C3AED' },
 };
 
@@ -131,7 +131,7 @@ export default function CourseCatalogClient() {
                 tags: Array.isArray(c.tags) && c.tags.length > 0 ? c.tags : ['Core', 'Curriculum'],
                 accentColor:
                   c.accentColor ||
-                  (idx % 3 === 0 ? '#2563EB' : idx % 3 === 1 ? '#10B981' : '#8B5CF6'),
+                  (idx % 3 === 0 ? '#0B1F3A' : idx % 3 === 1 ? '#10B981' : '#8B5CF6'),
                 thumbnailUrl: c.thumbnailUrl || undefined,
                 moduleHighlights:
                   Array.isArray(c.moduleHighlights) && c.moduleHighlights.length > 0
@@ -285,12 +285,12 @@ export default function CourseCatalogClient() {
                 Enrolled Courses & Curriculum
               </Typography>
               <Chip
-                icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 13, color: '#2563EB !important' }} />}
+                icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 13, color: '#0B1F3A !important' }} />}
                 label="Self-Paced Tracks"
                 size="small"
                 sx={{
-                  bgcolor: 'rgba(37, 99, 235, 0.08)',
-                  color: '#2563EB',
+                  bgcolor: 'rgba(91, 45, 144, 0.08)',
+                  color: '#0B1F3A',
                   fontWeight: 700,
                   fontSize: '0.72rem',
                 }}
@@ -360,9 +360,9 @@ export default function CourseCatalogClient() {
                   fontWeight: 700,
                   textTransform: 'none',
                   color: '#64748B',
-                  '&.Mui-selected': { color: '#2563EB' },
+                  '&.Mui-selected': { color: '#0B1F3A' },
                 },
-                '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+                '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
               }}
             >
               <Tab label="Enrolled & Active" value="ENROLLED" />
@@ -411,7 +411,7 @@ export default function CourseCatalogClient() {
                 >
                   <MenuItem value="ALL" sx={{ fontSize: '0.84rem', fontWeight: 600 }}>All Levels</MenuItem>
                   <MenuItem value="Beginner" sx={{ fontSize: '0.84rem', color: '#16A34A', fontWeight: 700 }}>Beginner</MenuItem>
-                  <MenuItem value="Intermediate" sx={{ fontSize: '0.84rem', color: '#2563EB', fontWeight: 700 }}>Intermediate</MenuItem>
+                  <MenuItem value="Intermediate" sx={{ fontSize: '0.84rem', color: '#0B1F3A', fontWeight: 700 }}>Intermediate</MenuItem>
                   <MenuItem value="Advanced" sx={{ fontSize: '0.84rem', color: '#7C3AED', fontWeight: 700 }}>Advanced</MenuItem>
                 </Select>
               </FormControl>
@@ -462,7 +462,7 @@ export default function CourseCatalogClient() {
                     transition: 'all 0.18s ease',
                     '&.Mui-selected': {
                       bgcolor: '#FFFFFF',
-                      color: '#2563EB',
+                      color: '#0B1F3A',
                       boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                       fontWeight: 800,
                     },
@@ -660,11 +660,11 @@ export default function CourseCatalogClient() {
                             {/* Title & Category */}
                             <TableCell sx={{ py: 1.8 }}>
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                <Typography sx={{ fontWeight: 800, fontSize: '0.9rem', color: '#0F172A', '&:hover': { color: '#2563EB' } }}>
+                                <Typography sx={{ fontWeight: 800, fontSize: '0.9rem', color: '#0F172A', '&:hover': { color: '#0B1F3A' } }}>
                                   {course.title}
                                 </Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                  <Typography sx={{ fontSize: '0.76rem', color: '#2563EB', fontWeight: 600 }}>
+                                  <Typography sx={{ fontSize: '0.76rem', color: '#0B1F3A', fontWeight: 600 }}>
                                     {course.category}
                                   </Typography>
                                   <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8' }}>•</Typography>
@@ -721,7 +721,7 @@ export default function CourseCatalogClient() {
                               {isEnrolled ? (
                                 <Box sx={{ minWidth: 120 }}>
                                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                    <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: progress === 100 ? '#16A34A' : '#2563EB' }}>
+                                    <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: progress === 100 ? '#16A34A' : '#0B1F3A' }}>
                                       {progress}%
                                     </Typography>
                                     <Typography sx={{ fontSize: '0.7rem', color: '#94A3B8' }}>
@@ -736,7 +736,7 @@ export default function CourseCatalogClient() {
                                       borderRadius: 3,
                                       bgcolor: '#F1F5F9',
                                       '& .MuiLinearProgress-bar': {
-                                        background: progress === 100 ? '#16A34A' : 'linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%)',
+                                        background: progress === 100 ? '#16A34A' : 'linear-gradient(90deg, #5B2D90 0%, #17366E 100%)',
                                         borderRadius: 3,
                                       },
                                     }}
@@ -767,8 +767,8 @@ export default function CourseCatalogClient() {
                                     fontSize: '0.78rem',
                                     px: 1.8,
                                     py: 0.5,
-                                    bgcolor: progress === 100 ? '#0F172A' : '#2563EB',
-                                    '&:hover': { bgcolor: progress === 100 ? '#1E293B' : '#1D4ED8' },
+                                    bgcolor: progress === 100 ? '#0F172A' : '#0B1F3A',
+                                    '&:hover': { bgcolor: progress === 100 ? '#1E293B' : '#17366E' },
                                   }}
                                 >
                                   {progress === 100 ? 'Review' : 'Resume'}
@@ -786,9 +786,9 @@ export default function CourseCatalogClient() {
                                     textTransform: 'none',
                                     fontWeight: 700,
                                     fontSize: '0.78rem',
-                                    borderColor: '#2563EB',
-                                    color: '#2563EB',
-                                    '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.08)' },
+                                    borderColor: '#0B1F3A',
+                                    color: '#0B1F3A',
+                                    '&:hover': { bgcolor: 'rgba(91, 45, 144, 0.08)' },
                                   }}
                                 >
                                   Enroll Free

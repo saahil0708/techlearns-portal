@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${institutionName} (${institutionCode}) | CodePlatform Academic Workspace`,
+    title: `${institutionName} (${institutionCode}) | TechLearns Academic Workspace`,
     description: `Multi-tenant academic workspace for ${institutionName}. Manage cohorts, faculty, and student rosters.`,
   };
 }
@@ -60,7 +60,7 @@ export default async function InstitutionDetailPage({ params }: PageProps) {
     cohortsCount: liveInstitution._count?.batches || 0,
     facultyCount: faculty,
     status: liveInstitution.status === 'ACTIVE' ? 'Active' : 'Suspended',
-    logoColor: '#3B82F6',
+    logoColor: '#5B2D90',
   };
 
   const [batchesData] = await Promise.allSettled([

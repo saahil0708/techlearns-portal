@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import CourseCatalogClient from '@/components/courses/CourseCatalogClient';
 
 export const metadata: Metadata = {
-  title: 'Enrolled Courses & Curriculum | CodePlatform',
+  title: 'Enrolled Courses & Curriculum | TechLearns',
   description: 'Track enrolled courses, curriculum syllabus modules, and lesson progress in standard list table format.',
 };
 

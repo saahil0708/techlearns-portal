@@ -209,13 +209,13 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
       return { bgcolor: '#FEF3C7', color: '#D97706', border: '1px solid #FDE68A' };
     }
     if (t.includes('cloud') || t.includes('devops') || t.includes('sre') || t.includes('infra')) {
-      return { bgcolor: '#E0F2FE', color: '#0284C7', border: '1px solid #BAE6FD' };
+      return { bgcolor: '#FAF5FF', color: '#5B2D90', border: '1px solid #E9D5FF' };
     }
     if (t.includes('system') || t.includes('backend') || t.includes('architect')) {
       return { bgcolor: '#F3E8FF', color: '#7C3AED', border: '1px solid #E9D5FF' };
     }
     if (t.includes('full') || t.includes('stack') || t.includes('web')) {
-      return { bgcolor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' };
+      return { bgcolor: '#FAF5FF', color: '#0B1F3A', border: '1px solid #F3E8FF' };
     }
     if (t.includes('cp') || t.includes('dsa') || t.includes('algo')) {
       return { bgcolor: '#DCFCE7', color: '#059669', border: '1px solid #BBF7D0' };
@@ -243,9 +243,9 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -296,8 +296,8 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
                 size="small"
                 startIcon={<BoltRoundedIcon sx={{ fontSize: 16 }} />}
                 sx={{
-                  bgcolor: '#2563EB',
-                  backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  bgcolor: '#0B1F3A',
+                  backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   color: '#FFFFFF',
                   fontWeight: 700,
                   fontSize: '0.82rem',
@@ -305,7 +305,7 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
                   borderRadius: '8px',
                   px: 2,
                   py: 0.6,
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
+                  boxShadow: '0 2px 8px rgba(91, 45, 144, 0.25)',
                 }}
               >
                 Live Bootcamps & Sprints
@@ -338,9 +338,9 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
                   label="SkillOS Sprints"
                   size="small"
                   sx={{
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
-                    border: '1px solid #DBEAFE',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
+                    border: '1px solid #FAF5FF',
                     fontWeight: 700,
                     fontSize: '0.72rem',
                     height: 22,
@@ -368,7 +368,7 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
                   px: 1.75,
                   py: 0.75,
                   boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                  '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+                  '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A', borderColor: '#D8B4FE' },
                 }}
               >
                 Export CSV
@@ -378,8 +378,8 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
                 startIcon={<AddCircleRoundedIcon sx={{ fontSize: 18 }} />}
                 onClick={() => setCreateModalOpen(true)}
                 sx={{
-                  bgcolor: '#2563EB',
-                  backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  bgcolor: '#0B1F3A',
+                  backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   color: '#FFFFFF',
                   fontWeight: 700,
                   fontSize: '0.84rem',
@@ -387,10 +387,10 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
                   borderRadius: '8px',
                   px: 2.25,
                   py: 0.75,
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                  boxShadow: '0 4px 14px rgba(11, 31, 58, 0.35)',
                   '&:hover': {
-                    bgcolor: '#1D4ED8',
-                    boxShadow: '0 6px 18px rgba(37, 99, 235, 0.5)',
+                    bgcolor: '#17366E',
+                    boxShadow: '0 6px 18px rgba(91, 45, 144, 0.4)',
                   },
                 }}
               >
@@ -488,7 +488,7 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
                     borderRadius: '10px',
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -594,8 +594,8 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
                               disabled={loading}
                               sx={{
                                 mt: 1,
-                                color: '#2563EB',
-                                borderColor: '#2563EB',
+                                color: '#0B1F3A',
+                                borderColor: '#0B1F3A',
                                 textTransform: 'none',
                                 fontWeight: 600,
                               }}
@@ -667,7 +667,7 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
                               <Avatar
                                 src={bc.instructorAvatar}
-                                sx={{ width: 32, height: 32, bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700, fontSize: '0.8rem', border: '1px solid #DBEAFE' }}
+                                sx={{ width: 32, height: 32, bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700, fontSize: '0.8rem', border: '1px solid #FAF5FF' }}
                               >
                                 {bc.instructor ? bc.instructor.charAt(0) : 'I'}
                               </Avatar>
@@ -694,7 +694,7 @@ export default function BootcampsDirectoryClient({ initialBootcamps, initialErro
 
                           {/* Enrolled */}
                           <TableCell align="center">
-                            <Typography variant="body2" sx={{ color: '#2563EB', fontWeight: 700 }}>
+                            <Typography variant="body2" sx={{ color: '#0B1F3A', fontWeight: 700 }}>
                               {(bc.enrolledStudents ?? bc.enrolledCount ?? 0).toLocaleString()}
                             </Typography>
                             <Typography variant="caption" sx={{ color: '#64748B' }}>

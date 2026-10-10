@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { FluidArrowBack } from '@/utils/fluid_arrow';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -190,7 +191,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
       id: `c-${Date.now()}`,
       author: currentUser?.name || 'You (Student)',
       authorId: currentUser?.id,
-      avatarBg: '#2563EB',
+      avatarBg: '#0B1F3A',
       time: 'Just now',
       text: textToSend,
     };
@@ -319,7 +320,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
             cursor: 'pointer',
             transition: 'color 0.15s ease',
             '&:hover': {
-              color: '#2563EB',
+              color: '#0B1F3A',
               textDecoration: 'underline',
             },
           }}
@@ -501,10 +502,10 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                     fontSize: '0.88rem',
                     px: 3,
                     py: 1,
-                    bgcolor: blog.hasLiked ? '#EF4444' : '#2563EB',
+                    bgcolor: blog.hasLiked ? '#EF4444' : '#0B1F3A',
                     color: '#FFFFFF',
-                    boxShadow: blog.hasLiked ? '0 4px 14px rgba(239, 68, 68, 0.3)' : '0 4px 14px rgba(37, 99, 235, 0.25)',
-                    '&:hover': { bgcolor: blog.hasLiked ? '#DC2626' : '#1D4ED8' },
+                    boxShadow: blog.hasLiked ? '0 4px 14px rgba(239, 68, 68, 0.3)' : '0 4px 14px rgba(91, 45, 144, 0.25)',
+                    '&:hover': { bgcolor: blog.hasLiked ? '#DC2626' : '#17366E' },
                   }}
                 >
                   {blog.claps || 0} Claps Given
@@ -520,7 +521,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                 <Button
                   variant="outlined"
                   size="small"
-                  startIcon={blog.isBookmarked ? <BookmarkRoundedIcon sx={{ color: '#2563EB' }} /> : <BookmarkBorderRoundedIcon />}
+                  startIcon={blog.isBookmarked ? <BookmarkRoundedIcon sx={{ color: '#0B1F3A' }} /> : <BookmarkBorderRoundedIcon />}
                   onClick={handleToggleBookmark}
                   sx={{
                     borderRadius: '10px',
@@ -568,7 +569,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 3 }}>
-              <ChatBubbleOutlineRoundedIcon sx={{ color: '#2563EB', fontSize: 24 }} />
+              <ChatBubbleOutlineRoundedIcon sx={{ color: '#0B1F3A', fontSize: 24 }} />
               <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.35rem' }}>
                 Discussion ({blog.comments?.length || blog.commentsCount || 0})
               </Typography>
@@ -591,7 +592,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                     fontSize: '0.92rem',
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB', bgcolor: '#FFFFFF' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A', bgcolor: '#FFFFFF' },
                   },
                 }}
               />
@@ -602,14 +603,14 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                   disabled={isSubmittingComment || !commentText.trim()}
                   endIcon={<SendRoundedIcon sx={{ fontSize: 16 }} />}
                   sx={{
-                    bgcolor: '#2563EB',
+                    bgcolor: '#0B1F3A',
                     borderRadius: '10px',
                     textTransform: 'none',
                     fontWeight: 700,
                     px: 3,
                     py: 0.9,
-                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-                    '&:hover': { bgcolor: '#1D4ED8' },
+                    boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
+                    '&:hover': { bgcolor: '#17366E' },
                   }}
                 >
                   {isSubmittingComment ? 'Posting...' : 'Post Comment'}
@@ -631,10 +632,10 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                       key={comm.id}
                       sx={{
                         p: 2.2,
-                        bgcolor: isEditingThis ? '#EFF6FF' : '#F8FAFC',
+                        bgcolor: isEditingThis ? '#FAF5FF' : '#F8FAFC',
                         borderRadius: '14px',
                         border: '1px solid',
-                        borderColor: isEditingThis ? '#93C5FD' : '#E2E8F0',
+                        borderColor: isEditingThis ? '#C084FC' : '#E2E8F0',
                         transition: 'all 0.18s ease',
                       }}
                     >
@@ -644,7 +645,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                             sx={{
                               width: 32,
                               height: 32,
-                              bgcolor: comm.avatarBg || '#2563EB',
+                              bgcolor: comm.avatarBg || '#0B1F3A',
                               fontSize: '0.82rem',
                               fontWeight: 800,
                             }}
@@ -669,7 +670,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                                 sx={{
                                   color: '#64748B',
                                   p: 0.6,
-                                  '&:hover': { color: '#2563EB', bgcolor: 'rgba(37,99,235,0.08)' },
+                                  '&:hover': { color: '#0B1F3A', bgcolor: 'rgba(91, 45, 144, 0.08)' },
                                 }}
                               >
                                 <EditRoundedIcon sx={{ fontSize: 16 }} />
@@ -707,8 +708,8 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                               '& .MuiOutlinedInput-root': {
                                 borderRadius: '10px',
                                 fontSize: '0.9rem',
-                                '& fieldset': { borderColor: '#93C5FD' },
-                                '&:hover fieldset': { borderColor: '#2563EB' },
+                                '& fieldset': { borderColor: '#C084FC' },
+                                '&:hover fieldset': { borderColor: '#0B1F3A' },
                               },
                             }}
                           />
@@ -738,8 +739,8 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                                 fontWeight: 700,
                                 fontSize: '0.78rem',
                                 borderRadius: '8px',
-                                bgcolor: '#2563EB',
-                                '&:hover': { bgcolor: '#1D4ED8' },
+                                bgcolor: '#0B1F3A',
+                                '&:hover': { bgcolor: '#17366E' },
                               }}
                             >
                               {isSavingComment ? 'Saving...' : 'Save Changes'}
@@ -788,7 +789,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <PersonOutlineRoundedIcon sx={{ color: '#2563EB', fontSize: 20 }} />
+              <PersonOutlineRoundedIcon sx={{ color: '#0B1F3A', fontSize: 20 }} />
               <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.96rem' }}>
                 About the Author
               </Typography>
@@ -800,10 +801,10 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                 sx={{
                   width: 56,
                   height: 56,
-                  bgcolor: blog.author?.avatarBg || '#2563EB',
+                  bgcolor: blog.author?.avatarBg || '#0B1F3A',
                   fontSize: '1.25rem',
                   fontWeight: 900,
-                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
+                  boxShadow: '0 4px 12px rgba(91, 45, 144, 0.2)',
                 }}
               >
                 {blog.author?.name?.[0] || 'A'}
@@ -814,7 +815,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                     {blog.author?.name}
                   </Typography>
                   {blog.author?.isVerified && (
-                    <CheckCircleRoundedIcon sx={{ color: '#2563EB', fontSize: 16, flexShrink: 0 }} />
+                    <CheckCircleRoundedIcon sx={{ color: '#0B1F3A', fontSize: 16, flexShrink: 0 }} />
                   )}
                 </Box>
                 <Typography sx={{ fontSize: '0.8rem', color: '#64748B' }}>
@@ -830,8 +831,8 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
               <Typography sx={{ fontSize: '0.86rem', color: '#0F172A', fontWeight: 700, mt: 0.3 }}>
                 {blog.author?.role}
               </Typography>
-              <Typography sx={{ fontSize: '0.8rem', color: '#2563EB', fontWeight: 600 }}>
-                {blog.author?.college || blog.author?.institute || 'CodePlatform'}
+              <Typography sx={{ fontSize: '0.8rem', color: '#0B1F3A', fontWeight: 600 }}>
+                {blog.author?.college || blog.author?.institute || 'TechLearns'}
               </Typography>
             </Box>
 
@@ -845,10 +846,10 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.84rem',
-                borderColor: '#2563EB',
-                color: '#2563EB',
+                borderColor: '#0B1F3A',
+                color: '#0B1F3A',
                 py: 0.8,
-                '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.06)', borderColor: '#1D4ED8' },
+                '&:hover': { bgcolor: 'rgba(91, 45, 144, 0.06)', borderColor: '#17366E' },
               }}
             >
               View Author Profile & Posts
@@ -885,7 +886,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                       pl: h.level === 2 ? 0 : 1.8,
                       textDecoration: 'none',
                       transition: 'color 0.15s ease',
-                      '&:hover': { color: '#2563EB' },
+                      '&:hover': { color: '#0B1F3A' },
                     }}
                   >
                     • {h.title}
@@ -921,7 +922,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                 <Typography sx={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>
                   Comments
                 </Typography>
-                <Typography sx={{ fontSize: '1.05rem', fontWeight: 900, color: '#2563EB', mt: 0.2 }}>
+                <Typography sx={{ fontSize: '1.05rem', fontWeight: 900, color: '#0B1F3A', mt: 0.2 }}>
                   {blog.commentsCount || 0}
                 </Typography>
               </Box>
@@ -950,7 +951,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
             <Button
               endIcon={<OpenInNewRoundedIcon sx={{ fontSize: 15 }} />}
               onClick={() => router.push('/students/blogs')}
-              sx={{ textTransform: 'none', fontWeight: 700, color: '#2563EB', fontSize: '0.86rem' }}
+              sx={{ textTransform: 'none', fontWeight: 700, color: '#0B1F3A', fontSize: '0.86rem' }}
             >
               Browse All Stories
             </Button>
@@ -993,8 +994,8 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                     justifyContent: 'space-between',
                     '&:hover': {
                       transform: 'translateY(-4px)',
-                      borderColor: '#2563EB',
-                      boxShadow: '0 12px 28px rgba(37, 99, 235, 0.1)',
+                      borderColor: '#0B1F3A',
+                      boxShadow: '0 12px 28px rgba(91, 45, 144, 0.1)',
                     },
                   }}
                 >
@@ -1027,7 +1028,7 @@ export default function BlogReaderClient({ initialBlog, relatedBlogs = [] }: Blo
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Avatar
                         src={rel.author?.avatarImg}
-                        sx={{ width: 24, height: 24, bgcolor: rel.author?.avatarBg || '#2563EB', fontSize: '0.7rem', fontWeight: 800 }}
+                        sx={{ width: 24, height: 24, bgcolor: rel.author?.avatarBg || '#0B1F3A', fontSize: '0.7rem', fontWeight: 800 }}
                       >
                         {rel.author?.name?.[0] || 'A'}
                       </Avatar>

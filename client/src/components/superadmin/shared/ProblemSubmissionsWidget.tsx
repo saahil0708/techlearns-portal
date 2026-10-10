@@ -93,7 +93,7 @@ function ProblemBarTooltip({ active, payload, label, viewMode }: ProblemBarToolt
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', my: 0.35 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: domainItem?.color || '#38BDF8' }} />
+              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: domainItem?.color || '#C084FC' }} />
               <Typography sx={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 500 }}>
                 Total Submissions
               </Typography>
@@ -187,7 +187,7 @@ function ProblemBarTooltip({ active, payload, label, viewMode }: ProblemBarToolt
   return null;
 }
 
-export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: ProblemSubmissionsWidgetProps) {
+export default function ProblemSubmissionsWidget({ primaryBlue = '#0B1F3A' }: ProblemSubmissionsWidgetProps) {
   const [viewMode, setViewMode] = useState<'problems' | 'domains'>('problems');
   const [downloadAnchorEl, setDownloadAnchorEl] = useState<null | HTMLElement>(null);
   const [topProblems, setTopProblems] = useState<ProblemSubmissionStat[]>([]);
@@ -245,7 +245,7 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
             });
           });
 
-          const colors = ['#38BDF8', '#34D399', '#A78BFA', '#FBBF24', '#F472B6'];
+          const colors = ['#C084FC', '#34D399', '#A78BFA', '#FBBF24', '#F472B6'];
           const domMapped: DomainSubmissionStat[] = [];
           let colorIdx = 0;
           domainMap.forEach((val, key) => {
@@ -293,7 +293,7 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
         <head><meta charset="utf-8"/></head>
         <body>
           <table border="1">
-            <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+            <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
               <th>Problem Name</th>
               <th>Difficulty</th>
               <th>Accepted</th>
@@ -322,7 +322,7 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
         <head><meta charset="utf-8"/></head>
         <body>
           <table border="1">
-            <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+            <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
               <th>Domain</th>
               <th>Total Submissions</th>
               <th>Avg Pass Rate</th>
@@ -394,11 +394,11 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
       sx={{
         p: { xs: 2.25, sm: 2.75 },
         borderRadius: '24px',
-        bgcolor: '#3B82F6',
-        backgroundImage: 'linear-gradient(145deg, #3B82F6 0%, #1D4ED8 100%)',
+        bgcolor: '#5B2D90',
+        backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #201335 50%, #5B2D90 100%)',
         color: '#FFFFFF',
         border: '1px solid rgba(255, 255, 255, 0.2)',
-        boxShadow: '0 16px 36px rgba(37, 99, 235, 0.35)',
+        boxShadow: '0 16px 36px rgba(11, 31, 58, 0.35)',
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
@@ -451,7 +451,7 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
                 fontSize: '0.7rem',
                 fontWeight: 800,
                 textTransform: 'none',
-                color: viewMode === 'problems' ? '#1D4ED8' : 'rgba(255, 255, 255, 0.8)',
+                color: viewMode === 'problems' ? '#17366E' : 'rgba(255, 255, 255, 0.8)',
                 bgcolor: viewMode === 'problems' ? '#FFFFFF' : 'transparent',
                 borderRadius: '9999px !important',
                 border: 'none !important',
@@ -470,7 +470,7 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
                 fontSize: '0.7rem',
                 fontWeight: 800,
                 textTransform: 'none',
-                color: viewMode === 'domains' ? '#1D4ED8' : 'rgba(255, 255, 255, 0.8)',
+                color: viewMode === 'domains' ? '#17366E' : 'rgba(255, 255, 255, 0.8)',
                 bgcolor: viewMode === 'domains' ? '#FFFFFF' : 'transparent',
                 borderRadius: '9999px !important',
                 border: 'none !important',
@@ -549,11 +549,11 @@ export default function ProblemSubmissionsWidget({ primaryBlue = '#2563eb' }: Pr
                 py: 0.9,
                 px: 1.5,
                 transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: '#EFF6FF' },
+                '&:hover': { bgcolor: '#FAF5FF' },
               }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               </ListItemIcon>
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                 Download CSV (.csv)

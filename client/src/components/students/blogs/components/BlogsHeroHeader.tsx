@@ -32,14 +32,14 @@ export default function BlogsHeroHeader({
             width: 52,
             height: 52,
             borderRadius: '16px',
-            bgcolor: '#EFF6FF',
-            background: 'linear-gradient(135deg, #DBEAFE 0%, #EFF6FF 100%)',
+            bgcolor: '#FAF5FF',
+            background: 'linear-gradient(135deg, #FAF5FF 0%, #FAF5FF 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#2563EB',
-            border: '1px solid #BFDBFE',
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.12)',
+            color: '#0B1F3A',
+            border: '1px solid #F3E8FF',
+            boxShadow: '0 4px 14px rgba(91, 45, 144, 0.12)',
             flexShrink: 0,
           }}
         >
@@ -54,12 +54,12 @@ export default function BlogsHeroHeader({
               label="SkillOS Publications"
               size="small"
               sx={{
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 fontWeight: 800,
                 fontSize: '0.72rem',
                 height: 22,
-                border: '1px solid #DBEAFE',
+                border: '1px solid #FAF5FF',
               }}
             />
             <Chip
@@ -108,15 +108,15 @@ export default function BlogsHeroHeader({
           startIcon={<EditNoteRoundedIcon />}
           onClick={onOpenWriteModal}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             borderRadius: '10px',
             fontWeight: 700,
             textTransform: 'none',
             fontSize: '0.88rem',
             px: 2.6,
             py: 0.9,
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.28)',
-            '&:hover': { bgcolor: '#1D4ED8', transform: 'translateY(-1px)' },
+            boxShadow: '0 4px 14px rgba(91, 45, 144, 0.28)',
+            '&:hover': { bgcolor: '#17366E', transform: 'translateY(-1px)' },
             transition: 'all 0.18s ease',
           }}
         >

@@ -784,7 +784,14 @@ export const apiService = {
   // ----------------------------------------------------
   // CONTESTS & TOURNAMENTS
   // ----------------------------------------------------
-  async getContests(params?: { page?: number; limit?: number; search?: string; status?: string; institutionId?: string; collegeId?: string }) {
+  async getContests(params?: { page?: number; limit?: number; search?: string; status?: string; institutionId?: string; collegeId?: string; batchId?: string }) {
+    try {
+      const res = await apiClient.get('/contests', { params });
+      if (res.data?.data) return res.data.data;
+      if (res.data) return res.data;
+    } catch {
+      // Fallback to GraphQL
+    }
     try {
       const data = await deduplicatedQuery<{ contests: { items: any[]; meta: any } }>(
         CONTESTS_QUERY,
@@ -798,6 +805,13 @@ export const apiService = {
   },
 
   async getContestById(id: string) {
+    try {
+      const res = await apiClient.get(`/contests/${id}`);
+      if (res.data?.data) return res.data.data;
+      if (res.data) return res.data;
+    } catch {
+      // Fallback to GraphQL
+    }
     const data = await fetchGraphQL<{ contest: any }>(CONTEST_BY_ID_QUERY, { id });
     return data.contest;
   },
@@ -832,14 +846,31 @@ export const apiService = {
     startTime?: string | Date;
     endTime?: string | Date;
     status?: string;
+    [key: string]: any;
   }) {
-    const data = await fetchGraphQL<{ updateContest: any }>(UPDATE_CONTEST_MUTATION, { id, input });
-    return data.updateContest;
+    try {
+      const res = await apiClient.patch(`/contests/${id}`, input);
+      return res.data?.data ?? res.data;
+    } catch (err: any) {
+      if (err?.status || err?.response?.status) {
+        throw err;
+      }
+      const data = await fetchGraphQL<{ updateContest: any }>(UPDATE_CONTEST_MUTATION, { id, input });
+      return data.updateContest;
+    }
   },
 
   async deleteContest(id: string) {
-    const data = await fetchGraphQL<{ deleteContest: boolean }>(DELETE_CONTEST_MUTATION, { id });
-    return data.deleteContest;
+    try {
+      const res = await apiClient.delete(`/contests/${id}`);
+      return res.data?.data ?? res.data ?? true;
+    } catch (err: any) {
+      if (err?.status || err?.response?.status) {
+        throw err;
+      }
+      const data = await fetchGraphQL<{ deleteContest: boolean }>(DELETE_CONTEST_MUTATION, { id });
+      return data.deleteContest;
+    }
   },
 
   async addContestProblem(contestId: string, input: { problemId: string; points?: number; order?: number }) {
@@ -1237,10 +1268,10 @@ export const apiService = {
       coverImage: raw.coverImage || 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
       author: {
         name: raw.author?.name || 'Platform Author',
-        avatarBg: raw.author?.avatarBg || '#2563EB',
+        avatarBg: raw.author?.avatarBg || '#0B1F3A',
         avatarImg: raw.author?.avatarUrl || raw.author?.avatarImg || undefined,
         role: raw.author?.globalRole || raw.author?.role || 'Engineer',
-        college: raw.author?.college || raw.institution?.name || 'CodePlatform',
+        college: raw.author?.college || raw.institution?.name || 'TechLearns',
         handle: raw.author?.handle || (raw.author?.email ? `@${raw.author.email.split('@')[0]}` : '@author'),
         isVerified: Boolean(raw.author?.isVerified ?? true),
       },
@@ -1256,7 +1287,7 @@ export const apiService = {
         ? raw.comments.map((c: any) => ({
             id: c.id,
             author: c.author?.name || 'Commenter',
-            avatarBg: c.author?.avatarBg || '#2563EB',
+            avatarBg: c.author?.avatarBg || '#0B1F3A',
             time: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Recently',
             text: c.text || '',
           }))
@@ -1277,10 +1308,10 @@ export const apiService = {
       coverImage: raw.coverImage || 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
       author: {
         name: raw.author?.name || 'Platform Author',
-        avatarBg: raw.author?.avatarBg || '#2563EB',
+        avatarBg: raw.author?.avatarBg || '#0B1F3A',
         avatarImg: raw.author?.avatarUrl || raw.author?.avatarImg || undefined,
         role: raw.author?.globalRole || raw.author?.role || 'Engineer',
-        college: raw.author?.college || raw.institution?.name || 'CodePlatform',
+        college: raw.author?.college || raw.institution?.name || 'TechLearns',
         handle: raw.author?.handle || (raw.author?.email ? `@${raw.author.email.split('@')[0]}` : '@author'),
         isVerified: Boolean(raw.author?.isVerified ?? true),
       },
@@ -1297,7 +1328,7 @@ export const apiService = {
             id: c.id,
             author: c.author?.name || 'Commenter',
             authorId: c.authorId || c.author?.id,
-            avatarBg: c.author?.avatarBg || '#2563EB',
+            avatarBg: c.author?.avatarBg || '#0B1F3A',
             time: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : 'Recently',
             text: c.text || '',
           }))

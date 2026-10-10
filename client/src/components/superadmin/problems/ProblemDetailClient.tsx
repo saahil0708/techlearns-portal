@@ -385,7 +385,7 @@ export default function ProblemDetailClient({
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
-            .replace(/`([^`]+)`/g, '<code style="background-color: rgba(37,99,235,0.08); color: #2563EB; font-family: monospace; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.9em;">$1</code>')
+            .replace(/`([^`]+)`/g, '<code style="background-color: rgba(91, 45, 144, 0.08); color: #0B1F3A; font-family: monospace; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.9em;">$1</code>')
             .replace(/\*\*([^*]+)\*\*/g, '<strong style="font-weight: 700; color: #0F172A;">$1</strong>')
             .replace(/\n/g, '<br />')
         }}
@@ -659,7 +659,7 @@ export default function ProblemDetailClient({
         display: 'flex',
         bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.03) 0px, transparent 50%),
+          radial-gradient(at 0% 0%, rgba(91, 45, 144, 0.03) 0px, transparent 50%),
           radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.03) 0px, transparent 50%)
         `,
         color: '#0F172A',
@@ -705,14 +705,14 @@ export default function ProblemDetailClient({
               value={currentTab}
               onChange={handleTabChange}
               sx={{
-                '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+                '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
                 '& .MuiTab-root': {
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '0.92rem',
                   color: '#64748B',
                   minWidth: 120,
-                  '&.Mui-selected': { color: '#2563EB' },
+                  '&.Mui-selected': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -821,7 +821,7 @@ export default function ProblemDetailClient({
               <Button
                 variant="contained"
                 onClick={handleCreateTestCase}
-                sx={{ bgcolor: '#2563EB', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
+                sx={{ bgcolor: '#0B1F3A', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
               >
                 Add Case
               </Button>
@@ -876,7 +876,7 @@ export default function ProblemDetailClient({
               <Button
                 variant="contained"
                 onClick={handleAssignCohort}
-                sx={{ bgcolor: '#2563EB', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
+                sx={{ bgcolor: '#0B1F3A', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
               >
                 Assign Cohort
               </Button>

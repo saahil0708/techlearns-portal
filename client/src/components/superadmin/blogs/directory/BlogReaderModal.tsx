@@ -51,7 +51,7 @@ export default function BlogReaderModal({
           </Typography>
           <Divider sx={{ borderColor: '#00000015', mb: 1.5 }} />
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <Chip size="small" label={blog.category} sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700 }} />
+            <Chip size="small" label={blog.category} sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700 }} />
             {blog.tags && blog.tags.map((tag) => (
               <Chip key={tag} size="small" label={`#${tag}`} sx={{ bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', color: '#64748B', fontWeight: 600, fontSize: '0.74rem' }} />
             ))}
@@ -127,7 +127,7 @@ export default function BlogReaderModal({
               onClose();
               onEdit(target);
             }}
-            sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 700, fontSize: '0.84rem', bgcolor: '#2563EB', '&:hover': { bgcolor: '#1D4ED8' } }}
+            sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 700, fontSize: '0.84rem', bgcolor: '#0B1F3A', '&:hover': { bgcolor: '#17366E' } }}
           >
             Edit Article
           </Button>

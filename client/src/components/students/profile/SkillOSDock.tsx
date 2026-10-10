@@ -96,7 +96,7 @@ export const SkillOSDock: React.FC<SkillOSDockProps> = ({ profile }) => {
       case 'jira':
         return <FaJira size={18} color="#0052CC" />;
       case 'ide':
-        return <TerminalRoundedIcon sx={{ fontSize: 20, color: '#2563EB' }} />;
+        return <TerminalRoundedIcon sx={{ fontSize: 20, color: '#0B1F3A' }} />;
       case 'passport':
       default:
         return <ShieldRoundedIcon sx={{ fontSize: 20, color: '#10B981' }} />;
@@ -143,7 +143,7 @@ export const SkillOSDock: React.FC<SkillOSDockProps> = ({ profile }) => {
       {/* Header section title */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <BusinessRoundedIcon sx={{ color: '#4F46E5', fontSize: 20 }} />
+          <BusinessRoundedIcon sx={{ color: '#5B2D90', fontSize: 20 }} />
           <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
             SkillOS™ Corporate Workspace
           </Typography>
@@ -186,7 +186,7 @@ export const SkillOSDock: React.FC<SkillOSDockProps> = ({ profile }) => {
             width: 120,
             height: 120,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(91, 45, 144, 0.3) 0%, transparent 70%)',
             pointerEvents: 'none',
           }}
         />
@@ -322,12 +322,12 @@ export const SkillOSDock: React.FC<SkillOSDockProps> = ({ profile }) => {
                 cursor: 'pointer',
                 textDecoration: 'none',
                 '&:hover': {
-                  bgcolor: '#EEF2FF',
+                  bgcolor: '#FAF5FF',
                   borderColor: '#C7D2FE',
                   transform: 'translateY(-1px)',
                   boxShadow: '0 4px 12px rgba(79, 70, 229, 0.08)',
                   '& .tool-arrow': {
-                    color: '#4F46E5',
+                    color: '#5B2D90',
                     transform: 'translate(2px, -2px)',
                   },
                   '& .tool-title': {

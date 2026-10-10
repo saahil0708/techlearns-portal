@@ -135,7 +135,7 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                   <TableRow key={c.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
                     <TableCell sx={{ pl: 3, py: 1.75 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                        <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <MenuBookRoundedIcon sx={{ fontSize: 18 }} />
                         </Box>
                         <Box>
@@ -146,7 +146,7 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                     </TableCell>
 
                     <TableCell sx={{ py: 1.75 }}>
-                      <Chip label={c.level} size="small" sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#EFF6FF', color: '#2563EB', borderRadius: '5px' }} />
+                      <Chip label={c.level} size="small" sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#FAF5FF', color: '#0B1F3A', borderRadius: '5px' }} />
                     </TableCell>
 
                     <TableCell sx={{ py: 1.75 }}>
@@ -165,7 +165,7 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                         <LinearProgress
                           variant="determinate"
                           value={c.progressPct}
-                          sx={{ height: 5, borderRadius: 3, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { bgcolor: c.progressPct === 100 ? '#10B981' : '#2563EB', borderRadius: 3 } }}
+                          sx={{ height: 5, borderRadius: 3, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { bgcolor: c.progressPct === 100 ? '#10B981' : '#0B1F3A', borderRadius: 3 } }}
                         />
                       </Box>
                     </TableCell>
@@ -184,9 +184,9 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                           height: 22,
                           fontSize: '0.7rem',
                           fontWeight: 700,
-                          bgcolor: c.status === 'Completed' ? '#ECFDF5' : '#EFF6FF',
-                          color: c.status === 'Completed' ? '#059669' : '#2563EB',
-                          border: c.status === 'Completed' ? '1px solid #A7F3D0' : '1px solid #DBEAFE',
+                          bgcolor: c.status === 'Completed' ? '#ECFDF5' : '#FAF5FF',
+                          color: c.status === 'Completed' ? '#059669' : '#0B1F3A',
+                          border: c.status === 'Completed' ? '1px solid #A7F3D0' : '1px solid #FAF5FF',
                           borderRadius: '5px',
                         }}
                       />

@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import InstitutionFacultyClient from '@/components/institution-admin/faculty/InstitutionFacultyClient';
 
 export const metadata: Metadata = {
-  title: 'Faculty & Mentors | CodePlatform Institution Admin',
+  title: 'Faculty & Mentors | TechLearns Institution Admin',
   description: 'Manage institutional faculty mentors, teaching assistants, and department coordinators.',
 };
 

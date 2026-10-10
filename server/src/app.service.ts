@@ -32,7 +32,7 @@ export class AppService {
 
     return {
       status: 'ok',
-      service: 'CodePlatform API',
+      service: 'TechLearns API',
       timestamp: new Date().toISOString(),
       system: {
         platform: os.platform(),

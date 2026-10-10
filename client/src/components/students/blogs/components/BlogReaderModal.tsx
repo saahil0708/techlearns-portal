@@ -107,7 +107,7 @@ export default function BlogReaderModal({
             label={selectedBlog.category}
             size="small"
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               fontWeight: 700,
               fontSize: '0.74rem',
@@ -224,7 +224,7 @@ export default function BlogReaderModal({
           <IconButton
             aria-label={selectedBlog.isBookmarked ? 'Remove from bookmarks' : 'Save bookmark'}
             onClick={(e) => onToggleBookmark(selectedBlog.id, e)}
-            sx={{ color: selectedBlog.isBookmarked ? '#2563EB' : '#94A3B8' }}
+            sx={{ color: selectedBlog.isBookmarked ? '#0B1F3A' : '#94A3B8' }}
           >
             {selectedBlog.isBookmarked ? <BookmarkRoundedIcon /> : <BookmarkBorderRoundedIcon />}
           </IconButton>
@@ -258,7 +258,7 @@ export default function BlogReaderModal({
               onClick={onAddComment}
               disabled={!commentText.trim() || isAddingComment}
               sx={{
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 borderRadius: '12px',
                 px: 2.5,
                 fontWeight: 700,

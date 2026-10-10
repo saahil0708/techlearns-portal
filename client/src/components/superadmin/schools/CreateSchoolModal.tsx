@@ -118,8 +118,8 @@ export default function CreateSchoolModal({ open, onClose, onCreate }: CreateSch
             width: 42,
             height: 42,
             borderRadius: '12px',
-            bgcolor: '#EFF6FF',
-            color: '#2563EB',
+            bgcolor: '#FAF5FF',
+            color: '#0B1F3A',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -359,13 +359,13 @@ export default function CreateSchoolModal({ open, onClose, onCreate }: CreateSch
           variant="contained"
           onClick={handleSubmit}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             textTransform: 'none',
             fontWeight: 700,
             borderRadius: '8px',
             px: 2.75,
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           Provision School Tenant

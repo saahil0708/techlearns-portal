@@ -97,7 +97,7 @@ export default function ContestsArenaClient() {
                 registeredParticipants: c._count?.registrations || 0,
                 submissionsCount: c._count?.submissions || 0,
                 organizer: c.organizer || 'Competitive Programming Council',
-                bannerColor: '#2563EB',
+                bannerColor: '#0B1F3A',
                 tags: Array.isArray(c.tags) ? c.tags : ['Rated', 'Standard'],
                 rated: c.rated !== undefined ? Boolean(c.rated) : true,
               };
@@ -308,9 +308,9 @@ export default function ContestsArenaClient() {
                   fontWeight: 700,
                   textTransform: 'none',
                   color: '#64748B',
-                  '&.Mui-selected': { color: '#2563EB' },
+                  '&.Mui-selected': { color: '#0B1F3A' },
                 },
-                '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+                '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
               }}
             >
               <Tab label="All Contests" value="ALL" />
@@ -359,7 +359,7 @@ export default function ContestsArenaClient() {
                 >
                   <MenuItem value="ALL" sx={{ fontSize: '0.84rem', fontWeight: 600 }}>All Divisions</MenuItem>
                   <MenuItem value="Div 1" sx={{ fontSize: '0.84rem', color: '#DC2626', fontWeight: 700 }}>Div 1 (2000+)</MenuItem>
-                  <MenuItem value="Div 2" sx={{ fontSize: '0.84rem', color: '#2563EB', fontWeight: 700 }}>Div 2 (1600-1999)</MenuItem>
+                  <MenuItem value="Div 2" sx={{ fontSize: '0.84rem', color: '#0B1F3A', fontWeight: 700 }}>Div 2 (1600-1999)</MenuItem>
                   <MenuItem value="Div 3" sx={{ fontSize: '0.84rem', color: '#16A34A', fontWeight: 700 }}>Div 3 (1400-1599)</MenuItem>
                   <MenuItem value="Div 4" sx={{ fontSize: '0.84rem', color: '#64748B', fontWeight: 700 }}>Div 4 (0-1399)</MenuItem>
                 </Select>
@@ -466,8 +466,8 @@ export default function ContestsArenaClient() {
                                 label="UPCOMING"
                                 size="small"
                                 sx={{
-                                  bgcolor: 'rgba(37, 99, 235, 0.1)',
-                                  color: '#2563EB',
+                                  bgcolor: 'rgba(91, 45, 144, 0.1)',
+                                  color: '#0B1F3A',
                                   fontWeight: 700,
                                   fontSize: '0.72rem',
                                   height: 24,
@@ -513,7 +513,7 @@ export default function ContestsArenaClient() {
                                         contest.division === 'Div 1'
                                           ? 'rgba(220, 38, 38, 0.1)'
                                           : contest.division === 'Div 2'
-                                          ? 'rgba(37, 99, 235, 0.1)'
+                                          ? 'rgba(91, 45, 144, 0.1)'
                                           : contest.division === 'Div 3'
                                           ? 'rgba(22, 163, 74, 0.1)'
                                           : 'rgba(100, 116, 139, 0.1)',
@@ -521,7 +521,7 @@ export default function ContestsArenaClient() {
                                         contest.division === 'Div 1'
                                           ? '#DC2626'
                                           : contest.division === 'Div 2'
-                                          ? '#2563EB'
+                                          ? '#0B1F3A'
                                           : contest.division === 'Div 3'
                                           ? '#16A34A'
                                           : '#64748B',
@@ -657,9 +657,9 @@ export default function ContestsArenaClient() {
                                     textTransform: 'none',
                                     fontWeight: 700,
                                     fontSize: '0.78rem',
-                                    borderColor: '#2563EB',
-                                    color: '#2563EB',
-                                    '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.08)' },
+                                    borderColor: '#0B1F3A',
+                                    color: '#0B1F3A',
+                                    '&:hover': { bgcolor: 'rgba(91, 45, 144, 0.08)' },
                                   }}
                                 >
                                   Register

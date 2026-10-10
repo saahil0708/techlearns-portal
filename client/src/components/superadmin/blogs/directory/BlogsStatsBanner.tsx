@@ -69,7 +69,7 @@ export default function BlogsStatsBanner({
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ width: 38, height: 38, borderRadius: '10px', bgcolor: 'rgba(37, 99, 235, 0.1)', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ width: 38, height: 38, borderRadius: '10px', bgcolor: 'rgba(91, 45, 144, 0.1)', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ArticleRoundedIcon sx={{ fontSize: 22 }} />
             </Box>
             <Typography sx={{ fontSize: '1.5rem', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
@@ -125,7 +125,7 @@ export default function BlogsStatsBanner({
               }}
               sx={{ borderRadius: '8px', py: 1 }}
             >
-              <ListItemIcon sx={{ color: '#0284C7', minWidth: 32 }}><DescriptionRoundedIcon fontSize="small" /></ListItemIcon>
+              <ListItemIcon sx={{ color: '#5B2D90', minWidth: 32 }}><DescriptionRoundedIcon fontSize="small" /></ListItemIcon>
               <Typography sx={{ fontSize: '0.84rem', fontWeight: 600 }}>Download CSV (.csv)</Typography>
             </MenuItem>
           </Menu>
@@ -135,7 +135,7 @@ export default function BlogsStatsBanner({
             startIcon={<AddRoundedIcon />}
             onClick={onOpenCreateModal}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               borderRadius: '10px',
               textTransform: 'none',
@@ -143,8 +143,8 @@ export default function BlogsStatsBanner({
               fontSize: '0.84rem',
               px: 2.25,
               py: 0.85,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Write Article

@@ -29,6 +29,7 @@ import LaptopMacOutlinedIcon from '@mui/icons-material/LaptopMacOutlined';
 import DomainOutlinedIcon from '@mui/icons-material/DomainOutlined';
 import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import KeyboardArrowUpRoundedIcon from '@mui/icons-material/KeyboardArrowUpRounded';
 import PsychologyRoundedIcon from '@mui/icons-material/PsychologyRounded';
@@ -47,6 +48,7 @@ const STUDENT_NAV_ITEMS = [
   { label: 'Practice Engine', icon: <TerminalRoundedIcon sx={{ fontSize: 20 }} />, path: '/practice' },
 
   // Build & Prove
+  { label: 'SkillOS Tests', icon: <ShieldOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/skillos' },
   { label: 'Project Workspace', icon: <LaptopMacOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/projects' },
   // { label: 'Corporate Simulation', icon: <DomainOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/simulations' },
   { label: 'Bootcamps', icon: <TimerOutlinedIcon sx={{ fontSize: 19 }} />, path: '/students/bootcamps' },
@@ -205,7 +207,7 @@ export default function StudentSidebar() {
             transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease',
             '&:hover': {
               transform: 'scale(1.05)',
-              boxShadow: '0 12px 28px rgba(37, 99, 235, 0.18)',
+              boxShadow: '0 12px 28px rgba(91, 45, 144, 0.18)',
             },
           }}
         >
@@ -224,12 +226,12 @@ export default function StudentSidebar() {
                   width: 44,
                   height: 44,
                   borderRadius: '9999px',
-                  bgcolor: '#2563EB',
-                  background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  bgcolor: '#0B1F3A',
+                  background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                  boxShadow: '0 4px 14px rgba(11, 31, 58, 0.35)',
                 }}
               >
                 <CodeRoundedIcon sx={{ color: '#FFFFFF', fontSize: 24 }} />
@@ -276,8 +278,8 @@ export default function StudentSidebar() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                color: '#2563EB',
-                border: '1px solid #DBEAFE',
+                color: '#0B1F3A',
+                border: '1px solid #FAF5FF',
                 animation: 'bounceUp 1.4s infinite',
                 '@keyframes bounceUp': {
                   '0%, 100%': { transform: 'translateX(-50%) translateY(0)' },
@@ -339,13 +341,13 @@ export default function StudentSidebar() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        bgcolor: active ? '#2563EB' : 'transparent',
+                        bgcolor: active ? '#0B1F3A' : 'transparent',
                         color: active ? '#FFFFFF' : '#64748B',
-                        boxShadow: active ? '0 4px 14px rgba(37, 99, 235, 0.3)' : 'none',
+                        boxShadow: active ? '0 4px 14px rgba(91, 45, 144, 0.3)' : 'none',
                         transition: 'all 0.18s cubic-bezier(0.4, 0, 0.2, 1)',
                         flexShrink: 0,
                         '&:hover': {
-                          bgcolor: active ? '#2563EB' : '#F1F5F9',
+                          bgcolor: active ? '#0B1F3A' : '#F1F5F9',
                           color: active ? '#FFFFFF' : '#0F172A',
                           transform: 'scale(1.06)',
                         },
@@ -378,8 +380,8 @@ export default function StudentSidebar() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                color: '#2563EB',
-                border: '1px solid #DBEAFE',
+                color: '#0B1F3A',
+                border: '1px solid #FAF5FF',
                 animation: 'bounceDown 1.4s infinite',
                 '@keyframes bounceDown': {
                   '0%, 100%': { transform: 'translateX(-50%) translateY(0)' },
@@ -416,11 +418,11 @@ export default function StudentSidebar() {
                 sx={{
                   width: 36,
                   height: 36,
-                  bgcolor: '#3B82F6',
+                  bgcolor: '#5B2D90',
                   fontSize: '0.8rem',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  border: '2px solid #DBEAFE',
+                  border: '2px solid #FAF5FF',
                   transition: 'transform 0.2s ease',
                   '&:hover': { transform: 'scale(1.08)' },
                 }}

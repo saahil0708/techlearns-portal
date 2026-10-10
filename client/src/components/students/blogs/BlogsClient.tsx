@@ -233,7 +233,7 @@ export default function BlogsClient() {
     let newC = {
       id: `c-${Date.now()}`,
       author: 'You (Student)',
-      avatarBg: '#2563EB',
+      avatarBg: '#0B1F3A',
       time: 'Just now',
       text: textToSend,
     };
@@ -305,7 +305,7 @@ export default function BlogsClient() {
       coverImage: blogInput.coverImage,
       author: {
         name: 'You (Student)',
-        avatarBg: '#2563EB',
+        avatarBg: '#0B1F3A',
         role: 'Full Stack Learner',
         college: 'Your Institution',
         handle: '@you_student',
@@ -402,7 +402,7 @@ export default function BlogsClient() {
                 setSearchQuery('');
                 setActiveTab('trending');
               }}
-              sx={{ textTransform: 'none', fontWeight: 700, color: '#2563EB', borderColor: '#2563EB' }}
+              sx={{ textTransform: 'none', fontWeight: 700, color: '#0B1F3A', borderColor: '#0B1F3A' }}
             >
               Reset Filters
             </Button>

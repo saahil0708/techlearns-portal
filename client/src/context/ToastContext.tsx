@@ -131,11 +131,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       case 'info':
       default:
         return {
-          ringColor: '#3B82F6',
-          ringBg: 'rgba(59, 130, 246, 0.16)',
-          ringBorder: 'rgba(59, 130, 246, 0.4)',
-          glowColor: 'rgba(59, 130, 246, 0.35)',
-          icon: <InfoRoundedIcon sx={{ color: '#3B82F6', fontSize: '1rem', fontWeight: 800 }} />,
+          ringColor: '#5B2D90',
+          ringBg: 'rgba(91, 45, 144, 0.16)',
+          ringBorder: 'rgba(91, 45, 144, 0.4)',
+          glowColor: 'rgba(91, 45, 144, 0.35)',
+          icon: <InfoRoundedIcon sx={{ color: '#5B2D90', fontSize: '1rem', fontWeight: 800 }} />,
           defaultTitle: 'Notice',
         };
     }

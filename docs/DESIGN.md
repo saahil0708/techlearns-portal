@@ -80,6 +80,20 @@ The platform implements strict CodeChef visual parity for competitive ratings:
 
 ---
 
+### 2.4 Assessment & System Check Hybrid Theme Tokens
+
+For pre-assessment hardware diagnostics and proctoring screens, the platform uses a high-clarity hybrid theme:
+
+| Diagnostic Token | Color / Style | Purpose |
+| :--- | :--- | :--- |
+| `--diagnostic-card-bg` | `#ffffff` | Clean high-contrast white card surface for hardware tiles & candidate instructions |
+| `--diagnostic-canvas` | `#0f172a` (Slate 900) | Deep dark backdrop ensuring zero visual distraction |
+| `--diagnostic-success` | `#16a34a` (Emerald 600) | Verified hardware & network check status pills and checkmark badges |
+| `--diagnostic-action` | `#4f46e5` (Indigo 600) | Primary CTA buttons, speaker audio test, and screen-share picker triggers |
+| `--diagnostic-warning`| `#ea580c` (Orange 600) | Permission retry badges, mic level indicators, and unverified alerts |
+
+---
+
 ## 🔤 3. Typography & Font Hierarchy
 
 The platform relies on Google Fonts with strict monospace integration for code blocks:

@@ -46,11 +46,11 @@ export default function InstitutionFacultyTab({
           startIcon={<AddRoundedIcon />}
           onClick={onOpenInviteFaculty}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             borderRadius: '9999px',
             textTransform: 'none',
             fontWeight: 700,
-            '&:hover': { bgcolor: '#1D4ED8' },
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           Invite Faculty
@@ -82,7 +82,7 @@ export default function InstitutionFacultyTab({
                 <TableRow key={f.id} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Avatar sx={{ width: 32, height: 32, fontSize: '0.8rem', bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700 }}>
+                      <Avatar sx={{ width: 32, height: 32, fontSize: '0.8rem', bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700 }}>
                         {f.name[0]}
                       </Avatar>
                       <Box>
@@ -103,9 +103,9 @@ export default function InstitutionFacultyTab({
                       label={f.role}
                       size="small"
                       sx={{
-                        bgcolor: '#EFF6FF',
-                        color: '#2563EB',
-                        border: '1px solid #DBEAFE',
+                        bgcolor: '#FAF5FF',
+                        color: '#0B1F3A',
+                        border: '1px solid #FAF5FF',
                         fontWeight: 700,
                         fontSize: '0.72rem',
                         borderRadius: '6px',

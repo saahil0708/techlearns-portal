@@ -27,11 +27,18 @@ import PersonAddRoundedIcon from '@mui/icons-material/PersonAddRounded';
 import GroupAddRoundedIcon from '@mui/icons-material/GroupAddRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
 import CampaignRoundedIcon from '@mui/icons-material/CampaignRounded';
 
 import SendNotificationModal from '@/components/shared/SendNotificationModal';
+
+import { apiService } from '@/lib/api-service';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store';
+import { useNotifications } from '@/context/NotificationContext';
+import { BRAND_COLORS } from '@/theme/colors';
 
 interface NavbarProps {
   searchQuery?: string;  
@@ -39,15 +46,10 @@ interface NavbarProps {
   primaryBlue?: string;
 }
 
-import { apiService } from '@/lib/api-service';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/store';
-import { useNotifications } from '@/context/NotificationContext';
-
 export default function Navbar({
   searchQuery = '',
   onSearchChange = () => {},
-  primaryBlue = '#2563EB',
+  primaryBlue = BRAND_COLORS.primary,
 }: NavbarProps) {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -131,13 +133,13 @@ export default function Navbar({
             label={roleLabel}
             size="small"
             sx={{
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               fontWeight: 800,
               fontSize: '0.68rem',
               height: 22,
               borderRadius: '6px',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           />
         </Box>
@@ -209,8 +211,8 @@ export default function Navbar({
               '&:hover': { bgcolor: '#FFFFFF', borderColor: '#CBD5E1' },
               '&.Mui-focused': {
                 bgcolor: '#FFFFFF',
-                borderColor: '#2563EB',
-                boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.15)',
+                borderColor: BRAND_COLORS.primary,
+                boxShadow: `0 0 0 3px ${BRAND_COLORS.alpha.navy15}`,
               },
             },
             '& input::placeholder': {
@@ -251,9 +253,9 @@ export default function Navbar({
                   width: 7,
                   height: 7,
                   borderRadius: '50%',
-                  bgcolor: '#2563EB',
+                  bgcolor: BRAND_COLORS.secondary,
                   border: '1px solid #FFFFFF',
-                  boxShadow: '0 0 6px rgba(37, 99, 235, 0.8)',
+                  boxShadow: `0 0 6px ${BRAND_COLORS.secondary}`,
                 }}
               />
             )}
@@ -289,7 +291,7 @@ export default function Navbar({
                 <Chip
                   label={`${unreadCount} new`}
                   size="small"
-                  sx={{ height: 18, fontSize: '0.66rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB' }}
+                  sx={{ height: 18, fontSize: '0.66rem', fontWeight: 800, bgcolor: BRAND_COLORS.purple[50], color: BRAND_COLORS.secondary }}
                 />
               )}
             </Box>
@@ -326,7 +328,7 @@ export default function Navbar({
                     p: 1.25,
                     borderRadius: '10px',
                     bgcolor: notif.unread ? '#F8FAFC' : '#FFFFFF',
-                    border: notif.unread ? '1px solid #DBEAFE' : '1px solid #F1F5F9',
+                    border: notif.unread ? `1px solid ${BRAND_COLORS.purple[200]}` : '1px solid #F1F5F9',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                     '&:hover': { bgcolor: '#F1F5F9' },
@@ -355,7 +357,7 @@ export default function Navbar({
           onClick={(e) => setCreateAnchorEl(e.currentTarget)}
           startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
           sx={{
-            background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+            background: BRAND_COLORS.gradients.brand,
             color: '#FFFFFF',
             textTransform: 'none',
             fontWeight: 700,
@@ -364,12 +366,12 @@ export default function Navbar({
             px: { xs: 1.6, sm: 2.4 },
             py: 0.95,
             height: 40,
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+            boxShadow: `0 4px 14px ${BRAND_COLORS.alpha.purple20}`,
             border: 'none',
             whiteSpace: 'nowrap',
             '&:hover': {
-              background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
-              boxShadow: '0 6px 20px rgba(37, 99, 235, 0.45)',
+              background: BRAND_COLORS.gradients.brandReverse,
+              boxShadow: `0 6px 20px ${BRAND_COLORS.alpha.purple20}`,
               transform: 'translateY(-1px)',
             },
             transition: 'all 0.2s ease',
@@ -397,7 +399,7 @@ export default function Navbar({
           }}
         >
           <MenuItem onClick={() => handleCreateSelect('/superadmin/institutions')} sx={{ borderRadius: '10px', py: 1 }}>
-            <ListItemIcon sx={{ color: '#2563EB', minWidth: 32 }}>
+            <ListItemIcon sx={{ color: '#0B1F3A', minWidth: 32 }}>
               <AccountBalanceRoundedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText
@@ -407,7 +409,7 @@ export default function Navbar({
           </MenuItem>
 
           <MenuItem onClick={() => handleCreateSelect('/superadmin/blogs')} sx={{ borderRadius: '10px', py: 1 }}>
-            <ListItemIcon sx={{ color: '#0284C7', minWidth: 32 }}>
+            <ListItemIcon sx={{ color: '#5B2D90', minWidth: 32 }}>
               <ArticleRoundedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText
@@ -458,6 +460,16 @@ export default function Navbar({
             />
           </MenuItem>
 
+          <MenuItem onClick={() => handleCreateSelect('/superadmin/skillos')} sx={{ borderRadius: '10px', py: 1 }}>
+            <ListItemIcon sx={{ color: '#0B1F3A', minWidth: 32 }}>
+              <ShieldRoundedIcon sx={{ fontSize: 18 }} />
+            </ListItemIcon>
+            <ListItemText
+              slotProps={{ primary: { sx: { fontSize: '0.84rem', fontWeight: 600 } } }}
+              primary="SkillOS Proctored Test"
+            />
+          </MenuItem>
+
           <Divider sx={{ my: 0.75 }} />
 
           <MenuItem
@@ -465,9 +477,9 @@ export default function Navbar({
               setCreateAnchorEl(null);
               setSendNotifOpen(true);
             }}
-            sx={{ borderRadius: '10px', py: 1, bgcolor: '#EFF6FF', color: '#2563EB', '&:hover': { bgcolor: '#DBEAFE' } }}
+            sx={{ borderRadius: '10px', py: 1, bgcolor: '#FAF5FF', color: '#0B1F3A', '&:hover': { bgcolor: '#E9D5FF' } }}
           >
-            <ListItemIcon sx={{ color: '#2563EB', minWidth: 32 }}>
+            <ListItemIcon sx={{ color: '#0B1F3A', minWidth: 32 }}>
               <CampaignRoundedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText

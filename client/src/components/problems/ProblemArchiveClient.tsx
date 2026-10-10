@@ -411,12 +411,12 @@ export default function ProblemArchiveClient() {
                 Problem Archive & Solves
               </Typography>
               <Chip
-                icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 13, color: '#2563EB !important' }} />}
+                icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 13, color: '#0B1F3A !important' }} />}
                 label="Standard Judge Sandbox"
                 size="small"
                 sx={{
-                  bgcolor: 'rgba(37, 99, 235, 0.08)',
-                  color: '#2563EB',
+                  bgcolor: 'rgba(91, 45, 144, 0.08)',
+                  color: '#0B1F3A',
                   fontWeight: 700,
                   fontSize: '0.72rem',
                 }}
@@ -479,7 +479,7 @@ export default function ProblemArchiveClient() {
           sx={{
             borderRadius: '24px',
             background: 'linear-gradient(135deg, #070B14 0%, #0D1527 50%, #0F1E3D 100%)',
-            border: '1px solid rgba(56, 189, 248, 0.22)',
+            border: '1px solid rgba(192, 132, 252, 0.22)',
             boxShadow: '0 24px 60px -15px rgba(15, 23, 42, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
             position: 'relative',
             overflow: 'hidden',
@@ -496,8 +496,8 @@ export default function ProblemArchiveClient() {
               position: 'absolute',
               inset: 0,
               backgroundImage: `
-                linear-gradient(to right, rgba(56, 189, 248, 0.08) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(56, 189, 248, 0.08) 1px, transparent 1px)
+                linear-gradient(to right, rgba(192, 132, 252, 0.08) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(192, 132, 252, 0.08) 1px, transparent 1px)
               `,
               backgroundSize: '28px 28px',
               maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0.3) 85%)',
@@ -538,14 +538,14 @@ export default function ProblemArchiveClient() {
             <path
               d="M 220,70 L 320,70 L 360,110 L 520,110"
               fill="none"
-              stroke="rgba(56, 189, 248, 0.16)"
+              stroke="rgba(192, 132, 252, 0.16)"
               strokeWidth="1.5"
               strokeDasharray="6 6"
             />
             <path
               d="M 600,30 L 680,30 L 720,70 L 850,70"
               fill="none"
-              stroke="rgba(56, 189, 248, 0.12)"
+              stroke="rgba(192, 132, 252, 0.12)"
               strokeWidth="1.5"
             />
 
@@ -553,19 +553,19 @@ export default function ProblemArchiveClient() {
             <polygon
               points="820,120 860,80 910,80 950,120 950,170 910,210 860,210 820,170"
               fill="none"
-              stroke="rgba(56, 189, 248, 0.12)"
+              stroke="rgba(192, 132, 252, 0.12)"
               strokeWidth="1.5"
               strokeDasharray="8 6"
             />
             <polygon
               points="790,120 840,70 930,70 980,120 980,170 930,220 840,220 790,170"
               fill="none"
-              stroke="rgba(56, 189, 248, 0.06)"
+              stroke="rgba(192, 132, 252, 0.06)"
               strokeWidth="1"
             />
 
             {/* Tech Crosshair Markers */}
-            <path d="M 40,30 L 50,30 M 45,25 L 45,35" stroke="rgba(56, 189, 248, 0.25)" strokeWidth="1.5" />
+            <path d="M 40,30 L 50,30 M 45,25 L 45,35" stroke="rgba(192, 132, 252, 0.25)" strokeWidth="1.5" />
             <path d="M 580,180 L 590,180 M 585,175 L 585,185" stroke="rgba(245, 158, 11, 0.3)" strokeWidth="1.5" />
           </svg>
 
@@ -592,7 +592,7 @@ export default function ProblemArchiveClient() {
               width: '500px',
               height: '500px',
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.14) 50%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(192, 132, 252, 0.22) 0%, rgba(91, 45, 144, 0.14) 50%, transparent 70%)',
               filter: 'blur(60px)',
               pointerEvents: 'none',
               zIndex: 1,
@@ -607,18 +607,18 @@ export default function ProblemArchiveClient() {
               right: 0,
               width: 160,
               height: 36,
-              background: 'linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.18))',
+              background: 'linear-gradient(90deg, transparent, rgba(192, 132, 252, 0.18))',
               clipPath: 'polygon(18% 0, 100% 0, 100% 100%, 0% 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
               pr: 2.5,
-              borderBottom: '1px solid rgba(56, 189, 248, 0.35)',
+              borderBottom: '1px solid rgba(192, 132, 252, 0.35)',
               zIndex: 3,
               pointerEvents: 'none',
             }}
           >
-            <Typography sx={{ color: '#38BDF8', fontSize: '0.68rem', fontWeight: 900, letterSpacing: '0.12em' }}>
+            <Typography sx={{ color: '#C084FC', fontSize: '0.68rem', fontWeight: 900, letterSpacing: '0.12em' }}>
               POTD // SPRINT
             </Typography>
           </Box>
@@ -654,7 +654,7 @@ export default function ProblemArchiveClient() {
                   backdropFilter: 'blur(10px)',
                 }}
               >
-                <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '0.68rem', letterSpacing: '0.08em' }}>
+                <Typography sx={{ color: '#C084FC', fontWeight: 900, fontSize: '0.68rem', letterSpacing: '0.08em' }}>
                   POTD
                 </Typography>
                 <Typography sx={{ color: '#FFFFFF', fontWeight: 900, fontSize: { xs: '1.05rem', sm: '1.2rem' }, lineHeight: 1.1 }}>
@@ -707,14 +707,14 @@ export default function ProblemArchiveClient() {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: 0.5,
-                          bgcolor: 'rgba(37, 99, 235, 0.15)',
-                          border: '1px solid rgba(59, 130, 246, 0.3)',
+                          bgcolor: 'rgba(11, 31, 58, 0.15)',
+                          border: '1px solid rgba(91, 45, 144, 0.3)',
                           px: 1.3,
                           py: 0.4,
                           borderRadius: '8px',
                         }}
                       >
-                        <Typography sx={{ color: '#93C5FD', fontWeight: 800, fontSize: '0.74rem' }}>
+                        <Typography sx={{ color: '#C084FC', fontWeight: 800, fontSize: '0.74rem' }}>
                           1.5x Multiplier Active
                         </Typography>
                       </Box>
@@ -809,7 +809,7 @@ export default function ProblemArchiveClient() {
                   <Box
                     sx={{
                       bgcolor: '#0B1120',
-                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      border: '1px solid rgba(192, 132, 252, 0.3)',
                       borderRadius: '10px',
                       px: 1.2,
                       py: 0.6,
@@ -817,7 +817,7 @@ export default function ProblemArchiveClient() {
                       minWidth: 42,
                     }}
                   >
-                    <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '1.12rem', fontFamily: 'monospace' }}>
+                    <Typography sx={{ color: '#C084FC', fontWeight: 900, fontSize: '1.12rem', fontFamily: 'monospace' }}>
                       {timeParts.hours}
                     </Typography>
                     <Typography sx={{ color: '#64748B', fontSize: '0.6rem', fontWeight: 800, mt: -0.3 }}>
@@ -825,7 +825,7 @@ export default function ProblemArchiveClient() {
                     </Typography>
                   </Box>
 
-                  <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '1.2rem' }}>
+                  <Typography sx={{ color: '#C084FC', fontWeight: 900, fontSize: '1.2rem' }}>
                     :
                   </Typography>
 
@@ -833,7 +833,7 @@ export default function ProblemArchiveClient() {
                   <Box
                     sx={{
                       bgcolor: '#0B1120',
-                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      border: '1px solid rgba(192, 132, 252, 0.3)',
                       borderRadius: '10px',
                       px: 1.2,
                       py: 0.6,
@@ -841,7 +841,7 @@ export default function ProblemArchiveClient() {
                       minWidth: 42,
                     }}
                   >
-                    <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '1.12rem', fontFamily: 'monospace' }}>
+                    <Typography sx={{ color: '#C084FC', fontWeight: 900, fontSize: '1.12rem', fontFamily: 'monospace' }}>
                       {timeParts.minutes}
                     </Typography>
                     <Typography sx={{ color: '#64748B', fontSize: '0.6rem', fontWeight: 800, mt: -0.3 }}>
@@ -849,7 +849,7 @@ export default function ProblemArchiveClient() {
                     </Typography>
                   </Box>
 
-                  <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '1.2rem' }}>
+                  <Typography sx={{ color: '#C084FC', fontWeight: 900, fontSize: '1.2rem' }}>
                     :
                   </Typography>
 
@@ -857,7 +857,7 @@ export default function ProblemArchiveClient() {
                   <Box
                     sx={{
                       bgcolor: '#0B1120',
-                      border: '1px solid rgba(56, 189, 248, 0.3)',
+                      border: '1px solid rgba(192, 132, 252, 0.3)',
                       borderRadius: '10px',
                       px: 1.2,
                       py: 0.6,
@@ -865,7 +865,7 @@ export default function ProblemArchiveClient() {
                       minWidth: 42,
                     }}
                   >
-                    <Typography sx={{ color: '#38BDF8', fontWeight: 900, fontSize: '1.12rem', fontFamily: 'monospace' }}>
+                    <Typography sx={{ color: '#C084FC', fontWeight: 900, fontSize: '1.12rem', fontFamily: 'monospace' }}>
                       {timeParts.seconds}
                     </Typography>
                     <Typography sx={{ color: '#64748B', fontSize: '0.6rem', fontWeight: 800, mt: -0.3 }}>
@@ -905,7 +905,7 @@ export default function ProblemArchiveClient() {
                       ? '#334155'
                       : potdData?.isSolved
                       ? 'linear-gradient(135deg, #059669 0%, #10B981 100%)'
-                      : 'linear-gradient(135deg, #0284C7 0%, #2563EB 100%)',
+                      : 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)',
                     color: '#FFFFFF',
                     fontWeight: 800,
                     fontSize: '0.88rem',
@@ -917,7 +917,7 @@ export default function ProblemArchiveClient() {
                       ? 'none'
                       : potdData?.isSolved
                       ? '0 4px 18px rgba(16, 185, 129, 0.4)'
-                      : '0 4px 20px rgba(37, 99, 235, 0.45)',
+                      : '0 4px 20px rgba(91, 45, 144, 0.45)',
                     whiteSpace: 'nowrap',
                     transition: 'all 0.22s ease',
                     '&:hover': {
@@ -926,7 +926,7 @@ export default function ProblemArchiveClient() {
                         ? 'none'
                         : potdData?.isSolved
                         ? '0 6px 24px rgba(16, 185, 129, 0.55)'
-                        : '0 6px 26px rgba(37, 99, 235, 0.6)',
+                        : '0 6px 26px rgba(91, 45, 144, 0.6)',
                     },
                     '&.Mui-disabled': {
                       color: '#94A3B8',
@@ -980,7 +980,7 @@ export default function ProblemArchiveClient() {
                 borderRadius: 4,
                 bgcolor: '#F1F5F9',
                 '& .MuiLinearProgress-bar': {
-                  background: 'linear-gradient(90deg, #3B82F6 0%, #10B981 100%)',
+                  background: 'linear-gradient(90deg, #5B2D90 0%, #10B981 100%)',
                   borderRadius: 4,
                 },
               }}
@@ -1057,9 +1057,9 @@ export default function ProblemArchiveClient() {
                   fontWeight: 700,
                   textTransform: 'none',
                   color: '#64748B',
-                  '&.Mui-selected': { color: '#2563EB' },
+                  '&.Mui-selected': { color: '#0B1F3A' },
                 },
-                '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+                '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
               }}
             >
               <Tab label="All Problems" value="ALL" />
@@ -1211,9 +1211,9 @@ export default function ProblemArchiveClient() {
               aria-label="Loading..."
               sx={{
                 height: 3,
-                bgcolor: 'rgba(37, 99, 235, 0.08)',
+                bgcolor: 'rgba(91, 45, 144, 0.08)',
                 '& .MuiLinearProgress-bar': {
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                 },
               }}
             />
@@ -1300,7 +1300,7 @@ export default function ProblemArchiveClient() {
                                 {problem.code}
                               </Typography>
                               {problem.contestCode && (
-                                <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#2563EB', fontFamily: 'monospace' }}>
+                                <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#0B1F3A', fontFamily: 'monospace' }}>
                                   {problem.contestCode}
                                 </Typography>
                               )}
@@ -1315,7 +1315,7 @@ export default function ProblemArchiveClient() {
                                   fontWeight: 700,
                                   fontSize: '0.9rem',
                                   color: '#0F172A',
-                                  '&:hover': { color: '#2563EB' },
+                                  '&:hover': { color: '#0B1F3A' },
                                 }}
                               >
                                 {problem.title}
@@ -1347,16 +1347,16 @@ export default function ProblemArchiveClient() {
                                   const label = crsObj ? crsObj.title : 'Course Lab';
                                   return (
                                     <Chip
-                                      icon={<MenuBookRoundedIcon sx={{ fontSize: 13, color: '#2563EB !important' }} />}
+                                      icon={<MenuBookRoundedIcon sx={{ fontSize: 13, color: '#0B1F3A !important' }} />}
                                       label={label}
                                       size="small"
                                       sx={{
                                         fontSize: '0.66rem',
                                         fontWeight: 700,
                                         height: 18,
-                                        bgcolor: '#EFF6FF',
-                                        color: '#2563EB',
-                                        border: '1px solid #BFDBFE',
+                                        bgcolor: '#FAF5FF',
+                                        color: '#0B1F3A',
+                                        border: '1px solid #F3E8FF',
                                       }}
                                     />
                                   );
@@ -1439,7 +1439,7 @@ export default function ProblemArchiveClient() {
                           </TableCell>
 
                           {/* Points */}
-                          <TableCell sx={{ py: 1.6, fontWeight: 700, color: '#2563EB', fontSize: '0.84rem' }}>
+                          <TableCell sx={{ py: 1.6, fontWeight: 700, color: '#0B1F3A', fontSize: '0.84rem' }}>
                             {problem.points} pts
                           </TableCell>
 
@@ -1457,8 +1457,8 @@ export default function ProblemArchiveClient() {
                                   fontSize: '0.78rem',
                                   px: 1.8,
                                   py: 0.5,
-                                  bgcolor: isSolved ? '#0F172A' : '#2563EB',
-                                  '&:hover': { bgcolor: isSolved ? '#1E293B' : '#1D4ED8' },
+                                  bgcolor: isSolved ? '#0F172A' : '#0B1F3A',
+                                  '&:hover': { bgcolor: isSolved ? '#1E293B' : '#17366E' },
                                 }}
                               >
                                 {isSolved ? 'Review' : 'Solve'}

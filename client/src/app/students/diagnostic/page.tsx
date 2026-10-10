@@ -6,7 +6,7 @@ import { Box } from '@mui/material';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Identity & Diagnostic Baseline | CodePlatform',
+  title: 'Identity & Diagnostic Baseline | TechLearns',
   description: 'Calibrate your engineering goals, benchmark current knowledge levels, and receive tailored course & practice recommendations.',
 };
 

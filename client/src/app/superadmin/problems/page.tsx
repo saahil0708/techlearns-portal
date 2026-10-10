@@ -4,7 +4,7 @@ import { ProblemEntity } from '@/types/problem';
 import { apiService } from '@/lib/api-service';
 
 export const metadata: Metadata = {
-  title: 'Problem Bank & Testcase Management | CodePlatform Admin',
+  title: 'Problem Bank & Testcase Management | TechLearns Admin',
   description: 'Manage institutional coding problems, test cases, judge runtime constraints, submission logs, and contest question mappings.',
 };
 

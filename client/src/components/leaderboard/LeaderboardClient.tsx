@@ -65,7 +65,7 @@ const TIER_COLORS: Record<string, { bg: string; text: string; border: string }> 
   Grandmaster: { bg: 'rgba(239, 68, 68, 0.1)', text: '#EF4444', border: 'rgba(239, 68, 68, 0.25)' },
   Master: { bg: 'rgba(245, 158, 11, 0.1)', text: '#F59E0B', border: 'rgba(245, 158, 11, 0.25)' },
   'Candidate Master': { bg: 'rgba(139, 92, 246, 0.1)', text: '#8B5CF6', border: 'rgba(139, 92, 246, 0.25)' },
-  Expert: { bg: 'rgba(59, 130, 246, 0.1)', text: '#3B82F6', border: 'rgba(59, 130, 246, 0.25)' },
+  Expert: { bg: 'rgba(91, 45, 144, 0.1)', text: '#5B2D90', border: 'rgba(91, 45, 144, 0.25)' },
   Specialist: { bg: 'rgba(16, 185, 129, 0.1)', text: '#10B981', border: 'rgba(16, 185, 129, 0.25)' },
 };
 
@@ -109,7 +109,7 @@ export default function LeaderboardClient() {
                 badge = '🥈 Candidate Master';
               } else if (rating >= 1600) {
                 tier = 'Expert';
-                tierColor = '#3B82F6';
+                tierColor = '#5B2D90';
                 badge = '🥉 Expert';
               }
               const inst = u.institution || u.memberships?.[0]?.institution?.name || 'Academic Institute';
@@ -413,9 +413,9 @@ export default function LeaderboardClient() {
                   fontWeight: 700,
                   textTransform: 'none',
                   color: '#64748B',
-                  '&.Mui-selected': { color: '#2563EB' },
+                  '&.Mui-selected': { color: '#0B1F3A' },
                 },
-                '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+                '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
               }}
             >
               <Tab label="All Divisions" value="GLOBAL" />
@@ -479,7 +479,7 @@ export default function LeaderboardClient() {
                       Penalty
                     </TableCell>
                     {CONTEST_PROBLEMS.map((p) => (
-                      <TableCell key={p.code} align="center" sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#38BDF8', textTransform: 'uppercase', py: 1.5, width: 100 }}>
+                      <TableCell key={p.code} align="center" sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#C084FC', textTransform: 'uppercase', py: 1.5, width: 100 }}>
                         {p.code}
                         <Typography sx={{ fontSize: '0.62rem', color: '#64748B', fontWeight: 600 }}>
                           {p.title.replace('CC_PRB_', '')}
@@ -500,8 +500,8 @@ export default function LeaderboardClient() {
                         key={r.id}
                         hover
                         sx={{
-                          bgcolor: isCurrentUser ? 'rgba(37, 99, 235, 0.05)' : 'transparent',
-                          '&:hover': { bgcolor: isCurrentUser ? 'rgba(37, 99, 235, 0.08)' : 'rgba(248, 250, 252, 0.8)' },
+                          bgcolor: isCurrentUser ? 'rgba(91, 45, 144, 0.05)' : 'transparent',
+                          '&:hover': { bgcolor: isCurrentUser ? 'rgba(91, 45, 144, 0.08)' : 'rgba(248, 250, 252, 0.8)' },
                           transition: 'background-color 0.15s ease',
                         }}
                       >
@@ -517,7 +517,7 @@ export default function LeaderboardClient() {
                                   {r.name}
                                 </Typography>
                                 {isCurrentUser && (
-                                  <Chip label="YOU" size="small" sx={{ bgcolor: '#2563EB', color: '#FFFFFF', fontWeight: 800, fontSize: '0.6rem', height: 16 }} />
+                                  <Chip label="YOU" size="small" sx={{ bgcolor: '#0B1F3A', color: '#FFFFFF', fontWeight: 800, fontSize: '0.6rem', height: 16 }} />
                                 )}
                               </Box>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
@@ -646,8 +646,8 @@ export default function LeaderboardClient() {
                             key={r.id}
                             hover
                             sx={{
-                              bgcolor: isCurrentUser ? 'rgba(37, 99, 235, 0.04)' : 'transparent',
-                              '&:hover': { bgcolor: isCurrentUser ? 'rgba(37, 99, 235, 0.08)' : 'rgba(248, 250, 252, 0.8)' },
+                              bgcolor: isCurrentUser ? 'rgba(91, 45, 144, 0.04)' : 'transparent',
+                              '&:hover': { bgcolor: isCurrentUser ? 'rgba(91, 45, 144, 0.08)' : 'rgba(248, 250, 252, 0.8)' },
                               transition: 'background-color 0.15s ease',
                             }}
                           >
@@ -683,12 +683,12 @@ export default function LeaderboardClient() {
                                   sx={{
                                     width: 38,
                                     height: 38,
-                                    border: isCurrentUser ? '2px solid #2563EB' : '1px solid #E2E8F0',
+                                    border: isCurrentUser ? '2px solid #0B1F3A' : '1px solid #E2E8F0',
                                   }}
                                 />
                                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                                    <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', color: isCurrentUser ? '#2563EB' : '#0F172A' }}>
+                                    <Typography sx={{ fontWeight: 800, fontSize: '0.88rem', color: isCurrentUser ? '#0B1F3A' : '#0F172A' }}>
                                       {r.name}
                                     </Typography>
                                     {isCurrentUser && (
@@ -696,7 +696,7 @@ export default function LeaderboardClient() {
                                         label="YOU"
                                         size="small"
                                         sx={{
-                                          bgcolor: '#2563EB',
+                                          bgcolor: '#0B1F3A',
                                           color: '#FFFFFF',
                                           fontWeight: 800,
                                           fontSize: '0.62rem',
@@ -754,7 +754,7 @@ export default function LeaderboardClient() {
                                   fontSize: '0.76rem',
                                   borderColor: '#E2E8F0',
                                   color: '#475569',
-                                  '&:hover': { bgcolor: '#F8FAFC', borderColor: '#94A3B8', color: '#2563EB' },
+                                  '&:hover': { bgcolor: '#F8FAFC', borderColor: '#94A3B8', color: '#0B1F3A' },
                                 }}
                               >
                                 Profile

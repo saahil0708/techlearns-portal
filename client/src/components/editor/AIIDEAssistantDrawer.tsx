@@ -197,8 +197,8 @@ export function AIIDEAssistantDrawer({
               width: 32,
               height: 32,
               borderRadius: '8px',
-              bgcolor: 'rgba(59, 130, 246, 0.2)',
-              color: '#60A5FA',
+              bgcolor: 'rgba(91, 45, 144, 0.2)',
+              color: '#A855F7',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -283,7 +283,7 @@ export function AIIDEAssistantDrawer({
                   textTransform: 'none',
                   fontSize: '0.75rem',
                   fontWeight: 700,
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   borderRadius: '8px',
                 }}
               >
@@ -355,13 +355,13 @@ export function AIIDEAssistantDrawer({
               sx={{
                 p: 1.75,
                 borderRadius: '10px',
-                border: hints[2] ? '1.5px solid #BFDBFE' : '1px solid #E2E8F0',
-                bgcolor: hints[2] ? '#EFF6FF' : '#FFFFFF',
+                border: hints[2] ? '1.5px solid #F3E8FF' : '1px solid #E2E8F0',
+                bgcolor: hints[2] ? '#FAF5FF' : '#FFFFFF',
               }}
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: hints[2] ? 1 : 0 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CodeRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                  <CodeRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                   <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#0F172A' }}>
                     Hint 2: Invariant & Space-Time Target
                   </Typography>
@@ -379,7 +379,7 @@ export function AIIDEAssistantDrawer({
                 )}
               </Box>
               {hints[2] && (
-                <Typography sx={{ fontSize: '0.8rem', color: '#1E40AF', lineHeight: 1.55 }}>
+                <Typography sx={{ fontSize: '0.8rem', color: '#0F264F', lineHeight: 1.55 }}>
                   {hints[2]}
                 </Typography>
               )}
@@ -472,7 +472,7 @@ export function AIIDEAssistantDrawer({
                   maxWidth: '85%',
                   p: 1.5,
                   borderRadius: msg.sender === 'user' ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
-                  bgcolor: msg.sender === 'user' ? '#2563EB' : '#F1F5F9',
+                  bgcolor: msg.sender === 'user' ? '#0B1F3A' : '#F1F5F9',
                   color: msg.sender === 'user' ? '#FFFFFF' : '#0F172A',
                 }}
               >
@@ -510,7 +510,7 @@ export function AIIDEAssistantDrawer({
               variant="contained"
               disabled={!chatInput.trim() || isSendingChat}
               onClick={handleSendMessage}
-              sx={{ minWidth: 44, px: 1.5, bgcolor: '#2563EB', borderRadius: '8px' }}
+              sx={{ minWidth: 44, px: 1.5, bgcolor: '#0B1F3A', borderRadius: '8px' }}
             >
               <SendRoundedIcon sx={{ fontSize: 18 }} />
             </Button>

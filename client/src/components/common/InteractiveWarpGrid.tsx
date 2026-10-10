@@ -17,7 +17,7 @@ export const InteractiveWarpGrid: React.FC<InteractiveWarpGridProps> = ({
   warpRadius = 240,
   warpStrength = 52,
   lineColor = 'rgba(147, 197, 253, 0.22)',
-  glowColor = 'rgba(59, 130, 246, 0.4)',
+  glowColor = 'rgba(91, 45, 144, 0.4)',
   className,
   style,
 }) => {
@@ -183,7 +183,7 @@ export const InteractiveWarpGrid: React.FC<InteractiveWarpGridProps> = ({
           warpRadius * 1.15
         );
         grad.addColorStop(0, glowColor);
-        grad.addColorStop(0.4, 'rgba(59, 130, 246, 0.15)');
+        grad.addColorStop(0.4, 'rgba(91, 45, 144, 0.15)');
         grad.addColorStop(1, 'transparent');
 
         ctx.fillStyle = grad;

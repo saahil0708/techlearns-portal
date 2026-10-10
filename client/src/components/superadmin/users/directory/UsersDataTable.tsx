@@ -33,7 +33,7 @@ import FirstPageRoundedIcon from '@mui/icons-material/FirstPageRounded';
 import LastPageRoundedIcon from '@mui/icons-material/LastPageRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import { FluidArrowRight } from '@/utils/fluid_arrow';
+import { FluidArrowRight, FluidArrowUpward, FluidArrowDownward } from '@/utils/fluid_arrow';
 import YouBadge from '@/components/common/YouBadge';
 import { UserDirectoryEntity, SortField, SortDirection, getRoleBadgeStyle } from './types';
 
@@ -110,7 +110,7 @@ export default function UsersDataTable({
                   onChange={(e) => onSelectAll(e.target.checked)}
                   sx={{
                     color: '#CBD5E1',
-                    '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#2563EB' },
+                    '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#0B1F3A' },
                   }}
                 />
               </TableCell>
@@ -133,9 +133,9 @@ export default function UsersDataTable({
                   User & Handle
                   {sortField === 'name' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -158,9 +158,9 @@ export default function UsersDataTable({
                   Role & Access Tier
                   {sortField === 'role' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -183,9 +183,9 @@ export default function UsersDataTable({
                   Assigned Tenant / Org
                   {sortField === 'institutionName' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -222,9 +222,9 @@ export default function UsersDataTable({
                   Last Active
                   {sortField === 'lastLoginAt' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -271,7 +271,7 @@ export default function UsersDataTable({
                   <Button
                     size="small"
                     onClick={onResetFilters}
-                    sx={{ mt: 1.5, color: '#2563EB', borderRadius: '9999px', textTransform: 'none' }}
+                    sx={{ mt: 1.5, color: '#0B1F3A', borderRadius: '9999px', textTransform: 'none' }}
                   >
                     Reset All Filters
                   </Button>
@@ -293,9 +293,9 @@ export default function UsersDataTable({
                     sx={{
                       transition: 'all 0.15s ease',
                       borderColor: '#E2E8F0',
-                      bgcolor: isSelected ? '#EFF6FF' : isCurrentUser ? '#F8FAFC' : '#FFFFFF',
+                      bgcolor: isSelected ? '#FAF5FF' : isCurrentUser ? '#F8FAFC' : '#FFFFFF',
                       '&:hover': {
-                        bgcolor: isSelected ? '#DBEAFE' : '#F8FAFC',
+                        bgcolor: isSelected ? '#E9D5FF' : '#F8FAFC',
                       },
                     }}
                   >
@@ -306,7 +306,7 @@ export default function UsersDataTable({
                         onChange={() => onToggleSelectRow(user.id)}
                         sx={{
                           color: '#CBD5E1',
-                          '&.Mui-checked': { color: '#2563EB' },
+                          '&.Mui-checked': { color: '#0B1F3A' },
                         }}
                       />
                     </TableCell>
@@ -336,7 +336,7 @@ export default function UsersDataTable({
                                 color: '#0F172A',
                                 fontSize: '0.88rem',
                                 cursor: 'pointer',
-                                '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                                '&:hover': { color: '#0B1F3A', textDecoration: 'underline' },
                               }}
                             >
                               {user.name}
@@ -344,7 +344,7 @@ export default function UsersDataTable({
                             {isCurrentUser && <YouBadge />}
                             <Typography
                               sx={{
-                                color: '#2563EB',
+                                color: '#0B1F3A',
                                 fontSize: '0.75rem',
                                 fontFamily: 'monospace',
                                 fontWeight: 600,
@@ -490,7 +490,7 @@ export default function UsersDataTable({
                             sx={{
                               color: '#64748B',
                               borderRadius: '9999px',
-                              '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' },
+                              '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' },
                             }}
                           >
                             <VisibilityRoundedIcon fontSize="small" />
@@ -505,7 +505,7 @@ export default function UsersDataTable({
                             sx={{
                               color: '#64748B',
                               borderRadius: '9999px',
-                              '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' },
+                              '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' },
                             }}
                           >
                             <EditRoundedIcon fontSize="small" />
@@ -681,12 +681,12 @@ export default function UsersDataTable({
                       borderRadius: '9999px',
                       fontSize: '0.78rem',
                       fontWeight: safePage === p ? 800 : 500,
-                      bgcolor: safePage === p ? '#2563EB' : '#FFFFFF',
+                      bgcolor: safePage === p ? '#0B1F3A' : '#FFFFFF',
                       color: safePage === p ? '#FFFFFF' : '#64748B',
                       border: '1px solid',
-                      borderColor: safePage === p ? '#2563EB' : '#E2E8F0',
+                      borderColor: safePage === p ? '#0B1F3A' : '#E2E8F0',
                       '&:hover': {
-                        bgcolor: safePage === p ? '#1D4ED8' : '#F1F5F9',
+                        bgcolor: safePage === p ? '#17366E' : '#F1F5F9',
                         color: safePage === p ? '#FFFFFF' : '#0F172A',
                       },
                     }}

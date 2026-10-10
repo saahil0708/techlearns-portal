@@ -103,8 +103,8 @@ export default function ProfileClient({
     name: user?.name || propName || 'System Administrator',
     username: user?.rollNo || user?.handle || (user?.email ? user.email.split('@')[0] : (propUsername || 'admin')),
     role: user?.globalRole === 'SUPER_ADMIN' ? 'Super Admin' : (user?.globalRole || propRole || 'Super Admin'),
-    email: user?.email || propEmail || 'admin@codeplatform.io',
-    school: user?.institution || propSchool || 'CodePlatform Global Command',
+    email: user?.email || propEmail || 'admin@techlearns.com',
+    school: user?.institution || propSchool || 'TechLearns Global Command',
     phone: user?.phone ?? propPhone ?? '+1 (555) 019-2834',
     birthDate: user?.birthDate || propBirthDate || '—',
     registrationDate: user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : (propRegistrationDate || 'Active Session'),
@@ -240,7 +240,7 @@ export default function ProfileClient({
 
     if (score <= 25) return { score, label: 'Weak', color: '#EF4444' };
     if (score <= 50) return { score, label: 'Fair', color: '#F59E0B' };
-    if (score <= 75) return { score, label: 'Good', color: '#3B82F6' };
+    if (score <= 75) return { score, label: 'Good', color: '#5B2D90' };
     return { score, label: 'Strong', color: '#16A34A' };
   };
 
@@ -281,9 +281,9 @@ export default function ProfileClient({
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -383,9 +383,9 @@ export default function ProfileClient({
               <Box sx={{ pt: 3, px: { xs: 3, sm: 5 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box
                   sx={{
-                    border: '1.5px solid #BFDBFE',
-                    color: '#2563EB',
-                    bgcolor: '#EFF6FF',
+                    border: '1.5px solid #F3E8FF',
+                    color: '#0B1F3A',
+                    bgcolor: '#FAF5FF',
                     fontWeight: 700,
                     fontSize: '0.78rem',
                     borderRadius: '8px',
@@ -424,7 +424,7 @@ export default function ProfileClient({
                   sx={{
                     width: 52,
                     height: 4,
-                    background: 'linear-gradient(90deg, #2563EB, #3B82F6)',
+                    background: 'linear-gradient(90deg, #0B1F3A, #5B2D90)',
                     borderRadius: 2,
                     mx: 'auto',
                     mt: 1.5,
@@ -460,7 +460,7 @@ export default function ProfileClient({
                   <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 500, fontSize: '0.86rem' }}>
                     Access Level:
                   </Typography>
-                  <Typography variant="body2" sx={{ color: '#2563EB', fontWeight: 700, fontSize: '0.86rem' }}>
+                  <Typography variant="body2" sx={{ color: '#0B1F3A', fontWeight: 700, fontSize: '0.86rem' }}>
                     {profile.accessLevel}
                   </Typography>
                 </Box>
@@ -567,7 +567,7 @@ export default function ProfileClient({
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 0.5 }}>
-                  <FaShieldHalved size={15} color="#2563EB" />
+                  <FaShieldHalved size={15} color='#0B1F3A' />
                   <Typography variant="subtitle2" sx={{ color: '#0F172A', fontWeight: 700, fontSize: '0.84rem' }}>
                     Admin Controls
                   </Typography>
@@ -627,13 +627,13 @@ export default function ProfileClient({
                       textTransform: 'none',
                       fontWeight: 600,
                       fontSize: '0.78rem',
-                      color: '#2563EB',
-                      borderColor: '#BFDBFE',
+                      color: '#0B1F3A',
+                      borderColor: '#D8B4FE',
                       borderRadius: '8px',
-                      bgcolor: '#EFF6FF',
+                      bgcolor: '#FAF5FF',
                       '&:hover': {
-                        bgcolor: '#DBEAFE',
-                        borderColor: '#93C5FD',
+                        bgcolor: '#E9D5FF',
+                        borderColor: '#C084FC',
                       },
                     }}
                   >
@@ -654,8 +654,8 @@ export default function ProfileClient({
                       borderRadius: '8px',
                       boxShadow: 'none',
                       '&:hover': {
-                        bgcolor: '#2563EB',
-                        boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                        bgcolor: '#0B1F3A',
+                        boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
                       },
                     }}
                   >
@@ -667,8 +667,8 @@ export default function ProfileClient({
               {/* Bottom Shaded Pastel Blue/Slate Theme Footer */}
               <Box
                 sx={{
-                  bgcolor: '#EFF6FF',
-                  borderTop: '1px solid #DBEAFE',
+                  bgcolor: '#FAF5FF',
+                  borderTop: '1px solid #FAF5FF',
                   borderRadius: '0 0 24px 24px',
                   px: { xs: 3, sm: 5, md: 6 },
                   py: 2.4,
@@ -728,9 +728,9 @@ export default function ProfileClient({
                           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                           textDecoration: 'none',
                           '&:hover': {
-                            bgcolor: '#2563EB',
+                            bgcolor: '#0B1F3A',
                             transform: 'translateY(-2px)',
-                            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.35)',
+                            boxShadow: '0 4px 12px rgba(11, 31, 58, 0.35)',
                           },
                         }}
                       >
@@ -759,7 +759,7 @@ export default function ProfileClient({
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5, pb: 1.5, borderBottom: '1px solid #F1F5F9' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                  <Box sx={{ p: 1, borderRadius: '10px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex' }}>
+                  <Box sx={{ p: 1, borderRadius: '10px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex' }}>
                     <FaClockRotateLeft size={16} />
                   </Box>
                   <Box>
@@ -775,7 +775,7 @@ export default function ProfileClient({
                 <Button
                   size="small"
                   onClick={() => router.push('/superadmin/analytics')}
-                  sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#2563EB' }}
+                  sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#0B1F3A' }}
                 >
                   View Full Audit Log →
                 </Button>
@@ -801,8 +801,8 @@ export default function ProfileClient({
                     const isSuccess =
                       item.status?.toUpperCase() === 'SUCCESS' ||
                       item.status?.toUpperCase() === 'COMPLETED';
-                    const color = isSuccess ? '#16A34A' : '#2563EB';
-                    const badgeBg = isSuccess ? '#F0FDF4' : '#EFF6FF';
+                    const color = isSuccess ? '#16A34A' : '#0B1F3A';
+                    const badgeBg = isSuccess ? '#F0FDF4' : '#FAF5FF';
 
                     return (
                       <Box
@@ -879,7 +879,7 @@ export default function ProfileClient({
       >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ p: 1, borderRadius: '12px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex' }}>
+            <Box sx={{ p: 1, borderRadius: '12px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex' }}>
               <FaPenToSquare size={18} />
             </Box>
             <Box>
@@ -1051,10 +1051,10 @@ export default function ProfileClient({
             sx={{
               textTransform: 'none',
               fontWeight: 700,
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               borderRadius: '8px',
               px: 2.75,
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Save Changes
@@ -1250,10 +1250,10 @@ export default function ProfileClient({
             sx={{
               textTransform: 'none',
               fontWeight: 700,
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               borderRadius: '8px',
               px: 2.5,
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Update Password

@@ -344,7 +344,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
       <body>
         <h2>Problems & Algorithmic Challenges Directory</h2>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Code</th>
             <th>Title</th>
             <th>Category</th>
@@ -424,9 +424,9 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
         display: 'flex',
         bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -464,8 +464,8 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
                     width: 36,
                     height: 36,
                     borderRadius: '10px',
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -499,7 +499,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
                     px: 1.75,
                     py: 0.75,
                     boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                    '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+                    '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A', borderColor: '#D8B4FE' },
                   }}
                 >
                   Export Data
@@ -534,7 +534,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
                 </MenuItem>
                 <MenuItem onClick={downloadProblemsCSV} sx={{ borderRadius: '8px', py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 32 }}>
-                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                   </ListItemIcon>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                     Download CSV (.csv)
@@ -588,7 +588,7 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
                 startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
                 onClick={() => setIsCreateModalOpen(true)}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
                   borderRadius: '8px',
                   textTransform: 'none',
@@ -596,8 +596,8 @@ export default function ProblemsDirectoryClient({ initialProblems }: ProblemsDir
                   fontSize: '0.85rem',
                   px: 2.25,
                   py: 0.75,
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Author Problem

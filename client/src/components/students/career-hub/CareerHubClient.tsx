@@ -93,12 +93,12 @@ export default function CareerHubClient() {
                 width: 44,
                 height: 44,
                 borderRadius: '14px',
-                bgcolor: '#EFF6FF',
+                bgcolor: '#FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB',
-                border: '1px solid #DBEAFE',
+                color: '#0B1F3A',
+                border: '1px solid #FAF5FF',
               }}
             >
               <WorkOutlineRoundedIcon sx={{ fontSize: 24 }} />
@@ -159,7 +159,7 @@ export default function CareerHubClient() {
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <AutoAwesomeRoundedIcon sx={{ fontSize: 20, color: '#2563EB' }} />
+              <AutoAwesomeRoundedIcon sx={{ fontSize: 20, color: '#0B1F3A' }} />
               <Typography sx={{ fontWeight: 800, fontSize: '1rem', color: '#0F172A' }}>
                 AI Resume ATS Compatibility
               </Typography>
@@ -308,13 +308,13 @@ export default function CareerHubClient() {
 
                   <TableCell sx={{ width: 160 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 900, color: '#2563EB' }}>
+                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 900, color: '#0B1F3A' }}>
                         {b.matchScore}% Match
                       </Typography>
                       <LinearProgress
                         variant="determinate"
                         value={b.matchScore}
-                        sx={{ height: 6, borderRadius: '9999px', bgcolor: '#F1F5F9', '& .MuiLinearProgress-bar': { bgcolor: '#2563EB' } }}
+                        sx={{ height: 6, borderRadius: '9999px', bgcolor: '#F1F5F9', '& .MuiLinearProgress-bar': { bgcolor: '#0B1F3A' } }}
                       />
                     </Box>
                   </TableCell>

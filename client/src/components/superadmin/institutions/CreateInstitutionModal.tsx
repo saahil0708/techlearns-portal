@@ -296,12 +296,12 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
       fontSize: '0.88rem',
       '& fieldset': { borderColor: '#E2E8F0' },
       '&:hover fieldset': { borderColor: '#CBD5E1' },
-      '&.Mui-focused fieldset': { borderColor: '#2563EB', borderWidth: '1.5px' },
+      '&.Mui-focused fieldset': { borderColor: '#0B1F3A', borderWidth: '1.5px' },
     },
     '& .MuiInputLabel-root': {
       color: '#64748B',
       fontSize: '0.88rem',
-      '&.Mui-focused': { color: '#2563EB', fontWeight: 600 },
+      '&.Mui-focused': { color: '#0B1F3A', fontWeight: 600 },
     },
     '& .MuiFormHelperText-root': {
       fontSize: '0.74rem',
@@ -337,12 +337,12 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
               width: 42,
               height: 42,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
-              border: '1px solid #DBEAFE',
+              bgcolor: '#FAF5FF',
+              border: '1px solid #FAF5FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#2563EB',
+              color: '#0B1F3A',
               flexShrink: 0,
             }}
           >
@@ -412,8 +412,8 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
                           width: 32,
                           height: 32,
                           borderRadius: '8px',
-                          bgcolor: '#EFF6FF',
-                          color: '#2563EB',
+                          bgcolor: '#FAF5FF',
+                          color: '#0B1F3A',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -473,7 +473,7 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
                       ),
                       endAdornment: (
                         <>
-                          {isSearchingUni ? <CircularProgress size={16} sx={{ color: '#2563EB', mr: 1 }} /> : null}
+                          {isSearchingUni ? <CircularProgress size={16} sx={{ color: '#0B1F3A', mr: 1 }} /> : null}
                           {params.slotProps.input.endAdornment}
                         </>
                       ),
@@ -507,10 +507,10 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
                             onClick={handleAutoGenerateCode}
                             disabled={!formData.name.trim()}
                             sx={{
-                              color: '#2563EB',
+                              color: '#0B1F3A',
                               p: 0.5,
-                              bgcolor: '#EFF6FF',
-                              '&:hover': { bgcolor: '#DBEAFE' },
+                              bgcolor: '#FAF5FF',
+                              '&:hover': { bgcolor: '#E9D5FF' },
                             }}
                           >
                             <AutoFixHighRoundedIcon sx={{ fontSize: 16 }} />
@@ -547,7 +547,7 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, pt: 1, borderTop: '1px dashed #E2E8F0' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.25 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <LocationOnRoundedIcon sx={{ fontSize: 16, color: '#2563EB' }} />
+                <LocationOnRoundedIcon sx={{ fontSize: 16, color: '#0B1F3A' }} />
                 <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Location & PIN Code Auto-Detection
                 </Typography>
@@ -588,7 +588,7 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
                     ),
                     endAdornment: (
                       <InputAdornment position="end">
-                        {isDetectingPin && <CircularProgress size={16} sx={{ color: '#2563EB' }} />}
+                        {isDetectingPin && <CircularProgress size={16} sx={{ color: '#0B1F3A' }} />}
                       </InputAdornment>
                     ),
                   },
@@ -728,7 +728,7 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
               gap: 1.25,
             }}
           >
-            <InfoOutlinedIcon sx={{ fontSize: 18, color: '#2563EB', mt: 0.15, flexShrink: 0 }} />
+            <InfoOutlinedIcon sx={{ fontSize: 18, color: '#0B1F3A', mt: 0.15, flexShrink: 0 }} />
             <Typography sx={{ fontSize: '0.78rem', color: '#475569', lineHeight: 1.45 }}>
               <strong>Hierarchical Batches:</strong> Once onboarded, you can create batches/cohorts (e.g., CSE-2026) under this institution. Each batch receives a unique sub-code for automatic student grouping.
             </Typography>
@@ -755,8 +755,8 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
             variant="contained"
             disableElevation
             sx={{
-              bgcolor: '#2563EB',
-              backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+              bgcolor: '#0B1F3A',
+              backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
               color: '#FFFFFF',
               textTransform: 'none',
               fontWeight: 700,
@@ -764,10 +764,10 @@ export default function CreateInstitutionModal({ open, onClose, onSubmit }: Crea
               borderRadius: '10px',
               px: 3,
               py: 1,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
               '&:hover': {
-                bgcolor: '#1D4ED8',
-                boxShadow: '0 6px 20px rgba(37, 99, 235, 0.35)',
+                bgcolor: '#17366E',
+                boxShadow: '0 6px 20px rgba(11, 31, 58, 0.35)',
               },
             }}
           >

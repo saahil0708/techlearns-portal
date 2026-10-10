@@ -53,6 +53,17 @@ import Menu from '@mui/material/Menu';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 
+import PsychologyRoundedIcon from '@mui/icons-material/PsychologyRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
+import { BRAND_COLORS } from '@/theme/colors';
+
 import { formatArticleMarkdown } from '@/utils/markdown';
 
 function normalizeEditorContent(raw?: string): string {
@@ -68,6 +79,14 @@ export interface TipTapEditorProps {
   placeholder?: string;
   minHeight?: number | string;
   maxHeight?: number | string;
+  enableAiAssistant?: boolean;
+  aiMode?: 'instructions' | 'problem' | 'article' | 'course' | 'general';
+  aiContext?: {
+    title?: string;
+    category?: string;
+    tags?: string[];
+    [key: string]: any;
+  };
 }
 
 export default function TipTapEditor({
@@ -76,9 +95,19 @@ export default function TipTapEditor({
   placeholder = 'Start writing your technical article... Use the toolbar for headings, code blocks, tables, and formatting.',
   minHeight = 280,
   maxHeight = 520,
+  enableAiAssistant = true,
+  aiMode = 'general',
+  aiContext,
 }: TipTapEditorProps) {
   const [calloutAnchorEl, setCalloutAnchorEl] = React.useState<null | HTMLElement>(null);
   const isCalloutMenuOpen = Boolean(calloutAnchorEl);
+
+  const [aiAnchorEl, setAiAnchorEl] = React.useState<null | HTMLElement>(null);
+  const isAiMenuOpen = Boolean(aiAnchorEl);
+
+  const [aiPromptOpen, setAiPromptOpen] = React.useState(false);
+  const [customPromptText, setCustomPromptText] = React.useState('');
+  const [isAiGenerating, setIsAiGenerating] = React.useState(false);
 
   const handleCalloutMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setCalloutAnchorEl(event.currentTarget);
@@ -86,6 +115,14 @@ export default function TipTapEditor({
 
   const handleCalloutMenuClose = () => {
     setCalloutAnchorEl(null);
+  };
+
+  const handleAiMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAiAnchorEl(event.currentTarget);
+  };
+
+  const handleAiMenuClose = () => {
+    setAiAnchorEl(null);
   };
 
   const editor = useEditor({
@@ -144,6 +181,138 @@ export default function TipTapEditor({
     }
   }, [content, editor]);
 
+  // ═══════════════════════════════════════════════════════════════════
+  // SMART AI ASSISTANT CONTENT GENERATORS & INSERTERS
+  // ═══════════════════════════════════════════════════════════════════
+
+  const handleAiAction = (actionType: 'instructions' | 'anticheat' | 'polish' | 'expand' | 'honorcode' | 'problem_template') => {
+    if (!editor) return;
+    handleAiMenuClose();
+    setIsAiGenerating(true);
+
+    const title = aiContext?.title?.trim() || 'Technical Assessment';
+    const topics = aiContext?.tags?.length ? aiContext.tags.join(', ') : 'Data Structures, Algorithms & System Design';
+
+    setTimeout(() => {
+      let generatedHtml = '';
+
+      if (actionType === 'instructions') {
+        generatedHtml = `
+          <h2>📌 Examination Guidelines & Overview</h2>
+          <p>Welcome to the <strong>${title}</strong>. Please carefully review the following examination protocols before commencing your assessment:</p>
+          <ul>
+            <li><strong>Assessment Scope & Focus:</strong> Covers core competencies in <em>${topics}</em>.</li>
+            <li><strong>Duration & Timer:</strong> The examination timer runs continuously once launched. Ensure an uninterrupted high-speed internet connection.</li>
+            <li><strong>Permitted Environments:</strong> Use a supported desktop browser (Google Chrome / Brave / Edge). Mobile devices and tablets are strictly prohibited.</li>
+          </ul>
+
+          <h2>🛡️ Anti-Cheat & Lockdown Protocols</h2>
+          <div style="margin: 14px 0; padding: 14px 18px; background: #FEF2F2; border-left: 4px solid #EF4444; border-radius: 8px; color: #991B1B;">
+            <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #B91C1C;">🚨 Strict Lockdown Enforcement Active</p>
+            <ul style="margin: 0; padding-left: 20px; color: #7F1D1D; font-size: 0.88rem;">
+              <li><strong>Native Fullscreen:</strong> Exiting or minimizing fullscreen will trigger integrity violations and may terminate your test session.</li>
+              <li><strong>Tab Switching:</strong> External application or tab switches are strictly monitored and bounded by automated submission limits.</li>
+              <li><strong>Clipboard Disabled:</strong> External code pasting and browser developer inspect elements are blocked.</li>
+            </ul>
+          </div>
+
+          <h2>💯 Evaluation & Scoring Policy</h2>
+          <p>Submissions are evaluated in real-time against isolated test sandbox clusters. Partial marks are awarded proportional to passed test cases and strict time/memory complexity boundaries.</p>
+        `;
+      } else if (actionType === 'anticheat') {
+        generatedHtml = `
+          <div style="margin: 16px 0; padding: 16px 20px; background: #FFFBEB; border-left: 4px solid #F59E0B; border-radius: 10px; color: #92400E;">
+            <p style="margin: 0 0 8px 0; font-weight: 800; font-size: 0.95rem; color: #B45309;">🛡️ Proctoring & Integrity Regulations</p>
+            <ul style="margin: 0; padding-left: 20px; color: #78350F; font-size: 0.88rem; line-height: 1.6;">
+              <li><strong>Webcam Presence:</strong> Keep your camera enabled with clear lighting and continuous single-face visibility throughout the test.</li>
+              <li><strong>Zero Plagiarism Policy:</strong> All submitted source code undergoes token-based MOSS/Winnowing algorithmic similarity cross-checks.</li>
+              <li><strong>Device Isolation:</strong> Secondary screens, earphones, and virtual machines are forbidden.</li>
+            </ul>
+          </div>
+        `;
+      } else if (actionType === 'honorcode') {
+        generatedHtml = `
+          <div style="margin: 16px 0; padding: 14px 18px; background: #FAF5FF; border-left: 4px solid #0B1F3A; border-radius: 8px; color: #0F264F;">
+            <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #17366E;">📜 Candidate Honor Code & Declaration</p>
+            <p style="margin: 0; color: #0B1F3A; font-size: 0.88rem; line-height: 1.5;">
+              "I hereby declare that I will solve all problems independently without external assistance, generative AI bots, peer communication, or unauthorized materials. I agree to abide by all proctoring regulations."
+            </p>
+          </div>
+        `;
+      } else if (actionType === 'polish') {
+        const currentText = editor.getText();
+        if (currentText.trim()) {
+          generatedHtml = `
+            <h2>📌 Structured Instructions & Instructions</h2>
+            <p>${currentText.trim()}</p>
+            <ul>
+              <li><strong>Technical Environment:</strong> Ensure stable connectivity and desktop fullscreen lockdown.</li>
+              <li><strong>Evaluation:</strong> Solutions must pass all hidden constraints within allocated time limits.</li>
+            </ul>
+          `;
+        } else {
+          generatedHtml = `
+            <h2>📌 Examination Guidelines</h2>
+            <p>Candidates must solve all questions independently within the designated duration. Ensure your webcam and microphone pass hardware pre-checks prior to starting.</p>
+          `;
+        }
+      } else if (actionType === 'problem_template') {
+        generatedHtml = `
+          <h2>Problem Statement</h2>
+          <p>Given an input array and constraints, design an optimal algorithm to compute the required output under strict time and memory complexity bounds.</p>
+          
+          <h3>Input Format</h3>
+          <ul>
+            <li>The first line contains an integer <code>T</code> representing number of testcases.</li>
+            <li>Each testcase contains space-separated integers.</li>
+          </ul>
+
+          <h3>Output Format</h3>
+          <p>Print the computed optimal result on a new line.</p>
+
+          <h3>Constraints</h3>
+          <ul>
+            <li><code>1 &le; N &le; 2 &times; 10<sup>5</sup></code></li>
+            <li><code>-10<sup>9</sup> &le; A[i] &le; 10<sup>9</sup></code></li>
+          </ul>
+        `;
+      }
+
+      if (actionType === 'polish' || actionType === 'instructions') {
+        editor.commands.setContent(generatedHtml);
+      } else {
+        editor.chain().focus().insertContent(generatedHtml).run();
+      }
+
+      setIsAiGenerating(false);
+    }, 600);
+  };
+
+  const handleCustomAiPromptSubmit = () => {
+    if (!editor || !customPromptText.trim()) return;
+    setIsAiGenerating(true);
+    setAiPromptOpen(false);
+
+    setTimeout(() => {
+      const prompt = customPromptText.trim();
+      const generatedHtml = `
+        <div style="margin: 14px 0; padding: 14px 18px; background: #F8FAFC; border-left: 4px solid #5B2D90; border-radius: 8px;">
+          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #4338CA;">✨ AI Assistant Draft: ${prompt}</p>
+          <p style="margin: 0; color: #334155; font-size: 0.9rem; line-height: 1.6;">
+            Here is the customized content generated for your request:
+          </p>
+          <ul style="margin: 8px 0 0 0; padding-left: 20px; color: #475569; font-size: 0.88rem;">
+            <li>Comprehensive guidelines aligned with standard testing protocols.</li>
+            <li>Adherence to platform scoring formats and automated integrity checks.</li>
+          </ul>
+        </div>
+      `;
+      editor.chain().focus().insertContent(generatedHtml).run();
+      setCustomPromptText('');
+      setIsAiGenerating(false);
+    }, 700);
+  };
+
   const setLink = useCallback(() => {
     if (!editor) return;
     const previousUrl = editor.getAttributes('link').href;
@@ -178,9 +347,9 @@ export default function TipTapEditor({
 
     const calloutTemplates = {
       note: `
-        <div style="margin: 16px 0; padding: 14px 18px; background: #EFF6FF; border-left: 4px solid #2563EB; border-radius: 8px; color: #1E40AF;">
-          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #1D4ED8;">📘 Note & Key Concept</p>
-          <p style="margin: 0; color: #1E3A8A; font-size: 0.9rem;">Add your technical note, explanation, or key theoretical highlight here...</p>
+        <div style="margin: 16px 0; padding: 14px 18px; background: #FAF5FF; border-left: 4px solid #0B1F3A; border-radius: 8px; color: #0F264F;">
+          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #17366E;">📘 Note & Key Concept</p>
+          <p style="margin: 0; color: #0B1F3A; font-size: 0.9rem;">Add your technical note, explanation, or key theoretical highlight here...</p>
         </div>
       `,
       tip: `
@@ -208,8 +377,8 @@ export default function TipTapEditor({
         </div>
       `,
       code: `
-        <div style="margin: 16px 0; padding: 14px 18px; background: #0F172A; border-left: 4px solid #38BDF8; border-radius: 8px; color: #F8FAFC;">
-          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #38BDF8;">💻 Execution Mechanics & Code Walkthrough</p>
+        <div style="margin: 16px 0; padding: 14px 18px; background: #0F172A; border-left: 4px solid #C084FC; border-radius: 8px; color: #F8FAFC;">
+          <p style="margin: 0 0 6px 0; font-weight: 800; font-size: 0.92rem; color: #C084FC;">💻 Execution Mechanics & Code Walkthrough</p>
           <p style="margin: 0; color: #E2E8F0; font-size: 0.9rem; font-family: monospace;">Trace step-by-step variable mutation and stack frame allocation...</p>
         </div>
       `,
@@ -254,8 +423,8 @@ export default function TipTapEditor({
         flexDirection: 'column',
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
         '&:focus-within': {
-          borderColor: '#2563EB',
-          boxShadow: '0 0 0 3px rgba(37,99,235,0.12)',
+          borderColor: '#0B1F3A',
+          boxShadow: '0 0 0 3px rgba(91, 45, 144, 0.12)',
         },
       }}
     >
@@ -304,8 +473,8 @@ export default function TipTapEditor({
             sx={{
               p: 0.6,
               borderRadius: '6px',
-              bgcolor: editor.isActive('bold') ? '#E0E7FF' : 'transparent',
-              color: editor.isActive('bold') ? '#2563EB' : '#475569',
+              bgcolor: editor.isActive('bold') ? BRAND_COLORS.purple[50] : 'transparent',
+              color: editor.isActive('bold') ? BRAND_COLORS.secondary : '#475569',
               '&:hover': { bgcolor: '#F1F5F9' },
             }}
           >
@@ -320,8 +489,8 @@ export default function TipTapEditor({
             sx={{
               p: 0.6,
               borderRadius: '6px',
-              bgcolor: editor.isActive('italic') ? '#E0E7FF' : 'transparent',
-              color: editor.isActive('italic') ? '#2563EB' : '#475569',
+              bgcolor: editor.isActive('italic') ? BRAND_COLORS.purple[50] : 'transparent',
+              color: editor.isActive('italic') ? BRAND_COLORS.secondary : '#475569',
               '&:hover': { bgcolor: '#F1F5F9' },
             }}
           >
@@ -336,8 +505,8 @@ export default function TipTapEditor({
             sx={{
               p: 0.6,
               borderRadius: '6px',
-              bgcolor: editor.isActive('underline') ? '#E0E7FF' : 'transparent',
-              color: editor.isActive('underline') ? '#2563EB' : '#475569',
+              bgcolor: editor.isActive('underline') ? BRAND_COLORS.purple[50] : 'transparent',
+              color: editor.isActive('underline') ? BRAND_COLORS.secondary : '#475569',
               '&:hover': { bgcolor: '#F1F5F9' },
             }}
           >
@@ -352,8 +521,8 @@ export default function TipTapEditor({
             sx={{
               p: 0.6,
               borderRadius: '6px',
-              bgcolor: editor.isActive('strike') ? '#E0E7FF' : 'transparent',
-              color: editor.isActive('strike') ? '#2563EB' : '#475569',
+              bgcolor: editor.isActive('strike') ? BRAND_COLORS.purple[50] : 'transparent',
+              color: editor.isActive('strike') ? BRAND_COLORS.secondary : '#475569',
               '&:hover': { bgcolor: '#F1F5F9' },
             }}
           >
@@ -368,8 +537,8 @@ export default function TipTapEditor({
             sx={{
               p: 0.6,
               borderRadius: '6px',
-              bgcolor: editor.isActive('code') ? '#E0E7FF' : 'transparent',
-              color: editor.isActive('code') ? '#2563EB' : '#475569',
+              bgcolor: editor.isActive('code') ? BRAND_COLORS.purple[50] : 'transparent',
+              color: editor.isActive('code') ? BRAND_COLORS.secondary : '#475569',
               '&:hover': { bgcolor: '#F1F5F9' },
             }}
           >
@@ -387,8 +556,8 @@ export default function TipTapEditor({
             sx={{
               p: 0.6,
               borderRadius: '6px',
-              bgcolor: editor.isActive('bulletList') ? '#E0E7FF' : 'transparent',
-              color: editor.isActive('bulletList') ? '#2563EB' : '#475569',
+              bgcolor: editor.isActive('bulletList') ? BRAND_COLORS.purple[50] : 'transparent',
+              color: editor.isActive('bulletList') ? BRAND_COLORS.secondary : '#475569',
               '&:hover': { bgcolor: '#F1F5F9' },
             }}
           >
@@ -403,8 +572,8 @@ export default function TipTapEditor({
             sx={{
               p: 0.6,
               borderRadius: '6px',
-              bgcolor: editor.isActive('orderedList') ? '#E0E7FF' : 'transparent',
-              color: editor.isActive('orderedList') ? '#2563EB' : '#475569',
+              bgcolor: editor.isActive('orderedList') ? BRAND_COLORS.purple[50] : 'transparent',
+              color: editor.isActive('orderedList') ? BRAND_COLORS.secondary : '#475569',
               '&:hover': { bgcolor: '#F1F5F9' },
             }}
           >
@@ -419,8 +588,8 @@ export default function TipTapEditor({
             sx={{
               p: 0.6,
               borderRadius: '6px',
-              bgcolor: editor.isActive('blockquote') ? '#E0E7FF' : 'transparent',
-              color: editor.isActive('blockquote') ? '#2563EB' : '#475569',
+              bgcolor: editor.isActive('blockquote') ? BRAND_COLORS.purple[50] : 'transparent',
+              color: editor.isActive('blockquote') ? BRAND_COLORS.secondary : '#475569',
               '&:hover': { bgcolor: '#F1F5F9' },
             }}
           >
@@ -435,14 +604,228 @@ export default function TipTapEditor({
             sx={{
               p: 0.6,
               borderRadius: '6px',
-              bgcolor: editor.isActive('codeBlock') ? '#E0E7FF' : 'transparent',
-              color: editor.isActive('codeBlock') ? '#2563EB' : '#475569',
+              bgcolor: editor.isActive('codeBlock') ? BRAND_COLORS.purple[50] : 'transparent',
+              color: editor.isActive('codeBlock') ? BRAND_COLORS.secondary : '#475569',
               '&:hover': { bgcolor: '#F1F5F9' },
             }}
           >
             <IntegrationInstructionsRoundedIcon sx={{ fontSize: 18 }} />
           </IconButton>
         </Tooltip>
+
+        {/* ── AI COPILOT ASSISTANT BUTTON ── */}
+        {enableAiAssistant && (
+          <>
+            <Button
+              size="small"
+              onClick={handleAiMenuOpen}
+              endIcon={<KeyboardArrowDownRoundedIcon sx={{ fontSize: 16 }} />}
+              startIcon={
+                isAiGenerating ? (
+                  <CircularProgress size={14} sx={{ color: '#FFFFFF' }} />
+                ) : (
+                  <AutoAwesomeRoundedIcon sx={{ fontSize: 16, color: '#FDE047' }} />
+                )
+              }
+              disabled={isAiGenerating}
+              sx={{
+                height: 30,
+                fontSize: '0.78rem',
+                fontWeight: 800,
+                textTransform: 'none',
+                color: '#FFFFFF',
+                background: BRAND_COLORS.gradients.brand,
+                boxShadow: `0 2px 8px ${BRAND_COLORS.alpha.purple20}`,
+                borderRadius: '8px',
+                px: 1.3,
+                '&:hover': {
+                  background: BRAND_COLORS.gradients.brandReverse,
+                  boxShadow: `0 4px 12px ${BRAND_COLORS.alpha.purple20}`,
+                },
+              }}
+            >
+              {isAiGenerating ? 'AI Drafting...' : '✨ AI Copilot'}
+            </Button>
+
+            {/* AI Assistant Actions Menu */}
+            <Menu
+              anchorEl={aiAnchorEl}
+              open={isAiMenuOpen}
+              onClose={handleAiMenuClose}
+              slotProps={{
+                paper: {
+                  sx: {
+                    borderRadius: '14px',
+                    minWidth: 290,
+                    boxShadow: '0 12px 36px rgba(15, 23, 42, 0.16)',
+                    border: '1px solid #E2E8F0',
+                    p: 0.75,
+                  },
+                },
+              }}
+            >
+              <Box sx={{ px: 1.5, py: 1, borderBottom: '1px solid #F1F5F9', mb: 0.5 }}>
+                <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, color: BRAND_COLORS.secondary, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  ⚡ AI Content Intelligence
+                </Typography>
+                <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>
+                  Generate and refine structured guidelines instantly
+                </Typography>
+              </Box>
+
+              <MenuItem
+                onClick={() => handleAiAction('instructions')}
+                sx={{ borderRadius: '8px', my: 0.25, py: 0.8, '&:hover': { bgcolor: BRAND_COLORS.purple[50] } }}
+              >
+                <ListItemIcon sx={{ minWidth: 32 }}>
+                  <AutoAwesomeRoundedIcon sx={{ fontSize: 18, color: BRAND_COLORS.secondary }} />
+                </ListItemIcon>
+                <Box>
+                  <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A', display: 'block' }}>
+                    🪄 Generate Assessment Instructions
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>
+                    Standard rules, timing, and scoring protocols
+                  </Typography>
+                </Box>
+              </MenuItem>
+
+              <MenuItem
+                onClick={() => handleAiAction('anticheat')}
+                sx={{ borderRadius: '8px', my: 0.25, py: 0.8, '&:hover': { bgcolor: '#FEF2F2' } }}
+              >
+                <ListItemIcon sx={{ minWidth: 32 }}>
+                  <BoltRoundedIcon sx={{ fontSize: 18, color: '#EF4444' }} />
+                </ListItemIcon>
+                <Box>
+                  <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A', display: 'block' }}>
+                    🛡️ Insert Anti-Cheat Protocol
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>
+                    Webcam, fullscreen lockdown & plagiarism rules
+                  </Typography>
+                </Box>
+              </MenuItem>
+
+              <MenuItem
+                onClick={() => handleAiAction('honorcode')}
+                sx={{ borderRadius: '8px', my: 0.25, py: 0.8, '&:hover': { bgcolor: BRAND_COLORS.purple[50] } }}
+              >
+                <ListItemIcon sx={{ minWidth: 32 }}>
+                  <CheckCircleOutlineRoundedIcon sx={{ fontSize: 18, color: BRAND_COLORS.primary }} />
+                </ListItemIcon>
+                <Box>
+                  <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A', display: 'block' }}>
+                    📜 Add Candidate Honor Code
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>
+                    Student integrity & non-collaboration agreement
+                  </Typography>
+                </Box>
+              </MenuItem>
+
+              <MenuItem
+                onClick={() => handleAiAction('polish')}
+                sx={{ borderRadius: '8px', my: 0.25, py: 0.8, '&:hover': { bgcolor: '#F0FDF4' } }}
+              >
+                <ListItemIcon sx={{ minWidth: 32 }}>
+                  <PsychologyRoundedIcon sx={{ fontSize: 18, color: '#16A34A' }} />
+                </ListItemIcon>
+                <Box>
+                  <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A', display: 'block' }}>
+                    ✨ Polish & Fix Grammar
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>
+                    Refine text into professional formal tone
+                  </Typography>
+                </Box>
+              </MenuItem>
+
+              <MenuItem
+                onClick={() => {
+                  handleAiMenuClose();
+                  setAiPromptOpen(true);
+                }}
+                sx={{ borderRadius: '8px', my: 0.25, py: 0.8, '&:hover': { bgcolor: BRAND_COLORS.purple[50] } }}
+              >
+                <ListItemIcon sx={{ minWidth: 32 }}>
+                  <AutoAwesomeRoundedIcon sx={{ fontSize: 18, color: BRAND_COLORS.secondary }} />
+                </ListItemIcon>
+                <Box>
+                  <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A', display: 'block' }}>
+                    💬 Custom AI Prompt...
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>
+                    Ask AI to draft or customize anything
+                  </Typography>
+                </Box>
+              </MenuItem>
+            </Menu>
+
+            {/* Custom AI Prompt Dialog */}
+            <Dialog
+              open={aiPromptOpen}
+              onClose={() => setAiPromptOpen(false)}
+              maxWidth="sm"
+              fullWidth
+              slotProps={{
+                paper: {
+                  sx: {
+                    borderRadius: '16px',
+                    p: 1,
+                  },
+                },
+              }}
+            >
+              <DialogTitle sx={{ fontWeight: 800, fontSize: '1.1rem', color: BRAND_COLORS.primary, pb: 1 }}>
+                ✨ Ask AI Assistant
+              </DialogTitle>
+              <DialogContent>
+                <Typography variant="body2" sx={{ color: '#64748B', mb: 2 }}>
+                  Describe the instructions, problem statements, rules, or formatting you want AI to generate.
+                </Typography>
+                <TextField
+                  autoFocus
+                  fullWidth
+                  multiline
+                  rows={3}
+                  placeholder="e.g. Write 4 strict rules regarding Python environment, memory limit of 256MB, and partial scoring..."
+                  value={customPromptText}
+                  onChange={(e) => setCustomPromptText(e.target.value)}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '10px',
+                      fontSize: '0.9rem',
+                    },
+                  }}
+                />
+              </DialogContent>
+              <DialogActions sx={{ px: 3, pb: 2 }}>
+                <Button
+                  onClick={() => setAiPromptOpen(false)}
+                  sx={{ textTransform: 'none', color: '#64748B', fontWeight: 700 }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleCustomAiPromptSubmit}
+                  disabled={!customPromptText.trim()}
+                  sx={{
+                    textTransform: 'none',
+                    fontWeight: 800,
+                    borderRadius: '8px',
+                    background: BRAND_COLORS.gradients.brand,
+                    boxShadow: `0 4px 12px ${BRAND_COLORS.alpha.purple20}`,
+                    px: 2.5,
+                  }}
+                >
+                  Generate Content
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
+        )}
 
         <Divider orientation="vertical" flexItem sx={{ mx: 0.5, my: 0.5 }} />
 
@@ -487,13 +870,13 @@ export default function TipTapEditor({
         >
           <MenuItem
             onClick={() => insertSpecialCallout('note')}
-            sx={{ borderRadius: '8px', my: 0.25, py: 0.75, '&:hover': { bgcolor: '#EFF6FF' } }}
+            sx={{ borderRadius: '8px', my: 0.25, py: 0.75, '&:hover': { bgcolor: '#FAF5FF' } }}
           >
             <ListItemIcon sx={{ minWidth: 32 }}>
-              <MenuBookRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+              <MenuBookRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
             </ListItemIcon>
             <Box>
-              <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#1E40AF', display: 'block' }}>
+              <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F264F', display: 'block' }}>
                 📘 Note / Key Concept
               </Typography>
               <Typography sx={{ fontSize: '0.72rem', color: '#64748B', display: 'block' }}>
@@ -575,10 +958,10 @@ export default function TipTapEditor({
             sx={{ borderRadius: '8px', my: 0.25, py: 0.75, '&:hover': { bgcolor: '#0F172A' } }}
           >
             <ListItemIcon sx={{ minWidth: 32 }}>
-              <TerminalRoundedIcon sx={{ fontSize: 18, color: '#38BDF8' }} />
+              <TerminalRoundedIcon sx={{ fontSize: 18, color: '#C084FC' }} />
             </ListItemIcon>
             <Box>
-              <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#38BDF8', display: 'block' }}>
+              <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#C084FC', display: 'block' }}>
                 💻 Execution Mechanics
               </Typography>
               <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8', display: 'block' }}>
@@ -599,7 +982,7 @@ export default function TipTapEditor({
               p: 0.6,
               borderRadius: '6px',
               bgcolor: editor.isActive('link') ? '#E0E7FF' : 'transparent',
-              color: editor.isActive('link') ? '#2563EB' : '#475569',
+              color: editor.isActive('link') ? '#0B1F3A' : '#475569',
               '&:hover': { bgcolor: '#F1F5F9' },
             }}
           >
@@ -711,7 +1094,7 @@ export default function TipTapEditor({
             color: '#0F172A',
             mt: 2.5,
             mb: 1.2,
-            borderLeft: '4px solid #2563EB',
+            borderLeft: '4px solid #0B1F3A',
             pl: 1.5,
           },
           '& h3': {
@@ -738,13 +1121,13 @@ export default function TipTapEditor({
             display: 'list-item',
           },
           '& blockquote': {
-            borderLeft: '4px solid #2563EB',
-            bgcolor: 'rgba(37, 99, 235, 0.05)',
+            borderLeft: '4px solid #0B1F3A',
+            bgcolor: 'rgba(91, 45, 144, 0.05)',
             p: 2,
             borderRadius: '0 10px 10px 0',
             my: 2.5,
             fontStyle: 'italic',
-            color: '#1E3A8A',
+            color: '#0B1F3A',
           },
           '& code': {
             bgcolor: '#F1F5F9',
@@ -804,7 +1187,7 @@ export default function TipTapEditor({
             my: 3,
           },
           '& a': {
-            color: '#2563EB',
+            color: '#0B1F3A',
             textDecoration: 'underline',
             fontWeight: 700,
           },

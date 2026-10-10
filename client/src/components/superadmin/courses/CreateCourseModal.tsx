@@ -424,13 +424,13 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                 width: 48,
                 height: 48,
                 borderRadius: '16px',
-                bgcolor: '#EFF6FF',
-                border: '1px solid #DBEAFE',
+                bgcolor: '#FAF5FF',
+                border: '1px solid #FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB',
-                boxShadow: '0 2px 8px rgba(37,99,235,0.12)',
+                color: '#0B1F3A',
+                boxShadow: '0 2px 8px rgba(91, 45, 144, 0.12)',
               }}
             >
               <MenuBookRoundedIcon sx={{ fontSize: 26 }} />
@@ -475,7 +475,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
           {/* Section 1: Course Identity */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <AutoAwesomeRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+              <AutoAwesomeRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Course Identity & Nomenclature
               </Typography>
@@ -520,7 +520,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
                     '&.Mui-focused': { bgcolor: '#FFFFFF' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -565,7 +565,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                       '& fieldset': { borderColor: '#E2E8F0' },
                       '&:hover fieldset': { borderColor: '#CBD5E1' },
                       '&.Mui-focused': { bgcolor: '#FFFFFF' },
-                      '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                      '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                     },
                   }}
                 />
@@ -608,7 +608,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                       '& fieldset': { borderColor: '#E2E8F0' },
                       '&:hover fieldset': { borderColor: '#CBD5E1' },
                       '&.Mui-focused': { bgcolor: '#FFFFFF' },
-                      '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                      '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                     },
                   }}
                 />
@@ -687,7 +687,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ImageRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <ImageRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                 <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Course Cover Artwork
                 </Typography>
@@ -709,7 +709,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     py: 0.4,
                     minHeight: 28,
                     ...(coverSelectionMode === 'upload'
-                      ? { bgcolor: '#FFFFFF', color: '#2563EB', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
+                      ? { bgcolor: '#FFFFFF', color: '#0B1F3A', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
                       : { color: '#64748B', bgcolor: 'transparent', '&:hover': { bgcolor: 'rgba(255,255,255,0.5)' } }),
                   }}
                 >
@@ -729,7 +729,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     py: 0.4,
                     minHeight: 28,
                     ...(coverSelectionMode === 'preset'
-                      ? { bgcolor: '#FFFFFF', color: '#2563EB', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
+                      ? { bgcolor: '#FFFFFF', color: '#0B1F3A', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
                       : { color: '#64748B', bgcolor: 'transparent', '&:hover': { bgcolor: 'rgba(255,255,255,0.5)' } }),
                   }}
                 >
@@ -749,7 +749,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     py: 0.4,
                     minHeight: 28,
                     ...(coverSelectionMode === 'url'
-                      ? { bgcolor: '#FFFFFF', color: '#2563EB', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
+                      ? { bgcolor: '#FFFFFF', color: '#0B1F3A', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }
                       : { color: '#64748B', bgcolor: 'transparent', '&:hover': { bgcolor: 'rgba(255,255,255,0.5)' } }),
                   }}
                 >
@@ -788,7 +788,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     transition: 'all 0.2s ease',
                     outline: 'none',
                     '&:hover, &:focus-visible': {
-                      borderColor: '#2563EB',
+                      borderColor: '#0B1F3A',
                       bgcolor: '#F0F7FF',
                     },
                     display: 'flex',
@@ -799,8 +799,8 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                 >
                   {isUploadingCover ? (
                     <>
-                      <CircularProgress size={28} sx={{ color: '#2563EB' }} />
-                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#2563EB' }}>
+                      <CircularProgress size={28} sx={{ color: '#0B1F3A' }} />
+                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0B1F3A' }}>
                         Uploading course cover picture...
                       </Typography>
                       {uploadProgress > 0 && (
@@ -811,7 +811,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     </>
                   ) : (
                     <>
-                      <Box sx={{ width: 44, height: 44, borderRadius: '50%', bgcolor: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563EB' }}>
+                      <Box sx={{ width: 44, height: 44, borderRadius: '50%', bgcolor: '#FAF5FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0B1F3A' }}>
                         <CloudUploadRoundedIcon sx={{ fontSize: 24 }} />
                       </Box>
                       <Box>
@@ -845,15 +845,15 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                         borderRadius: '12px',
                         overflow: 'hidden',
                         cursor: 'pointer',
-                        border: isSelected ? '2.5px solid #2563EB' : '1px solid #CBD5E1',
+                        border: isSelected ? '2.5px solid #0B1F3A' : '1px solid #CBD5E1',
                         p: 0,
                         background: 'none',
                         textAlign: 'left',
                         transition: 'all 0.2s ease',
                         transform: isSelected ? 'scale(1.02)' : 'scale(1)',
-                        boxShadow: isSelected ? '0 4px 12px rgba(37,99,235,0.25)' : 'none',
+                        boxShadow: isSelected ? '0 4px 12px rgba(91, 45, 144, 0.25)' : 'none',
                         '&:hover': {
-                          borderColor: '#2563EB',
+                          borderColor: '#0B1F3A',
                           transform: 'scale(1.02)',
                         },
                       }}
@@ -886,7 +886,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                           {preset.label}
                         </Typography>
                         {isSelected && (
-                          <CheckCircleRoundedIcon sx={{ fontSize: 14, color: '#60A5FA', flexShrink: 0 }} />
+                          <CheckCircleRoundedIcon sx={{ fontSize: 14, color: '#A855F7', flexShrink: 0 }} />
                         )}
                       </Box>
                     </Box>
@@ -922,7 +922,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
                     '&.Mui-focused': { bgcolor: '#FFFFFF' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -984,7 +984,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
           {/* Section 2: Instruction & Campus Delivery */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <SchoolRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+              <SchoolRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Instruction & Academic Affiliation
               </Typography>
@@ -1086,7 +1086,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                       '& fieldset': { borderColor: '#E2E8F0' },
                       '&:hover fieldset': { borderColor: '#CBD5E1' },
                       '&.Mui-focused': { bgcolor: '#FFFFFF' },
-                      '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                      '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                     },
                   }}
                 />
@@ -1124,7 +1124,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
           {/* Section 3: Summary & Tags */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+              <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Course Summary & Taxonomy Tags
               </Typography>
@@ -1161,7 +1161,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
                     '&.Mui-focused': { bgcolor: '#FFFFFF' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -1192,16 +1192,16 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     onDelete={() => handleRemoveTag(tag)}
                     sx={{
                       borderRadius: '8px',
-                      bgcolor: '#EFF6FF',
-                      color: '#2563EB',
+                      bgcolor: '#FAF5FF',
+                      color: '#0B1F3A',
                       fontWeight: 700,
                       fontSize: '0.76rem',
-                      border: '1px solid #DBEAFE',
+                      border: '1px solid #FAF5FF',
                       height: 28,
                       '& .MuiChip-deleteIcon': {
-                        color: '#93C5FD',
+                        color: '#C084FC',
                         fontSize: 16,
-                        '&:hover': { color: '#1D4ED8' },
+                        '&:hover': { color: '#17366E' },
                       },
                     }}
                   />
@@ -1241,7 +1241,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <LightbulbRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <LightbulbRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                 <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#1E293B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   What You'll Learn (Key Takeaways & Points)
                 </Typography>
@@ -1256,11 +1256,11 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                   textTransform: 'none',
                   fontSize: '0.78rem',
                   fontWeight: 700,
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                   py: 0.25,
                   px: 1,
                   borderRadius: '8px',
-                  '&:hover': { bgcolor: '#EFF6FF' },
+                  '&:hover': { bgcolor: '#FAF5FF' },
                 }}
               >
                 Reset to Category Defaults
@@ -1294,7 +1294,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
                     '&.Mui-focused': { bgcolor: '#FFFFFF' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -1305,7 +1305,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                 disabled={!newOutcomeInput.trim()}
                 startIcon={<AddRoundedIcon />}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
                   borderRadius: '12px',
                   textTransform: 'none',
@@ -1315,7 +1315,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                   py: 0.9,
                   whiteSpace: 'nowrap',
                   boxShadow: 'none',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Add Point
@@ -1357,7 +1357,7 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                     }}
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flex: 1, minWidth: 0 }}>
-                      <CheckRoundedIcon sx={{ fontSize: 18, color: '#2563EB', flexShrink: 0 }} />
+                      <CheckRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A', flexShrink: 0 }} />
                       <Typography sx={{ fontSize: '0.84rem', color: '#1E293B', fontWeight: 600 }}>
                         {item}
                       </Typography>
@@ -1424,13 +1424,13 @@ export default function CreateCourseModal({ open, onClose, onCreate }: CreateCou
                 height: 42,
                 px: 3.5,
                 borderRadius: '9999px',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 color: '#FFFFFF',
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.88rem',
-                boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                '&:hover': { bgcolor: '#17366E' },
                 '&.Mui-disabled': { bgcolor: '#E2E8F0', color: '#94A3B8' },
               }}
             >

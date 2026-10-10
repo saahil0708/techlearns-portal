@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   Box,
@@ -271,42 +272,35 @@ export default function StudentNavbar({
           {/* 1. LEFT GROUP: Brand Logo + Greeting + Courses + Practice + Compete + Compiler + Resources ▾ */}
           {/* ========================================================================= */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 2, sm: 2.5, md: 3 } }}>
-            {/* Brand Logo (CodePlatform Theme) */}
+            {/* Brand Logo (TechLearns Theme) */}
             <Link
               href="/students"
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '9px',
                 textDecoration: 'none',
               }}
             >
               <Box
                 sx={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: '9px',
-                  background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)',
-                  flexShrink: 0,
+                  height: 44,
+                  pr: 1.5,
                 }}
               >
-                <CodeRoundedIcon sx={{ color: '#FFFFFF', fontSize: 20 }} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/images/logo/techlearns-logo.png"
+                  alt="TechLearns"
+                  style={{
+                    height: '38px',
+                    width: '170px',
+                    objectFit: 'contain',
+                    display: 'block',
+                  }}
+                />
               </Box>
-              <Typography
-                sx={{
-                  fontWeight: 800,
-                  fontSize: '1.04rem',
-                  color: '#0F172A',
-                  letterSpacing: '-0.02em',
-                  fontFamily: 'sans-serif',
-                }}
-              >
-                CodePlatform
-              </Typography>
             </Link>
 
             {/* Small Screen Menu Toggle Button */}
@@ -355,9 +349,9 @@ export default function StudentNavbar({
                   sx={{
                     fontSize: '0.88rem',
                     fontWeight: isLinkActive('/courses') ? 700 : 500,
-                    color: isLinkActive('/courses') ? '#2563EB' : '#475569',
+                    color: isLinkActive('/courses') ? '#0B1F3A' : '#475569',
                     transition: 'color 0.15s ease',
-                    '&:hover': { color: '#2563EB' },
+                    '&:hover': { color: '#0B1F3A' },
                   }}
                 >
                   Courses
@@ -370,9 +364,9 @@ export default function StudentNavbar({
                   sx={{
                     fontSize: '0.88rem',
                     fontWeight: isLinkActive('/problems') ? 700 : 500,
-                    color: isLinkActive('/problems') ? '#2563EB' : '#475569',
+                    color: isLinkActive('/problems') ? '#0B1F3A' : '#475569',
                     transition: 'color 0.15s ease',
-                    '&:hover': { color: '#2563EB' },
+                    '&:hover': { color: '#0B1F3A' },
                   }}
                 >
                   Practice
@@ -385,9 +379,9 @@ export default function StudentNavbar({
                   sx={{
                     fontSize: '0.88rem',
                     fontWeight: isLinkActive('/contests') ? 700 : 500,
-                    color: isLinkActive('/contests') ? '#2563EB' : '#475569',
+                    color: isLinkActive('/contests') ? '#0B1F3A' : '#475569',
                     transition: 'color 0.15s ease',
-                    '&:hover': { color: '#2563EB' },
+                    '&:hover': { color: '#0B1F3A' },
                   }}
                 >
                   Compete
@@ -400,9 +394,9 @@ export default function StudentNavbar({
                   sx={{
                     fontSize: '0.88rem',
                     fontWeight: isLinkActive('/practice') ? 700 : 500,
-                    color: isLinkActive('/practice') ? '#2563EB' : '#475569',
+                    color: isLinkActive('/practice') ? '#0B1F3A' : '#475569',
                     transition: 'color 0.15s ease',
-                    '&:hover': { color: '#2563EB' },
+                    '&:hover': { color: '#0B1F3A' },
                   }}
                 >
                   Compiler
@@ -419,7 +413,7 @@ export default function StudentNavbar({
                   alignItems: 'center',
                   '&:hover .resources-arrow': {
                     transform: 'rotate(180deg)',
-                    color: '#2563EB',
+                    color: '#0B1F3A',
                   },
                 }}
               >
@@ -431,7 +425,7 @@ export default function StudentNavbar({
                       className="resources-arrow"
                       sx={{
                         fontSize: 18,
-                        color: isResourcesActive || isResourcesOpen ? '#2563EB' : '#64748B',
+                        color: isResourcesActive || isResourcesOpen ? '#0B1F3A' : '#64748B',
                         ml: -0.5,
                         transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease',
                         transform: isResourcesOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -444,13 +438,13 @@ export default function StudentNavbar({
                     textTransform: 'none',
                     fontSize: '0.88rem',
                     fontWeight: isResourcesActive || isResourcesOpen ? 700 : 500,
-                    color: isResourcesActive || isResourcesOpen ? '#2563EB' : '#475569',
+                    color: isResourcesActive || isResourcesOpen ? '#0B1F3A' : '#475569',
                     '&:hover': {
-                      color: '#2563EB',
+                      color: '#0B1F3A',
                       bgcolor: 'transparent',
                       '& .resources-arrow': {
                         transform: 'rotate(180deg)',
-                        color: '#2563EB',
+                        color: '#0B1F3A',
                       },
                     },
                   }}
@@ -492,8 +486,8 @@ export default function StudentNavbar({
                 onClick={(e) => setNotifAnchorEl(e.currentTarget)}
                 aria-label="Open notifications"
                 sx={{
-                  color: isNotifOpen ? '#2563EB' : '#64748B',
-                  bgcolor: isNotifOpen ? '#EFF6FF' : 'transparent',
+                  color: isNotifOpen ? '#0B1F3A' : '#64748B',
+                  bgcolor: isNotifOpen ? '#FAF5FF' : 'transparent',
                   p: 0.8,
                   '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A' },
                 }}
@@ -527,7 +521,7 @@ export default function StudentNavbar({
                 alignItems: 'center',
                 '&:hover .user-menu-arrow': {
                   transform: 'rotate(180deg)',
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                 },
               }}
             >
@@ -548,7 +542,7 @@ export default function StudentNavbar({
                     bgcolor: '#F8FAFC',
                     '& .user-menu-arrow': {
                       transform: 'rotate(180deg)',
-                      color: '#2563EB',
+                      color: '#0B1F3A',
                     },
                   },
                 }}
@@ -559,12 +553,12 @@ export default function StudentNavbar({
                     sx={{
                       width: 36,
                       height: 36,
-                      bgcolor: '#2563EB',
-                      background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                      bgcolor: '#0B1F3A',
+                      background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                       color: '#FFFFFF',
                       fontSize: '0.82rem',
                       fontWeight: 700,
-                      boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
+                      boxShadow: '0 2px 6px rgba(91, 45, 144, 0.25)',
                     }}
                   >
                     {isMounted && initials ? initials : <PersonRoundedIcon sx={{ fontSize: 18 }} />}
@@ -590,7 +584,7 @@ export default function StudentNavbar({
                   className="user-menu-arrow"
                   sx={{
                     fontSize: 18,
-                    color: isUserMenuOpen ? '#2563EB' : '#64748B',
+                    color: isUserMenuOpen ? '#0B1F3A' : '#64748B',
                     ml: 0.2,
                     transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease',
                     transform: isUserMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -670,8 +664,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -681,50 +675,6 @@ export default function StudentNavbar({
               </Typography>
             </Box>
 
-            <Box
-              component="button"
-              type="button"
-              onClick={() => {
-                setResourcesAnchor(null);
-                setSkillOsModalOpen(true);
-              }}
-              sx={{
-                all: 'unset',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.25,
-                boxSizing: 'border-box',
-                width: '100%',
-                borderRadius: '10px',
-                p: '8px 10px',
-                cursor: 'pointer',
-                color: '#334155',
-                transition: 'all 0.15s ease',
-                '&:hover': {
-                  bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
-                },
-              }}
-            >
-              <TerminalRoundedIcon className="res-icon" sx={{ fontSize: 19, color: '#64748B', transition: 'color 0.15s ease' }} />
-              <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: 'inherit', flex: 1 }}>
-                SkillOS™
-              </Typography>
-              <Chip
-                label="LIVE"
-                size="small"
-                sx={{
-                  height: 16,
-                  fontSize: '0.55rem',
-                  fontWeight: 800,
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
-                  borderRadius: '4px',
-                  px: 0.25,
-                }}
-              />
-            </Box>
 
             <Box
               component="button"
@@ -744,8 +694,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -773,8 +723,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -802,8 +752,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -831,8 +781,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -863,8 +813,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -892,8 +842,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -921,8 +871,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -963,8 +913,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -992,8 +942,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -1021,8 +971,8 @@ export default function StudentNavbar({
                 transition: 'all 0.15s ease',
                 '&:hover': {
                   bgcolor: '#F8FAFC',
-                  color: '#2563EB',
-                  '& .res-icon': { color: '#2563EB' },
+                  color: '#0B1F3A',
+                  '& .res-icon': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -1088,8 +1038,8 @@ export default function StudentNavbar({
               size="small"
               sx={{
                 mt: 0.5,
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 fontWeight: 700,
                 fontSize: '0.58rem',
                 letterSpacing: '0.04em',
@@ -1119,7 +1069,7 @@ export default function StudentNavbar({
               '&:hover': {
                 bgcolor: '#F8FAFC',
                 color: '#0F172A',
-                '& .menu-icon': { color: '#2563EB' },
+                '& .menu-icon': { color: '#0B1F3A' },
               },
             }}
           >
@@ -1149,7 +1099,7 @@ export default function StudentNavbar({
               '&:hover': {
                 bgcolor: '#F8FAFC',
                 color: '#0F172A',
-                '& .menu-icon': { color: '#4F46E5' },
+                '& .menu-icon': { color: '#5B2D90' },
               },
             }}
           >
@@ -1289,8 +1239,8 @@ export default function StudentNavbar({
                   height: 18,
                   fontSize: '0.66rem',
                   fontWeight: 800,
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   borderRadius: '4px',
                 }}
               />
@@ -1399,7 +1349,7 @@ export default function StudentNavbar({
                   p: 1.2,
                   borderRadius: '10px',
                   bgcolor: n.unread ? '#F8FAFC' : '#FFFFFF',
-                  border: n.unread ? '1px solid #BFDBFE' : '1px solid #F1F5F9',
+                  border: n.unread ? '1px solid #F3E8FF' : '1px solid #F1F5F9',
                   cursor: 'pointer',
                   textAlign: 'left',
                   width: '100%',
@@ -1408,13 +1358,13 @@ export default function StudentNavbar({
                   display: 'block',
                   transition: 'all 0.15s ease',
                   '&:hover': { bgcolor: '#F1F5F9', borderColor: '#CBD5E1' },
-                  '&:focus-visible': { outline: '2px solid #2563EB', outlineOffset: '1px' },
+                  '&:focus-visible': { outline: '2px solid #0B1F3A', outlineOffset: '1px' },
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.3 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
                     {n.unread && (
-                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#2563EB', flexShrink: 0 }} />
+                      <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#0B1F3A', flexShrink: 0 }} />
                     )}
                     <Typography sx={{ fontWeight: n.unread ? 800 : 700, color: '#0F172A', fontSize: '0.8rem' }}>
                       {n.title}
@@ -1428,8 +1378,8 @@ export default function StudentNavbar({
                         height: 16,
                         fontSize: '0.62rem',
                         fontWeight: 800,
-                        bgcolor: n.category === 'submissions' ? '#ECFDF5' : '#EFF6FF',
-                        color: n.category === 'submissions' ? '#059669' : '#2563EB',
+                        bgcolor: n.category === 'submissions' ? '#ECFDF5' : '#FAF5FF',
+                        color: n.category === 'submissions' ? '#059669' : '#0B1F3A',
                         borderRadius: '3px',
                       }}
                     />
@@ -1466,10 +1416,10 @@ export default function StudentNavbar({
               fontSize: '0.76rem',
               fontWeight: 700,
               textTransform: 'none',
-              color: '#2563EB',
+              color: '#0B1F3A',
               borderRadius: '8px',
               py: 0.6,
-              '&:hover': { bgcolor: '#EFF6FF' },
+              '&:hover': { bgcolor: '#FAF5FF' },
             }}
           >
             View all in Notification Center ↗
@@ -1516,7 +1466,7 @@ export default function StudentNavbar({
                 width: 32,
                 height: 32,
                 borderRadius: '8px',
-                background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -1526,7 +1476,7 @@ export default function StudentNavbar({
               <CodeRoundedIcon sx={{ fontSize: 18 }} />
             </Box>
             <Typography sx={{ fontWeight: 800, fontSize: '0.98rem', color: '#0F172A' }}>
-              CodePlatform
+              TechLearns
             </Typography>
           </Box>
           <IconButton onClick={() => setMobileMenuOpen(false)} size="small">
@@ -1555,9 +1505,9 @@ export default function StudentNavbar({
               cursor: 'pointer',
               fontWeight: 600,
               fontSize: '0.88rem',
-              color: isLinkActive('/courses') ? '#2563EB' : '#334155',
-              bgcolor: isLinkActive('/courses') ? '#EFF6FF' : 'transparent',
-              '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
+              color: isLinkActive('/courses') ? '#0B1F3A' : '#334155',
+              bgcolor: isLinkActive('/courses') ? '#FAF5FF' : 'transparent',
+              '&:hover': { bgcolor: '#F8FAFC', color: '#0B1F3A' },
             }}
           >
             <MenuBookRoundedIcon sx={{ fontSize: 19 }} />
@@ -1580,9 +1530,9 @@ export default function StudentNavbar({
               cursor: 'pointer',
               fontWeight: 600,
               fontSize: '0.88rem',
-              color: isLinkActive('/problems') ? '#2563EB' : '#334155',
-              bgcolor: isLinkActive('/problems') ? '#EFF6FF' : 'transparent',
-              '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
+              color: isLinkActive('/problems') ? '#0B1F3A' : '#334155',
+              bgcolor: isLinkActive('/problems') ? '#FAF5FF' : 'transparent',
+              '&:hover': { bgcolor: '#F8FAFC', color: '#0B1F3A' },
             }}
           >
             <CodeRoundedIcon sx={{ fontSize: 19 }} />
@@ -1605,9 +1555,9 @@ export default function StudentNavbar({
               cursor: 'pointer',
               fontWeight: 600,
               fontSize: '0.88rem',
-              color: isLinkActive('/contests') ? '#2563EB' : '#334155',
-              bgcolor: isLinkActive('/contests') ? '#EFF6FF' : 'transparent',
-              '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
+              color: isLinkActive('/contests') ? '#0B1F3A' : '#334155',
+              bgcolor: isLinkActive('/contests') ? '#FAF5FF' : 'transparent',
+              '&:hover': { bgcolor: '#F8FAFC', color: '#0B1F3A' },
             }}
           >
             <EmojiEventsRoundedIcon sx={{ fontSize: 19 }} />
@@ -1630,9 +1580,9 @@ export default function StudentNavbar({
               cursor: 'pointer',
               fontWeight: 600,
               fontSize: '0.88rem',
-              color: isLinkActive('/practice') ? '#2563EB' : '#334155',
-              bgcolor: isLinkActive('/practice') ? '#EFF6FF' : 'transparent',
-              '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
+              color: isLinkActive('/practice') ? '#0B1F3A' : '#334155',
+              bgcolor: isLinkActive('/practice') ? '#FAF5FF' : 'transparent',
+              '&:hover': { bgcolor: '#F8FAFC', color: '#0B1F3A' },
             }}
           >
             <TerminalRoundedIcon sx={{ fontSize: 19 }} />
@@ -1660,7 +1610,7 @@ export default function StudentNavbar({
               py: 0.75,
               width: '100%',
               boxSizing: 'border-box',
-              '&:focus-visible': { outline: '2px solid #2563EB', borderRadius: '6px' },
+              '&:focus-visible': { outline: '2px solid #0B1F3A', borderRadius: '6px' },
             }}
           >
             <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -1709,7 +1659,7 @@ export default function StudentNavbar({
                     fontWeight: 500,
                     fontSize: '0.82rem',
                     color: '#475569',
-                    '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
+                    '&:hover': { bgcolor: '#F8FAFC', color: '#0B1F3A' },
                   }}
                 >
                   {item.icon}
@@ -1717,30 +1667,6 @@ export default function StudentNavbar({
                 </Box>
               ))}
 
-              <Box
-                component="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setSkillOsModalOpen(true);
-                }}
-                sx={{
-                  all: 'unset',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.25,
-                  p: '7px 10px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: 500,
-                  fontSize: '0.82rem',
-                  color: '#475569',
-                  '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
-                }}
-              >
-                <TerminalRoundedIcon sx={{ fontSize: 18 }} />
-                SkillOS™
-                <Chip label="LIVE" size="small" sx={{ height: 16, fontSize: '0.55rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB' }} />
-              </Box>
             </Box>
           )}
         </Box>
@@ -1767,10 +1693,10 @@ export default function StudentNavbar({
               fontWeight: 600,
               fontSize: '0.86rem',
               color: '#1E293B',
-              '&:hover': { bgcolor: '#F8FAFC', color: '#2563EB' },
+              '&:hover': { bgcolor: '#F8FAFC', color: '#0B1F3A' },
             }}
           >
-            <PersonRoundedIcon sx={{ fontSize: 19, color: '#2563EB' }} />
+            <PersonRoundedIcon sx={{ fontSize: 19, color: '#0B1F3A' }} />
             My Profile
           </Box>
 

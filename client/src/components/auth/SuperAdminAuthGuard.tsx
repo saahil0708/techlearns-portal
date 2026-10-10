@@ -92,12 +92,12 @@ export default function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardPro
               endIcon={<FluidArrowRight size={18} />}
               onClick={() => router.push(user.globalRole === 'STUDENT' ? '/students' : '/students')}
               sx={{
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 borderRadius: '12px',
                 py: 1.2,
                 fontWeight: 700,
                 textTransform: 'none',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               Go to {user.globalRole === 'STUDENT' ? 'Student Workspace' : 'My Dashboard'}

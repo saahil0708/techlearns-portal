@@ -134,8 +134,8 @@ export default function ProblemTestCasesTab({
               borderRadius: '9999px',
               textTransform: 'none',
               fontWeight: 700,
-              bgcolor: '#2563EB',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              bgcolor: '#0B1F3A',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             New Case
@@ -173,9 +173,9 @@ export default function ProblemTestCasesTab({
                       label={tc.isHidden ? 'Hidden Case' : 'Public Sample'}
                       size="small"
                       sx={{
-                        bgcolor: tc.isHidden ? '#FEF2F2' : '#EFF6FF',
-                        color: tc.isHidden ? '#DC2626' : '#2563EB',
-                        border: `1px solid ${tc.isHidden ? '#FECACA' : '#DBEAFE'}`,
+                        bgcolor: tc.isHidden ? '#FEF2F2' : '#FAF5FF',
+                        color: tc.isHidden ? '#DC2626' : '#0B1F3A',
+                        border: `1px solid ${tc.isHidden ? '#FECACA' : '#E9D5FF'}`,
                         fontWeight: 700,
                         fontSize: '0.72rem',
                         borderRadius: '6px',
@@ -204,7 +204,7 @@ export default function ProblemTestCasesTab({
                             navigator.clipboard.writeText(`Input: ${tc.input}\nOutput: ${tc.expectedOutput}`);
                             toast.info(`Test case #${tc.order} copied to clipboard`, 'Copied');
                           }}
-                          sx={{ color: '#64748B', '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' } }}
+                          sx={{ color: '#64748B', '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' } }}
                         >
                           <ContentCopyRoundedIcon sx={{ fontSize: 17 }} />
                         </IconButton>
@@ -214,7 +214,7 @@ export default function ProblemTestCasesTab({
                         <IconButton
                           size="small"
                           onClick={() => handleOpenEdit(tc)}
-                          sx={{ color: '#64748B', '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' } }}
+                          sx={{ color: '#64748B', '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' } }}
                         >
                           <EditRoundedIcon sx={{ fontSize: 17 }} />
                         </IconButton>
@@ -307,7 +307,7 @@ export default function ProblemTestCasesTab({
           <Button
             variant="contained"
             onClick={handleSaveEdit}
-            sx={{ textTransform: 'none', bgcolor: '#2563EB', fontWeight: 700, borderRadius: '8px' }}
+            sx={{ textTransform: 'none', bgcolor: '#0B1F3A', fontWeight: 700, borderRadius: '8px' }}
           >
             Save Changes
           </Button>

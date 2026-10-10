@@ -166,15 +166,15 @@ export const THEME_COLOR_MAP: Record<string, { bg: string; text: string; keyword
   deepSpace: {
     bg: '#0B0F19',
     text: '#E2E8F0',
-    keyword: '#38BDF8',
+    keyword: '#C084FC',
     type: '#A78BFA',
     string: '#34D399',
     comment: '#64748B',
     number: '#FBBF24',
-    function: '#60A5FA',
+    function: '#A855F7',
     directive: '#F472B6',
     operator: '#94A3B8',
     gutterBg: '#080C14',
-    activeLine: 'rgba(56, 189, 248, 0.06)',
+    activeLine: 'rgba(192, 132, 252, 0.06)',
   },
 };

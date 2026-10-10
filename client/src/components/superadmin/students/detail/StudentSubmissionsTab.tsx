@@ -190,13 +190,13 @@ export default function StudentSubmissionsTab({
                             sub.difficulty === 'Easy'
                               ? '#ECFDF5'
                               : sub.difficulty === 'Medium'
-                              ? '#EFF6FF'
+                              ? '#FAF5FF'
                               : '#FEF2F2',
                           color:
                             sub.difficulty === 'Easy'
                               ? '#059669'
                               : sub.difficulty === 'Medium'
-                              ? '#2563EB'
+                              ? '#0B1F3A'
                               : '#DC2626',
                           borderRadius: '5px',
                         }}
@@ -251,13 +251,13 @@ export default function StudentSubmissionsTab({
                           textTransform: 'none',
                           fontWeight: 700,
                           fontSize: '0.74rem',
-                          color: '#2563EB',
-                          borderColor: '#DBEAFE',
-                          bgcolor: '#EFF6FF',
+                          color: '#0B1F3A',
+                          borderColor: '#E9D5FF',
+                          bgcolor: '#FAF5FF',
                           borderRadius: '6px',
                           px: 1.25,
                           py: 0.35,
-                          '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                          '&:hover': { bgcolor: '#E9D5FF', borderColor: '#C084FC' },
                         }}
                       >
                         View Code

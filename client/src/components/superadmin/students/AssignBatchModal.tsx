@@ -229,12 +229,12 @@ export default function AssignBatchModal({
               width: 44,
               height: 44,
               borderRadius: '12px',
-              bgcolor: 'rgba(37, 99, 235, 0.1)',
-              color: '#2563EB',
+              bgcolor: 'rgba(91, 45, 144, 0.1)',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid rgba(37, 99, 235, 0.2)',
+              border: '1px solid rgba(91, 45, 144, 0.2)',
             }}
           >
             <SchoolRoundedIcon sx={{ fontSize: 24 }} />
@@ -308,8 +308,8 @@ export default function AssignBatchModal({
                 sx={{
                   fontWeight: 700,
                   fontSize: '0.72rem',
-                  bgcolor: students[0].currentCohort && students[0].currentCohort !== 'No Batch Assigned' ? '#EFF6FF' : '#FEF3C7',
-                  color: students[0].currentCohort && students[0].currentCohort !== 'No Batch Assigned' ? '#2563EB' : '#92400E',
+                  bgcolor: students[0].currentCohort && students[0].currentCohort !== 'No Batch Assigned' ? '#FAF5FF' : '#FEF3C7',
+                  color: students[0].currentCohort && students[0].currentCohort !== 'No Batch Assigned' ? '#0B1F3A' : '#92400E',
                   borderRadius: '6px',
                 }}
               />
@@ -320,7 +320,7 @@ export default function AssignBatchModal({
         {/* Step 1: Select Academic Institution */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+            <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
             <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>
               1. Academic Institution
             </Typography>
@@ -438,15 +438,15 @@ export default function AssignBatchModal({
           sx={{
             p: 1.5,
             borderRadius: '10px',
-            bgcolor: '#EFF6FF',
-            border: '1px solid #DBEAFE',
+            bgcolor: '#FAF5FF',
+            border: '1px solid #FAF5FF',
             display: 'flex',
             alignItems: 'flex-start',
             gap: 1.25,
           }}
         >
-          <InfoOutlinedIcon sx={{ fontSize: 18, color: '#2563EB', mt: 0.15, flexShrink: 0 }} />
-          <Typography sx={{ fontSize: '0.75rem', color: '#1E40AF', lineHeight: 1.4 }}>
+          <InfoOutlinedIcon sx={{ fontSize: 18, color: '#0B1F3A', mt: 0.15, flexShrink: 0 }} />
+          <Typography sx={{ fontSize: '0.75rem', color: '#0F264F', lineHeight: 1.4 }}>
             Assigning students to a cohort automatically grants them access to batch-assigned curriculum courses, private lab challenges, and faculty mentorship.
           </Typography>
         </Box>
@@ -466,7 +466,7 @@ export default function AssignBatchModal({
           disabled={isSubmitting || (!selectedBatchId && selectedBatchId !== 'UNASSIGNED')}
           startIcon={isSubmitting ? <CircularProgress size={16} sx={{ color: '#FFFFFF' }} /> : <CheckCircleRoundedIcon />}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             color: '#FFFFFF',
             textTransform: 'none',
             fontWeight: 700,
@@ -474,8 +474,8 @@ export default function AssignBatchModal({
             borderRadius: '10px',
             px: 2.5,
             py: 0.9,
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           {isSubmitting ? 'Assigning...' : isBulk ? `Assign ${students.length} Students` : 'Assign Batch'}

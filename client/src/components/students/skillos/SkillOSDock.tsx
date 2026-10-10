@@ -109,7 +109,7 @@ export function SkillOSDock({
       case 'github':
         return <GitHubIcon sx={{ fontSize: 22, color: '#F8FAFC' }} />;
       case 'jira':
-        return <AssignmentRoundedIcon sx={{ fontSize: 22, color: '#38BDF8' }} />;
+        return <AssignmentRoundedIcon sx={{ fontSize: 22, color: '#C084FC' }} />;
       case 'ide':
         return <TerminalIcon sx={{ fontSize: 22, color: '#818CF8' }} />;
       case 'passport':
@@ -134,7 +134,7 @@ export function SkillOSDock({
           border: '1px solid rgba(255, 255, 255, 0.1)',
         }}
       >
-        <CircularProgress size={28} sx={{ color: '#6366F1' }} />
+        <CircularProgress size={28} sx={{ color: '#5B2D90' }} />
         <Typography sx={{ fontSize: '0.82rem', color: '#94A3B8' }}>
           Initializing SkillOS™ Environment...
         </Typography>
@@ -201,7 +201,7 @@ export function SkillOSDock({
               onClick={handleReProvision}
               disabled={isProvisioning}
               sx={{
-                bgcolor: '#4F46E5',
+                bgcolor: '#5B2D90',
                 '&:hover': { bgcolor: '#4338CA' },
                 textTransform: 'none',
                 fontWeight: 700,
@@ -252,8 +252,8 @@ export function SkillOSDock({
         sx={{
           p: 2,
           borderRadius: '16px',
-          background: 'linear-gradient(135deg, #1E1B4B 0%, #0F172A 50%, #172554 100%)',
-          border: '1px solid rgba(99, 102, 241, 0.3)',
+          background: 'linear-gradient(135deg, #1E1B4B 0%, #0F172A 50%, #0B1F3A 100%)',
+          border: '1px solid rgba(91, 45, 144, 0.3)',
           mb: 2,
         }}
       >
@@ -317,7 +317,7 @@ export function SkillOSDock({
           }}
         >
           <span>Track: <strong style={{ color: '#E2E8F0' }}>{data.track}</strong></span>
-          <span>Score: <strong style={{ color: '#38BDF8' }}>{data.passportScore}/100</strong></span>
+          <span>Score: <strong style={{ color: '#C084FC' }}>{data.passportScore}/100</strong></span>
         </Box>
       </Box>
 

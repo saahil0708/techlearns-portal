@@ -127,7 +127,7 @@ export default function AuthPageClient() {
           const userRole = extractRole(payload?.user || payload?.tokens?.accessToken);
           const targetUrl = getLoginRedirectUrl(userRole, rawRedirectParam);
 
-          toast.success('Account created successfully! Welcome to CodePlatform.', 'Account Created');
+          toast.success('Account created successfully! Welcome to TechLearns.', 'Account Created');
           setIsRedirecting(true);
           router.push(targetUrl);
         } else {
@@ -222,11 +222,11 @@ export default function AuthPageClient() {
               width: 52,
               height: 52,
               borderRadius: '14px',
-              background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+              background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 32px rgba(37, 99, 235, 0.6)',
+              boxShadow: '0 8px 32px rgba(91, 45, 144, 0.6)',
               animation: 'pulseScale 1.4s ease-in-out infinite alternate',
               '@keyframes pulseScale': {
                 '0%': { transform: 'scale(0.95)' },
@@ -236,12 +236,12 @@ export default function AuthPageClient() {
           >
             <CodeRoundedIcon sx={{ color: '#FFFFFF', fontSize: 28 }} />
           </Box>
-          <CircularProgress size={32} thickness={4} sx={{ color: '#38BDF8' }} />
+          <CircularProgress size={32} thickness={4} sx={{ color: '#C084FC' }} />
           <Box sx={{ textAlign: 'center' }}>
             <Typography sx={{ color: '#FFFFFF', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.01em' }}>
               Opening workspace...
             </Typography>
-            <Typography sx={{ color: '#93C5FD', fontSize: '0.82rem', mt: 0.5 }}>
+            <Typography sx={{ color: '#C084FC', fontSize: '0.82rem', mt: 0.5 }}>
               Preparing your development session
             </Typography>
           </Box>
@@ -258,7 +258,7 @@ export default function AuthPageClient() {
       >
         <Image
           src="/images/Auth_BG.png"
-          alt="CodePlatform Background Artwork"
+          alt="TechLearns Background Artwork"
           fill
           priority
           unoptimized
@@ -310,7 +310,7 @@ export default function AuthPageClient() {
           position: 'absolute',
           right: { xs: '8%', lg: '6%' },
           top: '36%',
-          color: 'rgba(56, 189, 248, 0.4)',
+          color: 'rgba(192, 132, 252, 0.4)',
           fontFamily: 'monospace',
           fontSize: '1.15rem',
           fontWeight: 800,
@@ -336,7 +336,7 @@ export default function AuthPageClient() {
           width: 400,
           height: 400,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(37, 99, 235, 0.06) 55%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(91, 45, 144, 0.22) 0%, rgba(91, 45, 144, 0.06) 55%, transparent 70%)',
           filter: 'blur(50px)',
           zIndex: 1,
           pointerEvents: 'none',
@@ -369,46 +369,15 @@ export default function AuthPageClient() {
         }}
       >
         {/* Brand Logo Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 1.25 }}>
-          <Box
-            sx={{
-              width: 34,
-              height: 34,
-              borderRadius: '9px',
-              background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.5)',
-              position: 'relative',
-              overflow: 'hidden',
-              '&:after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: '-100%',
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-                animation: 'shineSweep 3.5s infinite',
-              },
-              '@keyframes shineSweep': {
-                '0%': { left: '-100%' },
-                '20%': { left: '100%' },
-                '100%': { left: '100%' },
-              },
-            }}
-          >
-            <CodeRoundedIcon sx={{ color: '#FFFFFF', fontSize: 20 }} />
-          </Box>
-          <Box>
-            <Typography sx={{ fontWeight: 800, fontSize: '1.05rem', color: '#FFFFFF', lineHeight: 1.1, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
-              CodePlatform
-            </Typography>
-            <Typography sx={{ fontSize: '0.68rem', color: '#93C5FD', fontWeight: 600 }}>
-              Competitive Learning Arena
-            </Typography>
-          </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+          <Image
+            src="/images/logo/techlearns-logo-white.png"
+            alt="TechLearns"
+            width={150}
+            height={38}
+            style={{ objectFit: 'contain', height: '38px', width: 'auto' }}
+            priority
+          />
         </Box>
 
         {/* Heading & Mode Switcher */}
@@ -441,12 +410,12 @@ export default function AuthPageClient() {
               sx={{
                 p: 0,
                 minWidth: 'auto',
-                color: '#60A5FA',
+                color: '#A855F7',
                 fontWeight: 700,
                 fontSize: '0.84rem',
                 textTransform: 'none',
                 transition: 'color 0.2s, transform 0.2s',
-                '&:hover': { bgcolor: 'transparent', color: '#93C5FD', transform: 'translateX(2px)' },
+                '&:hover': { bgcolor: 'transparent', color: '#C084FC', transform: 'translateX(2px)' },
               }}
             >
               {mode === 'signin' ? 'Sign up' : 'Sign in'}
@@ -501,7 +470,7 @@ export default function AuthPageClient() {
                       transition: 'all 0.25s ease',
                       '&:before': { borderBottom: '1.5px solid rgba(255, 255, 255, 0.55)' },
                       '&:hover:not(.Mui-disabled):before': { borderBottom: '1.5px solid #FFFFFF' },
-                      '&:after': { borderBottom: '2px solid #38BDF8', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
+                      '&:after': { borderBottom: '2px solid #C084FC', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
                       '& input::placeholder': { color: 'rgba(255, 255, 255, 0.65)', opacity: 1 },
                     },
                   }}
@@ -533,7 +502,7 @@ export default function AuthPageClient() {
                       transition: 'all 0.25s ease',
                       '&:before': { borderBottom: '1.5px solid rgba(255, 255, 255, 0.55)' },
                       '&:hover:not(.Mui-disabled):before': { borderBottom: '1.5px solid #FFFFFF' },
-                      '&:after': { borderBottom: '2px solid #38BDF8', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
+                      '&:after': { borderBottom: '2px solid #C084FC', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
                       '& input::placeholder': { color: 'rgba(255, 255, 255, 0.65)', opacity: 1 },
                     },
                   }}
@@ -557,15 +526,15 @@ export default function AuthPageClient() {
                   px: 1.2,
                   py: 0.45,
                   borderRadius: '16px',
-                  bgcolor: 'rgba(56, 189, 248, 0.12)',
-                  border: '1px solid rgba(56, 189, 248, 0.3)',
-                  color: '#38BDF8',
+                  bgcolor: 'rgba(192, 132, 252, 0.12)',
+                  border: '1px solid rgba(192, 132, 252, 0.3)',
+                  color: '#C084FC',
                   fontSize: '0.72rem',
                   fontWeight: 700,
                   cursor: 'pointer',
                   '&:hover': {
-                    bgcolor: 'rgba(56, 189, 248, 0.22)',
-                    borderColor: '#38BDF8',
+                    bgcolor: 'rgba(192, 132, 252, 0.22)',
+                    borderColor: '#C084FC',
                     transform: 'translateY(-1px)',
                   },
                   transition: 'all 0.2s ease',
@@ -639,7 +608,7 @@ export default function AuthPageClient() {
                   transition: 'all 0.25s ease',
                   '&:before': { borderBottom: '1.5px solid rgba(255, 255, 255, 0.55)' },
                   '&:hover:not(.Mui-disabled):before': { borderBottom: '1.5px solid #FFFFFF' },
-                  '&:after': { borderBottom: '2px solid #38BDF8', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
+                  '&:after': { borderBottom: '2px solid #C084FC', transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
                   '& input::placeholder': { color: 'rgba(255, 255, 255, 0.65)', opacity: 1 },
                 },
               }}
@@ -703,12 +672,12 @@ export default function AuthPageClient() {
               sx={{
                 p: 1.5,
                 borderRadius: '10px',
-                bgcolor: 'rgba(56, 189, 248, 0.1)',
-                border: '1px solid rgba(56, 189, 248, 0.3)',
+                bgcolor: 'rgba(192, 132, 252, 0.1)',
+                border: '1px solid rgba(192, 132, 252, 0.3)',
                 backdropFilter: 'blur(10px)',
               }}
             >
-              <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#38BDF8', letterSpacing: '0.06em', mb: 0.2 }}>
+              <Typography sx={{ fontSize: '0.72rem', fontWeight: 800, color: '#C084FC', letterSpacing: '0.06em', mb: 0.2 }}>
                 2-FACTOR AUTHENTICATION CODE <span style={{ color: '#F87171' }}>*</span>
               </Typography>
               <Typography sx={{ fontSize: '0.75rem', color: '#94A3B8', mb: 0.8 }}>
@@ -726,7 +695,7 @@ export default function AuthPageClient() {
                     disableUnderline: false,
                     startAdornment: (
                       <InputAdornment position="start">
-                        <ShieldOutlinedIcon sx={{ color: '#38BDF8', fontSize: 17 }} />
+                        <ShieldOutlinedIcon sx={{ color: '#C084FC', fontSize: 17 }} />
                       </InputAdornment>
                     ),
                   },
@@ -738,9 +707,9 @@ export default function AuthPageClient() {
                     color: '#FFFFFF',
                     fontWeight: 700,
                     py: 0.3,
-                    '&:before': { borderBottom: '1.5px solid rgba(56, 189, 248, 0.5)' },
-                    '&:hover:not(.Mui-disabled):before': { borderBottom: '1.5px solid #38BDF8' },
-                    '&:after': { borderBottom: '2px solid #38BDF8' },
+                    '&:before': { borderBottom: '1.5px solid rgba(192, 132, 252, 0.5)' },
+                    '&:hover:not(.Mui-disabled):before': { borderBottom: '1.5px solid #C084FC' },
+                    '&:after': { borderBottom: '2px solid #C084FC' },
                     '& input::placeholder': { color: 'rgba(255, 255, 255, 0.4)', opacity: 1, letterSpacing: '0.15em' },
                   },
                 }}
@@ -757,7 +726,7 @@ export default function AuthPageClient() {
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
                     size="small"
-                    sx={{ color: 'rgba(255, 255, 255, 0.75)', '&.Mui-checked': { color: '#38BDF8' }, p: 0.4 }}
+                    sx={{ color: 'rgba(255, 255, 255, 0.75)', '&.Mui-checked': { color: '#C084FC' }, p: 0.4 }}
                   />
                 }
                 label={<Typography sx={{ fontSize: '0.8rem', color: '#F1F5F9', fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>Remember session</Typography>}
@@ -766,14 +735,14 @@ export default function AuthPageClient() {
                 type="button"
                 onClick={() => setMode('forgot')}
                 sx={{
-                  color: '#60A5FA',
+                  color: '#A855F7',
                   textTransform: 'none',
                   fontSize: '0.8rem',
                   fontWeight: 700,
                   p: 0,
                   minWidth: 'auto',
                   transition: 'color 0.2s',
-                  '&:hover': { bgcolor: 'transparent', color: '#93C5FD', textDecoration: 'underline' },
+                  '&:hover': { bgcolor: 'transparent', color: '#C084FC', textDecoration: 'underline' },
                 }}
               >
                 Forgot password?
@@ -787,8 +756,8 @@ export default function AuthPageClient() {
               type="submit"
               disabled={isLoading}
               sx={{
-                bgcolor: '#2563EB',
-                background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                bgcolor: '#0B1F3A',
+                background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                 color: '#FFFFFF',
                 borderRadius: '50px',
                 py: 0.9,
@@ -802,7 +771,7 @@ export default function AuthPageClient() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: 2,
-                boxShadow: '0 6px 20px rgba(37, 99, 235, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+                boxShadow: '0 6px 20px rgba(91, 45, 144, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
                 position: 'relative',
                 overflow: 'hidden',
                 transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -822,8 +791,8 @@ export default function AuthPageClient() {
                   '100%': { left: '100%' },
                 },
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)',
-                  boxShadow: '0 10px 28px rgba(37, 99, 235, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+                  background: 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)',
+                  boxShadow: '0 10px 28px rgba(91, 45, 144, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
                   transform: 'translateY(-2px)',
                   '& .arrow-icon-circle': {
                     transform: 'translateX(3px) scale(1.06)',
@@ -966,7 +935,7 @@ export default function AuthPageClient() {
         {/* Security & Compliance Footer Micro-text */}
         <Box sx={{ mt: 1.5, textAlign: 'center' }}>
           <Typography sx={{ fontSize: '0.68rem', color: 'rgba(226, 232, 240, 0.65)', fontWeight: 500, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-            Secured by CodePlatform Cloud · Privacy & Terms
+            Secured by TechLearns Cloud · Privacy & Terms
           </Typography>
         </Box>
       </Box>

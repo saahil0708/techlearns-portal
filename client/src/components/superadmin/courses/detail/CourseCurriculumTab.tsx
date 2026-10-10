@@ -27,7 +27,7 @@ import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import LayersRoundedIcon from '@mui/icons-material/LayersRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
-import { FluidArrowRight } from '@/utils/fluid_arrow';
+import { FluidArrowRight, FluidArrowUpward, FluidArrowDownward } from '@/utils/fluid_arrow';
 import type { CourseDirectoryEntity } from '@/types/course';
 import type { TopicItem } from './types';
 import { getModuleTopicItems, getBadgeForType } from './courseCatalogFallback';
@@ -162,9 +162,9 @@ export default function CourseCurriculumTab({
                   fontSize: '0.84rem',
                   px: 2,
                   py: 0.75,
-                  borderColor: '#BFDBFE',
-                  color: '#2563EB',
-                  '&:hover': { bgcolor: '#EFF6FF', borderColor: '#93C5FD' },
+                  borderColor: '#D8B4FE',
+                  color: '#0B1F3A',
+                  '&:hover': { bgcolor: '#FAF5FF', borderColor: '#C084FC' },
                 }}
               >
                 Bulk Import
@@ -176,14 +176,14 @@ export default function CourseCurriculumTab({
               startIcon={<AddRoundedIcon />}
               onClick={onOpenAddModule}
               sx={{
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 borderRadius: '9999px',
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.84rem',
                 px: 2.5,
                 py: 0.75,
-                '&:hover': { bgcolor: '#1D4ED8' },
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               Add Module
@@ -214,12 +214,12 @@ export default function CourseCurriculumTab({
                   width: 38,
                   height: 38,
                   borderRadius: '10px',
-                  bgcolor: courseCompletionPct === 100 ? '#ECFDF5' : '#EFF6FF',
-                  color: courseCompletionPct === 100 ? '#10B981' : '#2563EB',
+                  bgcolor: courseCompletionPct === 100 ? '#ECFDF5' : '#FAF5FF',
+                  color: courseCompletionPct === 100 ? '#10B981' : '#0B1F3A',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: `1px solid ${courseCompletionPct === 100 ? '#A7F3D0' : '#BFDBFE'}`,
+                  border: `1px solid ${courseCompletionPct === 100 ? '#A7F3D0' : '#D8B4FE'}`,
                 }}
               >
                 {courseCompletionPct === 100 ? (
@@ -244,9 +244,9 @@ export default function CourseCurriculumTab({
               sx={{
                 fontWeight: 800,
                 fontSize: '0.75rem',
-                bgcolor: courseCompletionPct === 100 ? '#ECFDF5' : '#EFF6FF',
-                color: courseCompletionPct === 100 ? '#059669' : '#2563EB',
-                border: `1px solid ${courseCompletionPct === 100 ? '#A7F3D0' : '#BFDBFE'}`,
+                bgcolor: courseCompletionPct === 100 ? '#ECFDF5' : '#FAF5FF',
+                color: courseCompletionPct === 100 ? '#059669' : '#0B1F3A',
+                border: `1px solid ${courseCompletionPct === 100 ? '#A7F3D0' : '#D8B4FE'}`,
               }}
             />
           </Box>
@@ -257,7 +257,7 @@ export default function CourseCurriculumTab({
                 width: `${courseCompletionPct}%`,
                 height: '100%',
                 borderRadius: '9999px',
-                bgcolor: courseCompletionPct === 100 ? '#10B981' : '#2563EB',
+                bgcolor: courseCompletionPct === 100 ? '#10B981' : '#0B1F3A',
                 transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
             />
@@ -287,12 +287,12 @@ export default function CourseCurriculumTab({
               width: 56,
               height: 56,
               borderRadius: '16px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           >
             <LayersRoundedIcon sx={{ fontSize: 28 }} />
@@ -312,7 +312,7 @@ export default function CourseCurriculumTab({
               startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
               sx={{
                 borderRadius: '9999px',
-                background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                 color: '#FFFFFF',
                 textTransform: 'none',
                 fontWeight: 700,
@@ -382,15 +382,15 @@ export default function CourseCurriculumTab({
                           : !modUnlocked
                           ? '#F1F5F9'
                           : isExpanded
-                          ? '#2563EB'
-                          : '#EFF6FF',
+                          ? '#0B1F3A'
+                          : '#FAF5FF',
                         border: modCompleted
                           ? '1px solid #A7F3D0'
                           : !modUnlocked
                           ? '1px solid #E2E8F0'
                           : isExpanded
-                          ? '1px solid #2563EB'
-                          : '1px solid #BFDBFE',
+                          ? '1px solid #0B1F3A'
+                          : '1px solid #F3E8FF',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -402,7 +402,7 @@ export default function CourseCurriculumTab({
                           ? '#94A3B8'
                           : isExpanded
                           ? '#FFFFFF'
-                          : '#2563EB',
+                          : '#0B1F3A',
                         flexShrink: 0,
                         transition: 'all 0.2s ease',
                       }}
@@ -482,12 +482,12 @@ export default function CourseCurriculumTab({
                             fontSize: '0.78rem',
                             fontWeight: 700,
                             textTransform: 'none',
-                            color: '#2563EB',
-                            borderColor: '#BFDBFE',
-                            bgcolor: '#EFF6FF',
+                            color: '#0B1F3A',
+                            borderColor: '#D8B4FE',
+                            bgcolor: '#FAF5FF',
                             px: 1.5,
                             py: 0.4,
-                            '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                            '&:hover': { bgcolor: '#E9D5FF', borderColor: '#C084FC' },
                           }}
                         >
                           Add Submodule
@@ -517,7 +517,7 @@ export default function CourseCurriculumTab({
                               }}
                               sx={{ color: '#64748B', bgcolor: '#F1F5F9', '&:hover': { color: '#0F172A', bgcolor: '#E2E8F0' } }}
                             >
-                              <ArrowUpwardRoundedIcon sx={{ fontSize: 16 }} />
+                              <FluidArrowUpward sx={{ fontSize: 16 }} />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -533,7 +533,7 @@ export default function CourseCurriculumTab({
                               }}
                               sx={{ color: '#64748B', bgcolor: '#F1F5F9', '&:hover': { color: '#0F172A', bgcolor: '#E2E8F0' } }}
                             >
-                              <ArrowDownwardRoundedIcon sx={{ fontSize: 16 }} />
+                              <FluidArrowDownward sx={{ fontSize: 16 }} />
                             </IconButton>
                           </span>
                         </Tooltip>
@@ -569,7 +569,7 @@ export default function CourseCurriculumTab({
                           startIcon={modUnlocked ? <PlayArrowRoundedIcon sx={{ fontSize: 18 }} /> : <LockRoundedIcon sx={{ fontSize: 16 }} />}
                           sx={{
                             borderRadius: '9999px',
-                            bgcolor: modUnlocked ? '#2563EB' : '#F1F5F9',
+                            bgcolor: modUnlocked ? '#0B1F3A' : '#F1F5F9',
                             color: modUnlocked ? '#FFFFFF' : '#94A3B8',
                             textTransform: 'none',
                             fontWeight: 700,
@@ -578,7 +578,7 @@ export default function CourseCurriculumTab({
                             py: 0.7,
                             boxShadow: 'none',
                             '&:hover': {
-                              bgcolor: modUnlocked ? '#1D4ED8' : '#F1F5F9',
+                              bgcolor: modUnlocked ? '#17366E' : '#F1F5F9',
                             },
                           }}
                         >
@@ -653,7 +653,7 @@ export default function CourseCurriculumTab({
                                   <IconButton
                                     size="small"
                                     onClick={() => onOpenEditLesson(topic, modItem, idx)}
-                                    sx={{ color: '#64748B', '&:hover': { color: '#2563EB' } }}
+                                    sx={{ color: '#64748B', '&:hover': { color: '#0B1F3A' } }}
                                   >
                                     <EditRoundedIcon sx={{ fontSize: 15 }} />
                                   </IconButton>
@@ -680,12 +680,12 @@ export default function CourseCurriculumTab({
                                 textTransform: 'none',
                                 fontWeight: 700,
                                 fontSize: '0.78rem',
-                                color: '#2563EB',
-                                bgcolor: '#EFF6FF',
+                                color: '#0B1F3A',
+                                bgcolor: '#FAF5FF',
                                 borderRadius: '8px',
                                 px: 1.5,
                                 py: 0.4,
-                                '&:hover': { bgcolor: '#DBEAFE' },
+                                '&:hover': { bgcolor: '#E9D5FF' },
                                 '&.Mui-disabled': {
                                   bgcolor: '#F1F5F9',
                                   color: '#94A3B8',

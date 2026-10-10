@@ -569,7 +569,7 @@ export default function CourseDetailClient({
     language: courseLanguage,
     stars: 5,
     issueDate: issuedCertDate || new Date().toISOString(),
-    issuer: liveCourse.institutionName || 'CodePlatform Academic Board',
+    issuer: liveCourse.institutionName || 'TechLearns Academic Board',
     credentialId: issuedCertDate ? `CERT-${liveCourse.id}` : `PREVIEW-CERT-${liveCourse.id || '10928'}`,
     skills: liveCourse.tags?.length ? liveCourse.tags : ['Data Structures', 'Algorithms'],
   };
@@ -642,14 +642,14 @@ export default function CourseDetailClient({
           value={activeTab}
           onChange={(_, val) => setActiveTab(val)}
           sx={{
-            '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+            '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
             '& .MuiTab-root': {
               textTransform: 'none',
               fontWeight: 700,
               fontSize: '0.92rem',
               color: '#64748B',
               minWidth: 120,
-              '&.Mui-selected': { color: '#2563EB' },
+              '&.Mui-selected': { color: '#0B1F3A' },
             },
           }}
         >
@@ -822,14 +822,14 @@ export default function CourseDetailClient({
               startIcon={<AddRoundedIcon />}
               sx={{
                 borderRadius: '12px',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 textTransform: 'none',
                 fontWeight: 700,
                 px: 2.2,
                 py: 0.9,
                 whiteSpace: 'nowrap',
                 boxShadow: 'none',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               Add Point
@@ -869,7 +869,7 @@ export default function CourseDetailClient({
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flex: 1, minWidth: 0 }}>
-                    <CheckRoundedIcon sx={{ fontSize: 18, color: '#2563EB', flexShrink: 0 }} />
+                    <CheckRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A', flexShrink: 0 }} />
                     <Typography sx={{ fontSize: '0.86rem', color: '#1E293B', fontWeight: 600 }}>
                       {item}
                     </Typography>
@@ -925,12 +925,12 @@ export default function CourseDetailClient({
             startIcon={isSavingOutcomes ? <CircularProgress size={16} sx={{ color: '#FFFFFF' }} /> : <CheckCircleRoundedIcon sx={{ fontSize: 18 }} />}
             sx={{
               borderRadius: '10px',
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               textTransform: 'none',
               fontWeight: 700,
               px: 3,
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             {isSavingOutcomes ? 'Saving to Database...' : 'Save Learning Points'}

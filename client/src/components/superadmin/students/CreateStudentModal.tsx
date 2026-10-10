@@ -164,8 +164,8 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
             width: 42,
             height: 42,
             borderRadius: '12px',
-            bgcolor: '#EFF6FF',
-            color: '#2563EB',
+            bgcolor: '#FAF5FF',
+            color: '#0B1F3A',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -317,7 +317,7 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
         <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-              <LockRoundedIcon sx={{ color: '#2563EB', fontSize: 18 }} />
+              <LockRoundedIcon sx={{ color: '#0B1F3A', fontSize: 18 }} />
               <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A' }}>
                 Account Initial Password
               </Typography>
@@ -331,13 +331,13 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
                 textTransform: 'none',
                 fontSize: '0.72rem',
                 fontWeight: 700,
-                color: '#2563EB',
-                borderColor: '#BFDBFE',
-                bgcolor: '#EFF6FF',
+                color: '#0B1F3A',
+                borderColor: '#D8B4FE',
+                bgcolor: '#FAF5FF',
                 py: 0.2,
                 px: 1,
                 borderRadius: '6px',
-                '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                '&:hover': { bgcolor: '#E9D5FF', borderColor: '#C084FC' },
               }}
             >
               Generate
@@ -499,13 +499,13 @@ export default function CreateStudentModal({ open, onClose, onCreate }: CreateSt
           variant="contained"
           onClick={handleSubmit}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             textTransform: 'none',
             fontWeight: 700,
             borderRadius: '8px',
             px: 2.75,
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           Register Student

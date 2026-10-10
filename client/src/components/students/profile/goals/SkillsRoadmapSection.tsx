@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { FluidArrowForward } from '@/utils/fluid_arrow';
 import Link from 'next/link';
 import {
   Box,
@@ -58,8 +59,8 @@ export default function SkillsRoadmapSection({
                   width: 30,
                   height: 30,
                   borderRadius: '8px',
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -82,15 +83,15 @@ export default function SkillsRoadmapSection({
                 onClick={() => onOpenCustomizer(2)}
                 startIcon={<TuneRoundedIcon sx={{ fontSize: 13 }} />}
                 sx={{
-                  color: '#2563EB',
-                  bgcolor: '#EFF6FF',
+                  color: '#0B1F3A',
+                  bgcolor: '#FAF5FF',
                   fontWeight: 800,
                   fontSize: '0.72rem',
                   borderRadius: '8px',
                   textTransform: 'none',
                   px: 1.2,
                   py: 0.3,
-                  '&:hover': { bgcolor: '#DBEAFE' },
+                  '&:hover': { bgcolor: '#E9D5FF' },
                 }}
               >
                 Calibrate
@@ -208,8 +209,8 @@ export default function SkillsRoadmapSection({
                   width: 32,
                   height: 32,
                   borderRadius: '8px',
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -228,10 +229,10 @@ export default function SkillsRoadmapSection({
             </Box>
 
             <Chip
-              icon={<HubRoundedIcon sx={{ fontSize: 13, color: '#2563EB !important' }} />}
+              icon={<HubRoundedIcon sx={{ fontSize: 13, color: '#0B1F3A !important' }} />}
               label="3 Step Path"
               size="small"
-              sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 800, fontSize: '0.68rem', height: 22, border: '1px solid #BFDBFE' }}
+              sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 800, fontSize: '0.68rem', height: 22, border: '1px solid #F3E8FF' }}
             />
           </Box>
 
@@ -247,14 +248,14 @@ export default function SkillsRoadmapSection({
                     width: 32,
                     height: 32,
                     borderRadius: '50%',
-                    bgcolor: '#2563EB',
+                    bgcolor: '#0B1F3A',
                     color: '#FFFFFF',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontWeight: 900,
                     fontSize: '0.82rem',
-                    boxShadow: '0 0 0 4px #DBEAFE',
+                    boxShadow: '0 0 0 4px #FAF5FF',
                     flexShrink: 0,
                     zIndex: 2,
                   }}
@@ -266,7 +267,7 @@ export default function SkillsRoadmapSection({
                     width: 2,
                     flex: 1,
                     minHeight: 28,
-                    bgcolor: '#2563EB',
+                    bgcolor: '#0B1F3A',
                     my: 0.5,
                   }}
                 />
@@ -279,9 +280,9 @@ export default function SkillsRoadmapSection({
                   mb: 2,
                   p: 1.8,
                   borderRadius: '12px',
-                  bgcolor: '#EFF6FF',
-                  border: '1.5px solid #BFDBFE',
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.06)',
+                  bgcolor: '#FAF5FF',
+                  border: '1.5px solid #F3E8FF',
+                  boxShadow: '0 2px 8px rgba(91, 45, 144, 0.06)',
                 }}
               >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1.5, mb: 1.2 }}>
@@ -290,9 +291,9 @@ export default function SkillsRoadmapSection({
                       <Chip
                         label="Current Phase ⚡"
                         size="small"
-                        sx={{ bgcolor: '#2563EB', color: '#FFFFFF', fontWeight: 800, fontSize: '0.64rem', height: 20 }}
+                        sx={{ bgcolor: '#0B1F3A', color: '#FFFFFF', fontWeight: 800, fontSize: '0.64rem', height: 20 }}
                       />
-                      <Typography sx={{ color: '#1D4ED8', fontSize: '0.7rem', fontWeight: 700 }}>
+                      <Typography sx={{ color: '#17366E', fontSize: '0.7rem', fontWeight: 700 }}>
                         12 Modules
                       </Typography>
                     </Box>
@@ -304,7 +305,7 @@ export default function SkillsRoadmapSection({
                     </Typography>
                   </Box>
 
-                  <CircularSkillGauge percentage={35} color="#2563EB" size={50} strokeWidth={4.5} />
+                  <CircularSkillGauge percentage={35} color='#0B1F3A' size={50} strokeWidth={4.5} />
                 </Box>
 
                 <Link href="/courses" style={{ textDecoration: 'none' }}>
@@ -313,9 +314,9 @@ export default function SkillsRoadmapSection({
                     variant="contained"
                     size="small"
                     startIcon={<MenuBookRoundedIcon sx={{ fontSize: 15 }} />}
-                    endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 13 }} />}
+                    endIcon={<FluidArrowForward sx={{ fontSize: 13 }} />}
                     sx={{
-                      bgcolor: '#2563EB',
+                      bgcolor: '#0B1F3A',
                       color: '#FFFFFF',
                       fontWeight: 700,
                       fontSize: '0.76rem',
@@ -323,7 +324,7 @@ export default function SkillsRoadmapSection({
                       borderRadius: '6px',
                       py: 0.6,
                       boxShadow: 'none',
-                      '&:hover': { bgcolor: '#1D4ED8' },
+                      '&:hover': { bgcolor: '#17366E' },
                     }}
                   >
                     Continue Curriculum
@@ -407,7 +408,7 @@ export default function SkillsRoadmapSection({
                     variant="outlined"
                     size="small"
                     startIcon={<TerminalRoundedIcon sx={{ fontSize: 15 }} />}
-                    endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 13 }} />}
+                    endIcon={<FluidArrowForward sx={{ fontSize: 13 }} />}
                     sx={{
                       color: '#059669',
                       borderColor: '#059669',
@@ -489,7 +490,7 @@ export default function SkillsRoadmapSection({
                     variant="outlined"
                     size="small"
                     startIcon={<LaptopMacRoundedIcon sx={{ fontSize: 15 }} />}
-                    endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 13 }} />}
+                    endIcon={<FluidArrowForward sx={{ fontSize: 13 }} />}
                     sx={{
                       color: '#D97706',
                       borderColor: '#D97706',
@@ -518,7 +519,7 @@ export default function SkillsRoadmapSection({
           <Chip
             label="Track Active"
             size="small"
-            sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 800, fontSize: '0.66rem', height: 20 }}
+            sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 800, fontSize: '0.66rem', height: 20 }}
           />
         </Box>
       </Card>

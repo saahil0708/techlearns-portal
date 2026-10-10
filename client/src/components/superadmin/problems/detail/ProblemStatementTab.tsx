@@ -111,14 +111,14 @@ export default function ProblemStatementTab({
             startIcon={<CloudUploadRoundedIcon sx={{ fontSize: 16 }} />}
             onClick={() => onOpenUploadModal(editorialLang)}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               fontWeight: 700,
               fontSize: '0.78rem',
               textTransform: 'none',
               borderRadius: '8px',
-              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.2)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 2px 8px rgba(91, 45, 144, 0.2)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Upload Solution Draft
@@ -156,11 +156,11 @@ export default function ProblemStatementTab({
                 size="small"
                 label={`Time: ${currentSol.timeComplexity || 'O(1)'}`}
                 sx={{
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   fontWeight: 700,
                   fontSize: '0.72rem',
-                  border: '1px solid #DBEAFE',
+                  border: '1px solid #FAF5FF',
                 }}
               />
               <Chip
@@ -201,15 +201,15 @@ export default function ProblemStatementTab({
                     fontWeight: 700,
                     textTransform: 'none',
                     minWidth: 'auto',
-                    bgcolor: editorialLang === l.id ? '#2563EB' : '#F1F5F9',
+                    bgcolor: editorialLang === l.id ? '#0B1F3A' : '#F1F5F9',
                     color: editorialLang === l.id ? '#FFFFFF' : '#475569',
                     border: '1px solid',
-                    borderColor: editorialLang === l.id ? '#2563EB' : '#E2E8F0',
+                    borderColor: editorialLang === l.id ? '#0B1F3A' : '#E2E8F0',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 0.5,
                     '&:hover': {
-                      bgcolor: editorialLang === l.id ? '#1D4ED8' : '#E2E8F0',
+                      bgcolor: editorialLang === l.id ? '#17366E' : '#E2E8F0',
                     },
                   }}
                 >
@@ -303,7 +303,7 @@ export default function ProblemStatementTab({
                   }}
                   sx={{
                     fontSize: '0.72rem',
-                    color: '#38BDF8',
+                    color: '#C084FC',
                     textTransform: 'none',
                     fontWeight: 700,
                     py: 0.25,

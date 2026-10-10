@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import InstitutionBatchesClient from '@/components/institution-admin/batches/InstitutionBatchesClient';
 
 export const metadata: Metadata = {
-  title: 'Academic Batches & Cohorts | CodePlatform Institution Admin',
+  title: 'Academic Batches & Cohorts | TechLearns Institution Admin',
   description: 'Manage institutional class cohorts, student rosters, and batch capacities.',
 };
 

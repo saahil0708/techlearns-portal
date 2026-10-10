@@ -124,7 +124,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
               gradeCohortsCount: item.gradeCohortsCount ?? item._count?.batches ?? 4,
               teachersCount: facultyCount,
               status: item.status === 'ACTIVE' ? 'Active' : (item.status || 'Active'),
-              logoColor: item.logoColor || ['#2563EB', '#DC2626', '#059669', '#7C3AED', '#D97706'][idx % 5],
+              logoColor: item.logoColor || ['#0B1F3A', '#DC2626', '#059669', '#7C3AED', '#D97706'][idx % 5],
             };
           });
           setSchools(mapped);
@@ -228,7 +228,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
       gradeCohortsCount: 0,
       teachersCount: 1,
       status: 'Active',
-      logoColor: '#2563EB',
+      logoColor: '#0B1F3A',
     };
     setSchools((prev) => [newEntry, ...prev]);
 
@@ -268,7 +268,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
       <body>
         <h2>High Schools & STEM Academies Directory</h2>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Code</th>
             <th>School Name</th>
             <th>Domain</th>
@@ -369,9 +369,9 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -398,8 +398,8 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                     width: 36,
                     height: 36,
                     borderRadius: '10px',
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -433,7 +433,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                     px: 1.75,
                     py: 0.75,
                     boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                    '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+                    '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A', borderColor: '#D8B4FE' },
                   }}
                 >
                   Export Data
@@ -468,7 +468,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                 </MenuItem>
                 <MenuItem onClick={downloadSchoolsCSV} sx={{ borderRadius: '8px', py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 32 }}>
-                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                   </ListItemIcon>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                     Download CSV (.csv)
@@ -481,7 +481,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                 startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
                 onClick={() => setIsModalOpen(true)}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
                   borderRadius: '8px',
                   textTransform: 'none',
@@ -489,8 +489,8 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                   fontSize: '0.85rem',
                   px: 2.25,
                   py: 0.75,
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Register School
@@ -572,7 +572,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                 sx={{
                   minHeight: 48,
                   '& .MuiTabs-indicator': {
-                    backgroundColor: '#2563EB',
+                    backgroundColor: '#0B1F3A',
                     height: 3,
                     borderRadius: '3px 3px 0 0',
                   },
@@ -605,10 +605,10 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                             fontSize: '0.68rem',
                             fontWeight: 700,
                             borderRadius: '9999px',
-                            bgcolor: selectedCurriculum === tab.id ? '#EFF6FF' : '#F1F5F9',
-                            color: selectedCurriculum === tab.id ? '#2563EB' : '#64748B',
+                            bgcolor: selectedCurriculum === tab.id ? '#FAF5FF' : '#F1F5F9',
+                            color: selectedCurriculum === tab.id ? '#0B1F3A' : '#64748B',
                             border: '1px solid',
-                            borderColor: selectedCurriculum === tab.id ? '#BFDBFE' : '#E2E8F0',
+                            borderColor: selectedCurriculum === tab.id ? '#D8B4FE' : '#E2E8F0',
                             pointerEvents: 'none',
                           }}
                         />
@@ -620,7 +620,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                       py: 1,
                       px: 1.25,
                       textTransform: 'none',
-                      color: selectedCurriculum === tab.id ? '#2563EB !important' : '#64748B',
+                      color: selectedCurriculum === tab.id ? '#0B1F3A !important' : '#64748B',
                       '&:hover': {
                         color: '#0F172A',
                       },
@@ -669,7 +669,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                     fontSize: '0.85rem',
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -741,7 +741,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                         onChange={(e) => handleSelectAll(e.target.checked)}
                         sx={{
                           color: '#CBD5E1',
-                          '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#2563EB' },
+                          '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#0B1F3A' },
                         }}
                       />
                     </TableCell>
@@ -780,8 +780,8 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                         selected={isSelected}
                         sx={{
                           '& td': { borderBottom: '1px solid #F1F5F9' },
-                          bgcolor: isSelected ? '#EFF6FF !important' : 'inherit',
-                          '&:hover': { bgcolor: isSelected ? '#DBEAFE !important' : '#F8FAFC !important' },
+                          bgcolor: isSelected ? '#FAF5FF !important' : 'inherit',
+                          '&:hover': { bgcolor: isSelected ? '#FAF5FF !important' : '#F8FAFC !important' },
                         }}
                       >
                         <TableCell padding="checkbox" sx={{ pl: 2.5 }}>
@@ -790,7 +790,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                             onChange={() => handleToggleSelectRow(school.id)}
                             sx={{
                               color: '#CBD5E1',
-                              '&.Mui-checked': { color: '#2563EB' },
+                              '&.Mui-checked': { color: '#0B1F3A' },
                             }}
                           />
                         </TableCell>
@@ -804,7 +804,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                               gap: 1.5,
                               textDecoration: 'none',
                               color: 'inherit',
-                              '&:hover .school-name': { color: '#2563EB' },
+                              '&:hover .school-name': { color: '#0B1F3A' },
                             }}
                           >
                             <Avatar
@@ -861,9 +861,9 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                               height: 24,
                               fontSize: '0.72rem',
                               fontWeight: 700,
-                              bgcolor: '#EFF6FF',
-                              color: '#2563EB',
-                              border: '1px solid #DBEAFE',
+                              bgcolor: '#FAF5FF',
+                              color: '#0B1F3A',
+                              border: '1px solid #FAF5FF',
                               borderRadius: '6px',
                               whiteSpace: 'nowrap',
                             }}
@@ -876,7 +876,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                               <Typography noWrap sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0F172A' }}>
                                 {school.studentsCount.toLocaleString()} / {school.maxQuota.toLocaleString()}
                               </Typography>
-                              <Typography sx={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700, ml: 1 }}>
+                              <Typography sx={{ fontSize: '0.72rem', color: '#0B1F3A', fontWeight: 700, ml: 1 }}>
                                 {quotaPercent}%
                               </Typography>
                             </Box>
@@ -888,7 +888,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                                 borderRadius: 3,
                                 bgcolor: '#E2E8F0',
                                 '& .MuiLinearProgress-bar': {
-                                  bgcolor: quotaPercent > 90 ? '#EF4444' : '#2563EB',
+                                  bgcolor: quotaPercent > 90 ? '#EF4444' : '#0B1F3A',
                                   borderRadius: 3,
                                 },
                               }}
@@ -919,20 +919,20 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                                 school.status === 'Active'
                                   ? '#ECFDF5'
                                   : school.status === 'Provisioning'
-                                  ? '#EFF6FF'
+                                  ? '#FAF5FF'
                                   : '#FFFBEB',
                               color:
                                 school.status === 'Active'
                                   ? '#059669'
                                   : school.status === 'Provisioning'
-                                  ? '#2563EB'
+                                  ? '#0B1F3A'
                                   : '#D97706',
                               border: '1px solid',
                               borderColor:
                                 school.status === 'Active'
                                   ? '#A7F3D0'
                                   : school.status === 'Provisioning'
-                                  ? '#BFDBFE'
+                                  ? '#D8B4FE'
                                   : '#FEF3C7',
                             }}
                           />
@@ -950,16 +950,16 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                                 textTransform: 'none',
                                 fontWeight: 700,
                                 fontSize: '0.75rem',
-                                color: '#2563EB',
-                                borderColor: '#DBEAFE',
-                                bgcolor: '#EFF6FF',
+                                color: '#0B1F3A',
+                                borderColor: '#E9D5FF',
+                                bgcolor: '#FAF5FF',
                                 borderRadius: '6px',
                                 px: 1.35,
                                 py: 0.35,
                                 whiteSpace: 'nowrap',
                                 '&:hover': {
-                                  bgcolor: '#DBEAFE',
-                                  borderColor: '#93C5FD',
+                                  bgcolor: '#E9D5FF',
+                                  borderColor: '#C084FC',
                                 },
                               }}
                             >
@@ -1116,14 +1116,14 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
                         fontSize: '0.78rem',
                         fontWeight: isActive ? 800 : 600,
                         color: isActive ? '#FFFFFF' : '#64748B',
-                        bgcolor: isActive ? '#2563EB' : '#FFFFFF',
-                        border: isActive ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                        boxShadow: isActive ? '0 2px 8px rgba(37, 99, 235, 0.3)' : 'none',
+                        bgcolor: isActive ? '#0B1F3A' : '#FFFFFF',
+                        border: isActive ? '1px solid #0B1F3A' : '1px solid #E2E8F0',
+                        boxShadow: isActive ? '0 2px 8px rgba(91, 45, 144, 0.3)' : 'none',
                         transition: 'all 0.15s ease',
                         '&:hover': {
-                          bgcolor: isActive ? '#1D4ED8' : '#F1F5F9',
+                          bgcolor: isActive ? '#17366E' : '#F1F5F9',
                           color: isActive ? '#FFFFFF' : '#0F172A',
-                          borderColor: isActive ? '#1D4ED8' : '#CBD5E1',
+                          borderColor: isActive ? '#17366E' : '#CBD5E1',
                         },
                       }}
                     >
@@ -1198,10 +1198,10 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
           component={Link}
           href={menuAnchor ? `/superadmin/schools/${menuAnchor.school.id}` : '#'}
           onClick={() => setMenuAnchor(null)}
-          sx={{ borderRadius: '8px', py: 1, '&:hover': { bgcolor: '#EFF6FF' } }}
+          sx={{ borderRadius: '8px', py: 1, '&:hover': { bgcolor: '#FAF5FF' } }}
         >
           <ListItemIcon sx={{ minWidth: 28 }}>
-            <SchoolRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+            <SchoolRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
           </ListItemIcon>
           <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>
             Open School Portal
@@ -1224,7 +1224,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
               : statusOption === 'Trial'
               ? '#F59E0B'
               : statusOption === 'Provisioning'
-              ? '#0284C7'
+              ? '#5B2D90'
               : '#EF4444';
 
           const statusBg =
@@ -1233,7 +1233,7 @@ export default function SchoolsDirectoryClient({ initialSchools }: SchoolsDirect
               : statusOption === 'Trial'
               ? '#FFFBEB'
               : statusOption === 'Provisioning'
-              ? '#F0F9FF'
+              ? '#FAF5FF'
               : '#FEF2F2';
 
           return (

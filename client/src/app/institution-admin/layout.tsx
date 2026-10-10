@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import InstitutionAdminAuthGuard from '@/components/auth/InstitutionAdminAuthGuard';
 
 export const metadata: Metadata = {
-  title: 'Institution Admin Portal | CodePlatform',
+  title: 'Institution Admin Portal | TechLearns',
   description: 'Manage institutional faculty mentors, class cohorts, student rosters, and college performance analytics.',
 };
 

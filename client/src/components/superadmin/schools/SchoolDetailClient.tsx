@@ -282,14 +282,14 @@ function PaginationToolbar({
                 fontSize: '0.78rem',
                 fontWeight: isActive ? 800 : 600,
                 color: isActive ? '#FFFFFF' : '#64748B',
-                bgcolor: isActive ? '#2563EB' : '#FFFFFF',
-                border: isActive ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                boxShadow: isActive ? '0 2px 8px rgba(37, 99, 235, 0.3)' : 'none',
+                bgcolor: isActive ? '#0B1F3A' : '#FFFFFF',
+                border: isActive ? '1px solid #0B1F3A' : '1px solid #E2E8F0',
+                boxShadow: isActive ? '0 2px 8px rgba(91, 45, 144, 0.3)' : 'none',
                 transition: 'all 0.15s ease',
                 '&:hover': {
-                  bgcolor: isActive ? '#1D4ED8' : '#F1F5F9',
+                  bgcolor: isActive ? '#17366E' : '#F1F5F9',
                   color: isActive ? '#FFFFFF' : '#0F172A',
-                  borderColor: isActive ? '#1D4ED8' : '#CBD5E1',
+                  borderColor: isActive ? '#17366E' : '#CBD5E1',
                 },
               }}
             >
@@ -408,7 +408,7 @@ export default function SchoolDetailClient({
         <br/>
         <h3>Student Roster & Performance</h3>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Rank</th>
             <th>Student ID</th>
             <th>Student Name</th>
@@ -439,7 +439,7 @@ export default function SchoolDetailClient({
         <br/>
         <h3>Grade Sections & STEM Clubs</h3>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Cohort Code</th>
             <th>Section Name</th>
             <th>Grade</th>
@@ -613,9 +613,9 @@ export default function SchoolDetailClient({
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -671,7 +671,7 @@ export default function SchoolDetailClient({
                     fontSize: '0.84rem',
                     px: 1.75,
                     py: 0.75,
-                    '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+                    '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A', borderColor: '#D8B4FE' },
                   }}
                 >
                   Export Report
@@ -706,7 +706,7 @@ export default function SchoolDetailClient({
                 </MenuItem>
                 <MenuItem onClick={downloadSchoolReportCSV} sx={{ borderRadius: '8px', py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 32 }}>
-                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                   </ListItemIcon>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                     Download CSV (.csv)
@@ -719,7 +719,7 @@ export default function SchoolDetailClient({
                 startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
                 onClick={() => setIsCreateCohortOpen(true)}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
                   borderRadius: '8px',
                   textTransform: 'none',
@@ -727,8 +727,8 @@ export default function SchoolDetailClient({
                   fontSize: '0.85rem',
                   px: 2.25,
                   py: 0.75,
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Add Grade Section
@@ -788,10 +788,10 @@ export default function SchoolDetailClient({
                   color: '#64748B',
                   minHeight: 48,
                   px: 2.5,
-                  '&.Mui-selected': { color: '#2563EB' },
+                  '&.Mui-selected': { color: '#0B1F3A' },
                 },
                 '& .MuiTabs-indicator': {
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   height: 3,
                   borderRadius: '3px 3px 0 0',
                 },
@@ -891,7 +891,7 @@ export default function SchoolDetailClient({
                           <TableRow key={cohort.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
                             <TableCell sx={{ pl: 3, py: 1.75 }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                                <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                   <SchoolRoundedIcon sx={{ fontSize: 18 }} />
                                 </Box>
                                 <Box>
@@ -909,14 +909,14 @@ export default function SchoolDetailClient({
                                   <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A' }}>
                                     {cohort.studentsCount} / {cohort.maxCapacity} students
                                   </Typography>
-                                  <Typography sx={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700 }}>
+                                  <Typography sx={{ fontSize: '0.72rem', color: '#0B1F3A', fontWeight: 700 }}>
                                     {capPercent}%
                                   </Typography>
                                 </Box>
                                 <LinearProgress
                                   variant="determinate"
                                   value={Math.min(100, capPercent)}
-                                  sx={{ height: 5, borderRadius: 3, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { bgcolor: '#2563EB', borderRadius: 3 } }}
+                                  sx={{ height: 5, borderRadius: 3, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { bgcolor: '#0B1F3A', borderRadius: 3 } }}
                                 />
                               </Box>
                             </TableCell>
@@ -938,9 +938,9 @@ export default function SchoolDetailClient({
                                   height: 22,
                                   fontSize: '0.7rem',
                                   fontWeight: 700,
-                                  bgcolor: cohort.status === 'Active' ? '#ECFDF5' : '#EFF6FF',
-                                  border: cohort.status === 'Active' ? '1px solid #A7F3D0' : '1px solid #DBEAFE',
-                                  color: cohort.status === 'Active' ? '#059669' : '#2563EB',
+                                  bgcolor: cohort.status === 'Active' ? '#ECFDF5' : '#FAF5FF',
+                                  border: cohort.status === 'Active' ? '1px solid #A7F3D0' : '1px solid #FAF5FF',
+                                  color: cohort.status === 'Active' ? '#059669' : '#0B1F3A',
                                   borderRadius: '5px',
                                 }}
                               />
@@ -958,13 +958,13 @@ export default function SchoolDetailClient({
                                   textTransform: 'none',
                                   fontWeight: 700,
                                   fontSize: '0.76rem',
-                                  color: '#2563EB',
-                                  borderColor: '#DBEAFE',
-                                  bgcolor: '#EFF6FF',
+                                  color: '#0B1F3A',
+                                  borderColor: '#E9D5FF',
+                                  bgcolor: '#FAF5FF',
                                   borderRadius: '6px',
                                   px: 1.5,
                                   py: 0.4,
-                                  '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                                  '&:hover': { bgcolor: '#E9D5FF', borderColor: '#C084FC' },
                                 }}
                               >
                                 View Roster
@@ -1074,7 +1074,7 @@ export default function SchoolDetailClient({
                         <TableRow key={s.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
                           <TableCell sx={{ pl: 3, py: 1.6 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                              <Avatar sx={{ width: 32, height: 32, bgcolor: '#2563EB', fontSize: '0.76rem', fontWeight: 700 }}>
+                              <Avatar sx={{ width: 32, height: 32, bgcolor: '#0B1F3A', fontSize: '0.76rem', fontWeight: 700 }}>
                                 {s.name.substring(0, 2).toUpperCase()}
                               </Avatar>
                               <Box>
@@ -1104,7 +1104,7 @@ export default function SchoolDetailClient({
                             <Chip label={`🔥 ${s.streakDays} days`} size="small" sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, bgcolor: '#FFFBEB', color: '#D97706', border: '1px solid #FEF3C7', borderRadius: '5px' }} />
                           </TableCell>
                           <TableCell align="right" sx={{ pr: 3, py: 1.6 }}>
-                            <Typography sx={{ fontSize: '0.9rem', fontWeight: 900, color: s.rank <= 3 ? '#2563EB' : '#64748B' }}>
+                            <Typography sx={{ fontSize: '0.9rem', fontWeight: 900, color: s.rank <= 3 ? '#0B1F3A' : '#64748B' }}>
                               #{s.rank}
                             </Typography>
                           </TableCell>
@@ -1210,7 +1210,7 @@ export default function SchoolDetailClient({
                         <TableRow key={lab.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
                           <TableCell sx={{ pl: 3, py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                              <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <CodeRoundedIcon sx={{ fontSize: 18 }} />
                               </Box>
                               <Box>
@@ -1367,7 +1367,7 @@ export default function SchoolDetailClient({
                         <TableRow key={idx} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
                           <TableCell sx={{ pl: 3, py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                              <Avatar sx={{ width: 34, height: 34, bgcolor: '#2563EB', fontWeight: 800, fontSize: '0.8rem' }}>
+                              <Avatar sx={{ width: 34, height: 34, bgcolor: '#0B1F3A', fontWeight: 800, fontSize: '0.8rem' }}>
                                 {t.name.split(' ').map((n) => n[0]).join('').substring(0, 2)}
                               </Avatar>
                               <Box>
@@ -1377,7 +1377,7 @@ export default function SchoolDetailClient({
                             </Box>
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
-                            <Chip label={t.role} size="small" sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#EFF6FF', color: '#2563EB', borderRadius: '5px' }} />
+                            <Chip label={t.role} size="small" sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700, bgcolor: '#FAF5FF', color: '#0B1F3A', borderRadius: '5px' }} />
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
                             <Chip label={t.department} size="small" sx={{ height: 22, fontSize: '0.7rem', bgcolor: '#F1F5F9', color: '#475569', borderRadius: '5px' }} />
@@ -1439,7 +1439,7 @@ export default function SchoolDetailClient({
                   <Typography sx={{ fontSize: '0.78rem', color: '#64748B', mb: 2 }}>
                     COPPA / FERPA compliant restricted execution sandbox with Google Classroom & Clever SSO integration.
                   </Typography>
-                  <Chip label="Google Classroom & Clever Enabled" sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700 }} size="small" />
+                  <Chip label="Google Classroom & Clever Enabled" sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700 }} size="small" />
                 </Box>
               </Box>
             </Card>
@@ -1536,7 +1536,7 @@ export default function SchoolDetailClient({
           <Button
             variant="contained"
             onClick={handleCreateCohortSubmit}
-            sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5 }}
+            sx={{ bgcolor: '#0B1F3A', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5 }}
           >
             Create Section
           </Button>

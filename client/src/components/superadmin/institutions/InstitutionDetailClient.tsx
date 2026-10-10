@@ -504,7 +504,7 @@ const escapeHtml = (unsafe: any): string => {
       <body>
         <h2>${escapeHtml(liveInstitution.name)} — Student Roster</h2>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Name</th><th>Email</th><th>Roll No</th><th>Batch</th><th>Problems Solved</th><th>Accuracy</th><th>Status</th>
           </tr>
           ${students
@@ -607,14 +607,14 @@ const escapeHtml = (unsafe: any): string => {
               value={activeTab}
               onChange={(_, val) => setActiveTab(val)}
               sx={{
-                '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+                '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
                 '& .MuiTab-root': {
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '0.92rem',
                   color: '#64748B',
                   minWidth: 120,
-                  '&.Mui-selected': { color: '#2563EB' },
+                  '&.Mui-selected': { color: '#0B1F3A' },
                 },
               }}
             >
@@ -785,15 +785,15 @@ const escapeHtml = (unsafe: any): string => {
                         justifyContent: 'space-between',
                         p: '6px 10px',
                         borderRadius: '6px',
-                        bgcolor: isSelected ? '#EFF6FF' : '#FFFFFF',
-                        border: isSelected ? '1px solid #93C5FD' : '1px solid #E2E8F0',
+                        bgcolor: isSelected ? '#FAF5FF' : '#FFFFFF',
+                        border: isSelected ? '1px solid #E9D5FF' : '1px solid #E2E8F0',
                         cursor: 'pointer',
                         transition: 'all 0.15s ease',
-                        '&:hover': { bgcolor: isSelected ? '#DBEAFE' : '#F1F5F9' },
+                        '&:hover': { bgcolor: isSelected ? '#E9D5FF' : '#F1F5F9' },
                       }}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Checkbox checked={isSelected} size="small" sx={{ p: 0, color: '#CBD5E1', '&.Mui-checked': { color: '#2563EB' } }} />
+                        <Checkbox checked={isSelected} size="small" sx={{ p: 0, color: '#CBD5E1', '&.Mui-checked': { color: '#0B1F3A' } }} />
                         <Box>
                           <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>
                             {f.name}
@@ -823,7 +823,7 @@ const escapeHtml = (unsafe: any): string => {
             variant="contained"
             onClick={handleCreateBatch}
             disabled={isSubmittingBatch}
-            sx={{ bgcolor: '#2563EB', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
+            sx={{ bgcolor: '#0B1F3A', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
           >
             {isSubmittingBatch ? (editingBatch ? 'Saving...' : 'Creating...') : (editingBatch ? 'Save Changes' : 'Create Batch')}
           </Button>
@@ -867,7 +867,7 @@ const escapeHtml = (unsafe: any): string => {
             variant="contained"
             onClick={handleSaveEditStudent}
             disabled={isSubmittingEditStudent}
-            sx={{ bgcolor: '#2563EB', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
+            sx={{ bgcolor: '#0B1F3A', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
           >
             {isSubmittingEditStudent ? 'Saving...' : 'Save Changes'}
           </Button>
@@ -906,7 +906,7 @@ const escapeHtml = (unsafe: any): string => {
             variant="contained"
             onClick={handleAssignBatchSubmit}
             disabled={isSubmittingAssignBatch || !assignBatchId}
-            sx={{ bgcolor: '#2563EB', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
+            sx={{ bgcolor: '#0B1F3A', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
           >
             {isSubmittingAssignBatch ? 'Assigning...' : 'Assign Batch'}
           </Button>
@@ -964,7 +964,7 @@ const escapeHtml = (unsafe: any): string => {
             variant="contained"
             onClick={handleInviteFaculty}
             disabled={isSubmittingFaculty}
-            sx={{ bgcolor: '#2563EB', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
+            sx={{ bgcolor: '#0B1F3A', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
           >
             {isSubmittingFaculty ? 'Sending...' : 'Send Invitation'}
           </Button>

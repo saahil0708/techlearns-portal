@@ -44,18 +44,18 @@ const CERT_THEMES: Record<
   }
 > = {
   'C++': {
-    glowColor: 'rgba(59, 130, 246, 0.35)',
-    neonBorder: 'rgba(59, 130, 246, 0.4)',
-    badgeGradient: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 50%, #60A5FA 100%)',
+    glowColor: 'rgba(91, 45, 144, 0.35)',
+    neonBorder: 'rgba(91, 45, 144, 0.4)',
+    badgeGradient: 'linear-gradient(135deg, #0F264F 0%, #5B2D90 50%, #C084FC 100%)',
     cardBg: 'linear-gradient(180deg, #0F172A 0%, #0B132B 100%)',
-    accent: '#60A5FA',
-    tagBg: 'rgba(59, 130, 246, 0.12)',
+    accent: '#A855F7',
+    tagBg: 'rgba(91, 45, 144, 0.12)',
     icon: <TerminalRoundedIcon sx={{ fontSize: 16 }} />,
   },
   'Python': {
     glowColor: 'rgba(234, 179, 8, 0.35)',
     neonBorder: 'rgba(234, 179, 8, 0.4)',
-    badgeGradient: 'linear-gradient(135deg, #0369A1 0%, #0284C7 40%, #EAB308 100%)',
+    badgeGradient: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 40%, #EAB308 100%)',
     cardBg: 'linear-gradient(180deg, #0F172A 0%, #151A28 100%)',
     accent: '#FBBF24',
     tagBg: 'rgba(234, 179, 8, 0.12)',
@@ -71,12 +71,12 @@ const CERT_THEMES: Record<
     icon: <PsychologyRoundedIcon sx={{ fontSize: 16 }} />,
   },
   'React': {
-    glowColor: 'rgba(6, 182, 212, 0.35)',
-    neonBorder: 'rgba(6, 182, 212, 0.4)',
-    badgeGradient: 'linear-gradient(135deg, #0E7490 0%, #06B6D4 50%, #67E8F9 100%)',
+    glowColor: 'rgba(91, 45, 144, 0.35)',
+    neonBorder: 'rgba(91, 45, 144, 0.4)',
+    badgeGradient: 'linear-gradient(135deg, #0B1F3A 0%, #C084FC 50%, #67E8F9 100%)',
     cardBg: 'linear-gradient(180deg, #0F172A 0%, #0B1924 100%)',
     accent: '#67E8F9',
-    tagBg: 'rgba(6, 182, 212, 0.12)',
+    tagBg: 'rgba(91, 45, 144, 0.12)',
     icon: <LayersRoundedIcon sx={{ fontSize: 16 }} />,
   },
   'Cloud': {
@@ -91,7 +91,7 @@ const CERT_THEMES: Record<
   'SQL': {
     glowColor: 'rgba(99, 102, 241, 0.35)',
     neonBorder: 'rgba(99, 102, 241, 0.4)',
-    badgeGradient: 'linear-gradient(135deg, #3730A3 0%, #4F46E5 50%, #818CF8 100%)',
+    badgeGradient: 'linear-gradient(135deg, #3730A3 0%, #5B2D90 50%, #818CF8 100%)',
     cardBg: 'linear-gradient(180deg, #0F172A 0%, #0F122B 100%)',
     accent: '#818CF8',
     tagBg: 'rgba(99, 102, 241, 0.12)',
@@ -326,7 +326,7 @@ export default function CertificationsClient() {
             width: '450px',
             height: '450px',
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, rgba(0,0,0,0) 70%)',
+            background: 'radial-gradient(circle, rgba(91, 45, 144, 0.18) 0%, rgba(0,0,0,0) 70%)',
             pointerEvents: 'none',
           }}
         />
@@ -447,16 +447,16 @@ export default function CertificationsClient() {
                 sx={{
                   p: 1.75,
                   borderRadius: '16px',
-                  bgcolor: 'rgba(59, 130, 246, 0.1)',
+                  bgcolor: 'rgba(91, 45, 144, 0.1)',
                   border: '1px solid rgba(96, 165, 250, 0.3)',
                   backdropFilter: 'blur(12px)',
                   textAlign: 'center',
                 }}
               >
-                <Typography sx={{ fontSize: '1.45rem', fontWeight: 900, color: '#60A5FA', lineHeight: 1 }}>
+                <Typography sx={{ fontSize: '1.45rem', fontWeight: 900, color: '#A855F7', lineHeight: 1 }}>
                   Top 1%
                 </Typography>
-                <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#93C5FD', textTransform: 'uppercase', mt: 0.5 }}>
+                <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, color: '#C084FC', textTransform: 'uppercase', mt: 0.5 }}>
                   Rank
                 </Typography>
               </Box>
@@ -467,15 +467,15 @@ export default function CertificationsClient() {
               onClick={handleShareShowcase}
               startIcon={<ShareRoundedIcon sx={{ fontSize: 16 }} />}
               sx={{
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 color: '#FFFFFF',
                 borderRadius: '14px',
                 fontWeight: 800,
                 textTransform: 'none',
                 fontSize: '0.86rem',
                 py: 1.1,
-                boxShadow: '0 8px 20px rgba(37, 99, 235, 0.35)',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                boxShadow: '0 8px 20px rgba(11, 31, 58, 0.35)',
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               Share Showcase Profile

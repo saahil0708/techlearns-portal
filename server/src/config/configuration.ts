@@ -27,7 +27,7 @@ export default () => ({
     secure: process.env.SMTP_SECURE === 'true',
     user: process.env.SMTP_USER || undefined,
     pass: process.env.SMTP_PASS || undefined,
-    from: process.env.MAIL_FROM || '"CodePlatform" <no-reply@codeplatform.local>',
+    from: process.env.MAIL_FROM || '"TechLearns" <no-reply@techlearns.com>',
     devMode: process.env.MAIL_DEV_MODE === 'true' || (process.env.NODE_ENV === 'development' && process.env.MAIL_DEV_MODE !== 'false'),
   },
   azureStorage: {
@@ -38,5 +38,9 @@ export default () => ({
   azureServiceBus: {
     connectionString: process.env.AZURE_SERVICE_BUS_CONNECTION_STRING,
     queueName: process.env.AZURE_SERVICE_BUS_QUEUE_NAME || 'submissions',
+  },
+  azureEmail: {
+    connectionString: process.env.AZURE_COMMUNICATION_SERVICES_CONNECTION_STRING || process.env.AZURE_EMAIL_CONNECTION_STRING,
+    senderAddress: process.env.AZURE_EMAIL_SENDER_ADDRESS || 'DoNotReply@techlearns.com',
   },
 });

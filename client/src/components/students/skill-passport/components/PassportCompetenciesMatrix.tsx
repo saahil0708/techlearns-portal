@@ -91,11 +91,11 @@ export default function PassportCompetenciesMatrix({
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box sx={{ bgcolor: '#EFF6FF', px: 1.4, py: 0.5, borderRadius: '8px', border: '1px solid #BFDBFE', textAlign: 'right' }}>
-            <Typography sx={{ fontSize: '0.64rem', color: '#2563EB', fontWeight: 800, textTransform: 'uppercase' }}>
+          <Box sx={{ bgcolor: '#FAF5FF', px: 1.4, py: 0.5, borderRadius: '8px', border: '1px solid #F3E8FF', textAlign: 'right' }}>
+            <Typography sx={{ fontSize: '0.64rem', color: '#0B1F3A', fontWeight: 800, textTransform: 'uppercase' }}>
               Average Mastery
             </Typography>
-            <Typography sx={{ fontSize: '0.95rem', fontWeight: 900, color: '#1E40AF', lineHeight: 1.1 }}>
+            <Typography sx={{ fontSize: '0.95rem', fontWeight: 900, color: '#0F264F', lineHeight: 1.1 }}>
               {averageMastery}%
             </Typography>
           </Box>
@@ -116,11 +116,11 @@ export default function PassportCompetenciesMatrix({
                 fontWeight: 750,
                 fontSize: '0.74rem',
                 cursor: 'pointer',
-                bgcolor: isSelected ? '#2563EB' : '#F1F5F9',
+                bgcolor: isSelected ? '#0B1F3A' : '#F1F5F9',
                 color: isSelected ? '#FFFFFF' : '#475569',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: isSelected ? '#1D4ED8' : '#E2E8F0',
+                  bgcolor: isSelected ? '#17366E' : '#E2E8F0',
                 },
               }}
             />
@@ -157,8 +157,8 @@ export default function PassportCompetenciesMatrix({
             {filteredCompetencies.map((sk) => {
               const isMaster = sk.level === 'Master';
               const isExpert = sk.level === 'Expert';
-              const badgeBg = isMaster ? '#EFF6FF' : isExpert ? '#F5F3FF' : '#ECFDF5';
-              const badgeColor = isMaster ? '#2563EB' : isExpert ? '#7C3AED' : '#059669';
+              const badgeBg = isMaster ? '#FAF5FF' : isExpert ? '#F5F3FF' : '#ECFDF5';
+              const badgeColor = isMaster ? '#0B1F3A' : isExpert ? '#7C3AED' : '#059669';
 
               return (
                 <TableRow key={sk.name} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
@@ -185,7 +185,7 @@ export default function PassportCompetenciesMatrix({
                         fontWeight: 800,
                         bgcolor: badgeBg,
                         color: badgeColor,
-                        border: `1px solid ${isMaster ? '#BFDBFE' : isExpert ? '#DDD6FE' : '#A7F3D0'}`,
+                        border: `1px solid ${isMaster ? '#D8B4FE' : isExpert ? '#DDD6FE' : '#A7F3D0'}`,
                       }}
                     />
                   </TableCell>
@@ -218,7 +218,7 @@ export default function PassportCompetenciesMatrix({
                             height: '100%',
                             borderRadius: '9999px',
                             backgroundImage: isMaster
-                              ? 'linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%)'
+                              ? 'linear-gradient(90deg, #5B2D90 0%, #17366E 100%)'
                               : isExpert
                               ? 'linear-gradient(90deg, #8B5CF6 0%, #6D28D9 100%)'
                               : 'linear-gradient(90deg, #10B981 0%, #059669 100%)',
@@ -233,7 +233,7 @@ export default function PassportCompetenciesMatrix({
                       <Typography sx={{ fontSize: '0.68rem', fontWeight: 750, color: '#166534', bgcolor: '#DCFCE7', px: 0.7, py: 0.2, borderRadius: '4px' }}>
                         {sk.easy}E
                       </Typography>
-                      <Typography sx={{ fontSize: '0.68rem', fontWeight: 750, color: '#1E40AF', bgcolor: '#DBEAFE', px: 0.7, py: 0.2, borderRadius: '4px' }}>
+                      <Typography sx={{ fontSize: '0.68rem', fontWeight: 750, color: '#0F264F', bgcolor: '#E9D5FF', px: 0.7, py: 0.2, borderRadius: '4px' }}>
                         {sk.medium}M
                       </Typography>
                       <Typography sx={{ fontSize: '0.68rem', fontWeight: 750, color: '#991B1B', bgcolor: '#FEE2E2', px: 0.7, py: 0.2, borderRadius: '4px' }}>

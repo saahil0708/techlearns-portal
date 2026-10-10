@@ -44,10 +44,10 @@ describe('AppController (e2e)', () => {
     expect(response.body).toEqual(
       expect.objectContaining({
         success: true,
-        message: 'Welcome to CodePlatform API',
+        message: 'Welcome to TechLearns API',
         data: expect.objectContaining({
           status: 'ok',
-          service: 'CodePlatform API',
+          service: 'TechLearns API',
         }),
       }),
     );
@@ -64,7 +64,7 @@ describe('AppController (e2e)', () => {
         message: 'Health status retrieved successfully',
         data: expect.objectContaining({
           status: 'ok',
-          service: 'CodePlatform API',
+          service: 'TechLearns API',
         }),
       }),
     );

@@ -46,14 +46,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!blog) {
     return {
-      title: 'Article Not Found | CodePlatform Superadmin',
+      title: 'Article Not Found | TechLearns Superadmin',
       description: 'The requested technical article could not be found.',
     };
   }
 
   return {
-    title: `${blog.title} (Edit & Read) | CodePlatform Superadmin`,
-    description: blog.subtitle || `Manage ${blog.title} by ${blog.author.name} on CodePlatform.`,
+    title: `${blog.title} (Edit & Read) | TechLearns Superadmin`,
+    description: blog.subtitle || `Manage ${blog.title} by ${blog.author.name} on TechLearns.`,
   };
 }
 

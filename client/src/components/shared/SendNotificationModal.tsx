@@ -36,9 +36,9 @@ interface SendNotificationModalProps {
 }
 
 const CATEGORIES = [
-  { key: 'system', label: 'System Alert', color: '#2563EB', bg: '#EFF6FF' },
+  { key: 'system', label: 'System Alert', color: '#0B1F3A', bg: '#FAF5FF' },
   { key: 'contests', label: 'Contest / Arena', color: '#CA8A04', bg: '#FEFCE8' },
-  { key: 'courses', label: 'Course / Lab', color: '#0284C7', bg: '#F0F9FF' },
+  { key: 'courses', label: 'Course / Lab', color: '#5B2D90', bg: '#FAF5FF' },
   { key: 'submissions', label: 'Evaluation / Test', color: '#16A34A', bg: '#F0FDF4' },
   { key: 'cel', label: 'Proof of Skill / CEL', color: '#9333EA', bg: '#FAF5FF' },
 ];
@@ -159,9 +159,9 @@ export default function SendNotificationModal({
               width: 38,
               height: 38,
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+              background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
               color: '#FFFFFF',
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+              boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
             }}
           >
             <CampaignRoundedIcon sx={{ fontSize: 22 }} />
@@ -202,7 +202,7 @@ export default function SendNotificationModal({
                   border: '1px solid #E2E8F0',
                   color: '#334155',
                   cursor: 'pointer',
-                  '&:hover': { bgcolor: '#EFF6FF', borderColor: '#BFDBFE', color: '#2563EB' },
+                  '&:hover': { bgcolor: '#FAF5FF', borderColor: '#D8B4FE', color: '#0B1F3A' },
                 }}
               />
             ))}
@@ -340,8 +340,8 @@ export default function SendNotificationModal({
                   width: 32,
                   height: 32,
                   borderRadius: '8px',
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   flexShrink: 0,
                 }}
               >
@@ -354,7 +354,7 @@ export default function SendNotificationModal({
                 <Typography sx={{ color: '#475569', fontSize: '0.76rem', mt: 0.25, lineHeight: 1.35 }}>
                   {body || 'Announcement content will appear here...'}
                 </Typography>
-                <Typography sx={{ color: '#2563EB', fontSize: '0.7rem', fontWeight: 700, mt: 0.5 }}>
+                <Typography sx={{ color: '#0B1F3A', fontSize: '0.7rem', fontWeight: 700, mt: 0.5 }}>
                   Click to open: {actionUrl || '/students'}
                 </Typography>
               </Box>
@@ -376,7 +376,7 @@ export default function SendNotificationModal({
           disabled={loading || !title.trim() || !body.trim()}
           startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SendRoundedIcon sx={{ fontSize: 16 }} />}
           sx={{
-            background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+            background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
             color: '#FFFFFF',
             textTransform: 'none',
             fontWeight: 700,
@@ -384,9 +384,9 @@ export default function SendNotificationModal({
             borderRadius: '12px',
             px: 2.5,
             py: 0.75,
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+            boxShadow: '0 4px 14px rgba(91, 45, 144, 0.3)',
             '&:hover': {
-              background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
+              background: 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)',
             },
           }}
         >

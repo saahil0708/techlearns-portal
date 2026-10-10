@@ -300,7 +300,7 @@ export async function GET(request: NextRequest) {
 
   // 2. Parallel fetch from Wikidata + Wikipedia + Hipolabs (India Filtered)
   const httpHeaders = {
-    'User-Agent': 'TechLearns-CodePlatform/1.0 (https://techlearns.edu; platform@techlearns.edu)',
+    'User-Agent': 'TechLearns-TechLearns/1.0 (https://techlearns.edu; platform@techlearns.edu)',
     Accept: 'application/json',
   };
 

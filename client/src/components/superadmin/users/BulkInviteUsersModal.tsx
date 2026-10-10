@@ -176,14 +176,14 @@ export default function BulkInviteUsersModal({
               width: 40,
               height: 40,
               borderRadius: '9999px',
-              bgcolor: '#EFF6FF',
+              bgcolor: '#FAF5FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           >
-            <GroupAddRoundedIcon sx={{ color: '#2563EB', fontSize: '1.3rem' }} />
+            <GroupAddRoundedIcon sx={{ color: '#0B1F3A', fontSize: '1.3rem' }} />
           </Box>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>
@@ -282,7 +282,7 @@ export default function BulkInviteUsersModal({
                 <MenuItem value="Stanford University - Dept of CS">Stanford University</MenuItem>
                 <MenuItem value="Massachusetts Inst of Technology (MIT)">MIT EECS</MenuItem>
                 <MenuItem value="IIT Bombay - Dept of Computer Science">IIT Bombay CS</MenuItem>
-                <MenuItem value="Global CodePlatform Platform">Global Admin Cluster</MenuItem>
+                <MenuItem value="Global TechLearns Portal">Global Admin Cluster</MenuItem>
               </Select>
             </Box>
           )}
@@ -293,7 +293,7 @@ export default function BulkInviteUsersModal({
           component="label"
           sx={{
             p: 4,
-            border: '2px dashed #BFDBFE',
+            border: '2px dashed #F3E8FF',
             borderRadius: '16px',
             bgcolor: '#F8FAFC',
             display: 'flex',
@@ -304,13 +304,13 @@ export default function BulkInviteUsersModal({
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             '&:hover': {
-              borderColor: '#2563EB',
-              bgcolor: '#EFF6FF',
+              borderColor: '#0B1F3A',
+              bgcolor: '#FAF5FF',
             },
           }}
         >
           <input type="file" accept=".csv, .xlsx, .xls" hidden onChange={handleSimulateFileSelect} />
-          <CloudUploadRoundedIcon sx={{ fontSize: '2.8rem', color: '#2563EB' }} />
+          <CloudUploadRoundedIcon sx={{ fontSize: '2.8rem', color: '#0B1F3A' }} />
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A' }}>
               {fileName ? fileName : 'Click to select or drag CSV / Excel file'}
@@ -339,7 +339,7 @@ export default function BulkInviteUsersModal({
             onClick={handleDownloadSample}
             startIcon={<FileDownloadRoundedIcon sx={{ fontSize: '1rem' }} />}
             sx={{
-              color: '#2563EB',
+              color: '#0B1F3A',
               textTransform: 'none',
               fontSize: '0.78rem',
               fontWeight: 700,
@@ -377,11 +377,11 @@ export default function BulkInviteUsersModal({
           variant="contained"
           sx={{
             borderRadius: '9999px',
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             px: 3.5,
             fontWeight: 700,
             textTransform: 'none',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            '&:hover': { bgcolor: '#17366E' },
             '&.Mui-disabled': { bgcolor: '#E2E8F0', color: '#94A3B8' },
           }}
         >

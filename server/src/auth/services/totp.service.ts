@@ -15,7 +15,7 @@ export interface TotpSetupResponse {
 
 @Injectable()
 export class TotpService {
-  private readonly appName = 'CodePlatform';
+  private readonly appName = 'TechLearns';
   private readonly encryptionKeys: Buffer[];
 
   constructor(
@@ -31,8 +31,8 @@ export class TotpService {
       throw new Error('TOTP_ENCRYPTION_KEY is required to protect 2FA credentials');
     }
     this.encryptionKeys = [
-      ...configuredKeys.map((key) => Buffer.from(createHmac('sha256', key).update('codeplatform:totp:v1').digest())),
-      ...(legacySecret ? [Buffer.from(createHmac('sha256', legacySecret).update('codeplatform:totp:v1').digest())] : []),
+      ...configuredKeys.map((key) => Buffer.from(createHmac('sha256', key).update('techlearns:totp:v1').digest())),
+      ...(legacySecret ? [Buffer.from(createHmac('sha256', legacySecret).update('techlearns:totp:v1').digest())] : []),
     ];
   }
 

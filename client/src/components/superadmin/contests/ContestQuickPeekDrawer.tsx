@@ -40,7 +40,7 @@ export default function ContestQuickPeekDrawer({
 
   const statusColors = {
     LIVE: { bg: '#FEF2F2', color: '#DC2626', border: '#FECACA' },
-    UPCOMING: { bg: '#EFF6FF', color: '#2563EB', border: '#BFDBFE' },
+    UPCOMING: { bg: '#FAF5FF', color: '#0B1F3A', border: '#D8B4FE' },
     PAST: { bg: '#F1F5F9', color: '#64748B', border: '#CBD5E1' },
     DRAFT: { bg: '#FFFBEB', color: '#D97706', border: '#FDE68A' },
   }[contest.status];
@@ -107,9 +107,9 @@ export default function ContestQuickPeekDrawer({
                 height: 22,
                 fontSize: '0.72rem',
                 fontWeight: 800,
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
-                border: '1px solid #BFDBFE',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
+                border: '1px solid #F3E8FF',
                 borderRadius: '9999px',
               }}
             />
@@ -179,7 +179,7 @@ export default function ContestQuickPeekDrawer({
             <Typography sx={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
               Duration
             </Typography>
-            <Typography sx={{ fontSize: '1.15rem', fontWeight: 900, color: '#2563EB', mt: 0.25 }}>
+            <Typography sx={{ fontSize: '1.15rem', fontWeight: 900, color: '#0B1F3A', mt: 0.25 }}>
               {formatHours(contest.durationMinutes)}
             </Typography>
             <Typography sx={{ fontSize: '0.68rem', color: '#94A3B8', fontWeight: 600 }}>
@@ -269,8 +269,8 @@ export default function ContestQuickPeekDrawer({
           <Typography sx={{ fontSize: '0.76rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', mb: 1, letterSpacing: '0.04em' }}>
             Scoring Engine & Penalty System
           </Typography>
-          <Box sx={{ p: 2, borderRadius: '12px', bgcolor: '#EFF6FF', border: '1px solid #BFDBFE' }}>
-            <Typography sx={{ fontWeight: 800, color: '#1D4ED8', fontSize: '0.88rem' }}>
+          <Box sx={{ p: 2, borderRadius: '12px', bgcolor: '#FAF5FF', border: '1px solid #F3E8FF' }}>
+            <Typography sx={{ fontWeight: 800, color: '#17366E', fontSize: '0.88rem' }}>
               {contest.scoringFormat}
             </Typography>
             <Typography sx={{ fontSize: '0.8rem', color: '#334155', mt: 0.5, lineHeight: 1.5 }}>
@@ -367,7 +367,7 @@ export default function ContestQuickPeekDrawer({
           variant="contained"
           endIcon={<FluidArrowRight size={18} />}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             color: '#FFFFFF',
             borderRadius: '8px',
             textTransform: 'none',
@@ -375,8 +375,8 @@ export default function ContestQuickPeekDrawer({
             fontSize: '0.88rem',
             px: 2.5,
             py: 0.9,
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           {contest.status === 'LIVE' ? 'Enter Live Arena' : 'View Arena & Standings'}

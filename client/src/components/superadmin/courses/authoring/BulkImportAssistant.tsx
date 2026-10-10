@@ -485,10 +485,10 @@ TestCases:
     <Box
       sx={{
         bgcolor: '#F8FAFC',
-        border: '1.5px dashed #3B82F6',
+        border: '1.5px dashed #5B2D90',
         borderRadius: '16px',
         p: 2.5,
-        boxShadow: '0 4px 20px rgba(59,130,246,0.06)',
+        boxShadow: '0 4px 20px rgba(91, 45, 144, 0.06)',
         display: 'flex',
         flexDirection: 'column',
         gap: 1.5,
@@ -496,7 +496,7 @@ TestCases:
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <AutoAwesomeRoundedIcon sx={{ fontSize: 20, color: '#2563EB' }} />
+          <AutoAwesomeRoundedIcon sx={{ fontSize: 20, color: '#0B1F3A' }} />
           <Typography sx={{ fontWeight: 800, fontSize: '0.92rem', color: '#0F172A' }}>
             Bulk Import & Format Assistant ({modality.toUpperCase()})
           </Typography>
@@ -510,8 +510,8 @@ TestCases:
               fontSize: '0.76rem',
               fontWeight: 700,
               textTransform: 'none',
-              color: copiedTemplate ? '#16A34A' : '#2563EB',
-              bgcolor: '#EFF6FF',
+              color: copiedTemplate ? '#16A34A' : '#0B1F3A',
+              bgcolor: '#FAF5FF',
               borderRadius: '8px',
               px: 1.2,
             }}
@@ -580,7 +580,7 @@ TestCases:
           onClick={handleApplyBulkImport}
           startIcon={<ContentPasteRoundedIcon sx={{ fontSize: 16 }} />}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             color: '#FFFFFF',
             textTransform: 'none',
             fontWeight: 700,
@@ -588,7 +588,7 @@ TestCases:
             borderRadius: '8px',
             px: 2,
             boxShadow: 'none',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           Parse & Apply to Submodule

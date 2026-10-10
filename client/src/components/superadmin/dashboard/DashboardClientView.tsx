@@ -102,7 +102,7 @@ export default function DashboardClientView({
     loadLiveDashboard();
   }, []);
 
-  const primaryBlue = '#2563eb';
+  const primaryBlue = '#0B1F3A';
   const allDirectoryList = institutions;
 
   // Filter Submissions
@@ -125,9 +125,9 @@ export default function DashboardClientView({
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         py: { xs: 2, sm: 2.5, md: 3 },

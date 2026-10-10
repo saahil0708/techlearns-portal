@@ -392,8 +392,8 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
         minHeight: '100vh',
         bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.03) 0%, transparent 45%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.03) 0%, transparent 45%)
         `,
         display: 'flex',
         flexDirection: 'column',
@@ -451,7 +451,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
               fontSize: '0.72rem',
               height: 24,
               bgcolor: '#0F172A',
-              color: '#38BDF8',
+              color: '#C084FC',
               borderRadius: '6px',
               letterSpacing: '0.04em',
               display: { xs: 'none', sm: 'inline-flex' },
@@ -506,8 +506,8 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                 textTransform: 'none',
                 color: '#64748B',
                 '&.Mui-selected': {
-                  bgcolor: 'rgba(37, 99, 235, 0.12)',
-                  color: '#2563EB',
+                  bgcolor: 'rgba(91, 45, 144, 0.12)',
+                  color: '#0B1F3A',
                 },
                 '&:hover': {
                   bgcolor: '#F1F5F9',
@@ -546,20 +546,20 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
           <Button
             variant="outlined"
             size="small"
-            startIcon={liked ? <ThumbUpRoundedIcon sx={{ color: '#2563EB', fontSize: 16 }} /> : <ThumbUpOutlinedIcon sx={{ fontSize: 16 }} />}
+            startIcon={liked ? <ThumbUpRoundedIcon sx={{ color: '#0B1F3A', fontSize: 16 }} /> : <ThumbUpOutlinedIcon sx={{ fontSize: 16 }} />}
             onClick={handleToggleLike}
             sx={{
               borderRadius: '8px',
               borderColor: '#CBD5E1',
-              color: liked ? '#2563EB' : '#475569',
-              bgcolor: liked ? 'rgba(37, 99, 235, 0.08)' : '#FFFFFF',
+              color: liked ? '#0B1F3A' : '#475569',
+              bgcolor: liked ? 'rgba(91, 45, 144, 0.08)' : '#FFFFFF',
               fontWeight: 700,
               fontSize: '0.8rem',
               textTransform: 'none',
               height: 32,
               px: { xs: 0.8, sm: 1.2 },
               minWidth: 0,
-              '&:hover': { bgcolor: liked ? 'rgba(37, 99, 235, 0.15)' : '#F8FAFC' },
+              '&:hover': { bgcolor: liked ? 'rgba(11, 31, 58, 0.15)' : '#F8FAFC' },
             }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>{likesCount}</Box>
@@ -571,18 +571,18 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
               size="small"
               onClick={handleToggleBookmark}
               sx={{
-                color: bookmarked ? '#2563EB' : '#64748B',
-                bgcolor: bookmarked ? 'rgba(37, 99, 235, 0.08)' : '#FFFFFF',
+                color: bookmarked ? '#0B1F3A' : '#64748B',
+                bgcolor: bookmarked ? 'rgba(91, 45, 144, 0.08)' : '#FFFFFF',
                 border: '1px solid #CBD5E1',
                 borderRadius: '8px',
                 height: 32,
                 width: 32,
                 display: { xs: 'none', sm: 'inline-flex' },
-                '&:hover': { bgcolor: bookmarked ? 'rgba(37, 99, 235, 0.15)' : '#F8FAFC', color: bookmarked ? '#1D4ED8' : '#0F172A' },
+                '&:hover': { bgcolor: bookmarked ? 'rgba(11, 31, 58, 0.15)' : '#F8FAFC', color: bookmarked ? '#17366E' : '#0F172A' },
               }}
             >
               {bookmarked ? (
-                <BookmarkRoundedIcon sx={{ fontSize: 17, color: '#2563EB' }} />
+                <BookmarkRoundedIcon sx={{ fontSize: 17, color: '#0B1F3A' }} />
               ) : (
                 <BookmarkBorderRoundedIcon sx={{ fontSize: 17 }} />
               )}
@@ -596,7 +596,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
             startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 16, color: '#A855F7' }} />}
             onClick={() => setCopilotOpen(true)}
             sx={{
-              background: 'linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)',
+              background: 'linear-gradient(135deg, #7C3AED 0%, #5B2D90 100%)',
               color: '#FFFFFF',
               fontWeight: 700,
               fontSize: '0.8rem',
@@ -689,9 +689,9 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                     fontWeight: 700,
                     textTransform: 'none',
                     color: '#64748B',
-                    '&.Mui-selected': { color: '#2563EB' },
+                    '&.Mui-selected': { color: '#0B1F3A' },
                   },
-                  '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+                  '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
                 }}
               >
                 <Tab icon={<DescriptionOutlinedIcon sx={{ fontSize: 17 }} />} iconPosition="start" label="Description" />
@@ -743,8 +743,8 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                         sx={{
                           fontWeight: 700,
                           fontSize: '0.72rem',
-                          bgcolor: 'rgba(37, 99, 235, 0.08)',
-                          color: '#2563EB',
+                          bgcolor: 'rgba(91, 45, 144, 0.08)',
+                          color: '#0B1F3A',
                         }}
                       />
                     )}
@@ -817,7 +817,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                                 m: 0,
                                 p: 1,
                                 bgcolor: '#0B0F19',
-                                color: '#38BDF8',
+                                color: '#C084FC',
                                 borderRadius: '6px',
                                 fontSize: '0.8rem',
                                 fontFamily: 'Menlo, monospace',
@@ -931,7 +931,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                               <Chip
                                 label="Evaluating"
                                 size="small"
-                                sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#0284C7', bgcolor: 'rgba(2, 132, 199, 0.1)' }}
+                                sx={{ fontSize: '0.7rem', fontWeight: 700, color: '#5B2D90', bgcolor: 'rgba(91, 45, 144, 0.1)' }}
                               />
                             );
                           } else if (st.status === 'AC' || st.passed === true || isAc) {
@@ -978,9 +978,9 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                                 sx={{
                                   fontWeight: 800,
                                   fontSize: '0.72rem',
-                                  bgcolor: 'rgba(37, 99, 235, 0.08)',
-                                  color: '#2563EB',
-                                  border: '1px solid rgba(37, 99, 235, 0.2)',
+                                  bgcolor: 'rgba(91, 45, 144, 0.08)',
+                                  color: '#0B1F3A',
+                                  border: '1px solid rgba(91, 45, 144, 0.2)',
                                 }}
                               />
                             </TableCell>
@@ -1009,11 +1009,11 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                       const isEvaluating = latest.verdict === 'Evaluating' || latest.verdict === 'PENDING' || latest.verdict === 'Processing';
                       if (isEvaluating) {
                         return (
-                          <Card variant="outlined" sx={{ p: 2, borderRadius: '8px', bgcolor: 'rgba(56, 189, 248, 0.05)', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
+                          <Card variant="outlined" sx={{ p: 2, borderRadius: '8px', bgcolor: 'rgba(192, 132, 252, 0.05)', border: '1px solid rgba(192, 132, 252, 0.3)' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <CircularProgress size={18} sx={{ color: '#0284C7' }} />
+                              <CircularProgress size={18} sx={{ color: '#5B2D90' }} />
                               <Box>
-                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#0369A1' }}>
+                                <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#0B1F3A' }}>
                                   Evaluating Submission ({latest.language.toUpperCase()})...
                                 </Typography>
                                 <Typography sx={{ fontSize: '0.74rem', color: '#64748B' }}>
@@ -1128,7 +1128,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                                 {sub.verdict === 'Accepted' ? (
                                   <CheckCircleRoundedIcon sx={{ fontSize: 16, color: '#16A34A' }} />
                                 ) : sub.verdict === 'Evaluating' ? (
-                                  <TimerOutlinedIcon sx={{ fontSize: 16, color: '#2563EB' }} />
+                                  <TimerOutlinedIcon sx={{ fontSize: 16, color: '#0B1F3A' }} />
                                 ) : (
                                   <ErrorOutlineRoundedIcon sx={{ fontSize: 16, color: '#DC2626' }} />
                                 )}
@@ -1140,7 +1140,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                                       sub.verdict === 'Accepted'
                                         ? '#16A34A'
                                         : sub.verdict === 'Evaluating'
-                                        ? '#2563EB'
+                                        ? '#0B1F3A'
                                         : '#DC2626',
                                   }}
                                 >
@@ -1155,8 +1155,8 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                                 sx={{
                                   fontWeight: 800,
                                   fontSize: '0.72rem',
-                                  bgcolor: sub.verdict === 'Accepted' ? 'rgba(22, 163, 74, 0.1)' : sub.verdict === 'Evaluating' ? 'rgba(37, 99, 235, 0.08)' : (sub.score && sub.score > 0) ? 'rgba(217, 119, 6, 0.1)' : 'rgba(220, 38, 38, 0.08)',
-                                  color: sub.verdict === 'Accepted' ? '#16A34A' : sub.verdict === 'Evaluating' ? '#2563EB' : (sub.score && sub.score > 0) ? '#D97706' : '#DC2626',
+                                  bgcolor: sub.verdict === 'Accepted' ? 'rgba(22, 163, 74, 0.1)' : sub.verdict === 'Evaluating' ? 'rgba(91, 45, 144, 0.08)' : (sub.score && sub.score > 0) ? 'rgba(217, 119, 6, 0.1)' : 'rgba(220, 38, 38, 0.08)',
+                                  color: sub.verdict === 'Accepted' ? '#16A34A' : sub.verdict === 'Evaluating' ? '#0B1F3A' : (sub.score && sub.score > 0) ? '#D97706' : '#DC2626',
                                 }}
                               />
                             </TableCell>
@@ -1189,7 +1189,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                     📝 Official Editorial & Solution
                   </Typography>
                   <Typography sx={{ fontSize: '0.82rem', color: '#64748B' }}>
-                    Author: {problem.authorName || 'CodePlatform Editorial Team'} · Difficulty: {problem.difficulty} ({getProblemRating(problem)} Rating)
+                    Author: {problem.authorName || 'TechLearns Editorial Team'} · Difficulty: {problem.difficulty} ({getProblemRating(problem)} Rating)
                   </Typography>
                 </Box>
 
@@ -1206,7 +1206,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                   <>
                     {problem.editorialMarkdown && (
                       <Card variant="outlined" sx={{ p: 2, borderRadius: '8px', bgcolor: '#F8FAFC' }}>
-                        <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#2563EB', mb: 0.8 }}>
+                        <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#0B1F3A', mb: 0.8 }}>
                           Problem Intuition & Proof
                         </Typography>
                         <ProblemStatementDisplay content={problem.editorialMarkdown} />
@@ -1274,7 +1274,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                         }}
                       >
                         <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ fontSize: 18 }} />}>
-                          <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#2563EB' }}>
+                          <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0B1F3A' }}>
                             Hint {idx + 1}
                           </Typography>
                         </AccordionSummary>
@@ -1295,7 +1295,7 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
                       }}
                     >
                       <AccordionSummary expandIcon={<ExpandMoreRoundedIcon sx={{ fontSize: 18 }} />}>
-                        <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#2563EB' }}>
+                        <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0B1F3A' }}>
                           Hint 1: Sorting property
                         </Typography>
                       </AccordionSummary>
@@ -1327,11 +1327,11 @@ export default function ProblemSolverClient({ problem }: ProblemSolverClientProp
               zIndex: 10,
               mx: 0.5,
               '&:hover .slider-bar, &:active .slider-bar': {
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 width: 4,
               },
               '&:hover .slider-handle': {
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 color: '#FFFFFF',
                 transform: 'scale(1.1)',
               },

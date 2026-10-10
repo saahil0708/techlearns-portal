@@ -86,11 +86,11 @@ export default function InstitutionBatchesTab({
             startIcon={<AddRoundedIcon />}
             onClick={onOpenCreateBatch}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               borderRadius: '9999px',
               textTransform: 'none',
               fontWeight: 700,
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             New Batch
@@ -144,8 +144,8 @@ export default function InstitutionBatchesTab({
                                 height: 22,
                                 fontSize: '0.72rem',
                                 fontWeight: 600,
-                                bgcolor: '#EEF2FF',
-                                color: '#4F46E5',
+                                bgcolor: '#FAF5FF',
+                                color: '#5B2D90',
                                 border: '1px solid #C7D2FE',
                               }}
                             />
@@ -177,7 +177,7 @@ export default function InstitutionBatchesTab({
                             borderRadius: 3,
                             bgcolor: '#E2E8F0',
                             '& .MuiLinearProgress-bar': {
-                              bgcolor: capPct > 90 ? '#DC2626' : '#2563EB',
+                              bgcolor: capPct > 90 ? '#DC2626' : '#0B1F3A',
                               borderRadius: 3,
                             },
                           }}
@@ -212,7 +212,7 @@ export default function InstitutionBatchesTab({
                         <IconButton
                           size="small"
                           onClick={() => onOpenEditBatch(b)}
-                          sx={{ color: '#64748B', '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' } }}
+                          sx={{ color: '#64748B', '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' } }}
                         >
                           <EditRoundedIcon sx={{ fontSize: 16 }} />
                         </IconButton>

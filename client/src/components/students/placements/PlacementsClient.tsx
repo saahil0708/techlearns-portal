@@ -148,12 +148,12 @@ export default function PlacementsClient() {
                 width: 44,
                 height: 44,
                 borderRadius: '14px',
-                bgcolor: '#EFF6FF',
+                bgcolor: '#FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB',
-                border: '1px solid #DBEAFE',
+                color: '#0B1F3A',
+                border: '1px solid #FAF5FF',
               }}
             >
               <LocationOnOutlinedIcon sx={{ fontSize: 24 }} />
@@ -205,7 +205,7 @@ export default function PlacementsClient() {
                   fontWeight: 700,
                   fontSize: '0.78rem',
                   borderRadius: '8px',
-                  bgcolor: statusFilter === st ? '#2563EB' : '#F1F5F9',
+                  bgcolor: statusFilter === st ? '#0B1F3A' : '#F1F5F9',
                   color: statusFilter === st ? '#FFFFFF' : '#475569',
                   cursor: 'pointer',
                 }}
@@ -281,8 +281,8 @@ export default function PlacementsClient() {
                       sx={{
                         fontWeight: 800,
                         fontSize: '0.72rem',
-                        bgcolor: d.status === 'OA Cleared' ? '#ECFDF5' : d.status === 'Applied' ? '#EFF6FF' : '#F1F5F9',
-                        color: d.status === 'OA Cleared' ? '#059669' : d.status === 'Applied' ? '#2563EB' : '#475569',
+                        bgcolor: d.status === 'OA Cleared' ? '#ECFDF5' : d.status === 'Applied' ? '#FAF5FF' : '#F1F5F9',
+                        color: d.status === 'OA Cleared' ? '#059669' : d.status === 'Applied' ? '#0B1F3A' : '#475569',
                       }}
                     />
                   </TableCell>
@@ -304,7 +304,7 @@ export default function PlacementsClient() {
                         textTransform: 'none',
                         fontSize: '0.76rem',
                         fontWeight: 700,
-                        bgcolor: d.status === 'Open' ? '#2563EB' : 'transparent',
+                        bgcolor: d.status === 'Open' ? '#0B1F3A' : 'transparent',
                       }}
                     >
                       {d.status === 'Open' ? '1-Click Apply' : 'View Status'}
@@ -332,7 +332,7 @@ export default function PlacementsClient() {
                 <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', lineHeight: 1.2 }}>
                   {selectedDrive.company}
                 </Typography>
-                <Typography sx={{ fontSize: '0.84rem', color: '#2563EB', fontWeight: 700, mt: 0.25 }}>
+                <Typography sx={{ fontSize: '0.84rem', color: '#0B1F3A', fontWeight: 700, mt: 0.25 }}>
                   {selectedDrive.role} • {selectedDrive.packageLpa}
                 </Typography>
               </Box>
@@ -371,7 +371,7 @@ export default function PlacementsClient() {
                   variant="contained"
                   startIcon={<SendRoundedIcon />}
                   onClick={() => handleApply(selectedDrive)}
-                  sx={{ bgcolor: '#2563EB', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}
+                  sx={{ bgcolor: '#0B1F3A', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}
                 >
                   Submit 1-Click Application
                 </Button>

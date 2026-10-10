@@ -74,7 +74,7 @@ export default function StudentSettingsTab() {
 
     if (score <= 25) return { score, label: 'Weak', color: '#EF4444' };
     if (score <= 50) return { score, label: 'Fair', color: '#F59E0B' };
-    if (score <= 75) return { score, label: 'Good', color: '#3B82F6' };
+    if (score <= 75) return { score, label: 'Good', color: '#5B2D90' };
     return { score, label: 'Strong', color: '#16A34A' };
   };
 
@@ -115,14 +115,14 @@ export default function StudentSettingsTab() {
         elevation={0}
         sx={{
           borderRadius: '20px',
-          border: '1px solid rgba(59, 130, 246, 0.25)',
+          border: '1px solid rgba(91, 45, 144, 0.25)',
           bgcolor: '#0F172A',
           p: 3.5,
           boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 2 }}>
-          <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'rgba(37, 99, 235, 0.2)', color: '#60A5FA', border: '1px solid rgba(59, 130, 246, 0.3)', display: 'flex' }}>
+          <Box sx={{ p: 1, borderRadius: '10px', bgcolor: 'rgba(91, 45, 144, 0.2)', color: '#A855F7', border: '1px solid rgba(91, 45, 144, 0.3)', display: 'flex' }}>
             <SecurityRoundedIcon fontSize="small" />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 800, color: '#FFFFFF', fontSize: '1.1rem' }}>
@@ -165,10 +165,10 @@ export default function StudentSettingsTab() {
                 borderRadius: '8px',
                 textTransform: 'none',
                 fontWeight: 700,
-                color: '#60A5FA',
-                borderColor: 'rgba(59, 130, 246, 0.4)',
-                bgcolor: 'rgba(37, 99, 235, 0.1)',
-                '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.25)', borderColor: '#38BDF8' },
+                color: '#A855F7',
+                borderColor: 'rgba(91, 45, 144, 0.4)',
+                bgcolor: 'rgba(91, 45, 144, 0.1)',
+                '&:hover': { bgcolor: 'rgba(91, 45, 144, 0.25)', borderColor: '#C084FC' },
               }}
             >
               Change Password
@@ -182,7 +182,7 @@ export default function StudentSettingsTab() {
         elevation={0}
         sx={{
           borderRadius: '20px',
-          border: '1px solid rgba(59, 130, 246, 0.25)',
+          border: '1px solid rgba(91, 45, 144, 0.25)',
           bgcolor: '#0F172A',
           p: 3.5,
           boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
@@ -207,7 +207,7 @@ export default function StudentSettingsTab() {
                 disabled
                 variant={emailContests ? 'contained' : 'outlined'}
                 onClick={() => setEmailContests(!emailContests)}
-                sx={{ textTransform: 'none', borderRadius: '6px', fontSize: '0.78rem', bgcolor: emailContests ? '#2563EB' : 'transparent' }}
+                sx={{ textTransform: 'none', borderRadius: '6px', fontSize: '0.78rem', bgcolor: emailContests ? '#0B1F3A' : 'transparent' }}
               >
                 {emailContests ? 'Enabled' : 'Disabled'}
               </Button>
@@ -220,7 +220,7 @@ export default function StudentSettingsTab() {
                 disabled
                 variant={emailCourses ? 'contained' : 'outlined'}
                 onClick={() => setEmailCourses(!emailCourses)}
-                sx={{ textTransform: 'none', borderRadius: '6px', fontSize: '0.78rem', bgcolor: emailCourses ? '#2563EB' : 'transparent' }}
+                sx={{ textTransform: 'none', borderRadius: '6px', fontSize: '0.78rem', bgcolor: emailCourses ? '#0B1F3A' : 'transparent' }}
               >
                 {emailCourses ? 'Enabled' : 'Disabled'}
               </Button>
@@ -258,14 +258,14 @@ export default function StudentSettingsTab() {
               p: 1.5,
               bgcolor: '#0F172A',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
-              border: '1px solid rgba(59, 130, 246, 0.3)',
+              border: '1px solid rgba(91, 45, 144, 0.3)',
             },
           },
         }}
       >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ p: 1, borderRadius: '12px', bgcolor: 'rgba(37, 99, 235, 0.2)', color: '#60A5FA', border: '1px solid rgba(59, 130, 246, 0.3)', display: 'flex' }}>
+            <Box sx={{ p: 1, borderRadius: '12px', bgcolor: 'rgba(91, 45, 144, 0.2)', color: '#A855F7', border: '1px solid rgba(91, 45, 144, 0.3)', display: 'flex' }}>
               <LockResetRoundedIcon />
             </Box>
             <Box>
@@ -309,8 +309,8 @@ export default function StudentSettingsTab() {
                     fontSize: '0.88rem',
                     bgcolor: 'rgba(30, 41, 59, 0.8)',
                     color: '#FFFFFF',
-                    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(59, 130, 246, 0.25)' },
-                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#38BDF8' },
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(91, 45, 144, 0.25)' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#C084FC' },
                   },
                   endAdornment: (
                     <InputAdornment position="end">
@@ -343,8 +343,8 @@ export default function StudentSettingsTab() {
                     fontSize: '0.88rem',
                     bgcolor: 'rgba(30, 41, 59, 0.8)',
                     color: '#FFFFFF',
-                    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(59, 130, 246, 0.25)' },
-                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#38BDF8' },
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(91, 45, 144, 0.25)' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#C084FC' },
                   },
                   endAdornment: (
                     <InputAdornment position="end">
@@ -411,8 +411,8 @@ export default function StudentSettingsTab() {
                     fontSize: '0.88rem',
                     bgcolor: 'rgba(30, 41, 59, 0.8)',
                     color: '#FFFFFF',
-                    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(59, 130, 246, 0.25)' },
-                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#38BDF8' },
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(91, 45, 144, 0.25)' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#C084FC' },
                   },
                   endAdornment: (
                     <InputAdornment position="end">
@@ -456,11 +456,11 @@ export default function StudentSettingsTab() {
             sx={{
               textTransform: 'none',
               fontWeight: 700,
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               borderRadius: '8px',
               px: 2.5,
-              boxShadow: '0 0 16px rgba(37, 99, 235, 0.4)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 0 16px rgba(91, 45, 144, 0.4)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             {isChangingPassword ? 'Updating...' : 'Update Password'}

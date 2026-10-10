@@ -150,7 +150,7 @@ export default function BlogsDataTable({
                               fontWeight: 700,
                               color: '#0F172A',
                               cursor: 'pointer',
-                              '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                              '&:hover': { color: '#0B1F3A', textDecoration: 'underline' },
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
@@ -174,9 +174,9 @@ export default function BlogsDataTable({
                           sx={{
                             fontSize: '0.72rem',
                             fontWeight: 700,
-                            bgcolor: '#EFF6FF',
-                            color: '#2563EB',
-                            border: '1px solid #BFDBFE',
+                            bgcolor: '#FAF5FF',
+                            color: '#0B1F3A',
+                            border: '1px solid #F3E8FF',
                             borderRadius: '6px',
                             width: 'fit-content',
                           }}
@@ -256,7 +256,7 @@ export default function BlogsDataTable({
                     <TableCell align="right" sx={{ pr: 2.5 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
                         <Tooltip title="Read Article (Modal Preview)">
-                          <IconButton size="small" onClick={() => onReadBlog(b)} sx={{ color: '#2563EB', '&:hover': { bgcolor: '#EFF6FF' } }}>
+                          <IconButton size="small" onClick={() => onReadBlog(b)} sx={{ color: '#0B1F3A', '&:hover': { bgcolor: '#FAF5FF' } }}>
                             <VisibilityRoundedIcon sx={{ fontSize: 18 }} />
                           </IconButton>
                         </Tooltip>
@@ -269,7 +269,7 @@ export default function BlogsDataTable({
                           <IconButton
                             size="small"
                             onClick={() => onEditBlog(b)}
-                            sx={{ color: '#2563EB', '&:hover': { bgcolor: '#EFF6FF' } }}
+                            sx={{ color: '#0B1F3A', '&:hover': { bgcolor: '#FAF5FF' } }}
                           >
                             <EditRoundedIcon sx={{ fontSize: 18 }} />
                           </IconButton>

@@ -125,8 +125,8 @@ export default function EditInstitutionModal({ open, institution, onClose, onSub
               width: 42,
               height: 42,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -328,14 +328,14 @@ export default function EditInstitutionModal({ open, institution, onClose, onSub
           variant="contained"
           disabled={isSubmitting}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             color: '#FFFFFF',
             textTransform: 'none',
             fontWeight: 700,
             borderRadius: '10px',
             px: 3,
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           {isSubmitting ? <CircularProgress size={20} color="inherit" /> : 'Save Changes'}

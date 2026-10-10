@@ -135,7 +135,7 @@ export default function InstitutionHeaderStats({
               }}
             >
               <ListItemIcon>
-                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               </ListItemIcon>
               Export as CSV (.csv)
             </MenuItem>
@@ -168,10 +168,10 @@ export default function InstitutionHeaderStats({
               borderRadius: '8px',
               textTransform: 'none',
               fontWeight: 700,
-              color: '#2563EB',
-              borderColor: '#BFDBFE',
-              bgcolor: '#EFF6FF',
-              '&:hover': { bgcolor: '#DBEAFE' },
+              color: '#0B1F3A',
+              borderColor: '#D8B4FE',
+              bgcolor: '#FAF5FF',
+              '&:hover': { bgcolor: '#E9D5FF' },
             }}
           >
             Invite Faculty
@@ -184,11 +184,11 @@ export default function InstitutionHeaderStats({
             onClick={onOpenCreateBatch}
             sx={{
               borderRadius: '8px',
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               textTransform: 'none',
               fontWeight: 700,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Create New Batch
@@ -213,12 +213,12 @@ export default function InstitutionHeaderStats({
               sx={{
                 width: 64,
                 height: 64,
-                bgcolor: institution.logoColor || '#2563EB',
+                bgcolor: institution.logoColor || '#0B1F3A',
                 color: '#FFFFFF',
                 fontWeight: 900,
                 fontSize: '1.5rem',
                 borderRadius: '16px',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
+                boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
               }}
             >
               {institution.name ? institution.name[0] : 'U'}
@@ -245,9 +245,9 @@ export default function InstitutionHeaderStats({
                   label={institution.tier}
                   size="small"
                   sx={{
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
-                    border: '1px solid #DBEAFE',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
+                    border: '1px solid #FAF5FF',
                     fontWeight: 700,
                     fontSize: '0.74rem',
                     borderRadius: '8px',
@@ -277,7 +277,7 @@ export default function InstitutionHeaderStats({
                     borderRadius: 4,
                     bgcolor: '#E2E8F0',
                     '& .MuiLinearProgress-bar': {
-                      bgcolor: quotaPct > 90 ? '#DC2626' : quotaPct > 70 ? '#D97706' : '#2563EB',
+                      bgcolor: quotaPct > 90 ? '#DC2626' : quotaPct > 70 ? '#D97706' : '#0B1F3A',
                       borderRadius: 4,
                     },
                   }}

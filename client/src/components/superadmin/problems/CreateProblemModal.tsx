@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { FluidArrowBack } from '@/utils/fluid_arrow';
 import {
   Dialog,
   DialogTitle,
@@ -715,7 +716,7 @@ export default function CreateProblemModal({
                   '&:hover': { bgcolor: '#F1F5F9', color: '#0F172A', borderColor: '#CBD5E1' },
                 }}
               >
-                <ArrowBackRoundedIcon sx={{ fontSize: 18 }} />
+                <FluidArrowBack sx={{ fontSize: 18 }} />
               </IconButton>
             </Tooltip>
             <Box>
@@ -731,7 +732,7 @@ export default function CreateProblemModal({
                     fontSize: '0.66rem',
                     fontWeight: 800,
                     bgcolor: 'rgba(99, 102, 241, 0.08)',
-                    color: '#4F46E5',
+                    color: '#5B2D90',
                     borderRadius: '6px',
                   }}
                 />
@@ -748,18 +749,18 @@ export default function CreateProblemModal({
               variant="outlined"
               size="small"
               onClick={() => setShowAiBar(!showAiBar)}
-              startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 15, color: '#6366F1' }} />}
+              startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 15, color: '#5B2D90' }} />}
               sx={{
                 textTransform: 'none',
                 fontWeight: 700,
                 borderRadius: '9px',
-                borderColor: showAiBar ? '#6366F1' : '#E2E8F0',
+                borderColor: showAiBar ? '#5B2D90' : '#E2E8F0',
                 bgcolor: showAiBar ? 'rgba(99, 102, 241, 0.06)' : '#FFFFFF',
-                color: '#4F46E5',
+                color: '#5B2D90',
                 fontSize: '0.82rem',
                 py: 0.6,
                 px: 1.4,
-                '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)', borderColor: '#6366F1' },
+                '&:hover': { bgcolor: 'rgba(99, 102, 241, 0.1)', borderColor: '#5B2D90' },
               }}
             >
               {showAiBar ? 'AI Assistant (Active)' : 'Open AI Assistant'}
@@ -802,12 +803,12 @@ export default function CreateProblemModal({
                 textTransform: 'none',
                 fontWeight: 800,
                 borderRadius: '9px',
-                background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+                background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                 fontSize: '0.82rem',
                 px: 2.2,
                 py: 0.65,
-                boxShadow: '0 3px 12px rgba(99, 102, 241, 0.3)',
-                '&:hover': { background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' },
+                boxShadow: '0 3px 12px rgba(91, 45, 144, 0.3)',
+                '&:hover': { background: 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)' },
               }}
             >
               {submitting ? (isEdit ? 'Updating...' : 'Publishing...') : (isEdit ? 'Update Challenge' : 'Publish Challenge')}
@@ -857,8 +858,8 @@ export default function CreateProblemModal({
                   flexShrink: 0,
                 }}
               >
-                <AutoAwesomeRoundedIcon sx={{ fontSize: 17, color: '#6366F1' }} />
-                <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#4F46E5' }}>
+                <AutoAwesomeRoundedIcon sx={{ fontSize: 17, color: '#5B2D90' }} />
+                <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#5B2D90' }}>
                   AI Problem Architect
                 </Typography>
               </Box>
@@ -881,7 +882,7 @@ export default function CreateProblemModal({
                     boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)',
                     '& fieldset': { borderColor: '#CBD5E1' },
                     '&:hover fieldset': { borderColor: '#94A3B8' },
-                    '&.Mui-focused fieldset': { borderColor: '#6366F1' },
+                    '&.Mui-focused fieldset': { borderColor: '#5B2D90' },
                   },
                 }}
                 onKeyDown={(e) => {
@@ -901,7 +902,7 @@ export default function CreateProblemModal({
                   onClick={handleAIGenerateFullProblem}
                   startIcon={aiGenerating ? <CircularProgress size={14} sx={{ color: '#FFFFFF' }} /> : <AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />}
                   sx={{
-                    background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+                    background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                     textTransform: 'none',
                     fontWeight: 800,
                     fontSize: '0.84rem',
@@ -909,8 +910,8 @@ export default function CreateProblemModal({
                     px: 2.2,
                     py: 0.75,
                     whiteSpace: 'nowrap',
-                    boxShadow: '0 3px 10px rgba(99, 102, 241, 0.3)',
-                    '&:hover': { background: 'linear-gradient(135deg, #4F46E5 0%, #4338CA 100%)' },
+                    boxShadow: '0 3px 10px rgba(91, 45, 144, 0.3)',
+                    '&:hover': { background: 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)' },
                   }}
                 >
                   {aiGenerating ? 'Synthesizing...' : 'Generate Full Problem'}
@@ -973,7 +974,7 @@ export default function CreateProblemModal({
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.8 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                    <DescriptionOutlinedIcon sx={{ fontSize: 20, color: '#6366F1' }} />
+                    <DescriptionOutlinedIcon sx={{ fontSize: 20, color: '#5B2D90' }} />
                     <Typography sx={{ fontWeight: 800, fontSize: '1.02rem', color: '#0F172A', letterSpacing: '-0.01em' }}>
                       Problem Specifications
                     </Typography>
@@ -1214,7 +1215,7 @@ export default function CreateProblemModal({
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, mb: 2.2 }}>
-                  <LayersOutlinedIcon sx={{ fontSize: 20, color: '#6366F1' }} />
+                  <LayersOutlinedIcon sx={{ fontSize: 20, color: '#5B2D90' }} />
                   <Typography sx={{ fontWeight: 800, fontSize: '1.02rem', color: '#0F172A', letterSpacing: '-0.01em' }}>
                     I/O Specifications & Computational Bounds
                   </Typography>
@@ -1281,7 +1282,7 @@ export default function CreateProblemModal({
                 {/* Card Header */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2.4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                    <ShieldRoundedIcon sx={{ fontSize: 20, color: '#6366F1' }} />
+                    <ShieldRoundedIcon sx={{ fontSize: 20, color: '#5B2D90' }} />
                     <Typography sx={{ fontWeight: 800, fontSize: '1.02rem', color: '#0F172A', letterSpacing: '-0.01em' }}>
                       Test Cases & Evaluation
                     </Typography>
@@ -1313,7 +1314,7 @@ export default function CreateProblemModal({
                         color: '#64748B',
                         transition: 'all 0.15s ease',
                         '&.Mui-selected': {
-                          color: '#4F46E5',
+                          color: '#5B2D90',
                           bgcolor: '#FFFFFF',
                           boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                         },
@@ -1348,18 +1349,18 @@ export default function CreateProblemModal({
                           variant="outlined"
                           disabled={aiGenerating}
                           onClick={() => handleAIGenerateTestCases('public')}
-                          startIcon={aiGenerating ? <CircularProgress size={12} /> : <AutoAwesomeRoundedIcon sx={{ fontSize: 14, color: '#6366F1' }} />}
+                          startIcon={aiGenerating ? <CircularProgress size={12} /> : <AutoAwesomeRoundedIcon sx={{ fontSize: 14, color: '#5B2D90' }} />}
                           sx={{
                             textTransform: 'none',
                             fontWeight: 700,
                             fontSize: '0.76rem',
                             borderRadius: '8px',
                             borderColor: '#CBD5E1',
-                            color: '#4F46E5',
+                            color: '#5B2D90',
                             py: 0.35,
                             px: 1.2,
                             whiteSpace: 'nowrap',
-                            '&:hover': { borderColor: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.04)' },
+                            '&:hover': { borderColor: '#5B2D90', bgcolor: 'rgba(99, 102, 241, 0.04)' },
                           }}
                         >
                           AI Generate 3 Samples
@@ -1507,11 +1508,11 @@ export default function CreateProblemModal({
                           fontSize: '0.78rem',
                           borderRadius: '8px',
                           borderColor: '#CBD5E1',
-                          color: '#4F46E5',
+                          color: '#5B2D90',
                           py: 0.45,
                           px: 1.4,
                           whiteSpace: 'nowrap',
-                          '&:hover': { borderColor: '#6366F1', bgcolor: 'rgba(99, 102, 241, 0.04)' },
+                          '&:hover': { borderColor: '#5B2D90', bgcolor: 'rgba(99, 102, 241, 0.04)' },
                         }}
                       >
                         Add Case
@@ -1584,7 +1585,7 @@ export default function CreateProblemModal({
                                 fontSize: '0.7rem',
                                 fontWeight: 800,
                                 bgcolor: 'rgba(99, 102, 241, 0.1)',
-                                color: '#4F46E5',
+                                color: '#5B2D90',
                                 borderRadius: '6px',
                               }}
                             />
@@ -1661,7 +1662,7 @@ export default function CreateProblemModal({
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <PlaylistAddCheckRoundedIcon sx={{ fontSize: 20, color: '#6366F1' }} />
+                    <PlaylistAddCheckRoundedIcon sx={{ fontSize: 20, color: '#5B2D90' }} />
                     <Typography sx={{ fontWeight: 800, fontSize: '0.94rem', color: '#0F172A', letterSpacing: '-0.01em' }}>
                       Problem Readiness Checklist
                     </Typography>
@@ -1710,7 +1711,7 @@ export default function CreateProblemModal({
 
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                    <TerminalRoundedIcon sx={{ fontSize: 16, color: '#6366F1' }} />
+                    <TerminalRoundedIcon sx={{ fontSize: 16, color: '#5B2D90' }} />
                     <Typography sx={{ fontSize: '0.76rem', fontWeight: 700, color: '#475569' }}>
                       Execution Sandbox:
                     </Typography>

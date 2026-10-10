@@ -157,7 +157,7 @@ export default function DashboardKpiRow({
                     width: 4,
                     height: `${Math.max(20, h)}%`,
                     borderRadius: '2px',
-                    bgcolor: kpi.variant === 'blue' ? '#93C5FD' : '#A1A1AA',
+                    bgcolor: kpi.variant === 'blue' ? '#C084FC' : '#A1A1AA',
                     opacity: i === kpi.sparkHeights.length - 1 ? 1 : 0.35 + i * 0.08,
                     transition: 'height 0.3s ease',
                   }}

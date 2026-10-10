@@ -90,12 +90,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!problem) {
     return {
-      title: 'Problem Not Found | CodePlatform',
+      title: 'Problem Not Found | TechLearns',
     };
   }
 
   return {
-    title: `${problem.code}: ${problem.title} | CodePlatform`,
+    title: `${problem.code}: ${problem.title} | TechLearns`,
     description: `Solve ${problem.title} (${problem.difficulty}) with online Monaco code editor and real-time execution sandbox.`,
   };
 }

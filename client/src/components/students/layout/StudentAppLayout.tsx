@@ -47,7 +47,7 @@ export default function StudentAppLayout({
           display: 'flex',
           bgcolor: '#F4F5F7',
           backgroundImage: `
-            radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.05) 0%, transparent 45%),
+            radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.05) 0%, transparent 45%),
             radial-gradient(ellipse at 85% 20%, rgba(124, 58, 237, 0.04) 0%, transparent 45%),
             radial-gradient(ellipse at 50% 90%, rgba(5, 150, 105, 0.04) 0%, transparent 50%)
           `,
@@ -84,7 +84,7 @@ export default function StudentAppLayout({
           display: 'flex',
           bgcolor: '#0B0F19',
           backgroundImage: `
-            radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.07) 0%, transparent 45%),
+            radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.07) 0%, transparent 45%),
             radial-gradient(ellipse at 85% 20%, rgba(124, 58, 237, 0.05) 0%, transparent 45%)
           `,
           color: '#F8FAFC',
@@ -118,9 +118,9 @@ export default function StudentAppLayout({
         flexDirection: 'column',
         bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.05) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.03) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.03) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.05) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.03) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.03) 0%, transparent 50%)
         `,
         color: '#0F172A',
       }}

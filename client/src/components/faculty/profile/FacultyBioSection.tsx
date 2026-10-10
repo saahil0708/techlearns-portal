@@ -59,14 +59,14 @@ export default function FacultyBioSection({
           startIcon={<EditRoundedIcon sx={{ fontSize: 16 }} />}
           onClick={onEdit}
           sx={{
-            color: '#2563EB',
-            bgcolor: '#EFF6FF',
+            color: '#0B1F3A',
+            bgcolor: '#FAF5FF',
             borderRadius: '8px',
             textTransform: 'none',
             fontWeight: 700,
             fontSize: '0.8rem',
             px: 1.5,
-            '&:hover': { bgcolor: '#DBEAFE' },
+            '&:hover': { bgcolor: '#E9D5FF' },
           }}
         >
           Edit Bio
@@ -117,7 +117,7 @@ export default function FacultyBioSection({
             Office Hours & Mentorship
           </Typography>
           <Typography sx={{ fontSize: '0.86rem', fontWeight: officeHours ? 700 : 500, color: officeHours ? '#0F172A' : '#94A3B8', fontStyle: officeHours ? 'normal' : 'italic', display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <AccessTimeRoundedIcon sx={{ fontSize: 17, color: '#2563EB' }} />
+            <AccessTimeRoundedIcon sx={{ fontSize: 17, color: '#0B1F3A' }} />
             {officeHours || 'Not provided'}
           </Typography>
         </Box>
@@ -143,7 +143,7 @@ export default function FacultyBioSection({
                   href={githubUrl.startsWith('http') ? githubUrl : `https://${githubUrl}`}
                   target="_blank"
                   rel="noreferrer"
-                  sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '0.82rem', fontWeight: 600, color: '#2563EB', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '0.82rem', fontWeight: 600, color: '#0B1F3A', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                 >
                   <GitHubIcon sx={{ fontSize: 16, color: '#0F172A' }} />
                   GitHub Profile
@@ -154,7 +154,7 @@ export default function FacultyBioSection({
                   href={linkedinUrl.startsWith('http') ? linkedinUrl : `https://${linkedinUrl}`}
                   target="_blank"
                   rel="noreferrer"
-                  sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '0.82rem', fontWeight: 600, color: '#2563EB', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '0.82rem', fontWeight: 600, color: '#0B1F3A', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                 >
                   <LinkedInIcon sx={{ fontSize: 16, color: '#0077B5' }} />
                   LinkedIn
@@ -165,7 +165,7 @@ export default function FacultyBioSection({
                   href={websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`}
                   target="_blank"
                   rel="noreferrer"
-                  sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '0.82rem', fontWeight: 600, color: '#2563EB', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.75, fontSize: '0.82rem', fontWeight: 600, color: '#0B1F3A', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                 >
                   <LanguageRoundedIcon sx={{ fontSize: 16, color: '#059669' }} />
                   Personal Website / Publications

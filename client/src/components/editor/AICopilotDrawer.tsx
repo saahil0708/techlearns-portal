@@ -68,7 +68,7 @@ function RenderMessageContent({ content }: { content: string }) {
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 fontFamily: 'monospace',
                 fontSize: '0.78rem',
-                color: '#38BDF8',
+                color: '#C084FC',
                 overflowX: 'auto',
                 whiteSpace: 'pre',
                 my: 0.5,
@@ -118,7 +118,7 @@ function RenderMessageContent({ content }: { content: string }) {
                             borderRadius: '4px',
                             fontFamily: 'monospace',
                             fontSize: '0.85em',
-                            color: '#38BDF8',
+                            color: '#C084FC',
                           }}
                         >
                           {seg.slice(1, -1)}
@@ -251,7 +251,7 @@ export default function AICopilotDrawer({
             display: 'flex',
             flexDirection: 'column',
             boxShadow: '-8px 0 32px rgba(0,0,0,0.5)',
-            borderLeft: '1px solid rgba(59, 130, 246, 0.2)',
+            borderLeft: '1px solid rgba(91, 45, 144, 0.2)',
           },
         },
       }}
@@ -273,14 +273,14 @@ export default function AICopilotDrawer({
               width: 34,
               height: 34,
               borderRadius: '8px',
-              bgcolor: 'rgba(59, 130, 246, 0.2)',
+              bgcolor: 'rgba(91, 45, 144, 0.2)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid rgba(59, 130, 246, 0.4)',
+              border: '1px solid rgba(91, 45, 144, 0.4)',
             }}
           >
-            <AutoAwesomeRoundedIcon sx={{ color: '#38BDF8', fontSize: 18 }} />
+            <AutoAwesomeRoundedIcon sx={{ color: '#C084FC', fontSize: 18 }} />
           </Box>
           <Box>
             <Typography sx={{ fontWeight: 800, fontSize: '0.95rem', color: '#FFFFFF' }}>
@@ -317,15 +317,15 @@ export default function AICopilotDrawer({
             }
           }}
           sx={{
-            bgcolor: hintLevel >= 3 ? 'rgba(100, 116, 139, 0.15)' : 'rgba(59, 130, 246, 0.15)',
-            color: hintLevel >= 3 ? '#94A3B8' : '#60A5FA',
+            bgcolor: hintLevel >= 3 ? 'rgba(100, 116, 139, 0.15)' : 'rgba(91, 45, 144, 0.15)',
+            color: hintLevel >= 3 ? '#94A3B8' : '#A855F7',
             fontSize: '0.72rem',
             fontWeight: 700,
             textTransform: 'none',
             borderRadius: '6px',
-            border: hintLevel >= 3 ? '1px solid rgba(100, 116, 139, 0.3)' : '1px solid rgba(59, 130, 246, 0.3)',
+            border: hintLevel >= 3 ? '1px solid rgba(100, 116, 139, 0.3)' : '1px solid rgba(91, 45, 144, 0.3)',
             whiteSpace: 'nowrap',
-            '&:hover': { bgcolor: hintLevel >= 3 ? 'rgba(100, 116, 139, 0.15)' : 'rgba(59, 130, 246, 0.25)' },
+            '&:hover': { bgcolor: hintLevel >= 3 ? 'rgba(100, 116, 139, 0.15)' : 'rgba(91, 45, 144, 0.25)' },
           }}
         >
           {hintLevel === 0
@@ -409,7 +409,7 @@ export default function AICopilotDrawer({
                 p: 1.8,
                 maxWidth: '92%',
                 borderRadius: '12px',
-                bgcolor: m.sender === 'user' ? '#2563EB' : 'rgba(30, 41, 59, 0.85)',
+                bgcolor: m.sender === 'user' ? '#0B1F3A' : 'rgba(30, 41, 59, 0.85)',
                 color: '#FFFFFF',
                 border: m.sender === 'user' ? 'none' : '1px solid rgba(255, 255, 255, 0.08)',
                 boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
@@ -425,7 +425,7 @@ export default function AICopilotDrawer({
 
         {isLoading && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1 }}>
-            <CircularProgress size={16} sx={{ color: '#38BDF8' }} />
+            <CircularProgress size={16} sx={{ color: '#C084FC' }} />
             <Typography sx={{ color: '#94A3B8', fontSize: '0.8rem', fontStyle: 'italic' }}>
               Copilot is evaluating algorithmic strategy...
             </Typography>
@@ -461,8 +461,8 @@ export default function AICopilotDrawer({
                 borderRadius: '8px',
                 fontSize: '0.84rem',
                 '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                '&:hover fieldset': { borderColor: '#38BDF8' },
-                '&.Mui-focused fieldset': { borderColor: '#38BDF8' },
+                '&:hover fieldset': { borderColor: '#C084FC' },
+                '&.Mui-focused fieldset': { borderColor: '#C084FC' },
               },
             }}
           />
@@ -470,10 +470,10 @@ export default function AICopilotDrawer({
             onClick={() => handleSend()}
             disabled={!input.trim() || isLoading}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               borderRadius: '8px',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
               '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)' },
             }}
           >

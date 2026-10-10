@@ -68,14 +68,14 @@ export default function BlogsFilterToolbar({
                 fontWeight: isSelected ? 800 : 600,
                 fontSize: '0.82rem',
                 borderRadius: '10px',
-                bgcolor: isSelected ? '#2563EB' : '#FFFFFF',
+                bgcolor: isSelected ? '#0B1F3A' : '#FFFFFF',
                 color: isSelected ? '#FFFFFF' : '#475569',
-                border: isSelected ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                boxShadow: isSelected ? '0 4px 12px rgba(37, 99, 235, 0.2)' : 'none',
+                border: isSelected ? '1px solid #0B1F3A' : '1px solid #E2E8F0',
+                boxShadow: isSelected ? '0 4px 12px rgba(91, 45, 144, 0.2)' : 'none',
                 cursor: 'pointer',
                 transition: 'all 0.18s ease',
                 '&:hover': {
-                  bgcolor: isSelected ? '#1D4ED8' : '#F1F5F9',
+                  bgcolor: isSelected ? '#17366E' : '#F1F5F9',
                   color: isSelected ? '#FFFFFF' : '#0F172A',
                 },
               }}
@@ -108,9 +108,9 @@ export default function BlogsFilterToolbar({
               fontWeight: 700,
               textTransform: 'none',
               color: '#64748B',
-              '&.Mui-selected': { color: '#2563EB' },
+              '&.Mui-selected': { color: '#0B1F3A' },
             },
-            '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+            '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
           }}
         >
           <Tab
@@ -155,7 +155,7 @@ export default function BlogsFilterToolbar({
                 fontSize: '0.84rem',
                 '& fieldset': { borderColor: '#E2E8F0' },
                 '&:hover fieldset': { borderColor: '#CBD5E1' },
-                '&.Mui-focused fieldset': { borderColor: '#2563EB', bgcolor: '#FFFFFF' },
+                '&.Mui-focused fieldset': { borderColor: '#0B1F3A', bgcolor: '#FFFFFF' },
               },
             }}
           />
@@ -207,7 +207,7 @@ export default function BlogsFilterToolbar({
                 transition: 'all 0.18s ease',
                 '&.Mui-selected': {
                   bgcolor: '#FFFFFF',
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   fontWeight: 800,
                 },

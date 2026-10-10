@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { FluidArrowForward } from '@/utils/fluid_arrow';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -143,8 +144,8 @@ export default function InstitutionAdminDashboardClient() {
         display: 'flex',
         bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(30, 64, 175, 0.05) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(14, 165, 233, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 15% 10%, rgba(11, 31, 58, 0.05) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
           radial-gradient(ellipse at 50% 90%, rgba(5, 150, 105, 0.03) 0%, transparent 50%)
         `,
         color: '#0F172A',
@@ -248,13 +249,13 @@ export default function InstitutionAdminDashboardClient() {
                 onClick={() => setInviteModalOpen(true)}
                 startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
                 sx={{
-                  bgcolor: '#1E40AF',
+                  bgcolor: '#0F264F',
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '0.82rem',
                   borderRadius: '10px',
                   px: 2,
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Invite Faculty Mentor
@@ -322,9 +323,9 @@ export default function InstitutionAdminDashboardClient() {
                 </Box>
                 <Button
                   size="small"
-                  endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 16 }} />}
+                  endIcon={<FluidArrowForward sx={{ fontSize: 16 }} />}
                   onClick={() => router.push('/institution-admin/faculty')}
-                  sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#1E40AF' }}
+                  sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.8rem', color: '#0F264F' }}
                 >
                   View All ({facultyList.length})
                 </Button>
@@ -354,8 +355,8 @@ export default function InstitutionAdminDashboardClient() {
                                   width: 32,
                                   height: 32,
                                   borderRadius: '8px',
-                                  bgcolor: 'rgba(30, 64, 175, 0.08)',
-                                  color: '#1E40AF',
+                                  bgcolor: 'rgba(11, 31, 58, 0.08)',
+                                  color: '#0F264F',
                                   fontWeight: 800,
                                   fontSize: '0.75rem',
                                   display: 'flex',
@@ -408,7 +409,7 @@ export default function InstitutionAdminDashboardClient() {
                               <IconButton
                                 size="small"
                                 href={`mailto:${f.email}`}
-                                sx={{ color: '#64748B', '&:hover': { color: '#1E40AF' } }}
+                                sx={{ color: '#64748B', '&:hover': { color: '#0F264F' } }}
                               >
                                 <MailOutlineRoundedIcon sx={{ fontSize: 18 }} />
                               </IconButton>

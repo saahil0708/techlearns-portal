@@ -114,7 +114,7 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
       password: password.trim() || 'TemporaryPass123!',
       role,
       institutionType: role === 'SUPER_ADMIN' ? 'Independent' : institutionType,
-      institutionName: role === 'SUPER_ADMIN' ? 'CodePlatform Global Organization' : institutionName,
+      institutionName: role === 'SUPER_ADMIN' ? 'TechLearns Global Organization' : institutionName,
       sendInviteEmail: true,
     });
 
@@ -162,14 +162,14 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
                 width: 40,
                 height: 40,
                 borderRadius: '9999px',
-                bgcolor: '#EFF6FF',
+                bgcolor: '#FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '1px solid #BFDBFE',
+                border: '1px solid #F3E8FF',
               }}
             >
-              <PersonAddRoundedIcon sx={{ color: '#2563EB', fontSize: '1.3rem' }} />
+              <PersonAddRoundedIcon sx={{ color: '#0B1F3A', fontSize: '1.3rem' }} />
             </Box>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>
@@ -289,7 +289,7 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
           <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                <LockRoundedIcon sx={{ color: '#2563EB', fontSize: 18 }} />
+                <LockRoundedIcon sx={{ color: '#0B1F3A', fontSize: 18 }} />
                 <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A' }}>
                   INITIAL ACCOUNT PASSWORD
                 </Typography>
@@ -303,13 +303,13 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
                   textTransform: 'none',
                   fontSize: '0.72rem',
                   fontWeight: 700,
-                  color: '#2563EB',
-                  borderColor: '#BFDBFE',
-                  bgcolor: '#EFF6FF',
+                  color: '#0B1F3A',
+                  borderColor: '#D8B4FE',
+                  bgcolor: '#FAF5FF',
                   py: 0.2,
                   px: 1,
                   borderRadius: '6px',
-                  '&:hover': { bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                  '&:hover': { bgcolor: '#E9D5FF', borderColor: '#C084FC' },
                 }}
               >
                 Generate
@@ -360,7 +360,7 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
             />
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 0.8 }}>
               <Typography variant="caption" sx={{ color: '#64748B', fontSize: '0.72rem' }}>
-                Default: <code style={{ color: '#2563EB', fontWeight: 600 }}>TemporaryPass123!</code>
+                Default: <code style={{ color: '#0B1F3A', fontWeight: 600 }}>TemporaryPass123!</code>
               </Typography>
               <Chip
                 label="User can change after login"
@@ -387,7 +387,7 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
                   },
                   COLLEGE_ADMIN: {
                     label: 'Institute Administrator (Tenant Admin)',
-                    icon: <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />,
+                    icon: <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />,
                   },
                   FACULTY: {
                     label: 'Faculty / Instructor (Course & Problem Creator)',
@@ -395,7 +395,7 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
                   },
                   STUDENT: {
                     label: 'Student Coder (Learner & Contest Participant)',
-                    icon: <BadgeRoundedIcon sx={{ fontSize: 18, color: '#0284C7' }} />,
+                    icon: <BadgeRoundedIcon sx={{ fontSize: 18, color: '#5B2D90' }} />,
                   },
                   RECRUITER: {
                     label: 'Recruiter / Talent Scout',
@@ -434,7 +434,7 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
               {allowedRoles.includes('COLLEGE_ADMIN') && (
                 <MenuItem value="COLLEGE_ADMIN" sx={{ py: 1, px: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                    <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                    <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                     <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>
                       Institute Administrator (Tenant Admin)
                     </Typography>
@@ -454,7 +454,7 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
               {allowedRoles.includes('STUDENT') && (
                 <MenuItem value="STUDENT" sx={{ py: 1, px: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                    <BadgeRoundedIcon sx={{ fontSize: 18, color: '#0284C7' }} />
+                    <BadgeRoundedIcon sx={{ fontSize: 18, color: '#5B2D90' }} />
                     <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 500 }}>
                       Student Coder (Learner & Contest Participant)
                     </Typography>
@@ -575,12 +575,12 @@ export default function CreateUserModal({ open, onClose, onCreate }: CreateUserM
             disabled={!name || !email || !handle}
             sx={{
               borderRadius: '9999px',
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               px: 3.5,
               fontWeight: 700,
               textTransform: 'none',
-              boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
               '&.Mui-disabled': { bgcolor: '#E2E8F0', color: '#94A3B8' },
             }}
           >

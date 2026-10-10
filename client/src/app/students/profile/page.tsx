@@ -4,7 +4,7 @@ import StudentProfileClient from '@/components/students/profile/StudentProfileCl
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Student Profile & Competitive Record | CodePlatform',
+  title: 'Student Profile & Competitive Record | TechLearns',
   description: 'Personal algorithmic statistics, contest rating history, enrolled courses, and submissions record.',
 };
 

@@ -11,7 +11,7 @@ interface CalendarWidgetProps {
   primaryBlue?: string;
 }
 
-export default function CalendarWidget({ primaryBlue = '#2563eb' }: CalendarWidgetProps) {
+export default function CalendarWidget({ primaryBlue = '#0B1F3A' }: CalendarWidgetProps) {
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(dayjs());
   const borderColor = '#E2E8F0';
 
@@ -47,27 +47,27 @@ export default function CalendarWidget({ primaryBlue = '#2563eb' }: CalendarWidg
                 margin: '2px 3px',
                 borderRadius: '50%',
                 '&.MuiPickersDay-today': {
-                  borderColor: '#2563EB',
+                  borderColor: '#0B1F3A',
                   borderWidth: '1.5px',
                   borderStyle: 'solid',
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                   fontWeight: 700,
                 },
                 '&.Mui-selected': {
-                  bgcolor: '#2563EB !important',
+                  bgcolor: '#0B1F3A !important',
                   color: '#FFFFFF !important',
                   fontWeight: 800,
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.35)',
-                  '&:hover': { bgcolor: '#1D4ED8 !important' },
+                  boxShadow: '0 2px 8px rgba(11, 31, 58, 0.35)',
+                  '&:hover': { bgcolor: '#17366E !important' },
                 },
                 '&.Mui-selected.MuiPickersDay-today': {
-                  bgcolor: '#2563EB !important',
+                  bgcolor: '#0B1F3A !important',
                   color: '#FFFFFF !important',
                   border: 'none !important',
                 },
                 '&:hover': {
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                 },
               },
             },

@@ -121,14 +121,14 @@ export default function InstitutionSettingsTab({
           disabled={isSaving}
           startIcon={isSaving ? <CircularProgress size={16} sx={{ color: '#FFFFFF' }} /> : <SaveRoundedIcon />}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             borderRadius: '10px',
             textTransform: 'none',
             fontWeight: 700,
             px: 3.5,
             py: 0.85,
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           {isSaving ? 'Saving Changes...' : 'Save Institution Profile'}

@@ -338,7 +338,7 @@ export default function BlogsGridView({
                     size="small"
                     aria-label={`Bookmark ${post.title}`}
                     onClick={(e) => onToggleBookmark(post.id, e)}
-                    sx={{ color: post.isBookmarked ? '#2563EB' : '#94A3B8' }}
+                    sx={{ color: post.isBookmarked ? '#0B1F3A' : '#94A3B8' }}
                   >
                     {post.isBookmarked ? (
                       <BookmarkRoundedIcon sx={{ fontSize: 16 }} />

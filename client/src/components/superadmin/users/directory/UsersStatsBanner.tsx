@@ -65,8 +65,8 @@ export default function UsersStatsBanner({
                 width: 36,
                 height: 36,
                 borderRadius: '10px',
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -81,8 +81,8 @@ export default function UsersStatsBanner({
               label={`${totalCount} Accounts`}
               size="small"
               sx={{
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 fontWeight: 700,
                 fontSize: '0.75rem',
                 borderRadius: '9999px',
@@ -111,7 +111,7 @@ export default function UsersStatsBanner({
                 px: 2,
                 py: 0.75,
                 boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+                '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A', borderColor: '#D8B4FE' },
               }}
             >
               Export {selectedCount > 0 ? `(${selectedCount})` : 'Data'}
@@ -158,7 +158,7 @@ export default function UsersStatsBanner({
               sx={{ borderRadius: '8px', py: 1 }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               </ListItemIcon>
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                 Download CSV (.csv)
@@ -173,15 +173,15 @@ export default function UsersStatsBanner({
             startIcon={<GroupAddRoundedIcon sx={{ fontSize: 18 }} />}
             sx={{
               bgcolor: '#FFFFFF',
-              color: '#2563EB',
-              border: '1px solid #BFDBFE',
+              color: '#0B1F3A',
+              border: '1px solid #F3E8FF',
               borderRadius: '9999px',
               textTransform: 'none',
               fontWeight: 600,
               fontSize: '0.84rem',
               px: 2,
               py: 0.75,
-              '&:hover': { bgcolor: '#EFF6FF', borderColor: '#2563EB' },
+              '&:hover': { bgcolor: '#FAF5FF', borderColor: '#0B1F3A' },
             }}
           >
             Bulk Invite
@@ -193,7 +193,7 @@ export default function UsersStatsBanner({
             onClick={onOpenCreateUser}
             startIcon={<PersonAddRoundedIcon sx={{ fontSize: 18 }} />}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               borderRadius: '9999px',
               textTransform: 'none',
@@ -201,8 +201,8 @@ export default function UsersStatsBanner({
               fontSize: '0.84rem',
               px: 2.25,
               py: 0.75,
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Provision User

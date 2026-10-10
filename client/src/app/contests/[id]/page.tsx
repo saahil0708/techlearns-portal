@@ -42,7 +42,7 @@ async function resolveContest(idOrSlug: string): Promise<ContestEntity | null> {
         registeredParticipants: liveContest._count?.registrations || 0,
         submissionsCount: liveContest._count?.submissions || 0,
         organizer: liveContest.organizer || 'Competitive Programming Council',
-        bannerColor: '#2563EB',
+        bannerColor: '#0B1F3A',
         tags: Array.isArray(liveContest.tags) ? liveContest.tags : ['Rated', 'Standard'],
         rated: liveContest.rated !== undefined ? Boolean(liveContest.rated) : true,
       };
@@ -60,12 +60,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!contest) {
     return {
-      title: 'Contest Not Found | CodePlatform',
+      title: 'Contest Not Found | TechLearns',
     };
   }
 
   return {
-    title: `${contest.title} | CodePlatform Arena`,
+    title: `${contest.title} | TechLearns Arena`,
     description: `Participate in ${contest.title} with real-time ICPC scoreboard, problem solver, and judge verdicts.`,
   };
 }

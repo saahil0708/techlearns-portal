@@ -111,14 +111,14 @@ export default function UploadResumeModal({
           sx={{
             p: 3,
             borderRadius: '16px',
-            border: isDragging ? '2px dashed #2563EB' : '2px dashed #CBD5E1',
-            bgcolor: isDragging ? '#EFF6FF' : '#F8FAFC',
+            border: isDragging ? '2px dashed #0B1F3A' : '2px dashed #CBD5E1',
+            bgcolor: isDragging ? '#FAF5FF' : '#F8FAFC',
             textAlign: 'center',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             '&:hover': {
-              borderColor: '#2563EB',
-              bgcolor: '#EFF6FF',
+              borderColor: '#0B1F3A',
+              bgcolor: '#FAF5FF',
             },
           }}
         >
@@ -139,11 +139,11 @@ export default function UploadResumeModal({
                   width: 44,
                   height: 44,
                   borderRadius: '12px',
-                  bgcolor: '#EFF6FF',
+                  bgcolor: '#FAF5FF',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                 }}
               >
                 <UploadFileRoundedIcon sx={{ fontSize: 26 }} />
@@ -168,12 +168,12 @@ export default function UploadResumeModal({
           onClick={handleSubmit}
           disabled={!selectedFile}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             fontWeight: 800,
             textTransform: 'none',
             borderRadius: '10px',
             px: 2.5,
-            '&:hover': { bgcolor: '#1D4ED8' },
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           Upload Resume

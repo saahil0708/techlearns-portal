@@ -72,8 +72,8 @@ export const DOMAIN_ICONS: Record<string, React.ReactNode> = {
 
 export const getDomainColor = (level: number) => {
   if (level >= 80) return { stroke: '#10B981', bg: '#ECFDF5', text: '#059669', border: '#A7F3D0' };
-  if (level >= 65) return { stroke: '#2563EB', bg: '#EFF6FF', text: '#1D4ED8', border: '#BFDBFE' };
-  if (level >= 50) return { stroke: '#0284C7', bg: '#F0F9FF', text: '#0369A1', border: '#BAE6FD' };
+  if (level >= 65) return { stroke: '#0B1F3A', bg: '#FAF5FF', text: '#17366E', border: '#D8B4FE' };
+  if (level >= 50) return { stroke: '#5B2D90', bg: '#FAF5FF', text: '#0B1F3A', border: '#E9D5FF' };
   return { stroke: '#F59E0B', bg: '#FFFBEB', text: '#D97706', border: '#FDE68A' };
 };
 
@@ -81,7 +81,7 @@ export function CircularSkillGauge({
   percentage,
   size = 56,
   strokeWidth = 5,
-  color = '#2563EB',
+  color = '#0B1F3A',
   label,
 }: {
   percentage: number;
@@ -170,7 +170,7 @@ export function HeroScoreGauge({ percentage }: { percentage: number }) {
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#38BDF8"
+          stroke="#C084FC"
           strokeWidth={strokeWidth}
           fill="transparent"
           strokeDasharray={circumference}

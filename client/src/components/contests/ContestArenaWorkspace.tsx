@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { FluidArrowBack } from '@/utils/fluid_arrow';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -318,8 +319,8 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
                   p: 0,
                   fontFamily: 'inherit',
                   transition: 'color 0.15s ease',
-                  '&:hover': { color: '#2563EB', textDecoration: 'underline' },
-                  '&:focus-visible': { outline: '2px solid #2563EB', borderRadius: '4px' },
+                  '&:hover': { color: '#0B1F3A', textDecoration: 'underline' },
+                  '&:focus-visible': { outline: '2px solid #0B1F3A', borderRadius: '4px' },
                 }}
               >
                 Contests
@@ -355,7 +356,7 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
 
           {/* Countdown Clock */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, bgcolor: '#0F172A', color: '#FFFFFF', px: 3, py: 1.5, borderRadius: '12px' }}>
-            <TimerRoundedIcon sx={{ fontSize: 24, color: '#38BDF8' }} />
+            <TimerRoundedIcon sx={{ fontSize: 24, color: '#C084FC' }} />
             <Box>
               <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>
                 Time Remaining
@@ -396,7 +397,7 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {problemsLoading ? (
               <Card sx={{ p: 6, textAlign: 'center', borderRadius: '16px', border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
-                <CircularProgress size={36} sx={{ color: '#2563EB', mb: 2 }} />
+                <CircularProgress size={36} sx={{ color: '#0B1F3A', mb: 2 }} />
                 <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
                   Loading contest problems...
                 </Typography>
@@ -452,7 +453,7 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
                             <HourglassEmptyRoundedIcon sx={{ color: '#94A3B8', fontSize: 18 }} />
                           )}
                         </TableCell>
-                        <TableCell sx={{ fontFamily: 'monospace', fontWeight: 800, color: '#2563EB' }}>
+                        <TableCell sx={{ fontFamily: 'monospace', fontWeight: 800, color: '#0B1F3A' }}>
                           {p.code}
                         </TableCell>
                         <TableCell sx={{ fontWeight: 700, color: '#0F172A' }}>
@@ -484,7 +485,7 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
                               e.stopPropagation();
                               setSelectedProblemIdx(idx);
                             }}
-                            sx={{ borderRadius: '6px', textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', bgcolor: '#2563EB' }}
+                            sx={{ borderRadius: '6px', textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', bgcolor: '#0B1F3A' }}
                           >
                             Solve Problem
                           </Button>
@@ -517,8 +518,8 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
                         p: 0,
                         fontFamily: 'inherit',
                         transition: 'color 0.15s ease',
-                        '&:hover': { color: '#2563EB', textDecoration: 'underline' },
-                        '&:focus-visible': { outline: '2px solid #2563EB', borderRadius: '4px' },
+                        '&:hover': { color: '#0B1F3A', textDecoration: 'underline' },
+                        '&:focus-visible': { outline: '2px solid #0B1F3A', borderRadius: '4px' },
                       }}
                     >
                       Problems
@@ -548,7 +549,7 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
                     <Typography sx={{ color: '#334155', lineHeight: 1.7, fontSize: '0.9rem', mb: 2 }}>
                       You are given constraints corresponding to problem <strong>{activeProblem?.title}</strong>. Write an optimal algorithm adhering to the time and memory limits.
                     </Typography>
-                    <Box sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: '8px', borderLeft: '4px solid #2563EB', mb: 2 }}>
+                    <Box sx={{ bgcolor: '#F8FAFC', p: 2, borderRadius: '8px', borderLeft: '4px solid #0B1F3A', mb: 2 }}>
                       <Typography sx={{ fontWeight: 700, fontSize: '0.82rem', color: '#0F172A', mb: 0.5 }}>
                         Input & Constraints
                       </Typography>
@@ -575,7 +576,7 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
           <Box>
             {scoreboardLoading ? (
               <Card sx={{ p: 6, textAlign: 'center', borderRadius: '16px', border: '1px solid #E2E8F0', bgcolor: '#FFFFFF' }}>
-                <CircularProgress size={36} sx={{ color: '#2563EB', mb: 2 }} />
+                <CircularProgress size={36} sx={{ color: '#0B1F3A', mb: 2 }} />
                 <Typography sx={{ color: '#64748B', fontWeight: 600 }}>
                   Loading live contest scoreboard...
                 </Typography>
@@ -638,7 +639,7 @@ export default function ContestArenaWorkspace({ contest }: ContestArenaWorkspace
                             </Typography>
                           </Box>
                         </TableCell>
-                        <TableCell sx={{ fontWeight: 800, color: '#2563EB', fontSize: '0.94rem' }}>
+                        <TableCell sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '0.94rem' }}>
                           {row.score}
                         </TableCell>
                         <TableCell sx={{ fontSize: '0.84rem', color: '#64748B', fontFamily: 'monospace' }}>

@@ -92,7 +92,7 @@ function RenderMarkdownBlocks({ content }: { content: string }) {
                 fontSize: '1rem',
                 letterSpacing: '-0.01em',
                 mt: bIdx > 0 ? 1 : 0,
-                borderLeft: '3px solid #2563EB',
+                borderLeft: '3px solid #0B1F3A',
                 pl: 1.2,
               }}
             >
@@ -227,7 +227,7 @@ export default function ProblemStatementDisplay({ content, className }: ProblemS
             my: 1.5,
             p: 2,
             bgcolor: '#0B0F19',
-            color: '#38BDF8',
+            color: '#C084FC',
             borderRadius: '8px',
             fontSize: '0.82rem',
             fontFamily: 'Menlo, Monaco, Consolas, monospace',
@@ -278,7 +278,7 @@ export default function ProblemStatementDisplay({ content, className }: ProblemS
             lineHeight: 1.65,
           },
           '& blockquote': {
-            borderLeft: '3px solid #2563EB',
+            borderLeft: '3px solid #0B1F3A',
             bgcolor: '#F8FAFC',
             m: '1rem 0',
             p: '0.6rem 1rem',

@@ -49,7 +49,7 @@ export default function StudentProfileHeader({
       <Box
         sx={{
           height: { xs: 160, sm: 220, md: 260 },
-          background: profile.bannerGradient || 'linear-gradient(135deg, #020617 0%, #0F172A 35%, #1E3A8A 75%, #2563EB 100%)',
+          background: profile.bannerGradient || 'linear-gradient(135deg, #020617 0%, #0F172A 35%, #0B1F3A 75%, #0B1F3A 100%)',
           position: 'relative',
           boxShadow: 'inset 0 -10px 25px rgba(0, 0, 0, 0.4)',
         }}
@@ -85,9 +85,9 @@ export default function StudentProfileHeader({
               sx={{
                 bgcolor: 'rgba(15, 23, 42, 0.75)',
                 backdropFilter: 'blur(10px)',
-                color: '#60A5FA',
+                color: '#A855F7',
                 fontWeight: 800,
-                border: '1px solid rgba(59, 130, 246, 0.4)',
+                border: '1px solid rgba(91, 45, 144, 0.4)',
                 boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
               }}
             />
@@ -98,9 +98,9 @@ export default function StudentProfileHeader({
                 sx={{
                   bgcolor: 'rgba(15, 23, 42, 0.75)',
                   backdropFilter: 'blur(10px)',
-                  color: '#38BDF8',
+                  color: '#C084FC',
                   fontWeight: 800,
-                  border: '1px solid rgba(56, 189, 248, 0.4)',
+                  border: '1px solid rgba(192, 132, 252, 0.4)',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
                 }}
               />
@@ -116,10 +116,10 @@ export default function StudentProfileHeader({
         sx={{
           borderRadius: '24px',
           bgcolor: '#0F172A',
-          border: '1px solid rgba(59, 130, 246, 0.25)',
+          border: '1px solid rgba(91, 45, 144, 0.25)',
           p: { xs: 2.5, sm: 3.5 },
           mb: 3.5,
-          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(37, 99, 235, 0.08)',
+          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.5), 0 0 24px rgba(91, 45, 144, 0.08)',
         }}
       >
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3.5, alignItems: { xs: 'center', md: 'flex-start' } }}>
@@ -129,12 +129,12 @@ export default function StudentProfileHeader({
             sx={{
               width: { xs: 100, sm: 128 },
               height: { xs: 100, sm: 128 },
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               fontSize: { xs: '2rem', sm: '2.5rem' },
               fontWeight: 800,
               color: '#FFFFFF',
               border: '4px solid #0F172A',
-              boxShadow: '0 0 24px rgba(56, 189, 248, 0.35), 0 8px 24px rgba(37, 99, 235, 0.4)',
+              boxShadow: '0 0 24px rgba(192, 132, 252, 0.35), 0 8px 24px rgba(91, 45, 144, 0.4)',
               mt: { xs: -8, sm: -10 },
             }}
           >
@@ -151,12 +151,12 @@ export default function StudentProfileHeader({
                 label={`@${profile.handle}`}
                 size="small"
                 sx={{
-                  bgcolor: 'rgba(37, 99, 235, 0.2)',
-                  color: '#60A5FA',
+                  bgcolor: 'rgba(91, 45, 144, 0.2)',
+                  color: '#A855F7',
                   fontWeight: 700,
                   fontFamily: 'monospace',
                   fontSize: '0.82rem',
-                  border: '1px solid rgba(59, 130, 246, 0.35)',
+                  border: '1px solid rgba(91, 45, 144, 0.35)',
                   borderRadius: '8px',
                 }}
               />
@@ -181,13 +181,13 @@ export default function StudentProfileHeader({
             {/* Meta tags */}
             <Box sx={{ display: 'flex', gap: 2.5, flexWrap: 'wrap', justifyContent: { xs: 'center', md: 'flex-start' }, alignItems: 'center', color: '#94A3B8', fontSize: '0.84rem' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <SchoolRoundedIcon sx={{ fontSize: 18, color: '#38BDF8' }} />
+                <SchoolRoundedIcon sx={{ fontSize: 18, color: '#C084FC' }} />
                 <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: '#E2E8F0' }}>
                   {profile.institution}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                <LocationOnRoundedIcon sx={{ fontSize: 18, color: '#60A5FA' }} />
+                <LocationOnRoundedIcon sx={{ fontSize: 18, color: '#A855F7' }} />
                 <Typography sx={{ fontSize: '0.84rem', color: '#CBD5E1' }}>{profile.location}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
@@ -208,8 +208,8 @@ export default function StudentProfileHeader({
                     sx={{
                       color: '#F8FAFC',
                       bgcolor: 'rgba(30, 41, 59, 0.8)',
-                      border: '1px solid rgba(59, 130, 246, 0.25)',
-                      '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.2)', borderColor: '#60A5FA' },
+                      border: '1px solid rgba(91, 45, 144, 0.25)',
+                      '&:hover': { bgcolor: 'rgba(91, 45, 144, 0.2)', borderColor: '#A855F7' },
                     }}
                   >
                     <GitHubIcon sx={{ fontSize: 18 }} />
@@ -224,10 +224,10 @@ export default function StudentProfileHeader({
                     target="_blank"
                     size="small"
                     sx={{
-                      color: '#38BDF8',
+                      color: '#C084FC',
                       bgcolor: 'rgba(30, 41, 59, 0.8)',
-                      border: '1px solid rgba(59, 130, 246, 0.25)',
-                      '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.2)', borderColor: '#38BDF8' },
+                      border: '1px solid rgba(91, 45, 144, 0.25)',
+                      '&:hover': { bgcolor: 'rgba(91, 45, 144, 0.2)', borderColor: '#C084FC' },
                     }}
                   >
                     <LinkedInIcon sx={{ fontSize: 18 }} />
@@ -242,10 +242,10 @@ export default function StudentProfileHeader({
                     target="_blank"
                     size="small"
                     sx={{
-                      color: '#60A5FA',
+                      color: '#A855F7',
                       bgcolor: 'rgba(30, 41, 59, 0.8)',
-                      border: '1px solid rgba(59, 130, 246, 0.25)',
-                      '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.2)', borderColor: '#60A5FA' },
+                      border: '1px solid rgba(91, 45, 144, 0.25)',
+                      '&:hover': { bgcolor: 'rgba(91, 45, 144, 0.2)', borderColor: '#A855F7' },
                     }}
                   >
                     <LanguageRoundedIcon sx={{ fontSize: 18 }} />
@@ -263,16 +263,16 @@ export default function StudentProfileHeader({
                 startIcon={<EditRoundedIcon />}
                 onClick={onEditClick}
                 sx={{
-                  bgcolor: '#2563EB',
-                  backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  bgcolor: '#0B1F3A',
+                  backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   borderRadius: '9999px',
                   px: 3,
                   py: 1,
                   fontWeight: 700,
                   textTransform: 'none',
                   fontSize: '0.88rem',
-                  boxShadow: '0 4px 16px rgba(37, 99, 235, 0.4)',
-                  '&:hover': { backgroundImage: 'linear-gradient(135deg, #60A5FA 0%, #2563EB 100%)' },
+                  boxShadow: '0 4px 16px rgba(91, 45, 144, 0.4)',
+                  '&:hover': { backgroundImage: 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)' },
                 }}
               >
                 Edit Profile
@@ -284,13 +284,13 @@ export default function StudentProfileHeader({
               onClick={onShareClick}
               sx={{
                 borderRadius: '9999px',
-                borderColor: 'rgba(59, 130, 246, 0.4)',
-                color: '#93C5FD',
+                borderColor: 'rgba(91, 45, 144, 0.4)',
+                color: '#C084FC',
                 bgcolor: 'rgba(15, 23, 42, 0.6)',
                 fontWeight: 700,
                 textTransform: 'none',
                 fontSize: '0.88rem',
-                '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.15)', borderColor: '#60A5FA' },
+                '&:hover': { bgcolor: 'rgba(11, 31, 58, 0.15)', borderColor: '#A855F7' },
               }}
             >
               Share Profile

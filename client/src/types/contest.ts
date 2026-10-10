@@ -39,6 +39,9 @@ export interface ContestEntity {
   batchId?: string;
   batch?: { id: string; name: string };
   problemIds?: string[];
+  institutionLogo?: string;
+  cohortLogo?: string;
+  whitelistedEmails?: string[];
   isProctored?: boolean;
   enforceFullScreen?: boolean;
   tabSwitchLimit?: number;
@@ -49,6 +52,43 @@ export interface ContestEntity {
   windowType?: 'FIXED' | 'FLEXIBLE';
   shuffleQuestions?: boolean;
   ipRestriction?: string;
+  questions?: AssessmentQuestion[];
+}
+
+export type QuestionType = 'CODING' | 'MCQ' | 'MSQ';
+
+export interface AssessmentQuestionOption {
+  id: string;
+  text: string;
+  isCorrect?: boolean;
+}
+
+export interface AssessmentTestCase {
+  id?: string;
+  input: string;
+  output: string;
+  isHidden?: boolean;
+  explanation?: string;
+}
+
+export interface AssessmentQuestion {
+  id: string;
+  type: QuestionType;
+  title: string;
+  description?: string;
+  difficulty?: 'EASY' | 'MEDIUM' | 'HARD';
+  points: number;
+  category?: string;
+  tags?: string[];
+  // MCQ / MSQ Specifics
+  options?: AssessmentQuestionOption[];
+  correctOptionIds?: string[];
+  explanation?: string;
+  negativeMarks?: number;
+  // Coding Specifics
+  timeLimitMs?: number;
+  memoryLimitMb?: number;
+  testCases?: AssessmentTestCase[];
 }
 
 export interface NewContestData {
@@ -66,9 +106,13 @@ export interface NewContestData {
   rated: boolean;
   tags: string[];
   institutionId?: string;
+  institutionLogo?: string;
+  cohortLogo?: string;
+  whitelistedEmails?: string[];
   batchId?: string;
   batch?: { id: string; name: string };
   problemIds?: string[];
+  questions?: AssessmentQuestion[];
   isProctored?: boolean;
   enforceFullScreen?: boolean;
   tabSwitchLimit?: number;

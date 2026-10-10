@@ -515,9 +515,9 @@ export const getBadgeForType = (type?: TopicItem['type']) => {
       return {
         label: 'Interactive Tutorial',
         icon: <MenuBookRoundedIcon sx={{ fontSize: 13 }} />,
-        bg: '#EFF6FF',
-        color: '#2563EB',
-        border: '#DBEAFE',
+        bg: '#FAF5FF',
+        color: '#0B1F3A',
+        border: '#E9D5FF',
       };
     case 'lab':
       return {

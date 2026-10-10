@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import StudentProfileClient from '@/components/students/profile/StudentProfileClient';
 
 export const metadata: Metadata = {
-  title: 'My Submissions & Verdicts | CodePlatform',
+  title: 'My Submissions & Verdicts | TechLearns',
   description: 'View submission history, test case verdicts, execution runtime, and source code logs.',
 };
 

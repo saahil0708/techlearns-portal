@@ -44,8 +44,8 @@ export default function BulkActionBar({
         px: 1.5,
         borderRadius: '9999px',
         bgcolor: '#FFFFFF',
-        border: '1px solid #BFDBFE',
-        boxShadow: '0 20px 40px -4px rgba(37, 99, 235, 0.2), 0 2px 8px rgba(0, 0, 0, 0.06)',
+        border: '1px solid #F3E8FF',
+        boxShadow: '0 20px 40px -4px rgba(91, 45, 144, 0.2), 0 2px 8px rgba(0, 0, 0, 0.06)',
         display: 'inline-flex',
         alignItems: 'center',
         gap: 1,
@@ -62,7 +62,7 @@ export default function BulkActionBar({
         label={`${selectedCount} ${itemLabel}`}
         size="small"
         sx={{
-          bgcolor: '#2563EB',
+          bgcolor: '#0B1F3A',
           color: '#FFFFFF',
           fontWeight: 800,
           fontSize: '0.75rem',

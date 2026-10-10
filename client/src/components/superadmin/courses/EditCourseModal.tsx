@@ -248,8 +248,8 @@ export default function EditCourseModal({
               width: 44,
               height: 44,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -514,7 +514,7 @@ export default function EditCourseModal({
           <Box sx={{ border: '1px solid #E2E8F0', borderRadius: '16px', p: 2.5, bgcolor: '#F8FAFC' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ImageRoundedIcon sx={{ color: '#2563EB', fontSize: 20 }} />
+                <ImageRoundedIcon sx={{ color: '#0B1F3A', fontSize: 20 }} />
                 <Typography sx={{ fontSize: '0.9rem', fontWeight: 800, color: '#0F172A' }}>
                   Course Cover Thumbnail
                 </Typography>
@@ -598,8 +598,8 @@ export default function EditCourseModal({
                         overflow: 'hidden',
                         height: 72,
                         cursor: 'pointer',
-                        border: isSelected ? '3px solid #2563EB' : '1px solid #E2E8F0',
-                        boxShadow: isSelected ? '0 4px 12px rgba(37, 99, 235, 0.3)' : 'none',
+                        border: isSelected ? '3px solid #0B1F3A' : '1px solid #E2E8F0',
+                        boxShadow: isSelected ? '0 4px 12px rgba(91, 45, 144, 0.3)' : 'none',
                         transition: 'all 0.15s ease',
                         '&:hover': { transform: 'scale(1.02)' },
                       }}
@@ -614,7 +614,7 @@ export default function EditCourseModal({
                         sx={{
                           position: 'absolute',
                           inset: 0,
-                          bgcolor: isSelected ? 'rgba(37, 99, 235, 0.3)' : 'rgba(0,0,0,0.35)',
+                          bgcolor: isSelected ? 'rgba(91, 45, 144, 0.3)' : 'rgba(0,0,0,0.35)',
                           display: 'flex',
                           alignItems: 'flex-end',
                           p: 0.75,
@@ -648,20 +648,20 @@ export default function EditCourseModal({
                 <Box
                   onClick={() => fileInputRef.current?.click()}
                   sx={{
-                    border: '2px dashed #93C5FD',
+                    border: '2px dashed #E9D5FF',
                     borderRadius: '14px',
                     p: 3,
                     textAlign: 'center',
-                    bgcolor: '#EFF6FF',
+                    bgcolor: '#FAF5FF',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
-                    '&:hover': { bgcolor: '#DBEAFE', borderColor: '#3B82F6' },
+                    '&:hover': { bgcolor: '#E9D5FF', borderColor: '#5B2D90' },
                   }}
                 >
                   {isUploadingCover ? (
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                      <CircularProgress size={28} sx={{ color: '#2563EB' }} />
-                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#1E40AF' }}>
+                      <CircularProgress size={28} sx={{ color: '#0B1F3A' }} />
+                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F264F' }}>
                         Uploading cover to Azure Blob Storage...
                       </Typography>
                       <Box sx={{ width: '60%', mt: 1 }}>
@@ -670,7 +670,7 @@ export default function EditCourseModal({
                     </Box>
                   ) : (
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.75 }}>
-                      <CloudUploadRoundedIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                      <CloudUploadRoundedIcon sx={{ fontSize: 32, color: '#0B1F3A' }} />
                       <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#0F172A' }}>
                         Click to browse or drop course cover image
                       </Typography>
@@ -823,12 +823,12 @@ export default function EditCourseModal({
                     size="small"
                     onDelete={() => handleRemoveTag(tag)}
                     sx={{
-                      bgcolor: '#EFF6FF',
-                      color: '#2563EB',
+                      bgcolor: '#FAF5FF',
+                      color: '#0B1F3A',
                       fontWeight: 700,
                       fontSize: '0.76rem',
-                      border: '1px solid #BFDBFE',
-                      '& .MuiChip-deleteIcon': { color: '#3B82F6', '&:hover': { color: '#1D4ED8' } },
+                      border: '1px solid #F3E8FF',
+                      '& .MuiChip-deleteIcon': { color: '#5B2D90', '&:hover': { color: '#17366E' } },
                     }}
                   />
                 ))}
@@ -865,17 +865,17 @@ export default function EditCourseModal({
             startIcon={isSaving ? <CircularProgress size={16} sx={{ color: '#FFFFFF' }} /> : <CheckCircleRoundedIcon />}
             sx={{
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+              background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
               color: '#FFFFFF',
               textTransform: 'none',
               fontWeight: 800,
               fontSize: '0.88rem',
               px: 3.5,
               py: 0.8,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.3)',
               '&:hover': {
-                background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
-                boxShadow: '0 6px 20px rgba(37, 99, 235, 0.4)',
+                background: 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)',
+                boxShadow: '0 6px 20px rgba(91, 45, 144, 0.4)',
               },
             }}
           >

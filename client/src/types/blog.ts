@@ -86,7 +86,7 @@ export const INITIAL_BLOG_POSTS: BlogPost[] = [
     coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
     author: {
       name: 'Aarav Sharma',
-      avatarBg: '#2563EB',
+      avatarBg: '#0B1F3A',
       avatarImg: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
       role: 'Final Year CSE',
       institute: 'IIT Bombay',

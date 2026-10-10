@@ -128,7 +128,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                 streakDays: u.streakDays ?? 0,
                 lastActive: 'Recently',
                 status: u.status === 'ACTIVE' ? ('Active' as const) : ('Inactive' as const),
-                avatarColor: ['#2563EB', '#3B82F6', '#10B981', '#7C3AED', '#DC2626'][idx % 5],
+                avatarColor: ['#0B1F3A', '#5B2D90', '#10B981', '#7C3AED', '#DC2626'][idx % 5],
               };
             });
           setStudents(mapped);
@@ -386,7 +386,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
       streakDays: 0,
       lastActive: 'Just now',
       status: 'Active',
-      avatarColor: '#2563EB',
+      avatarColor: '#0B1F3A',
     };
     setStudents((prev) => [newStudent, ...prev]);
 
@@ -482,9 +482,9 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -577,14 +577,14 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
                 startIcon={<SchoolRoundedIcon sx={{ fontSize: '1rem' }} />}
                 sx={{
                   borderRadius: '9999px',
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   fontSize: '0.78rem',
                   fontWeight: 700,
                   textTransform: 'none',
                   color: '#FFFFFF',
                   height: 30,
                   px: 1.75,
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Assign Batch ({selectedIds.length})
@@ -718,7 +718,7 @@ export default function StudentsDirectoryClient({ initialStudents }: StudentsDir
             subtitle: `@${s.handle} • ID: ${s.studentId}`,
             extraInfo: `${s.institutionName} • Rank #${s.globalRank} (${s.ratingTier})`,
             badge: s.ratingTier,
-            badgeColor: { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' },
+            badgeColor: { bg: '#FAF5FF', text: '#0B1F3A', border: '#D8B4FE' },
             avatarUrl: s.avatarUrl,
             avatarColor: s.avatarColor,
           })) || []

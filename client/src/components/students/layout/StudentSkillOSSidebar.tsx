@@ -308,7 +308,7 @@ export default function StudentSkillOSSidebar({
                   >
                     <Box
                       sx={{
-                        color: active ? '#38BDF8' : '#64748B',
+                        color: active ? '#C084FC' : '#64748B',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',

@@ -63,6 +63,7 @@ export const FluidArrowLeft = ({
 
 export const FluidArrowUp = ({
   size = 20,
+  strokeWidth = 2.5,
   className = '',
   style,
   color,
@@ -80,7 +81,7 @@ export const FluidArrowUp = ({
     <path
       d="M12 20V4M12 4C12 8 8 10 6 10M12 4C12 8 16 10 18 10"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -89,6 +90,7 @@ export const FluidArrowUp = ({
 
 export const FluidArrowDown = ({
   size = 20,
+  strokeWidth = 2.5,
   className = '',
   style,
   color,
@@ -106,7 +108,7 @@ export const FluidArrowDown = ({
     <path
       d="M12 4V20M12 20C12 16 8 14 6 14M12 20C12 16 16 14 18 14"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -115,6 +117,7 @@ export const FluidArrowDown = ({
 
 export const FluidArrowOutward = ({
   size = 20,
+  strokeWidth = 2.5,
   className = '',
   style,
   color,
@@ -132,7 +135,7 @@ export const FluidArrowOutward = ({
     <path
       d="M7 17L17 7M17 7H10M17 7V14"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
     />

@@ -50,9 +50,9 @@ export function CuratedRoadmapStep({
           p: 3,
           mb: 3.5,
           borderRadius: '16px',
-          background: 'linear-gradient(135deg, #EFF6FF 0%, #F0FDF4 100%)',
-          border: '1.5px solid #BFDBFE',
-          boxShadow: '0 4px 12px 0 rgba(37,99,235,0.06)',
+          background: 'linear-gradient(135deg, #FAF5FF 0%, #F0FDF4 100%)',
+          border: '1.5px solid #F3E8FF',
+          boxShadow: '0 4px 12px 0 rgba(91, 45, 144, 0.06)',
         }}
       >
         <Box
@@ -70,12 +70,12 @@ export function CuratedRoadmapStep({
                 width: 56,
                 height: 56,
                 borderRadius: '14px',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 color: '#FFFFFF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+                boxShadow: '0 4px 14px rgba(91, 45, 144, 0.3)',
               }}
             >
               <StarsRoundedIcon sx={{ fontSize: 32 }} />
@@ -105,10 +105,10 @@ export function CuratedRoadmapStep({
               icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />}
               label="Ready for Practice"
               sx={{
-                bgcolor: '#DBEAFE',
-                color: '#1E40AF',
+                bgcolor: '#E9D5FF',
+                color: '#0F264F',
                 fontWeight: 700,
-                border: '1px solid #93C5FD',
+                border: '1px solid #E9D5FF',
               }}
             />
           </Box>
@@ -131,11 +131,11 @@ export function CuratedRoadmapStep({
             href="/courses"
             size="small"
             sx={{
-              color: '#2563EB',
+              color: '#0B1F3A',
               fontWeight: 700,
               fontSize: '0.8rem',
               textTransform: 'none',
-              '&:hover': { bgcolor: '#EFF6FF' },
+              '&:hover': { bgcolor: '#FAF5FF' },
             }}
           >
             Browse All Courses →
@@ -161,8 +161,8 @@ export function CuratedRoadmapStep({
                   justifyContent: 'space-between',
                   transition: 'all 0.2s ease',
                   '&:hover': {
-                    borderColor: isEnrolled ? '#10B981' : '#93C5FD',
-                    boxShadow: '0 4px 12px 0 rgba(37,99,235,0.08)',
+                    borderColor: isEnrolled ? '#10B981' : '#C084FC',
+                    boxShadow: '0 4px 12px 0 rgba(91, 45, 144, 0.08)',
                   },
                 }}
               >
@@ -175,9 +175,9 @@ export function CuratedRoadmapStep({
                         height: 20,
                         fontSize: '0.68rem',
                         fontWeight: 700,
-                        bgcolor: '#EFF6FF',
-                        color: '#1D4ED8',
-                        border: '1px solid #BFDBFE',
+                        bgcolor: '#FAF5FF',
+                        color: '#17366E',
+                        border: '1px solid #F3E8FF',
                       }}
                     />
                     {isEnrolled && (
@@ -234,13 +234,13 @@ export function CuratedRoadmapStep({
                       size="small"
                       startIcon={isEnrolling ? <CircularProgress size={14} color="inherit" /> : <RocketLaunchRoundedIcon />}
                       sx={{
-                        bgcolor: '#2563EB',
+                        bgcolor: '#0B1F3A',
                         color: '#FFFFFF',
                         textTransform: 'none',
                         fontWeight: 700,
                         borderRadius: '8px',
                         boxShadow: 'none',
-                        '&:hover': { bgcolor: '#1D4ED8' },
+                        '&:hover': { bgcolor: '#17366E' },
                       }}
                     >
                       {isEnrolling ? 'Enrolling...' : 'Enroll in Course'}
@@ -279,7 +279,7 @@ export function CuratedRoadmapStep({
               <Chip
                 label={`${targetProblemsPerWeek} Problems`}
                 size="small"
-                sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 800, border: '1px solid #BFDBFE' }}
+                sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 800, border: '1px solid #F3E8FF' }}
               />
             </Box>
             <Slider
@@ -295,8 +295,8 @@ export function CuratedRoadmapStep({
               ]}
               onChange={(_, val) => setTargetProblemsPerWeek(val as number)}
               sx={{
-                color: '#2563EB',
-                '& .MuiSlider-thumb': { bgcolor: '#FFFFFF', border: '3px solid #2563EB' },
+                color: '#0B1F3A',
+                '& .MuiSlider-thumb': { bgcolor: '#FFFFFF', border: '3px solid #0B1F3A' },
               }}
             />
           </Card>

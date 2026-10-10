@@ -27,6 +27,7 @@ import StudentGoalsTab from '@/components/students/profile/StudentGoalsTab';
 import StudentSubmissionsTab from '@/components/students/profile/StudentSubmissionsTab';
 import StudentContestsTab from '@/components/students/profile/StudentContestsTab';
 import StudentCoursesTab from '@/components/students/profile/StudentCoursesTab';
+import StudentSkillosTab from '@/components/students/profile/StudentSkillosTab';
 import StudentSettingsTab from '@/components/students/profile/StudentSettingsTab';
 import { Tabs, Tab, Dialog, DialogContent } from '@mui/material';
 
@@ -43,9 +44,10 @@ import TrackChangesRoundedIcon from '@mui/icons-material/TrackChangesRounded';
 import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 
-export type StudentTabType = 'overview' | 'goals' | 'submissions' | 'contests' | 'courses' | 'settings';
+export type StudentTabType = 'overview' | 'goals' | 'submissions' | 'contests' | 'courses' | 'skillos' | 'settings';
 
 interface StudentProfileClientProps {
   initialProfile?: Partial<StudentProfileData>;
@@ -99,7 +101,7 @@ const SAMPLE_ENROLLED_COURSES: StudentCourseProgress[] = [
 const getInitialOwnerProfile = (): Partial<StudentProfileData> => {
   if (typeof window !== 'undefined') {
     try {
-      const stored = localStorage.getItem('codeplatform_user');
+      const stored = localStorage.getItem('techlearns_user');
       if (stored) {
         const u = JSON.parse(stored);
         if (u?.name) {
@@ -126,7 +128,7 @@ const getInitialOwnerProfile = (): Partial<StudentProfileData> => {
   return {};
 };
 
-const validTabs: StudentTabType[] = ['overview', 'goals', 'submissions', 'contests', 'courses', 'settings'];
+const validTabs: StudentTabType[] = ['overview', 'goals', 'submissions', 'contests', 'courses', 'skillos', 'settings'];
 
 export default function StudentProfileClient({
   initialProfile,
@@ -183,7 +185,7 @@ export default function StudentProfileClient({
     email: initialProfile?.email ?? currentUser?.email ?? initialOwner.email ?? '',
     role: initialProfile?.role ?? currentUser?.globalRole ?? initialOwner.role ?? 'STUDENT',
     avatarUrl: initialProfile?.avatarUrl ?? (currentUser as any)?.avatarUrl,
-    bannerGradient: 'linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #3B82F6 100%)',
+    bannerGradient: 'linear-gradient(135deg, #0B1F3A 0%, #0B1F3A 50%, #5B2D90 100%)',
     bio: initialProfile?.bio ?? (currentUser as any)?.bio ?? initialOwner.bio ?? '',
     institution: initialProfile?.institution ?? (currentUser as any)?.institution ?? (currentUser as any)?.memberships?.[0]?.college?.name ?? initialOwner.institution ?? '',
     location: initialProfile?.location ?? (currentUser as any)?.location ?? initialOwner.location ?? '',
@@ -246,7 +248,7 @@ export default function StudentProfileClient({
       } else if (typeof window !== 'undefined') {
         // Instant fallback hydration from localStorage while Redux boots
         try {
-          const raw = localStorage.getItem('codeplatform_user');
+          const raw = localStorage.getItem('techlearns_user');
           if (raw) {
             const u = JSON.parse(raw);
             if (u?.name) {
@@ -447,7 +449,7 @@ export default function StudentProfileClient({
               sx={{
                 minHeight: 48,
                 '& .MuiTabs-indicator': {
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   height: 3,
                   borderRadius: '3px 3px 0 0',
                 },
@@ -463,7 +465,7 @@ export default function StudentProfileClient({
                     color: '#0F172A',
                   },
                   '&.Mui-selected': {
-                    color: '#2563EB',
+                    color: '#0B1F3A',
                     fontWeight: 700,
                   },
                 },
@@ -497,6 +499,12 @@ export default function StudentProfileClient({
                 value="courses"
                 label="Enrolled Courses"
                 icon={<SchoolRoundedIcon sx={{ fontSize: 18 }} />}
+                iconPosition="start"
+              />
+              <Tab
+                value="skillos"
+                label="SkillOS Tests"
+                icon={<ShieldRoundedIcon sx={{ fontSize: 18 }} />}
                 iconPosition="start"
               />
               {isOwner && (
@@ -551,6 +559,10 @@ export default function StudentProfileClient({
 
           <Box sx={{ display: currentTab === 'courses' ? 'block' : 'none' }}>
             <StudentCoursesTab courses={courses} />
+          </Box>
+
+          <Box sx={{ display: currentTab === 'skillos' ? 'block' : 'none' }}>
+            <StudentSkillosTab studentId={profile.id} studentName={profile.name} />
           </Box>
 
           {isOwner && (

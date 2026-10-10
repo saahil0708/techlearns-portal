@@ -153,13 +153,13 @@ export default function InstitutionAdminNavbar({
             width: 44,
             height: 44,
             borderRadius: '12px',
-            bgcolor: 'rgba(30, 64, 175, 0.08)',
-            color: '#1E40AF',
+            bgcolor: 'rgba(11, 31, 58, 0.08)',
+            color: '#0F264F',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
-            border: '1px solid rgba(30, 64, 175, 0.15)',
+            border: '1px solid rgba(11, 31, 58, 0.15)',
           }}
         >
           <AccountBalanceRoundedIcon sx={{ fontSize: 24 }} />
@@ -190,8 +190,8 @@ export default function InstitutionAdminNavbar({
                 height: 20,
                 fontSize: '0.68rem',
                 fontWeight: 800,
-                bgcolor: 'rgba(30, 64, 175, 0.1)',
-                color: '#1E40AF',
+                bgcolor: 'rgba(11, 31, 58, 0.1)',
+                color: '#0F264F',
                 borderRadius: '6px',
                 px: 0.5,
               }}
@@ -246,8 +246,8 @@ export default function InstitutionAdminNavbar({
               '&:hover fieldset': { borderColor: '#CBD5E1' },
               '&.Mui-focused': {
                 bgcolor: '#FFFFFF',
-                boxShadow: '0 0 0 3px rgba(30, 64, 175, 0.1)',
-                '& fieldset': { borderColor: '#1E40AF' },
+                boxShadow: '0 0 0 3px rgba(11, 31, 58, 0.1)',
+                '& fieldset': { borderColor: '#0F264F' },
               },
             },
           }}
@@ -296,15 +296,15 @@ export default function InstitutionAdminNavbar({
             textTransform: 'none',
             fontWeight: 700,
             fontSize: '0.82rem',
-            bgcolor: '#1E40AF',
+            bgcolor: '#0F264F',
             color: '#FFFFFF',
             borderRadius: '10px',
             px: 2,
             py: 0.9,
-            boxShadow: '0 2px 8px rgba(30, 64, 175, 0.25)',
+            boxShadow: '0 2px 8px rgba(11, 31, 58, 0.25)',
             '&:hover': {
-              bgcolor: '#1D4ED8',
-              boxShadow: '0 4px 12px rgba(30, 64, 175, 0.35)',
+              bgcolor: '#17366E',
+              boxShadow: '0 4px 12px rgba(11, 31, 58, 0.35)',
             },
           }}
         >
@@ -333,7 +333,7 @@ export default function InstitutionAdminNavbar({
             onClick={() => handleActionSelect('/institution-admin/faculty', onInviteFacultyClick)}
             sx={{ borderRadius: '10px', py: 1 }}
           >
-            <ListItemIcon sx={{ color: '#1E40AF', minWidth: 32 }}>
+            <ListItemIcon sx={{ color: '#0F264F', minWidth: 32 }}>
               <AssignmentIndRoundedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText
@@ -346,7 +346,7 @@ export default function InstitutionAdminNavbar({
             onClick={() => handleActionSelect('/institution-admin/batches', onCreateBatchClick)}
             sx={{ borderRadius: '10px', py: 1 }}
           >
-            <ListItemIcon sx={{ color: '#0284C7', minWidth: 32 }}>
+            <ListItemIcon sx={{ color: '#5B2D90', minWidth: 32 }}>
               <SchoolRoundedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText
@@ -413,7 +413,7 @@ export default function InstitutionAdminNavbar({
                 size="small"
                 onClick={handleMarkAllRead}
                 startIcon={<DoneAllRoundedIcon sx={{ fontSize: 14 }} />}
-                sx={{ fontSize: '0.72rem', textTransform: 'none', fontWeight: 600, color: '#1E40AF', p: 0 }}
+                sx={{ fontSize: '0.72rem', textTransform: 'none', fontWeight: 600, color: '#0F264F', p: 0 }}
               >
                 Mark read
               </Button>
@@ -433,7 +433,7 @@ export default function InstitutionAdminNavbar({
                   sx={{
                     p: 1.5,
                     borderBottom: '1px solid #F1F5F9',
-                    bgcolor: n.unread ? 'rgba(30, 64, 175, 0.04)' : 'transparent',
+                    bgcolor: n.unread ? 'rgba(11, 31, 58, 0.04)' : 'transparent',
                     '&:hover': { bgcolor: '#F8FAFC' },
                     cursor: 'pointer',
                   }}

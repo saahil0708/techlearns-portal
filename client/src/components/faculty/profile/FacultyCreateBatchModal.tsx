@@ -138,12 +138,12 @@ export default function FacultyCreateBatchModal({
               width: 40,
               height: 40,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           >
             <SchoolRoundedIcon sx={{ fontSize: 22 }} />
@@ -272,7 +272,7 @@ export default function FacultyCreateBatchModal({
             variant="contained"
             disabled={creating || !name.trim()}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               textTransform: 'none',
               fontWeight: 700,
               fontSize: '0.85rem',
@@ -280,7 +280,7 @@ export default function FacultyCreateBatchModal({
               px: 3,
               py: 0.9,
               boxShadow: 'none',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             {creating ? 'Creating...' : 'Create Cohort'}

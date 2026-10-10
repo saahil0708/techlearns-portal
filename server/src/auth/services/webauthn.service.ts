@@ -14,7 +14,7 @@ import { PrismaService } from '../../prisma/prisma.service.js';
 
 @Injectable()
 export class WebAuthnService {
-  private readonly rpName = 'CodePlatform Enterprise';
+  private readonly rpName = 'TechLearns Enterprise';
   private readonly rpId: string;
   private readonly expectedOrigin: string;
 

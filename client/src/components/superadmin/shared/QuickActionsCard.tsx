@@ -46,12 +46,12 @@ const ACTION_ITEMS = [
     title: 'Onboard Institute',
     subtitle: 'Provision new tenant org and faculty seats',
     icon: AccountBalanceRoundedIcon,
-    iconColor: '#2563EB',
-    iconBg: '#EFF6FF',
-    iconBorder: '#DBEAFE',
+    iconColor: '#0B1F3A',
+    iconBg: '#FAF5FF',
+    iconBorder: '#E9D5FF',
     badge: 'Multi-Tenant',
-    badgeColor: '#2563EB',
-    badgeBg: '#EFF6FF',
+    badgeColor: '#0B1F3A',
+    badgeBg: '#FAF5FF',
     href: '/superadmin/institutions',
   },
   {
@@ -70,7 +70,7 @@ const ACTION_ITEMS = [
 ];
 
 export default function QuickActionsCard({
-  primaryBlue = '#2563eb',
+  primaryBlue = '#0B1F3A',
   onActionClick,
 }: QuickActionsCardProps) {
   return (
@@ -161,7 +161,7 @@ export default function QuickActionsCard({
                   transform: 'translateY(-1.5px)',
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
                   '& .action-chevron': {
-                    color: '#2563EB',
+                    color: '#0B1F3A',
                     transform: 'translateX(3px)',
                   },
                 },

@@ -95,7 +95,7 @@ export default function LogoutConfirmModal({
             onClick={onClose}
             disabled={isLoggingOut}
             sx={{
-              color: '#2563EB',
+              color: '#0B1F3A',
               fontWeight: 700,
               fontSize: '0.9rem',
               textTransform: 'none',
@@ -103,7 +103,7 @@ export default function LogoutConfirmModal({
               py: 0.75,
               borderRadius: '8px',
               '&:hover': {
-                bgcolor: 'rgba(37, 99, 235, 0.08)',
+                bgcolor: 'rgba(91, 45, 144, 0.08)',
               },
             }}
           >
@@ -115,7 +115,7 @@ export default function LogoutConfirmModal({
             onClick={onConfirm}
             disabled={isLoggingOut}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               fontWeight: 700,
               fontSize: '0.9rem',
@@ -125,7 +125,7 @@ export default function LogoutConfirmModal({
               borderRadius: '10px',
               boxShadow: 'none',
               '&:hover': {
-                bgcolor: '#1D4ED8',
+                bgcolor: '#17366E',
                 boxShadow: 'none',
               },
             }}

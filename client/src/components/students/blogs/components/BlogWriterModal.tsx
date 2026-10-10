@@ -160,7 +160,7 @@ export default function BlogWriterModal({
     >
       <DialogTitle sx={{ fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <EditNoteRoundedIcon sx={{ color: '#2563EB' }} />
+          <EditNoteRoundedIcon sx={{ color: '#0B1F3A' }} />
           Write & Publish Story
         </Box>
         <IconButton size="small" onClick={onClose} disabled={isSubmitting}>
@@ -247,7 +247,7 @@ export default function BlogWriterModal({
                     fontWeight: 700,
                     borderRadius: '8px',
                     ...(coverSelectionMode === 'preset'
-                      ? { bgcolor: '#2563EB', color: '#fff', '&:hover': { bgcolor: '#1D4ED8' } }
+                      ? { bgcolor: '#0B1F3A', color: '#fff', '&:hover': { bgcolor: '#17366E' } }
                       : { color: '#475569', borderColor: '#CBD5E1', bgcolor: '#FFFFFF' }),
                   }}
                 >
@@ -264,7 +264,7 @@ export default function BlogWriterModal({
                     fontWeight: 700,
                     borderRadius: '8px',
                     ...(coverSelectionMode === 'upload'
-                      ? { bgcolor: '#2563EB', color: '#fff', '&:hover': { bgcolor: '#1D4ED8' } }
+                      ? { bgcolor: '#0B1F3A', color: '#fff', '&:hover': { bgcolor: '#17366E' } }
                       : { color: '#475569', borderColor: '#CBD5E1', bgcolor: '#FFFFFF' }),
                   }}
                 >
@@ -281,7 +281,7 @@ export default function BlogWriterModal({
                     fontWeight: 700,
                     borderRadius: '8px',
                     ...(coverSelectionMode === 'url'
-                      ? { bgcolor: '#2563EB', color: '#fff', '&:hover': { bgcolor: '#1D4ED8' } }
+                      ? { bgcolor: '#0B1F3A', color: '#fff', '&:hover': { bgcolor: '#17366E' } }
                       : { color: '#475569', borderColor: '#CBD5E1', bgcolor: '#FFFFFF' }),
                   }}
                 >
@@ -305,7 +305,7 @@ export default function BlogWriterModal({
                       borderRadius: '8px',
                       overflow: 'hidden',
                       cursor: 'pointer',
-                      border: newCoverImg === imgUrl ? '2.5px solid #2563EB' : '1px solid #CBD5E1',
+                      border: newCoverImg === imgUrl ? '2.5px solid #0B1F3A' : '1px solid #CBD5E1',
                       transform: newCoverImg === imgUrl ? 'scale(1.04)' : 'scale(1)',
                       transition: 'all 0.15s ease',
                       p: 0,
@@ -350,9 +350,9 @@ export default function BlogWriterModal({
                     transition: 'all 0.15s ease',
                     outline: 'none',
                     '&:hover, &:focus-visible': {
-                      borderColor: '#2563EB',
+                      borderColor: '#0B1F3A',
                       bgcolor: '#F0F7FF',
-                      boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.15)',
+                      boxShadow: '0 0 0 3px rgba(11, 31, 58, 0.15)',
                     },
                     display: 'flex',
                     flexDirection: 'column',
@@ -362,14 +362,14 @@ export default function BlogWriterModal({
                 >
                   {isUploadingCover ? (
                     <>
-                      <CircularProgress size={24} sx={{ color: '#2563EB' }} />
-                      <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#2563EB' }}>
+                      <CircularProgress size={24} sx={{ color: '#0B1F3A' }} />
+                      <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#0B1F3A' }}>
                         Uploading picture to cloud storage...
                       </Typography>
                     </>
                   ) : (
                     <>
-                      <CloudUploadRoundedIcon sx={{ fontSize: 28, color: '#2563EB' }} />
+                      <CloudUploadRoundedIcon sx={{ fontSize: 28, color: '#0B1F3A' }} />
                       <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#0F172A' }}>
                         Click to choose a picture from your device
                       </Typography>
@@ -433,8 +433,8 @@ export default function BlogWriterModal({
                 sx={{
                   textTransform: 'none',
                   fontWeight: 700,
-                  color: writeTab === 'edit' ? '#2563EB' : '#64748B',
-                  borderBottom: writeTab === 'edit' ? '2px solid #2563EB' : 'none',
+                  color: writeTab === 'edit' ? '#0B1F3A' : '#64748B',
+                  borderBottom: writeTab === 'edit' ? '2px solid #0B1F3A' : 'none',
                   borderRadius: 0,
                 }}
               >
@@ -446,8 +446,8 @@ export default function BlogWriterModal({
                 sx={{
                   textTransform: 'none',
                   fontWeight: 700,
-                  color: writeTab === 'preview' ? '#2563EB' : '#64748B',
-                  borderBottom: writeTab === 'preview' ? '2px solid #2563EB' : 'none',
+                  color: writeTab === 'preview' ? '#0B1F3A' : '#64748B',
+                  borderBottom: writeTab === 'preview' ? '2px solid #0B1F3A' : 'none',
                   borderRadius: 0,
                 }}
               >
@@ -455,7 +455,7 @@ export default function BlogWriterModal({
               </Button>
             </Box>
             <Typography sx={{ fontSize: '0.74rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: 0.5, pr: 1 }}>
-              <AccessTimeRoundedIcon sx={{ fontSize: 13, color: '#2563EB' }} />
+              <AccessTimeRoundedIcon sx={{ fontSize: 13, color: '#0B1F3A' }} />
               Read Time: <strong style={{ color: '#0F172A' }}>{Math.max(1, Math.ceil((newContent.trim().split(/\s+/).filter(Boolean).length || 100) / 180))} min read</strong> (auto-calculated)
             </Typography>
           </Box>
@@ -496,12 +496,12 @@ export default function BlogWriterModal({
             variant="contained"
             disabled={isSubmitting || isUploadingCover}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               textTransform: 'none',
               borderRadius: '10px',
               fontWeight: 700,
               px: 3,
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             {isSubmitting ? 'Publishing...' : isUploadingCover ? 'Uploading Cover...' : 'Publish Article'}

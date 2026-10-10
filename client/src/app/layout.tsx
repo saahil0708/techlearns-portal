@@ -17,11 +17,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'CodePlatform',
-  description: 'CodePlatform Frontend',
+  title: 'TechLearns',
+  description: 'TechLearns Frontend',
 };
 
 import StoreProvider from '@/store/StoreProvider';
+import MuiThemeProvider from '@/theme/MuiThemeProvider';
 
 export default function RootLayout({
   children,
@@ -31,7 +32,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${gtFlexa.variable} ${jetbrainsMono.variable} ${gtFlexa.className}`} suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <StoreProvider>{children}</StoreProvider>
+        <StoreProvider>
+          <MuiThemeProvider>{children}</MuiThemeProvider>
+        </StoreProvider>
       </body>
     </html>
   );

@@ -230,14 +230,14 @@ export default function FacultyBatchRosterDrawer({
                 width: 44,
                 height: 44,
                 borderRadius: '12px',
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 900,
                 fontSize: '1rem',
-                border: '1px solid #BFDBFE',
+                border: '1px solid #F3E8FF',
               }}
             >
               {batch.name.slice(0, 2).toUpperCase()}
@@ -277,7 +277,7 @@ export default function FacultyBatchRosterDrawer({
               ENROLLED STUDENTS
             </Typography>
             <Typography sx={{ fontSize: '0.84rem', fontWeight: 800, color: '#0F172A' }}>
-              {currentCount} / {maxCap} <span style={{ color: '#2563EB', fontSize: '0.76rem' }}>({capPercent}%)</span>
+              {currentCount} / {maxCap} <span style={{ color: '#0B1F3A', fontSize: '0.76rem' }}>({capPercent}%)</span>
             </Typography>
           </Box>
           <LinearProgress
@@ -288,7 +288,7 @@ export default function FacultyBatchRosterDrawer({
               borderRadius: 3,
               bgcolor: '#E2E8F0',
               '& .MuiLinearProgress-bar': {
-                bgcolor: capPercent > 90 ? '#EF4444' : '#2563EB',
+                bgcolor: capPercent > 90 ? '#EF4444' : '#0B1F3A',
                 borderRadius: 3,
               },
             }}
@@ -345,10 +345,10 @@ export default function FacultyBatchRosterDrawer({
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.78rem',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 color: '#FFFFFF',
                 boxShadow: 'none',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               Invite to Cohort
@@ -361,7 +361,7 @@ export default function FacultyBatchRosterDrawer({
       <Box sx={{ p: 3, flex: 1, overflowY: 'auto' }}>
         {loading ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8, gap: 2 }}>
-            <CircularProgress size={32} sx={{ color: '#2563EB' }} />
+            <CircularProgress size={32} sx={{ color: '#0B1F3A' }} />
             <Typography sx={{ fontSize: '0.86rem', color: '#64748B', fontWeight: 600 }}>
               Loading student roster...
             </Typography>
@@ -443,8 +443,8 @@ export default function FacultyBatchRosterDrawer({
                                 sx={{
                                   width: 32,
                                   height: 32,
-                                  bgcolor: '#EFF6FF',
-                                  color: '#2563EB',
+                                  bgcolor: '#FAF5FF',
+                                  color: '#0B1F3A',
                                   fontSize: '0.74rem',
                                   fontWeight: 800,
                                 }}
@@ -538,13 +538,13 @@ export default function FacultyBatchRosterDrawer({
                 p: 1.5,
                 borderRadius: '12px',
                 border: '2px solid',
-                borderColor: removeScope === 'BATCH_ONLY' ? '#2563EB' : '#E2E8F0',
-                bgcolor: removeScope === 'BATCH_ONLY' ? '#EFF6FF' : '#FFFFFF',
+                borderColor: removeScope === 'BATCH_ONLY' ? '#0B1F3A' : '#E2E8F0',
+                bgcolor: removeScope === 'BATCH_ONLY' ? '#FAF5FF' : '#FFFFFF',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
               }}
             >
-              <Typography sx={{ fontSize: '0.84rem', fontWeight: 800, color: removeScope === 'BATCH_ONLY' ? '#2563EB' : '#0F172A' }}>
+              <Typography sx={{ fontSize: '0.84rem', fontWeight: 800, color: removeScope === 'BATCH_ONLY' ? '#0B1F3A' : '#0F172A' }}>
                 Remove from Cohort ({batch.name})
               </Typography>
               <Typography sx={{ fontSize: '0.74rem', color: '#64748B', mt: 0.25 }}>
@@ -591,11 +591,11 @@ export default function FacultyBatchRosterDrawer({
             disabled={isRemoving}
             onClick={handleConfirmRemoveStudent}
             sx={{
-              bgcolor: removeScope === 'COLLEGE_ENTIRE' ? '#DC2626' : '#2563EB',
+              bgcolor: removeScope === 'COLLEGE_ENTIRE' ? '#DC2626' : '#0B1F3A',
               textTransform: 'none',
               fontWeight: 700,
               borderRadius: '8px',
-              '&:hover': { bgcolor: removeScope === 'COLLEGE_ENTIRE' ? '#B91C1C' : '#1D4ED8' },
+              '&:hover': { bgcolor: removeScope === 'COLLEGE_ENTIRE' ? '#B91C1C' : '#17366E' },
             }}
           >
             {isRemoving

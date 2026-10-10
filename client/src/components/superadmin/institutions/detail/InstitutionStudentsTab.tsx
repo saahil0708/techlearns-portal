@@ -157,7 +157,7 @@ export default function InstitutionStudentsTab({
                 <TableRow key={s.id} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Avatar sx={{ width: 32, height: 32, fontSize: '0.8rem', bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700 }}>
+                      <Avatar sx={{ width: 32, height: 32, fontSize: '0.8rem', bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700 }}>
                         {s.name[0]}
                       </Avatar>
                       <Box>
@@ -178,9 +178,9 @@ export default function InstitutionStudentsTab({
                       label={s.batch}
                       size="small"
                       sx={{
-                        bgcolor: s.batch === 'Unassigned' ? '#FEF2F2' : '#EFF6FF',
-                        color: s.batch === 'Unassigned' ? '#DC2626' : '#2563EB',
-                        border: `1px solid ${s.batch === 'Unassigned' ? '#FECACA' : '#DBEAFE'}`,
+                        bgcolor: s.batch === 'Unassigned' ? '#FEF2F2' : '#FAF5FF',
+                        color: s.batch === 'Unassigned' ? '#DC2626' : '#0B1F3A',
+                        border: `1px solid ${s.batch === 'Unassigned' ? '#FECACA' : '#E9D5FF'}`,
                         fontWeight: 700,
                         fontSize: '0.72rem',
                         borderRadius: '6px',
@@ -211,7 +211,7 @@ export default function InstitutionStudentsTab({
                       <IconButton
                         size="small"
                         onClick={() => onOpenAssignBatch(s)}
-                        sx={{ color: '#64748B', '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' } }}
+                        sx={{ color: '#64748B', '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' } }}
                       >
                         <SupervisorAccountRoundedIcon sx={{ fontSize: 16 }} />
                       </IconButton>
@@ -220,7 +220,7 @@ export default function InstitutionStudentsTab({
                       <IconButton
                         size="small"
                         onClick={() => onOpenEditStudent(s)}
-                        sx={{ color: '#64748B', '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' } }}
+                        sx={{ color: '#64748B', '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' } }}
                       >
                         <EditRoundedIcon sx={{ fontSize: 16 }} />
                       </IconButton>

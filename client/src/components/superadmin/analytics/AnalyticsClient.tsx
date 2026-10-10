@@ -113,7 +113,7 @@ export default function AnalyticsClient({
   const [exportAnchorEl, setExportAnchorEl] = useState<null | HTMLElement>(null);
   const isExportOpen = Boolean(exportAnchorEl);
 
-  const primaryBlue = '#2563EB';
+  const primaryBlue = '#0B1F3A';
   const borderColor = '#E2E8F0';
 
   // Filtered Colleges
@@ -259,7 +259,7 @@ export default function AnalyticsClient({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `codeplatform_analytics_${Date.now()}.csv`);
+    link.setAttribute('download', `techlearns_analytics_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     toast.success(`Exported ${rows.length} analytics records as CSV.`, 'Export Successful');
@@ -272,9 +272,9 @@ export default function AnalyticsClient({
         display: 'flex',
         bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -617,13 +617,13 @@ export default function AnalyticsClient({
                     filteredColleges.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((col) => {
                       const isSelected = selectedIds.includes(col.id);
                       return (
-                        <TableRow key={col.id} hover selected={isSelected} sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, '&.Mui-selected': { bgcolor: '#EFF6FF !important' } }}>
+                        <TableRow key={col.id} hover selected={isSelected} sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, '&.Mui-selected': { bgcolor: '#FAF5FF !important' } }}>
                           <TableCell padding="checkbox" sx={{ pl: 2.5, py: 1.75 }}>
                             <Checkbox size="small" checked={isSelected} onChange={() => handleSelectOne(col.id)} sx={{ color: '#CBD5E1', '&.Mui-checked': { color: primaryBlue } }} />
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <SchoolRoundedIcon sx={{ fontSize: 18 }} />
                               </Box>
                               <Box>
@@ -640,7 +640,7 @@ export default function AnalyticsClient({
                             <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>of {col.totalEnrolled.toLocaleString()} enrolled</Typography>
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
-                            <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#2563EB' }}>{col.problemsSolved.toLocaleString()}</Typography>
+                            <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#0B1F3A' }}>{col.problemsSolved.toLocaleString()}</Typography>
                             <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>{col.avgSolvesPerStudent} solves/student</Typography>
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
@@ -659,11 +659,11 @@ export default function AnalyticsClient({
                           <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                               <Tooltip title="View Diagnostic Details">
-                                <IconButton size="small" onClick={() => setPeekRow({ ...col, rowType: 'institute' })} sx={{ color: '#64748B', border: '1px solid #E2E8F0', borderRadius: '8px', '&:hover': { bgcolor: '#EFF6FF', color: primaryBlue } }}>
+                                <IconButton size="small" onClick={() => setPeekRow({ ...col, rowType: 'institute' })} sx={{ color: '#64748B', border: '1px solid #E2E8F0', borderRadius: '8px', '&:hover': { bgcolor: '#FAF5FF', color: primaryBlue } }}>
                                   <VisibilityRoundedIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
                               </Tooltip>
-                              <Button size="small" variant="outlined" onClick={() => setPeekRow({ ...col, rowType: 'institute' })} endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.76rem', color: primaryBlue, borderColor: '#DBEAFE', bgcolor: '#EFF6FF', borderRadius: '8px', px: 1.5, py: 0.4 }}>
+                              <Button size="small" variant="outlined" onClick={() => setPeekRow({ ...col, rowType: 'institute' })} endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.76rem', color: primaryBlue, borderColor: '#E9D5FF', bgcolor: '#FAF5FF', borderRadius: '8px', px: 1.5, py: 0.4 }}>
                                 Inspect
                               </Button>
                             </Box>
@@ -677,13 +677,13 @@ export default function AnalyticsClient({
                     filteredTopics.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((top) => {
                       const isSelected = selectedIds.includes(top.id);
                       return (
-                        <TableRow key={top.id} hover selected={isSelected} sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, '&.Mui-selected': { bgcolor: '#EFF6FF !important' } }}>
+                        <TableRow key={top.id} hover selected={isSelected} sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, '&.Mui-selected': { bgcolor: '#FAF5FF !important' } }}>
                           <TableCell padding="checkbox" sx={{ pl: 2.5, py: 1.75 }}>
                             <Checkbox size="small" checked={isSelected} onChange={() => handleSelectOne(top.id)} sx={{ color: '#CBD5E1', '&.Mui-checked': { color: primaryBlue } }} />
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: top.frictionLevel === 'High Friction' ? '#FEF2F2' : '#EFF6FF', color: top.frictionLevel === 'High Friction' ? '#DC2626' : '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: top.frictionLevel === 'High Friction' ? '#FEF2F2' : '#FAF5FF', color: top.frictionLevel === 'High Friction' ? '#DC2626' : '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <AutoStoriesRoundedIcon sx={{ fontSize: 18 }} />
                               </Box>
                               <Box>
@@ -717,11 +717,11 @@ export default function AnalyticsClient({
                           <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                               <Tooltip title="View Topic Breakdown">
-                                <IconButton size="small" onClick={() => setPeekRow({ ...top, rowType: 'topic' })} sx={{ color: '#64748B', border: '1px solid #E2E8F0', borderRadius: '8px', '&:hover': { bgcolor: '#EFF6FF', color: primaryBlue } }}>
+                                <IconButton size="small" onClick={() => setPeekRow({ ...top, rowType: 'topic' })} sx={{ color: '#64748B', border: '1px solid #E2E8F0', borderRadius: '8px', '&:hover': { bgcolor: '#FAF5FF', color: primaryBlue } }}>
                                   <VisibilityRoundedIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
                               </Tooltip>
-                              <Button size="small" variant="outlined" onClick={() => setPeekRow({ ...top, rowType: 'topic' })} endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.76rem', color: primaryBlue, borderColor: '#DBEAFE', bgcolor: '#EFF6FF', borderRadius: '8px', px: 1.5, py: 0.4 }}>
+                              <Button size="small" variant="outlined" onClick={() => setPeekRow({ ...top, rowType: 'topic' })} endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.76rem', color: primaryBlue, borderColor: '#E9D5FF', bgcolor: '#FAF5FF', borderRadius: '8px', px: 1.5, py: 0.4 }}>
                                 Inspect
                               </Button>
                             </Box>
@@ -735,7 +735,7 @@ export default function AnalyticsClient({
                     filteredContests.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((ct) => {
                       const isSelected = selectedIds.includes(ct.id);
                       return (
-                        <TableRow key={ct.id} hover selected={isSelected} sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, '&.Mui-selected': { bgcolor: '#EFF6FF !important' } }}>
+                        <TableRow key={ct.id} hover selected={isSelected} sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, '&.Mui-selected': { bgcolor: '#FAF5FF !important' } }}>
                           <TableCell padding="checkbox" sx={{ pl: 2.5, py: 1.75 }}>
                             <Checkbox size="small" checked={isSelected} onChange={() => handleSelectOne(ct.id)} sx={{ color: '#CBD5E1', '&.Mui-checked': { color: primaryBlue } }} />
                           </TableCell>
@@ -758,7 +758,7 @@ export default function AnalyticsClient({
                             <Typography sx={{ fontSize: '0.7rem', color: '#059669', fontWeight: 700 }}>{ct.turnoutPercent}% turnout</Typography>
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
-                            <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#2563EB' }}>{ct.avgScore} pts</Typography>
+                            <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#0B1F3A' }}>{ct.avgScore} pts</Typography>
                             <Typography sx={{ fontSize: '0.7rem', color: '#64748B' }}>Top: {ct.topScore} pts</Typography>
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
@@ -770,11 +770,11 @@ export default function AnalyticsClient({
                           <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                               <Tooltip title="View Tournament Scorecard">
-                                <IconButton size="small" onClick={() => setPeekRow({ ...ct, rowType: 'contest' })} sx={{ color: '#64748B', border: '1px solid #E2E8F0', borderRadius: '8px', '&:hover': { bgcolor: '#EFF6FF', color: primaryBlue } }}>
+                                <IconButton size="small" onClick={() => setPeekRow({ ...ct, rowType: 'contest' })} sx={{ color: '#64748B', border: '1px solid #E2E8F0', borderRadius: '8px', '&:hover': { bgcolor: '#FAF5FF', color: primaryBlue } }}>
                                   <VisibilityRoundedIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
                               </Tooltip>
-                              <Button size="small" variant="outlined" onClick={() => setPeekRow({ ...ct, rowType: 'contest' })} endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.76rem', color: primaryBlue, borderColor: '#DBEAFE', bgcolor: '#EFF6FF', borderRadius: '8px', px: 1.5, py: 0.4 }}>
+                              <Button size="small" variant="outlined" onClick={() => setPeekRow({ ...ct, rowType: 'contest' })} endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.76rem', color: primaryBlue, borderColor: '#E9D5FF', bgcolor: '#FAF5FF', borderRadius: '8px', px: 1.5, py: 0.4 }}>
                                 Inspect
                               </Button>
                             </Box>
@@ -788,13 +788,13 @@ export default function AnalyticsClient({
                     filteredLanguages.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((lang) => {
                       const isSelected = selectedIds.includes(lang.id);
                       return (
-                        <TableRow key={lang.id} hover selected={isSelected} sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, '&.Mui-selected': { bgcolor: '#EFF6FF !important' } }}>
+                        <TableRow key={lang.id} hover selected={isSelected} sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, '&.Mui-selected': { bgcolor: '#FAF5FF !important' } }}>
                           <TableCell padding="checkbox" sx={{ pl: 2.5, py: 1.75 }}>
                             <Checkbox size="small" checked={isSelected} onChange={() => handleSelectOne(lang.id)} sx={{ color: '#CBD5E1', '&.Mui-checked': { color: primaryBlue } }} />
                           </TableCell>
                           <TableCell sx={{ py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                              <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <CodeRoundedIcon sx={{ fontSize: 18 }} />
                               </Box>
                               <Box>
@@ -823,11 +823,11 @@ export default function AnalyticsClient({
                           <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                               <Tooltip title="View Compiler Telemetry">
-                                <IconButton size="small" onClick={() => setPeekRow({ ...lang, rowType: 'submission' })} sx={{ color: '#64748B', border: '1px solid #E2E8F0', borderRadius: '8px', '&:hover': { bgcolor: '#EFF6FF', color: primaryBlue } }}>
+                                <IconButton size="small" onClick={() => setPeekRow({ ...lang, rowType: 'submission' })} sx={{ color: '#64748B', border: '1px solid #E2E8F0', borderRadius: '8px', '&:hover': { bgcolor: '#FAF5FF', color: primaryBlue } }}>
                                   <VisibilityRoundedIcon sx={{ fontSize: 16 }} />
                                 </IconButton>
                               </Tooltip>
-                              <Button size="small" variant="outlined" onClick={() => setPeekRow({ ...lang, rowType: 'submission' })} endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.76rem', color: primaryBlue, borderColor: '#DBEAFE', bgcolor: '#EFF6FF', borderRadius: '8px', px: 1.5, py: 0.4 }}>
+                              <Button size="small" variant="outlined" onClick={() => setPeekRow({ ...lang, rowType: 'submission' })} endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.76rem', color: primaryBlue, borderColor: '#E9D5FF', bgcolor: '#FAF5FF', borderRadius: '8px', px: 1.5, py: 0.4 }}>
                                 Inspect
                               </Button>
                             </Box>

@@ -3,7 +3,7 @@ import StudentsDirectoryClient, { StudentDirectoryEntity } from '@/components/su
 import { apiService } from '@/lib/api-service';
 
 export const metadata: Metadata = {
-  title: 'Students & Competitive Coders | CodePlatform',
+  title: 'Students & Competitive Coders | TechLearns',
   description: 'Global developer leaderboard, collegiate cohorts, K-12 STEM coders & student profiles.',
 };
 
@@ -79,7 +79,7 @@ export default async function StudentsPage() {
             accuracy: u.accuracy ?? (solved > 0 ? '75%' : '0%'),
             streakDays: u.streakDays ?? 0,
             status: u.status === 'ACTIVE' ? ('Active' as const) : ('Inactive' as const),
-            avatarColor: ['#2563EB', '#3B82F6', '#10B981', '#7C3AED', '#DC2626'][idx % 5],
+            avatarColor: ['#0B1F3A', '#5B2D90', '#10B981', '#7C3AED', '#DC2626'][idx % 5],
           };
         });
     }

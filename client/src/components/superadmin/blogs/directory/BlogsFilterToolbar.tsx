@@ -52,7 +52,7 @@ export default function BlogsFilterToolbar({
           scrollButtons="auto"
           sx={{
             minHeight: 48,
-            '& .MuiTabs-indicator': { backgroundColor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+            '& .MuiTabs-indicator': { backgroundColor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
             '& .MuiTabs-flexContainer': { gap: { xs: 0.5, sm: 1.5 } },
           }}
         >

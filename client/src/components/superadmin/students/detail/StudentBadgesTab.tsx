@@ -134,7 +134,7 @@ export default function StudentBadgesTab({ badges }: StudentBadgesTabProps) {
                   <TableRow key={b.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
                     <TableCell sx={{ pl: 3, py: 1.75 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                        <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <MilitaryTechRoundedIcon sx={{ fontSize: 18 }} />
                         </Box>
                         <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A' }}>

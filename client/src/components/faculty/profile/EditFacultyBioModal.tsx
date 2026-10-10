@@ -191,7 +191,7 @@ export default function EditFacultyBioModal({
           variant="contained"
           disabled={saving}
           onClick={handleSave}
-          sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5, '&:hover': { bgcolor: '#1D4ED8' } }}
+          sx={{ bgcolor: '#0B1F3A', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 2.5, '&:hover': { bgcolor: '#17366E' } }}
         >
           {saving ? 'Saving...' : 'Save Profile'}
         </Button>

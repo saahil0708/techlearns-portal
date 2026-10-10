@@ -90,7 +90,7 @@ export default function LiveSubmissionsFeed({
       <head><meta charset="utf-8"/></head>
       <body>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Submission ID</th>
             <th>Student</th>
             <th>Institution</th>
@@ -232,7 +232,7 @@ export default function LiveSubmissionsFeed({
                 transition: 'all 0.2s ease',
                 '&.Mui-selected': {
                   bgcolor: '#FFFFFF',
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                   fontWeight: 700,
                   boxShadow: '0 2px 6px rgba(0, 0, 0, 0.06)',
                 },
@@ -257,9 +257,9 @@ export default function LiveSubmissionsFeed({
                 p: 0.75,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
-                  borderColor: '#BFDBFE',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
+                  borderColor: '#D8B4FE',
                   transform: 'scale(1.08)',
                 },
               }}
@@ -310,11 +310,11 @@ export default function LiveSubmissionsFeed({
                 py: 0.9,
                 px: 1.5,
                 transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: '#EFF6FF' },
+                '&:hover': { bgcolor: '#FAF5FF' },
               }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               </ListItemIcon>
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                 Download CSV (.csv)
@@ -514,12 +514,12 @@ export default function LiveSubmissionsFeed({
                 fontSize: '0.76rem',
                 fontWeight: currentPage === i ? 700 : 500,
                 color: currentPage === i ? '#FFFFFF' : '#64748B',
-                bgcolor: currentPage === i ? '#2563EB' : '#FFFFFF',
-                border: currentPage === i ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                boxShadow: currentPage === i ? '0 2px 8px rgba(37, 99, 235, 0.25)' : 'none',
+                bgcolor: currentPage === i ? '#0B1F3A' : '#FFFFFF',
+                border: currentPage === i ? '1px solid #0B1F3A' : '1px solid #E2E8F0',
+                boxShadow: currentPage === i ? '0 2px 8px rgba(91, 45, 144, 0.25)' : 'none',
                 transition: 'all 0.15s ease',
                 '&:hover': {
-                  bgcolor: currentPage === i ? '#1D4ED8' : '#F1F5F9',
+                  bgcolor: currentPage === i ? '#17366E' : '#F1F5F9',
                   color: currentPage === i ? '#FFFFFF' : '#0F172A',
                 },
               }}
@@ -594,7 +594,7 @@ export default function LiveSubmissionsFeed({
                   <Chip
                     label={selectedSubmission.id}
                     size="small"
-                    sx={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.72rem', bgcolor: '#EFF6FF', color: '#2563EB', border: '1px solid #DBEAFE' }}
+                    sx={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.72rem', bgcolor: '#FAF5FF', color: '#0B1F3A', border: '1px solid #FAF5FF' }}
                   />
                 </Box>
                 <Typography sx={{ fontSize: '0.78rem', color: '#64748B', mt: 0.25 }}>
@@ -676,7 +676,7 @@ export default function LiveSubmissionsFeed({
               {/* Student & Problem Info */}
               <Box sx={{ p: 2, borderRadius: '14px', bgcolor: '#FFFFFF', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                  <AccountCircleRoundedIcon sx={{ color: '#2563EB', fontSize: 24 }} />
+                  <AccountCircleRoundedIcon sx={{ color: '#0B1F3A', fontSize: 24 }} />
                   <Box>
                     <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A' }}>{selectedSubmission.user}</Typography>
                     <Typography sx={{ fontSize: '0.74rem', color: '#64748B' }}>{selectedSubmission.institution} ({selectedSubmission.instType})</Typography>
@@ -705,7 +705,7 @@ export default function LiveSubmissionsFeed({
                       navigator.clipboard.writeText(`// Solution for ${selectedSubmission.problem}\n// Language: ${selectedSubmission.language}\n\nfunction solve(inputs) {\n  // Code implementation\n}`);
                       toast.info('Source code copied to clipboard!', 'Code Copied');
                     }}
-                    sx={{ textTransform: 'none', fontSize: '0.74rem', fontWeight: 600, color: '#2563EB' }}
+                    sx={{ textTransform: 'none', fontSize: '0.74rem', fontWeight: 600, color: '#0B1F3A' }}
                   >
                     Copy Code
                   </Button>
@@ -773,7 +773,7 @@ public:
                     toast.success(`Submission ${selectedSubmission.id} re-queued for judge cluster evaluation!`, 'Judge Execution');
                   }, 900);
                 }}
-                sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 700, fontSize: '0.82rem', bgcolor: '#2563EB' }}
+                sx={{ borderRadius: '8px', textTransform: 'none', fontWeight: 700, fontSize: '0.82rem', bgcolor: '#0B1F3A' }}
               >
                 {isRejudging ? 'Re-evaluating...' : 'Re-judge Solution'}
               </Button>

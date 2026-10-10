@@ -93,9 +93,9 @@ async function bootstrap() {
 
   // Swagger Documentation Setup
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('CodePlatform API')
+    .setTitle('TechLearns API')
     .setDescription(
-      'RESTful API documentation for CodePlatform online learning and competitive programming backend',
+      'RESTful API documentation for TechLearns online learning and competitive programming backend',
     )
     .setVersion('1.0')
     .addBearerAuth(

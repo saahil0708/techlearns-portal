@@ -95,9 +95,9 @@ export default function ProblemQuickPeekDrawer({
                   height: 22,
                   fontSize: '0.72rem',
                   fontWeight: 800,
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
-                  border: '1px solid #BFDBFE',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
+                  border: '1px solid #F3E8FF',
                   borderRadius: '9999px',
                 }}
               />
@@ -175,7 +175,7 @@ export default function ProblemQuickPeekDrawer({
               <Typography sx={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
                 Acceptance
               </Typography>
-              <Typography sx={{ fontSize: '1.15rem', fontWeight: 900, color: '#2563EB', mt: 0.25 }}>
+              <Typography sx={{ fontSize: '1.15rem', fontWeight: 900, color: '#0B1F3A', mt: 0.25 }}>
                 {problem.acceptanceRate}%
               </Typography>
               <Typography sx={{ fontSize: '0.68rem', color: '#94A3B8', fontWeight: 600 }}>
@@ -246,12 +246,12 @@ export default function ProblemQuickPeekDrawer({
                   label={tag}
                   size="small"
                   sx={{
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
                     fontWeight: 700,
                     fontSize: '0.75rem',
                     borderRadius: '8px',
-                    border: '1px solid #BFDBFE',
+                    border: '1px solid #F3E8FF',
                   }}
                 />
               ))}
@@ -412,7 +412,7 @@ export default function ProblemQuickPeekDrawer({
             variant="contained"
             endIcon={<FluidArrowRight size={18} />}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               borderRadius: '8px',
               textTransform: 'none',
@@ -420,8 +420,8 @@ export default function ProblemQuickPeekDrawer({
               fontSize: '0.88rem',
               px: 2.5,
               py: 0.9,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Open in Code Workspace

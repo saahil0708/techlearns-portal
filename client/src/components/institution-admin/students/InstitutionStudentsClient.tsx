@@ -197,8 +197,8 @@ export default function InstitutionStudentsClient() {
         display: 'flex',
         bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(30, 64, 175, 0.05) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(14, 165, 233, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 15% 10%, rgba(11, 31, 58, 0.05) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
           radial-gradient(ellipse at 50% 90%, rgba(5, 150, 105, 0.03) 0%, transparent 50%)
         `,
         color: '#0F172A',
@@ -252,7 +252,7 @@ export default function InstitutionStudentsClient() {
                 <Chip
                   label={`${filteredStudents.length} students`}
                   size="small"
-                  sx={{ fontWeight: 700, bgcolor: 'rgba(30, 64, 175, 0.1)', color: '#1E40AF', borderRadius: '6px' }}
+                  sx={{ fontWeight: 700, bgcolor: 'rgba(11, 31, 58, 0.1)', color: '#0F264F', borderRadius: '6px' }}
                 />
               </Box>
               <Typography sx={{ fontSize: '0.82rem', color: '#64748B', mt: 0.5 }}>
@@ -369,8 +369,8 @@ export default function InstitutionStudentsClient() {
                               width: 36,
                               height: 36,
                               borderRadius: '10px',
-                              bgcolor: 'rgba(30, 64, 175, 0.08)',
-                              color: '#1E40AF',
+                              bgcolor: 'rgba(11, 31, 58, 0.08)',
+                              color: '#0F264F',
                               fontWeight: 800,
                               fontSize: '0.82rem',
                               display: 'flex',
@@ -405,9 +405,9 @@ export default function InstitutionStudentsClient() {
                               cursor: 'pointer',
                               fontWeight: 700,
                               fontSize: '0.72rem',
-                              bgcolor: (s.batchName || s.batch?.name || s.cohort) ? 'rgba(30, 64, 175, 0.08)' : '#F1F5F9',
-                              color: (s.batchName || s.batch?.name || s.cohort) ? '#1E40AF' : '#64748B',
-                              '&:hover': { bgcolor: 'rgba(30, 64, 175, 0.16)' },
+                              bgcolor: (s.batchName || s.batch?.name || s.cohort) ? 'rgba(11, 31, 58, 0.08)' : '#F1F5F9',
+                              color: (s.batchName || s.batch?.name || s.cohort) ? '#0F264F' : '#64748B',
+                              '&:hover': { bgcolor: 'rgba(11, 31, 58, 0.16)' },
                             }}
                           />
                         </Tooltip>
@@ -445,7 +445,7 @@ export default function InstitutionStudentsClient() {
                             <IconButton
                               size="small"
                               onClick={() => handleOpenAssignBatchSingle(s)}
-                              sx={{ color: '#1E40AF', bgcolor: 'rgba(30, 64, 175, 0.06)', '&:hover': { bgcolor: 'rgba(30, 64, 175, 0.14)' } }}
+                              sx={{ color: '#0F264F', bgcolor: 'rgba(11, 31, 58, 0.06)', '&:hover': { bgcolor: 'rgba(11, 31, 58, 0.14)' } }}
                             >
                               <SchoolRoundedIcon sx={{ fontSize: 16 }} />
                             </IconButton>
@@ -454,7 +454,7 @@ export default function InstitutionStudentsClient() {
                             <IconButton
                               size="small"
                               href={`mailto:${s.email}`}
-                              sx={{ color: '#64748B', '&:hover': { color: '#1E40AF', bgcolor: 'rgba(30,64,175,0.06)' } }}
+                              sx={{ color: '#64748B', '&:hover': { color: '#0F264F', bgcolor: 'rgba(11, 31, 58, 0.06)' } }}
                             >
                               <MailOutlineRoundedIcon sx={{ fontSize: 18 }} />
                             </IconButton>

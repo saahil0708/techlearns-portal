@@ -1,10 +1,12 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import { ContestStatus, Prisma, Role } from '@prisma/client';
 import { AppCacheService } from '../common/cache/app-cache.service.js';
 import { AppEvents, SubmissionEvaluatedEvent } from '../common/events/app-events.js';
 import { PaginationArgs } from '../common/graphql/pagination.args.js';
 import { CurrentUserPayload } from '../common/types/current-user.interface.js';
+import { MailService } from '../mail/mail.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { userSanitizedSelect } from '../users/users.service.js';
 import { AddContestProblemInput } from './dto/add-contest-problem.input.js';
@@ -20,6 +22,8 @@ export class ContestsService {
   constructor(
     private prisma: PrismaService,
     @Optional() private cacheService?: AppCacheService,
+    @Optional() private mailService?: MailService,
+    @Optional() private configService?: ConfigService,
   ) {}
 
   @OnEvent(AppEvents.SUBMISSION_EVALUATED)
@@ -61,16 +65,28 @@ export class ContestsService {
   }
 
   async create(input: CreateContestInput, creatorId: string, user?: CurrentUserPayload) {
-    let institutionId = input.institutionId || input.collegeId;
+    let institutionId: string | null = null;
+    const rawInstId = (input.institutionId || input.collegeId)?.trim();
+    if (rawInstId) {
+      const existingInst = await this.prisma.institution.findUnique({
+        where: { id: rawInstId },
+        select: { id: true },
+      });
+      if (existingInst) {
+        institutionId = existingInst.id;
+      }
+    }
 
-    if (input.batchId) {
+    let batchId: string | null = null;
+    if (input.batchId?.trim()) {
       const batch = await this.prisma.batch.findUnique({
-        where: { id: input.batchId },
+        where: { id: input.batchId.trim() },
         select: { id: true, institutionId: true },
       });
       if (!batch) {
         throw new NotFoundException(`Batch with ID ${input.batchId} not found`);
       }
+      batchId = batch.id;
       if (!institutionId) {
         institutionId = batch.institutionId;
       } else if (batch.institutionId !== institutionId) {
@@ -78,28 +94,27 @@ export class ContestsService {
       }
     }
 
-    this.assertInstitutionAssignment(institutionId, user);
+    if (institutionId) {
+      this.assertInstitutionAssignment(institutionId, user);
+    }
     if (input.endTime <= input.startTime) {
       throw new BadRequestException('Contest end time must be after its start time');
     }
 
+    const validProblemIds: string[] = [];
     if (input.problemIds && input.problemIds.length > 0) {
       const problems = await this.prisma.problem.findMany({
         where: { id: { in: input.problemIds } },
       });
 
-      if (problems.length !== input.problemIds.length) {
-        throw new NotFoundException('One or more problems not found');
-      }
-
       for (const problem of problems) {
         if (problem.status !== 'PUBLISHED') {
-          throw new ForbiddenException('Only published problems can be added to a contest');
+          continue;
         }
 
         if (problem.institutionId) {
-          if (institutionId !== problem.institutionId) {
-            throw new ForbiddenException('Institution problems can only be added to contests from the same institution');
+          if (institutionId && institutionId !== problem.institutionId) {
+            continue;
           }
 
           const canAccessProblem =
@@ -112,9 +127,11 @@ export class ContestsService {
                 (membership.role === Role.FACULTY || membership.role === Role.INSTITUTION_ADMIN),
             );
           if (!canAccessProblem) {
-            throw new ForbiddenException('You do not have access to this problem');
+            continue;
           }
         }
+
+        validProblemIds.push(problem.id);
       }
     }
 
@@ -139,17 +156,17 @@ export class ContestsService {
           windowType: input.windowType ?? 'FIXED',
           shuffleQuestions: input.shuffleQuestions ?? false,
           ipRestriction: input.ipRestriction,
-          institutionId,
-          batchId: input.batchId,
+          institutionId: institutionId || null,
+          batchId: batchId || null,
           createdById: creatorId,
           status: input.status || ContestStatus.UPCOMING,
         },
       });
 
       // Auto-link selected problems if provided
-      if (input.problemIds && input.problemIds.length > 0) {
+      if (validProblemIds.length > 0) {
         await tx.contestProblem.createMany({
-          data: input.problemIds.map((pid, idx) => ({
+          data: validProblemIds.map((pid, idx) => ({
             contestId: created.id,
             problemId: pid,
             order: idx,
@@ -179,6 +196,85 @@ export class ContestsService {
 
       return created;
     });
+
+    // Asynchronously dispatch student & candidate invitation emails with direct exam link
+    if (this.mailService) {
+      const frontendBase = this.configService?.get<string>('frontendUrl') || 'http://localhost:3000';
+      const assessmentUrl = `${frontendBase}/assessments/${contest.slug || contest.id}`;
+
+      (async () => {
+        try {
+          let instName = 'Authorized Academic Partner';
+          let batchName: string | undefined;
+
+          if (institutionId) {
+            const inst = await this.prisma.institution.findUnique({
+              where: { id: institutionId },
+              select: { name: true },
+            });
+            if (inst) instName = inst.name;
+          }
+
+          if (input.batchId) {
+            const b = await this.prisma.batch.findUnique({
+              where: { id: input.batchId },
+              select: { name: true },
+            });
+            if (b) batchName = b.name;
+          }
+
+          const dispatchedEmails = new Set<string>();
+
+          // 1. Whitelisted candidate emails (from CSV import / candidate roster)
+          if (input.whitelistedEmails && Array.isArray(input.whitelistedEmails) && input.whitelistedEmails.length > 0) {
+            for (const email of input.whitelistedEmails) {
+              const trimmed = typeof email === 'string' ? email.trim().toLowerCase() : '';
+              if (trimmed && trimmed.includes('@') && !dispatchedEmails.has(trimmed)) {
+                dispatchedEmails.add(trimmed);
+                await this.mailService?.sendAssessmentInvitationEmail({
+                  to: trimmed,
+                  assessmentTitle: contest.title,
+                  assessmentUrl: `${assessmentUrl}?candidate=${encodeURIComponent(trimmed)}`,
+                  institutionName: instName,
+                  cohortName: batchName,
+                  institutionLogo: input.institutionLogo,
+                  durationMinutes: contest.durationMinutes,
+                  startTime: contest.startTime,
+                }).catch(() => {});
+              }
+            }
+          }
+
+          // 2. Batch students enrolled in the cohort
+          if (input.batchId) {
+            const batchStudents = await this.prisma.batchStudent.findMany({
+              where: { batchId: input.batchId },
+              include: { user: { select: { email: true, name: true } } },
+            });
+
+            for (const s of batchStudents) {
+              const studentEmail = s.user?.email?.trim().toLowerCase();
+              if (studentEmail && !dispatchedEmails.has(studentEmail)) {
+                dispatchedEmails.add(studentEmail);
+                await this.mailService?.sendAssessmentInvitationEmail({
+                  to: studentEmail,
+                  name: s.user?.name || undefined,
+                  assessmentTitle: contest.title,
+                  assessmentUrl: `${assessmentUrl}?candidate=${encodeURIComponent(studentEmail)}`,
+                  institutionName: instName,
+                  cohortName: batchName,
+                  institutionLogo: input.institutionLogo,
+                  durationMinutes: contest.durationMinutes,
+                  startTime: contest.startTime,
+                }).catch(() => {});
+              }
+            }
+          }
+        } catch {
+          // Failure to dispatch invitation emails should not break contest creation response
+        }
+      })();
+    }
 
     return this.findById(contest.id, user);
   }

@@ -75,7 +75,7 @@ export default function FacultyNavbar({
   department,
   searchQuery = '',
   onSearchChange = () => {},
-  primaryBlue = '#2563EB',
+  primaryBlue = '#0B1F3A',
 }: FacultyNavbarProps) {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -195,13 +195,13 @@ export default function FacultyNavbar({
             label={roleLabel}
             size="small"
             sx={{
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               fontWeight: 800,
               fontSize: '0.68rem',
               height: 22,
               borderRadius: '6px',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           />
         </Box>
@@ -281,8 +281,8 @@ export default function FacultyNavbar({
               '&:hover': { bgcolor: '#FFFFFF', borderColor: '#CBD5E1' },
               '&.Mui-focused': {
                 bgcolor: '#FFFFFF',
-                borderColor: '#2563EB',
-                boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.15)',
+                borderColor: '#0B1F3A',
+                boxShadow: '0 0 0 3px rgba(11, 31, 58, 0.15)',
               },
             },
             '& input::placeholder': {
@@ -323,9 +323,9 @@ export default function FacultyNavbar({
                   width: 7,
                   height: 7,
                   borderRadius: '50%',
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   border: '1px solid #FFFFFF',
-                  boxShadow: '0 0 6px rgba(37, 99, 235, 0.8)',
+                  boxShadow: '0 0 6px rgba(91, 45, 144, 0.8)',
                 }}
               />
             )}
@@ -361,7 +361,7 @@ export default function FacultyNavbar({
                 <Chip
                   label={`${unreadCount} new`}
                   size="small"
-                  sx={{ height: 18, fontSize: '0.66rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB' }}
+                  sx={{ height: 18, fontSize: '0.66rem', fontWeight: 800, bgcolor: '#FAF5FF', color: '#0B1F3A' }}
                 />
               )}
             </Box>
@@ -406,13 +406,13 @@ export default function FacultyNavbar({
                     p: 1.25,
                     borderRadius: '10px',
                     bgcolor: notif.unread ? '#F8FAFC' : '#FFFFFF',
-                    border: notif.unread ? '1px solid #DBEAFE' : '1px solid #F1F5F9',
+                    border: notif.unread ? '1px solid #FAF5FF' : '1px solid #F1F5F9',
                     cursor: 'pointer',
                     outline: 'none',
                     transition: 'all 0.15s ease',
                     '&:hover': { bgcolor: '#F1F5F9' },
                     '&:focus-visible': {
-                      boxShadow: '0 0 0 2px #2563EB',
+                      boxShadow: '0 0 0 2px #0B1F3A',
                     },
                   }}
                 >
@@ -439,7 +439,7 @@ export default function FacultyNavbar({
           onClick={(e) => setCreateAnchorEl(e.currentTarget)}
           startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
           sx={{
-            background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+            background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
             color: '#FFFFFF',
             textTransform: 'none',
             fontWeight: 700,
@@ -448,11 +448,11 @@ export default function FacultyNavbar({
             px: 2.4,
             py: 0.95,
             height: 40,
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+            boxShadow: '0 4px 14px rgba(91, 45, 144, 0.3)',
             border: 'none',
             '&:hover': {
-              background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
-              boxShadow: '0 6px 20px rgba(37, 99, 235, 0.45)',
+              background: 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)',
+              boxShadow: '0 6px 20px rgba(91, 45, 144, 0.45)',
               transform: 'translateY(-1px)',
             },
             transition: 'all 0.2s ease',
@@ -480,7 +480,7 @@ export default function FacultyNavbar({
           }}
         >
           <MenuItem onClick={() => handleActionSelect('/faculty/profile?tab=batches')} sx={{ borderRadius: '10px', py: 1 }}>
-            <ListItemIcon sx={{ color: '#2563EB', minWidth: 32 }}>
+            <ListItemIcon sx={{ color: '#0B1F3A', minWidth: 32 }}>
               <SchoolRoundedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText
@@ -490,7 +490,7 @@ export default function FacultyNavbar({
           </MenuItem>
 
           <MenuItem onClick={() => handleActionSelect('/courses')} sx={{ borderRadius: '10px', py: 1 }}>
-            <ListItemIcon sx={{ color: '#0284C7', minWidth: 32 }}>
+            <ListItemIcon sx={{ color: '#5B2D90', minWidth: 32 }}>
               <MenuBookRoundedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText
@@ -538,9 +538,9 @@ export default function FacultyNavbar({
               setCreateAnchorEl(null);
               setSendNotifOpen(true);
             }}
-            sx={{ borderRadius: '10px', py: 1, bgcolor: '#EFF6FF', color: '#2563EB', '&:hover': { bgcolor: '#DBEAFE' } }}
+            sx={{ borderRadius: '10px', py: 1, bgcolor: '#FAF5FF', color: '#0B1F3A', '&:hover': { bgcolor: '#E9D5FF' } }}
           >
-            <ListItemIcon sx={{ color: '#2563EB', minWidth: 32 }}>
+            <ListItemIcon sx={{ color: '#0B1F3A', minWidth: 32 }}>
               <CampaignRoundedIcon sx={{ fontSize: 18 }} />
             </ListItemIcon>
             <ListItemText

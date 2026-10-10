@@ -49,7 +49,7 @@ import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 
-import { FluidArrowRight } from '@/utils/fluid_arrow';
+import { FluidArrowRight, FluidArrowUpward, FluidArrowDownward } from '@/utils/fluid_arrow';
 
 import dynamic from 'next/dynamic';
 
@@ -103,8 +103,8 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
             problemsCount: item._count?.problems ?? item.problemsCount ?? 0,
             registeredParticipants: item._count?.registrations ?? item.registeredParticipants ?? 0,
             submissionsCount: item._count?.submissions ?? item.submissionsCount ?? 0,
-            organizer: item.organizer || 'CodePlatform Global',
-            bannerColor: '#2563EB',
+            organizer: item.organizer || 'TechLearns Global',
+            bannerColor: '#0B1F3A',
             tags: item.tags || ['Competitive', 'Algorithms'],
             rated: item.rated ?? true,
             institutionId: item.institutionId || item.collegeId,
@@ -272,7 +272,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
       registeredParticipants: 0,
       submissionsCount: 0,
       organizer: data.organizer,
-      bannerColor: '#2563EB',
+      bannerColor: '#0B1F3A',
       tags: data.tags,
       rated: data.rated,
       institutionId: data.institutionId,
@@ -299,6 +299,8 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
         endTime: new Date(end),
         institutionId: data.institutionId,
         collegeId: data.institutionId,
+        institutionLogo: data.institutionLogo || data.cohortLogo,
+        whitelistedEmails: data.whitelistedEmails,
         batchId: data.batchId,
         problemIds: data.problemIds,
         status: data.status,
@@ -322,6 +324,9 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
         );
       }
       toast.success(`Proctored Assessment "${data.title}" created successfully.`, 'Assessment Published');
+      if (data.whitelistedEmails && data.whitelistedEmails.length > 0) {
+        toast.info(`Assessment links sent to ${data.whitelistedEmails.length} candidate email(s).`, 'Invitations Dispatched');
+      }
     } catch {
       toast.info(`Assessment "${data.title}" saved locally.`, 'Assessment Registered');
     }
@@ -343,7 +348,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
       <body>
         <h2>Competitive Contests & Tournaments Directory</h2>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Code</th>
             <th>Contest Title</th>
             <th>Status</th>
@@ -446,7 +451,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
 
   const statusChipStyles = {
     LIVE: { bgcolor: '#FEF2F2', color: '#DC2626', border: '1px solid #FECACA' },
-    UPCOMING: { bgcolor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' },
+    UPCOMING: { bgcolor: '#FAF5FF', color: '#0B1F3A', border: '1px solid #F3E8FF' },
     PAST: { bgcolor: '#F1F5F9', color: '#64748B', border: '1px solid #CBD5E1' },
     DRAFT: { bgcolor: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A' },
   };
@@ -460,9 +465,9 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -498,8 +503,8 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                 size="small"
                 startIcon={<EmojiEventsRoundedIcon sx={{ fontSize: 16 }} />}
                 sx={{
-                  bgcolor: '#2563EB',
-                  backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  bgcolor: '#0B1F3A',
+                  backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   color: '#FFFFFF',
                   fontWeight: 700,
                   fontSize: '0.82rem',
@@ -507,7 +512,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                   borderRadius: '8px',
                   px: 2,
                   py: 0.6,
-                  boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
+                  boxShadow: '0 2px 8px rgba(91, 45, 144, 0.25)',
                 }}
               >
                 Contests & Tournaments
@@ -577,7 +582,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                     px: 1.75,
                     py: 0.75,
                     boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                    '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+                    '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A', borderColor: '#D8B4FE' },
                   }}
                 >
                   Export Data
@@ -612,7 +617,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                 </MenuItem>
                 <MenuItem onClick={downloadContestsCSV} sx={{ borderRadius: '8px', py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 32 }}>
-                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                   </ListItemIcon>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                     Download CSV (.csv)
@@ -625,7 +630,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                 startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
                 onClick={() => setIsCreateModalOpen(true)}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
                   borderRadius: '8px',
                   textTransform: 'none',
@@ -633,8 +638,8 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                   fontSize: '0.85rem',
                   px: 2.25,
                   py: 0.75,
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Schedule Contest
@@ -708,7 +713,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                 sx={{
                   minHeight: 48,
                   '& .MuiTabs-indicator': {
-                    backgroundColor: '#2563EB',
+                    backgroundColor: '#0B1F3A',
                     height: 3,
                     borderRadius: '3px 3px 0 0',
                   },
@@ -741,10 +746,10 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                             fontSize: '0.68rem',
                             fontWeight: 700,
                             borderRadius: '9999px',
-                            bgcolor: selectedTab === tab.id ? '#EFF6FF' : '#F1F5F9',
-                            color: selectedTab === tab.id ? '#2563EB' : '#64748B',
+                            bgcolor: selectedTab === tab.id ? '#FAF5FF' : '#F1F5F9',
+                            color: selectedTab === tab.id ? '#0B1F3A' : '#64748B',
                             border: '1px solid',
-                            borderColor: selectedTab === tab.id ? '#BFDBFE' : '#E2E8F0',
+                            borderColor: selectedTab === tab.id ? '#D8B4FE' : '#E2E8F0',
                             pointerEvents: 'none',
                           }}
                         />
@@ -756,7 +761,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                       py: 1,
                       px: 1.25,
                       textTransform: 'none',
-                      color: selectedTab === tab.id ? '#2563EB !important' : '#64748B',
+                      color: selectedTab === tab.id ? '#0B1F3A !important' : '#64748B',
                       '&:hover': { color: '#0F172A' },
                     }}
                   />
@@ -803,7 +808,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                     fontSize: '0.85rem',
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -928,7 +933,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                         onChange={(e) => handleSelectAll(e.target.checked)}
                         sx={{
                           color: '#CBD5E1',
-                          '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#2563EB' },
+                          '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#0B1F3A' },
                         }}
                       />
                     </TableCell>
@@ -955,9 +960,9 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                         TOURNAMENT TITLE
                         {sortField === 'title' &&
                           (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ))}
                       </Box>
                     </TableCell>
@@ -980,9 +985,9 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                         SCHEDULE & TIMING
                         {sortField === 'startTime' &&
                           (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ))}
                       </Box>
                     </TableCell>
@@ -1005,9 +1010,9 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                         SCORING & PROBLEMS
                         {sortField === 'problemsCount' &&
                           (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ))}
                       </Box>
                     </TableCell>
@@ -1030,9 +1035,9 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                         REGISTRATIONS
                         {sortField === 'registeredParticipants' &&
                           (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ))}
                       </Box>
                     </TableCell>
@@ -1054,7 +1059,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                     <TableRow>
                       <TableCell colSpan={8} sx={{ py: 8, textAlign: 'center' }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                          <Box sx={{ p: 2, borderRadius: '50%', bgcolor: '#EFF6FF', color: '#2563EB' }}>
+                          <Box sx={{ p: 2, borderRadius: '50%', bgcolor: '#FAF5FF', color: '#0B1F3A' }}>
                             <SearchIcon sx={{ fontSize: 32 }} />
                           </Box>
                           <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '1rem' }}>
@@ -1078,8 +1083,8 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                           selected={isSelected}
                           sx={{
                             '& td': { borderBottom: '1px solid #F1F5F9' },
-                            bgcolor: isSelected ? '#EFF6FF !important' : 'inherit',
-                            '&:hover': { bgcolor: isSelected ? '#DBEAFE !important' : '#F8FAFC !important' },
+                            bgcolor: isSelected ? '#FAF5FF !important' : 'inherit',
+                            '&:hover': { bgcolor: isSelected ? '#FAF5FF !important' : '#F8FAFC !important' },
                           }}
                         >
                           {/* Checkbox */}
@@ -1089,7 +1094,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                               onChange={() => handleToggleSelectRow(contest.id)}
                               sx={{
                                 color: '#CBD5E1',
-                                '&.Mui-checked': { color: '#2563EB' },
+                                '&.Mui-checked': { color: '#0B1F3A' },
                               }}
                             />
                           </TableCell>
@@ -1127,7 +1132,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                                       fontWeight: 700,
                                       color: '#0F172A',
                                       textDecoration: 'none',
-                                      '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                                      '&:hover': { color: '#0B1F3A', textDecoration: 'underline' },
                                     }}
                                   >
                                     {contest.title}
@@ -1188,9 +1193,9 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                                 height: 20,
                                 fontSize: '0.68rem',
                                 fontWeight: 700,
-                                bgcolor: '#EFF6FF',
-                                color: '#2563EB',
-                                border: '1px solid #BFDBFE',
+                                bgcolor: '#FAF5FF',
+                                color: '#0B1F3A',
+                                border: '1px solid #F3E8FF',
                                 borderRadius: '6px',
                               }}
                             />
@@ -1239,7 +1244,7 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                                     height: 32,
                                     borderRadius: '8px',
                                     border: '1px solid #E2E8F0',
-                                    '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF', borderColor: '#BFDBFE' },
+                                    '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF', borderColor: '#D8B4FE' },
                                   }}
                                 >
                                   <VisibilityRoundedIcon sx={{ fontSize: 18 }} />
@@ -1274,16 +1279,16 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                                   textTransform: 'none',
                                   fontWeight: 700,
                                   fontSize: '0.76rem',
-                                  bgcolor: contest.status === 'LIVE' ? '#DC2626' : '#EFF6FF',
-                                  color: contest.status === 'LIVE' ? '#FFFFFF' : '#2563EB',
-                                  borderColor: contest.status === 'LIVE' ? '#DC2626' : '#DBEAFE',
+                                  bgcolor: contest.status === 'LIVE' ? '#DC2626' : '#FAF5FF',
+                                  color: contest.status === 'LIVE' ? '#FFFFFF' : '#0B1F3A',
+                                  borderColor: contest.status === 'LIVE' ? '#DC2626' : '#E9D5FF',
                                   borderRadius: '8px',
                                   px: 1.5,
                                   py: 0.4,
                                   whiteSpace: 'nowrap',
                                   '&:hover': {
-                                    bgcolor: contest.status === 'LIVE' ? '#B91C1C' : '#DBEAFE',
-                                    borderColor: contest.status === 'LIVE' ? '#B91C1C' : '#93C5FD',
+                                    bgcolor: contest.status === 'LIVE' ? '#B91C1C' : '#E9D5FF',
+                                    borderColor: contest.status === 'LIVE' ? '#B91C1C' : '#C084FC',
                                   },
                                 }}
                               >
@@ -1452,14 +1457,14 @@ export default function ContestsDirectoryClient({ initialContests }: ContestsDir
                             fontSize: '0.78rem',
                             fontWeight: isActive ? 800 : 600,
                             color: isActive ? '#FFFFFF' : '#64748B',
-                            bgcolor: isActive ? '#2563EB' : '#FFFFFF',
-                            border: isActive ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                            boxShadow: isActive ? '0 2px 8px rgba(37, 99, 235, 0.3)' : 'none',
+                            bgcolor: isActive ? '#0B1F3A' : '#FFFFFF',
+                            border: isActive ? '1px solid #0B1F3A' : '1px solid #E2E8F0',
+                            boxShadow: isActive ? '0 2px 8px rgba(91, 45, 144, 0.3)' : 'none',
                             transition: 'all 0.15s ease',
                             '&:hover': {
-                              bgcolor: isActive ? '#1D4ED8' : '#F1F5F9',
+                              bgcolor: isActive ? '#17366E' : '#F1F5F9',
                               color: isActive ? '#FFFFFF' : '#0F172A',
-                              borderColor: isActive ? '#1D4ED8' : '#CBD5E1',
+                              borderColor: isActive ? '#17366E' : '#CBD5E1',
                             },
                           }}
                         >

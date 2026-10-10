@@ -40,13 +40,13 @@ export function WizardHeaderStepper({
               width: 44,
               height: 44,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
-              border: '1px solid #BFDBFE',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              border: '1px solid #F3E8FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.12)',
+              boxShadow: '0 2px 8px rgba(91, 45, 144, 0.12)',
             }}
           >
             <PsychologyRoundedIcon fontSize="medium" />
@@ -66,11 +66,11 @@ export function WizardHeaderStepper({
             label={`Step ${currentStep} of 4`}
             size="small"
             sx={{
-              bgcolor: '#EFF6FF',
-              color: '#1D4ED8',
+              bgcolor: '#FAF5FF',
+              color: '#17366E',
               fontWeight: 700,
               fontSize: '0.78rem',
-              border: '1px solid #DBEAFE',
+              border: '1px solid #FAF5FF',
               borderRadius: '8px',
             }}
           />
@@ -121,9 +121,9 @@ export function WizardHeaderStepper({
                     fontWeight: 700,
                     fontSize: '0.85rem',
                     flexShrink: 0,
-                    bgcolor: isDone ? '#10B981' : isActive ? '#2563EB' : '#E2E8F0',
+                    bgcolor: isDone ? '#10B981' : isActive ? '#0B1F3A' : '#E2E8F0',
                     color: isDone || isActive ? '#FFFFFF' : '#64748B',
-                    boxShadow: isActive ? '0 0 0 4px rgba(37, 99, 235, 0.15)' : 'none',
+                    boxShadow: isActive ? '0 0 0 4px rgba(11, 31, 58, 0.15)' : 'none',
                     transition: 'all 0.2s',
                   }}
                 >
@@ -135,7 +135,7 @@ export function WizardHeaderStepper({
                     sx={{
                       display: 'block',
                       fontWeight: isActive ? 800 : isDone ? 700 : 600,
-                      color: isActive ? '#2563EB' : isDone ? '#0F172A' : '#64748B',
+                      color: isActive ? '#0B1F3A' : isDone ? '#0F172A' : '#64748B',
                       lineHeight: 1.1,
                       whiteSpace: 'nowrap',
                       textOverflow: 'ellipsis',
@@ -171,7 +171,7 @@ export function WizardHeaderStepper({
             borderRadius: 2,
             bgcolor: '#E2E8F0',
             '& .MuiLinearProgress-bar': {
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               borderRadius: 2,
             },
           }}

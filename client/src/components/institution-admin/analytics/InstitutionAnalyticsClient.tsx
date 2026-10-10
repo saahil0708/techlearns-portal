@@ -51,8 +51,8 @@ export default function InstitutionAnalyticsClient() {
         display: 'flex',
         bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(30, 64, 175, 0.05) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(14, 165, 233, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 15% 10%, rgba(11, 31, 58, 0.05) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
           radial-gradient(ellipse at 50% 90%, rgba(5, 150, 105, 0.03) 0%, transparent 50%)
         `,
         color: '#0F172A',
@@ -100,7 +100,7 @@ export default function InstitutionAnalyticsClient() {
               <Chip
                 label={collegeCode}
                 size="small"
-                sx={{ fontWeight: 700, bgcolor: 'rgba(30, 64, 175, 0.1)', color: '#1E40AF', borderRadius: '6px' }}
+                sx={{ fontWeight: 700, bgcolor: 'rgba(11, 31, 58, 0.1)', color: '#0F264F', borderRadius: '6px' }}
               />
             </Box>
             <Typography sx={{ fontSize: '0.82rem', color: '#64748B', mt: 0.5 }}>
@@ -236,7 +236,7 @@ export default function InstitutionAnalyticsClient() {
                     <Typography sx={{ fontWeight: 700, fontSize: '0.84rem', color: '#0F172A' }}>
                       {item.course}
                     </Typography>
-                    <Typography sx={{ fontWeight: 800, fontSize: '0.84rem', color: '#1E40AF' }}>
+                    <Typography sx={{ fontWeight: 800, fontSize: '0.84rem', color: '#0F264F' }}>
                       {item.completion}
                     </Typography>
                   </Box>

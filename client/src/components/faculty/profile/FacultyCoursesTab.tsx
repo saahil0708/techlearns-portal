@@ -259,8 +259,8 @@ export default function FacultyCoursesTab({
                           height: 22,
                           fontSize: '0.72rem',
                           fontWeight: 700,
-                          bgcolor: course.level === 'Advanced' ? '#FEF2F2' : course.level === 'Intermediate' ? '#FFFBEB' : '#EFF6FF',
-                          color: course.level === 'Advanced' ? '#DC2626' : course.level === 'Intermediate' ? '#D97706' : '#2563EB',
+                          bgcolor: course.level === 'Advanced' ? '#FEF2F2' : course.level === 'Intermediate' ? '#FFFBEB' : '#FAF5FF',
+                          color: course.level === 'Advanced' ? '#DC2626' : course.level === 'Intermediate' ? '#D97706' : '#0B1F3A',
                           borderRadius: '6px',
                         }}
                       />

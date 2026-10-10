@@ -81,7 +81,7 @@ const TREND_DATA_30D = [
 ];
 
 const TOPIC_DISTRIBUTION = [
-  { name: 'Data Structures & Trees', value: 36, color: '#2563EB', solves: '420 solves' },
+  { name: 'Data Structures & Trees', value: 36, color: '#0B1F3A', solves: '420 solves' },
   { name: 'Dynamic Programming', value: 28, color: '#7C3AED', solves: '310 solves' },
   { name: 'Graph Algorithms', value: 20, color: '#059669', solves: '240 solves' },
   { name: 'Sorting & Arrays', value: 16, color: '#D97706', solves: '180 solves' },
@@ -201,8 +201,8 @@ export default function FacultyAnalyticsSection({
                     width: 32,
                     height: 32,
                     borderRadius: '10px',
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -224,13 +224,13 @@ export default function FacultyAnalyticsSection({
               <Button
                 onClick={() => setTimeframe('7d')}
                 sx={{
-                  bgcolor: timeframe === '7d' ? '#2563EB' : '#FFFFFF',
+                  bgcolor: timeframe === '7d' ? '#0B1F3A' : '#FFFFFF',
                   color: timeframe === '7d' ? '#FFFFFF' : '#64748B',
                   fontWeight: 700,
                   fontSize: '0.74rem',
                   textTransform: 'none',
                   px: 1.5,
-                  '&:hover': { bgcolor: timeframe === '7d' ? '#1D4ED8' : '#F8FAFC' },
+                  '&:hover': { bgcolor: timeframe === '7d' ? '#17366E' : '#F8FAFC' },
                 }}
               >
                 Last 7 Days
@@ -238,13 +238,13 @@ export default function FacultyAnalyticsSection({
               <Button
                 onClick={() => setTimeframe('30d')}
                 sx={{
-                  bgcolor: timeframe === '30d' ? '#2563EB' : '#FFFFFF',
+                  bgcolor: timeframe === '30d' ? '#0B1F3A' : '#FFFFFF',
                   color: timeframe === '30d' ? '#FFFFFF' : '#64748B',
                   fontWeight: 700,
                   fontSize: '0.74rem',
                   textTransform: 'none',
                   px: 1.5,
-                  '&:hover': { bgcolor: timeframe === '30d' ? '#1D4ED8' : '#F8FAFC' },
+                  '&:hover': { bgcolor: timeframe === '30d' ? '#17366E' : '#F8FAFC' },
                 }}
               >
                 30 Days
@@ -267,8 +267,8 @@ export default function FacultyAnalyticsSection({
               <Typography sx={{ fontSize: '0.68rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
                 Recent Submissions Evaluated
               </Typography>
-              <Typography sx={{ fontSize: '1.15rem', fontWeight: 800, color: '#2563EB', mt: 0.25 }}>
-                {evaluatedSolutionsCount} <span style={{ fontSize: '0.72rem', color: '#3B82F6', fontWeight: 600 }}>submissions</span>
+              <Typography sx={{ fontSize: '1.15rem', fontWeight: 800, color: '#0B1F3A', mt: 0.25 }}>
+                {evaluatedSolutionsCount} <span style={{ fontSize: '0.72rem', color: '#5B2D90', fontWeight: 600 }}>submissions</span>
               </Typography>
             </Box>
 
@@ -288,8 +288,8 @@ export default function FacultyAnalyticsSection({
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#2563EB" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor='#0B1F3A' stopOpacity={0.35} />
+                    <stop offset="95%" stopColor='#0B1F3A' stopOpacity={0.0} />
                   </linearGradient>
                   <linearGradient id="colorAccepted" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10B981" stopOpacity={0.4} />
@@ -313,7 +313,7 @@ export default function FacultyAnalyticsSection({
                 <Area
                   type="monotone"
                   dataKey="total"
-                  stroke="#2563EB"
+                  stroke='#0B1F3A'
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorTotal)"
@@ -423,7 +423,7 @@ export default function FacultyAnalyticsSection({
             <Chip
               label={`${courses.length} Active Syllabi`}
               size="small"
-              sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700, fontSize: '0.72rem', height: 22 }}
+              sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700, fontSize: '0.72rem', height: 22 }}
             />
           </Box>
         </Card>
@@ -515,8 +515,8 @@ export default function FacultyAnalyticsSection({
                         sx={{
                           width: 34,
                           height: 34,
-                          bgcolor: isAccepted ? '#EFF6FF' : '#FEE2E2',
-                          color: isAccepted ? '#2563EB' : '#DC2626',
+                          bgcolor: isAccepted ? '#FAF5FF' : '#FEE2E2',
+                          color: isAccepted ? '#0B1F3A' : '#DC2626',
                           fontSize: '0.74rem',
                           fontWeight: 800,
                           flexShrink: 0,
@@ -532,7 +532,7 @@ export default function FacultyAnalyticsSection({
                           <Chip
                             label={cohortName}
                             size="small"
-                            sx={{ height: 18, fontSize: '0.64rem', fontWeight: 700, bgcolor: '#EFF6FF', color: '#2563EB' }}
+                            sx={{ height: 18, fontSize: '0.64rem', fontWeight: 700, bgcolor: '#FAF5FF', color: '#0B1F3A' }}
                           />
                         </Box>
                         <Typography noWrap sx={{ fontSize: '0.74rem', color: '#64748B', mt: 0.2 }}>
@@ -611,8 +611,8 @@ export default function FacultyAnalyticsSection({
                     width: 32,
                     height: 32,
                     borderRadius: '10px',
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -633,7 +633,7 @@ export default function FacultyAnalyticsSection({
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '0.76rem',
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                   p: 0,
                   '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' },
                 }}
@@ -690,7 +690,7 @@ export default function FacultyAnalyticsSection({
                           {hasCapacity && ` / ${maxCap}`}
                         </Typography>
                         {hasCapacity && (
-                          <Typography sx={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700 }}>
+                          <Typography sx={{ fontSize: '0.72rem', color: '#0B1F3A', fontWeight: 700 }}>
                             {capacityPct}%
                           </Typography>
                         )}
@@ -705,7 +705,7 @@ export default function FacultyAnalyticsSection({
                             bgcolor: '#E2E8F0',
                             '& .MuiLinearProgress-bar': {
                               borderRadius: 3,
-                              background: 'linear-gradient(90deg, #2563EB 0%, #3B82F6 100%)',
+                              background: 'linear-gradient(90deg, #0B1F3A 0%, #5B2D90 100%)',
                             },
                           }}
                         />
@@ -780,8 +780,8 @@ export default function FacultyAnalyticsSection({
                 width: 32,
                 height: 32,
                 borderRadius: '10px',
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -799,14 +799,14 @@ export default function FacultyAnalyticsSection({
             startIcon={<EditRoundedIcon sx={{ fontSize: 16 }} />}
             onClick={onEditBio}
             sx={{
-              color: '#2563EB',
-              bgcolor: '#EFF6FF',
+              color: '#0B1F3A',
+              bgcolor: '#FAF5FF',
               borderRadius: '8px',
               textTransform: 'none',
               fontWeight: 700,
               fontSize: '0.8rem',
               px: 1.5,
-              '&:hover': { bgcolor: '#DBEAFE' },
+              '&:hover': { bgcolor: '#E9D5FF' },
             }}
           >
             Edit Bio
@@ -846,7 +846,7 @@ export default function FacultyAnalyticsSection({
         {/* Meta Attributes Row: Office Hours, Location & Socials */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 2 }}>
           <Box sx={{ p: 2, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #F1F5F9' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, color: '#2563EB' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, color: '#0B1F3A' }}>
               <AccessTimeRoundedIcon sx={{ fontSize: 18 }} />
               <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
                 Office Hours
@@ -905,7 +905,7 @@ export default function FacultyAnalyticsSection({
                   href={validWebsiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{ color: '#2563EB', bgcolor: '#FFFFFF', border: '1px solid #E2E8F0' }}
+                  sx={{ color: '#0B1F3A', bgcolor: '#FFFFFF', border: '1px solid #E2E8F0' }}
                 >
                   <LanguageRoundedIcon sx={{ fontSize: 15 }} />
                 </IconButton>

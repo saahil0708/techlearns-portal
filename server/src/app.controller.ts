@@ -18,7 +18,7 @@ export class AppController {
 
   @Get()
   @ApiOperation({ summary: 'Service info' })
-  @ResponseMessage('Welcome to CodePlatform API')
+  @ResponseMessage('Welcome to TechLearns API')
   getRoot() {
     return this.appService.getHealth();
   }

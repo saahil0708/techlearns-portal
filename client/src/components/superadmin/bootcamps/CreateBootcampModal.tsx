@@ -209,7 +209,7 @@ export default function CreateBootcampModal({
                       borderRadius: '8px',
                       '& fieldset': { borderColor: '#E2E8F0' },
                       '&:hover fieldset': { borderColor: '#CBD5E1' },
-                      '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                      '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                     },
                   }}
                 />
@@ -451,7 +451,7 @@ export default function CreateBootcampModal({
                   size="small"
                   startIcon={<AddCircleOutlineRoundedIcon />}
                   onClick={handleAddSyllabusItem}
-                  sx={{ color: '#2563EB', textTransform: 'none', fontWeight: 600 }}
+                  sx={{ color: '#0B1F3A', textTransform: 'none', fontWeight: 600 }}
                 >
                   Add Milestone
                 </Button>
@@ -542,17 +542,17 @@ export default function CreateBootcampModal({
             disabled={submitting}
             startIcon={<BoltRoundedIcon />}
             sx={{
-              bgcolor: '#2563EB',
-              backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+              bgcolor: '#0B1F3A',
+              backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
               color: '#FFFFFF',
               fontWeight: 700,
               textTransform: 'none',
               px: 3,
               borderRadius: '8px',
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+              boxShadow: '0 4px 14px rgba(11, 31, 58, 0.35)',
               '&:hover': {
-                bgcolor: '#1D4ED8',
-                boxShadow: '0 6px 18px rgba(37, 99, 235, 0.5)',
+                bgcolor: '#17366E',
+                boxShadow: '0 6px 18px rgba(91, 45, 144, 0.4)',
               },
             }}
           >

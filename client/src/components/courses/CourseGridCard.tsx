@@ -42,12 +42,12 @@ function getCourseThemeConfig(category: string) {
     case 'Computer Science & DSA':
       return {
         image: '/images/courses/dsa.jpg',
-        fallbackBg: '#E0F2FE',
+        fallbackBg: '#FAF5FF',
         cardBg: '#FFFFFF',
         clippedBg: '#F8FAFC',
-        titleColor: '#2563EB',
-        btnBg: '#2563EB',
-        btnHover: '#1D4ED8',
+        titleColor: '#0B1F3A',
+        btnBg: '#0B1F3A',
+        btnHover: '#17366E',
       };
     case 'System Design & Architecture':
       return {
@@ -83,12 +83,12 @@ function getCourseThemeConfig(category: string) {
     default:
       return {
         image: '/images/courses/web.jpg',
-        fallbackBg: '#E0F2FE',
+        fallbackBg: '#FAF5FF',
         cardBg: '#FFFFFF',
         clippedBg: '#F8FAFC',
-        titleColor: '#0284C7',
-        btnBg: '#0284C7',
-        btnHover: '#0369A1',
+        titleColor: '#5B2D90',
+        btnBg: '#5B2D90',
+        btnHover: '#0B1F3A',
       };
   }
 }
@@ -394,13 +394,13 @@ export default function CourseGridCard({
                 fontWeight: 700,
                 fontSize: '0.86rem',
                 px: 2.8,
-                bgcolor: progress === 100 ? '#0F172A' : '#2563EB',
-                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                bgcolor: progress === 100 ? '#0F172A' : '#0B1F3A',
+                boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: progress === 100 ? '#1E293B' : '#1D4ED8',
+                  bgcolor: progress === 100 ? '#1E293B' : '#17366E',
                   transform: 'scale(1.03)',
-                  boxShadow: '0 6px 16px rgba(37, 99, 235, 0.35)',
+                  boxShadow: '0 6px 16px rgba(11, 31, 58, 0.35)',
                 },
               }}
             >

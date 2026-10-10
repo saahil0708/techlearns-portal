@@ -75,7 +75,7 @@ export default function PassportModals({
             variant="contained"
             onClick={onCopyLink}
             startIcon={<ContentCopyRoundedIcon sx={{ fontSize: 16 }} />}
-            sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 800, bgcolor: '#2563EB', fontSize: '0.82rem', px: 3 }}
+            sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 800, bgcolor: '#0B1F3A', fontSize: '0.82rem', px: 3 }}
           >
             Copy Link
           </Button>
@@ -110,7 +110,7 @@ export default function PassportModals({
             variant="contained"
             onClick={onCopyLink}
             startIcon={<ContentCopyRoundedIcon sx={{ fontSize: 16 }} />}
-            sx={{ textTransform: 'none', fontWeight: 800, borderRadius: '10px', bgcolor: '#2563EB', fontSize: '0.84rem' }}
+            sx={{ textTransform: 'none', fontWeight: 800, borderRadius: '10px', bgcolor: '#0B1F3A', fontSize: '0.84rem' }}
           >
             Copy Verification Link
           </Button>
@@ -148,12 +148,12 @@ export default function PassportModals({
               </IconButton>
             </DialogTitle>
             <DialogContent sx={{ py: 1.5 }}>
-              <Box sx={{ bgcolor: '#0F172A', color: '#FFFFFF', border: '1.5px solid #334155', borderRadius: '16px', p: 3.5, textAlign: 'center', backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(37,99,235,0.2) 0%, transparent 60%)' }}>
+              <Box sx={{ bgcolor: '#0F172A', color: '#FFFFFF', border: '1.5px solid #334155', borderRadius: '16px', p: 3.5, textAlign: 'center', backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(91, 45, 144, 0.2) 0%, transparent 60%)' }}>
                 <WorkspacePremiumRoundedIcon sx={{ fontSize: 46, color: '#F59E0B', mb: 1.5 }} />
                 <Typography sx={{ fontWeight: 900, fontSize: '1.15rem', color: '#FFFFFF', letterSpacing: '-0.01em' }}>
                   {selectedCert.title}
                 </Typography>
-                <Typography sx={{ fontSize: '0.84rem', color: '#93C5FD', mt: 0.6 }}>
+                <Typography sx={{ fontSize: '0.84rem', color: '#C084FC', mt: 0.6 }}>
                   Awarded to <strong>{studentName}</strong> ({institutionName})
                 </Typography>
                 <Typography sx={{ fontSize: '0.78rem', color: '#94A3B8', mt: 0.4 }}>

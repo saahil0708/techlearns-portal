@@ -71,8 +71,8 @@ const STAGES = [
     index: 2,
     title: 'Stage 02: Core Stack',
     subtitle: 'APIs, React & Concurrency',
-    color: '#2563EB',
-    bgColor: '#EFF6FF',
+    color: '#0B1F3A',
+    bgColor: '#FAF5FF',
   },
   {
     index: 3,
@@ -334,10 +334,10 @@ export default function SkillGraphClient() {
               Skill Graph & Competency Map
             </Typography>
             <Chip
-              icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 12, color: '#2563EB !important' }} />}
+              icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 12, color: '#0B1F3A !important' }} />}
               label="AI Pathway"
               size="small"
-              sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 800, fontSize: '0.72rem', height: 22 }}
+              sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 800, fontSize: '0.72rem', height: 22 }}
             />
           </Box>
           <Typography sx={{ fontSize: '0.82rem', color: '#64748B', mt: 0.3 }}>
@@ -390,12 +390,12 @@ export default function SkillGraphClient() {
               height: 6,
               borderRadius: '9999px',
               bgcolor: '#E2E8F0',
-              '& .MuiLinearProgress-bar': { bgcolor: '#2563EB', borderRadius: '9999px' },
+              '& .MuiLinearProgress-bar': { bgcolor: '#0B1F3A', borderRadius: '9999px' },
             }}
           />
         </Box>
         <Typography sx={{ fontSize: '0.8rem', color: '#64748B', whiteSpace: 'nowrap' }}>
-          <strong style={{ color: '#2563EB' }}>{currentRole.targetScore}%</strong> readiness ({currentRole.completedSkills}/{currentRole.totalSkills} skills mastered)
+          <strong style={{ color: '#0B1F3A' }}>{currentRole.targetScore}%</strong> readiness ({currentRole.completedSkills}/{currentRole.totalSkills} skills mastered)
         </Typography>
       </Box>
 
@@ -475,7 +475,7 @@ export default function SkillGraphClient() {
                         p: 1.8,
                         borderRadius: '14px',
                         bgcolor: isHovered ? '#F8FAFC' : 'transparent',
-                        border: isHovered ? '1px solid #2563EB' : '1px solid transparent',
+                        border: isHovered ? '1px solid #0B1F3A' : '1px solid transparent',
                         cursor: 'pointer',
                         transition: 'all 0.15s ease',
                         display: 'flex',
@@ -487,7 +487,7 @@ export default function SkillGraphClient() {
                           transform: 'translateX(3px)',
                         },
                         '&:focus-visible': {
-                          outline: '2px solid #2563EB',
+                          outline: '2px solid #0B1F3A',
                           outlineOffset: '2px',
                         },
                       }}
@@ -529,7 +529,7 @@ export default function SkillGraphClient() {
 
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, justifyContent: 'space-between' }}>
-                            <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: isHovered ? '#2563EB' : '#0F172A', lineHeight: 1.2 }}>
+                            <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: isHovered ? '#0B1F3A' : '#0F172A', lineHeight: 1.2 }}>
                               {node.title}
                             </Typography>
                             {statusVisuals.badgeIcon}
@@ -665,7 +665,7 @@ export default function SkillGraphClient() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.6 }}>
                   {activeNode.keyCompetencies.map((comp) => (
                     <Box key={comp} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <CheckCircleRoundedIcon sx={{ fontSize: 14, color: '#2563EB' }} />
+                      <CheckCircleRoundedIcon sx={{ fontSize: 14, color: '#0B1F3A' }} />
                       <Typography sx={{ fontSize: '0.76rem', color: '#334155' }}>
                         {comp}
                       </Typography>
@@ -688,7 +688,7 @@ export default function SkillGraphClient() {
                   <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 800, width: 65 }}>
                     Unlocks:
                   </Typography>
-                  <Typography sx={{ fontSize: '0.76rem', color: '#2563EB', fontWeight: 600 }}>
+                  <Typography sx={{ fontSize: '0.76rem', color: '#0B1F3A', fontWeight: 600 }}>
                     {activeNode.unlocks.join(', ') || 'Capstone'}
                   </Typography>
                 </Box>
@@ -730,7 +730,7 @@ export default function SkillGraphClient() {
                           borderRadius: '8px',
                           fontSize: '0.74rem',
                           fontWeight: 800,
-                          bgcolor: '#2563EB',
+                          bgcolor: '#0B1F3A',
                           py: 0.4,
                         }}
                       >

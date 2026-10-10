@@ -158,7 +158,7 @@ export default function BlogCreateModal({
                   fontWeight: 700,
                   borderRadius: '8px',
                   ...(coverSelectionMode === 'upload'
-                    ? { bgcolor: '#2563EB', color: '#fff', '&:hover': { bgcolor: '#1D4ED8' } }
+                    ? { bgcolor: '#0B1F3A', color: '#fff', '&:hover': { bgcolor: '#17366E' } }
                     : { color: '#475569', borderColor: '#CBD5E1', bgcolor: '#FFFFFF' }),
                 }}
               >
@@ -175,7 +175,7 @@ export default function BlogCreateModal({
                   fontWeight: 700,
                   borderRadius: '8px',
                   ...(coverSelectionMode === 'preset'
-                    ? { bgcolor: '#2563EB', color: '#fff', '&:hover': { bgcolor: '#1D4ED8' } }
+                    ? { bgcolor: '#0B1F3A', color: '#fff', '&:hover': { bgcolor: '#17366E' } }
                     : { color: '#475569', borderColor: '#CBD5E1', bgcolor: '#FFFFFF' }),
                 }}
               >
@@ -192,7 +192,7 @@ export default function BlogCreateModal({
                   fontWeight: 700,
                   borderRadius: '8px',
                   ...(coverSelectionMode === 'url'
-                    ? { bgcolor: '#2563EB', color: '#fff', '&:hover': { bgcolor: '#1D4ED8' } }
+                    ? { bgcolor: '#0B1F3A', color: '#fff', '&:hover': { bgcolor: '#17366E' } }
                     : { color: '#475569', borderColor: '#CBD5E1', bgcolor: '#FFFFFF' }),
                 }}
               >
@@ -233,9 +233,9 @@ export default function BlogCreateModal({
                   transition: 'all 0.15s ease',
                   outline: 'none',
                   '&:hover, &:focus-visible': {
-                    borderColor: '#2563EB',
+                    borderColor: '#0B1F3A',
                     bgcolor: '#F0F7FF',
-                    boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.15)',
+                    boxShadow: '0 0 0 3px rgba(11, 31, 58, 0.15)',
                   },
                   display: 'flex',
                   flexDirection: 'column',
@@ -245,14 +245,14 @@ export default function BlogCreateModal({
               >
                 {isUploadingCover ? (
                   <>
-                    <CircularProgress size={26} sx={{ color: '#2563EB' }} />
-                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#2563EB' }}>
+                    <CircularProgress size={26} sx={{ color: '#0B1F3A' }} />
+                    <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0B1F3A' }}>
                       Uploading picture to cloud storage...
                     </Typography>
                   </>
                 ) : (
                   <>
-                    <CloudUploadRoundedIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                    <CloudUploadRoundedIcon sx={{ fontSize: 32, color: '#0B1F3A' }} />
                     <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#0F172A' }}>
                       Click to choose a picture from your device
                     </Typography>
@@ -280,7 +280,7 @@ export default function BlogCreateModal({
                     borderRadius: '8px',
                     overflow: 'hidden',
                     cursor: 'pointer',
-                    border: newBlog.coverImage === imgUrl ? '2.5px solid #2563EB' : '1px solid #CBD5E1',
+                    border: newBlog.coverImage === imgUrl ? '2.5px solid #0B1F3A' : '1px solid #CBD5E1',
                     transform: newBlog.coverImage === imgUrl ? 'scale(1.04)' : 'scale(1)',
                     transition: 'all 0.15s ease',
                     p: 0,
@@ -369,7 +369,7 @@ export default function BlogCreateModal({
           variant="contained"
           disabled={isUploadingCover}
           onClick={onSubmit}
-          sx={{ bgcolor: '#2563EB', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 3, '&:hover': { bgcolor: '#1D4ED8' } }}
+          sx={{ bgcolor: '#0B1F3A', textTransform: 'none', fontWeight: 700, borderRadius: '8px', px: 3, '&:hover': { bgcolor: '#17366E' } }}
         >
           {isUploadingCover ? 'Uploading Cover...' : 'Publish Article'}
         </Button>

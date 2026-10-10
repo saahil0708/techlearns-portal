@@ -37,9 +37,9 @@ const NOTIFICATION_SIGNALS: NotificationSignal[] = [
   {
     id: 'sig_3',
     tag: 'Content',
-    tagBg: '#EFF6FF',
-    tagColor: '#2563EB',
-    borderColor: '#3B82F6',
+    tagBg: '#FAF5FF',
+    tagColor: '#0B1F3A',
+    borderColor: '#5B2D90',
     title: 'Problem library is 14 intermediate problems short of the 40/40/20 mix',
     description: 'DP and Graphs are the thinnest topics across every college. 9 problems are waiting in review queue for 2+ days.',
     timeAgo: '1d ago',
@@ -51,7 +51,7 @@ interface ImportantNotificationsCardProps {
 }
 
 export default function ImportantNotificationsCard({
-  primaryBlue = '#2563eb',
+  primaryBlue = '#0B1F3A',
 }: ImportantNotificationsCardProps) {
   return (
     <Card

@@ -31,7 +31,7 @@ import WhatshotRoundedIcon from '@mui/icons-material/WhatshotRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
-import { FluidArrowRight } from '@/utils/fluid_arrow';
+import { FluidArrowRight, FluidArrowUpward, FluidArrowDownward } from '@/utils/fluid_arrow';
 import YouBadge from '@/components/common/YouBadge';
 import { StudentDirectoryEntity, SortField, SortDirection } from './types';
 
@@ -107,7 +107,7 @@ export default function StudentsDataTable({
                   onChange={(e) => onSelectAll(e.target.checked)}
                   sx={{
                     color: '#CBD5E1',
-                    '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#2563EB' },
+                    '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#0B1F3A' },
                   }}
                 />
               </TableCell>
@@ -130,9 +130,9 @@ export default function StudentsDataTable({
                   Rank
                   {sortField === 'globalRank' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -155,9 +155,9 @@ export default function StudentsDataTable({
                   Coder & Handle
                   {sortField === 'name' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -194,9 +194,9 @@ export default function StudentsDataTable({
                   Problems Solved
                   {sortField === 'problemsSolved' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -219,9 +219,9 @@ export default function StudentsDataTable({
                   Accuracy / Streak
                   {sortField === 'accuracy' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -268,7 +268,7 @@ export default function StudentsDataTable({
                   <Button
                     size="small"
                     onClick={onResetFilters}
-                    sx={{ mt: 1.5, color: '#2563EB', borderRadius: '9999px', textTransform: 'none' }}
+                    sx={{ mt: 1.5, color: '#0B1F3A', borderRadius: '9999px', textTransform: 'none' }}
                   >
                     Reset All Filters
                   </Button>
@@ -289,9 +289,9 @@ export default function StudentsDataTable({
                     sx={{
                       transition: 'all 0.15s ease',
                       borderColor: '#E2E8F0',
-                      bgcolor: isSelected ? '#EFF6FF' : isCurrentUser ? '#F8FAFC' : '#FFFFFF',
+                      bgcolor: isSelected ? '#FAF5FF' : isCurrentUser ? '#F8FAFC' : '#FFFFFF',
                       '&:hover': {
-                        bgcolor: isSelected ? '#DBEAFE' : '#F8FAFC',
+                        bgcolor: isSelected ? '#E9D5FF' : '#F8FAFC',
                       },
                     }}
                   >
@@ -302,7 +302,7 @@ export default function StudentsDataTable({
                         onChange={() => onToggleSelectRow(stu.id)}
                         sx={{
                           color: '#CBD5E1',
-                          '&.Mui-checked': { color: '#2563EB' },
+                          '&.Mui-checked': { color: '#0B1F3A' },
                         }}
                       />
                     </TableCell>
@@ -361,7 +361,7 @@ export default function StudentsDataTable({
                                 color: '#0F172A',
                                 fontSize: '0.88rem',
                                 cursor: 'pointer',
-                                '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                                '&:hover': { color: '#0B1F3A', textDecoration: 'underline' },
                               }}
                             >
                               {stu.name}
@@ -369,7 +369,7 @@ export default function StudentsDataTable({
                             {isCurrentUser && <YouBadge />}
                             <Typography
                               sx={{
-                                color: '#2563EB',
+                                color: '#0B1F3A',
                                 fontSize: '0.75rem',
                                 fontFamily: 'monospace',
                                 fontWeight: 600,
@@ -399,16 +399,16 @@ export default function StudentsDataTable({
                               borderRadius: '9999px',
                               bgcolor:
                                 stu.institutionType === 'Institute'
-                                  ? '#EFF6FF'
+                                  ? '#FAF5FF'
                                   : '#FAF5FF',
                               color:
                                 stu.institutionType === 'Institute'
-                                  ? '#2563EB'
+                                  ? '#0B1F3A'
                                   : '#7C3AED',
                               border: '1px solid',
                               borderColor:
                                 stu.institutionType === 'Institute'
-                                  ? '#BFDBFE'
+                                  ? '#D8B4FE'
                                   : '#E9D5FF',
                             }}
                           />
@@ -431,7 +431,7 @@ export default function StudentsDataTable({
                             variant="caption"
                             onClick={() => onOpenAssignBatchSingle(stu)}
                             sx={{
-                              color: stu.cohort === 'No Batch Assigned' ? '#94A3B8' : '#2563EB',
+                              color: stu.cohort === 'No Batch Assigned' ? '#94A3B8' : '#0B1F3A',
                               fontStyle: stu.cohort === 'No Batch Assigned' ? 'italic' : 'normal',
                               fontWeight: stu.cohort === 'No Batch Assigned' ? 500 : 700,
                               fontSize: '0.72rem',
@@ -443,8 +443,8 @@ export default function StudentsDataTable({
                               borderRadius: '4px',
                               px: 0.5,
                               py: 0.1,
-                              bgcolor: stu.cohort === 'No Batch Assigned' ? 'transparent' : 'rgba(37, 99, 235, 0.06)',
-                              '&:hover': { color: '#1D4ED8', textDecoration: 'underline', bgcolor: 'rgba(37, 99, 235, 0.1)' },
+                              bgcolor: stu.cohort === 'No Batch Assigned' ? 'transparent' : 'rgba(91, 45, 144, 0.06)',
+                              '&:hover': { color: '#17366E', textDecoration: 'underline', bgcolor: 'rgba(91, 45, 144, 0.1)' },
                             }}
                           >
                             {stu.cohort}
@@ -520,10 +520,10 @@ export default function StudentsDataTable({
                             size="small"
                             onClick={() => onOpenAssignBatchSingle(stu)}
                             sx={{
-                              color: '#2563EB',
+                              color: '#0B1F3A',
                               borderRadius: '9999px',
-                              bgcolor: 'rgba(37, 99, 235, 0.06)',
-                              '&:hover': { color: '#1D4ED8', bgcolor: 'rgba(37, 99, 235, 0.14)' },
+                              bgcolor: 'rgba(91, 45, 144, 0.06)',
+                              '&:hover': { color: '#17366E', bgcolor: 'rgba(91, 45, 144, 0.14)' },
                             }}
                           >
                             <SchoolRoundedIcon sx={{ fontSize: 16 }} />
@@ -538,7 +538,7 @@ export default function StudentsDataTable({
                             sx={{
                               color: '#64748B',
                               borderRadius: '9999px',
-                              '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' },
+                              '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' },
                             }}
                           >
                             <VisibilityRoundedIcon fontSize="small" />
@@ -684,12 +684,12 @@ export default function StudentsDataTable({
                       borderRadius: '9999px',
                       fontSize: '0.78rem',
                       fontWeight: page === p ? 800 : 500,
-                      bgcolor: page === p ? '#2563EB' : '#FFFFFF',
+                      bgcolor: page === p ? '#0B1F3A' : '#FFFFFF',
                       color: page === p ? '#FFFFFF' : '#64748B',
                       border: '1px solid',
-                      borderColor: page === p ? '#2563EB' : '#E2E8F0',
+                      borderColor: page === p ? '#0B1F3A' : '#E2E8F0',
                       '&:hover': {
-                        bgcolor: page === p ? '#1D4ED8' : '#F1F5F9',
+                        bgcolor: page === p ? '#17366E' : '#F1F5F9',
                         color: page === p ? '#FFFFFF' : '#0F172A',
                       },
                     }}

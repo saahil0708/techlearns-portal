@@ -93,12 +93,12 @@ export function getBootcampThemeConfig(track: string = '') {
   ) {
     return {
       image: '/images/courses/dsa.jpg',
-      fallbackBg: '#E0F2FE',
-      accentColor: '#0284C7',
-      tagBg: 'rgba(2, 132, 199, 0.08)',
-      tagText: '#0284C7',
-      btnBg: '#0284C7',
-      btnHover: '#0369A1',
+      fallbackBg: '#FAF5FF',
+      accentColor: '#5B2D90',
+      tagBg: 'rgba(91, 45, 144, 0.08)',
+      tagText: '#5B2D90',
+      btnBg: '#5B2D90',
+      btnHover: '#0B1F3A',
     };
   }
 
@@ -141,12 +141,12 @@ export function getBootcampThemeConfig(track: string = '') {
   // Web & Full-Stack default
   return {
     image: '/images/courses/web.jpg',
-    fallbackBg: '#EFF6FF',
-    accentColor: '#2563EB',
-    tagBg: 'rgba(37, 99, 235, 0.08)',
-    tagText: '#2563EB',
-    btnBg: '#2563EB',
-    btnHover: '#1D4ED8',
+    fallbackBg: '#FAF5FF',
+    accentColor: '#0B1F3A',
+    tagBg: 'rgba(91, 45, 144, 0.08)',
+    tagText: '#0B1F3A',
+    btnBg: '#0B1F3A',
+    btnHover: '#17366E',
   };
 }
 
@@ -252,12 +252,12 @@ export default function BootcampGridCard({
             py: 0.5,
             borderRadius: '9999px',
             border: isCompleted
-              ? '1px solid rgba(56, 189, 248, 0.45)'
+              ? '1px solid rgba(192, 132, 252, 0.45)'
               : isEnrolled
               ? '1px solid rgba(52, 211, 153, 0.45)'
               : '1px solid rgba(251, 191, 36, 0.45)',
             boxShadow: isCompleted
-              ? '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(56, 189, 248, 0.25)'
+              ? '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(192, 132, 252, 0.25)'
               : isEnrolled
               ? '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(16, 185, 129, 0.25)'
               : '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(245, 158, 11, 0.25)',
@@ -267,8 +267,8 @@ export default function BootcampGridCard({
             <CheckCircleRoundedIcon
               sx={{
                 fontSize: 14,
-                color: '#38BDF8',
-                filter: 'drop-shadow(0 0 4px rgba(56, 189, 248, 0.9))',
+                color: '#C084FC',
+                filter: 'drop-shadow(0 0 4px rgba(192, 132, 252, 0.9))',
               }}
             />
           ) : isEnrolled ? (
@@ -291,7 +291,7 @@ export default function BootcampGridCard({
 
           <Typography
             sx={{
-              color: isCompleted ? '#F0F9FF' : isEnrolled ? '#ECFDF5' : '#FFFBEB',
+              color: isCompleted ? '#FAF5FF' : isEnrolled ? '#ECFDF5' : '#FFFBEB',
               fontSize: '0.68rem',
               fontWeight: 800,
               letterSpacing: '0.05em',

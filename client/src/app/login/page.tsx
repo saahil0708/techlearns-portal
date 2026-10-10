@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import AuthPageClient from '@/components/auth/AuthPageClient';
 
 export const metadata: Metadata = {
-  title: 'Sign In | CodePlatform',
-  description: 'Sign in to CodePlatform competitive coding and algorithmic workspace.',
+  title: 'Sign In | TechLearns',
+  description: 'Sign in to TechLearns competitive coding and algorithmic workspace.',
 };
 
 export default function LoginPage() {

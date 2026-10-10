@@ -73,16 +73,16 @@ export function getBlogThemeConfig(category: string = '') {
   // System Architecture / Backend / Cloud
   if (/\b(system|architecture|backend|distributed|cloud|devops)\b/i.test(c)) {
     return {
-      accentColor: '#0284C7',
-      tagBg: 'rgba(2, 132, 199, 0.08)',
-      tagText: '#0284C7',
-      btnBg: '#0284C7',
-      btnHover: '#0369A1',
+      accentColor: '#5B2D90',
+      tagBg: 'rgba(91, 45, 144, 0.08)',
+      tagText: '#5B2D90',
+      btnBg: '#5B2D90',
+      btnHover: '#0B1F3A',
       badgeBg: 'linear-gradient(135deg, rgba(12, 74, 110, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
-      badgeBorder: '1px solid rgba(56, 189, 248, 0.45)',
-      badgeShadow: '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(56, 189, 248, 0.25)',
-      badgeText: '#F0F9FF',
-      badgeIconColor: '#38BDF8',
+      badgeBorder: '1px solid rgba(192, 132, 252, 0.45)',
+      badgeShadow: '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(192, 132, 252, 0.25)',
+      badgeText: '#FAF5FF',
+      badgeIconColor: '#C084FC',
       badgeLabel: 'ARCHITECTURE POST',
     };
   }
@@ -123,16 +123,16 @@ export function getBlogThemeConfig(category: string = '') {
 
   // Default / Web / Frontend
   return {
-    accentColor: '#2563EB',
-    tagBg: 'rgba(37, 99, 235, 0.08)',
-    tagText: '#2563EB',
-    btnBg: '#2563EB',
-    btnHover: '#1D4ED8',
+    accentColor: '#0B1F3A',
+    tagBg: 'rgba(91, 45, 144, 0.08)',
+    tagText: '#0B1F3A',
+    btnBg: '#0B1F3A',
+    btnHover: '#17366E',
     badgeBg: 'linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
     badgeBorder: '1px solid rgba(96, 165, 250, 0.45)',
-    badgeShadow: '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(37, 99, 235, 0.25)',
-    badgeText: '#EFF6FF',
-    badgeIconColor: '#60A5FA',
+    badgeShadow: '0 4px 16px rgba(0, 0, 0, 0.35), 0 0 12px rgba(91, 45, 144, 0.25)',
+    badgeText: '#FAF5FF',
+    badgeIconColor: '#A855F7',
     badgeLabel: 'ENGINEERING POST',
   };
 }

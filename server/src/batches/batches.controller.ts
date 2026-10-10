@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -41,7 +42,14 @@ export class BatchesController {
   @Roles(Role.SUPER_ADMIN, Role.PLATFORM_ADMIN)
   @ApiOperation({ summary: 'List all batches or filter by institution' })
   @ApiResponse({ status: 200, description: 'List of batches' })
-  async findAll(@Param() params: any, @Body() body: any) {
+  async findAll(
+    @Query('institutionId') institutionId?: string,
+    @Query('collegeId') collegeId?: string,
+  ) {
+    const targetInstId = institutionId || collegeId;
+    if (targetInstId) {
+      return this.batchesService.findByInstitution(targetInstId);
+    }
     return this.batchesService.findAll();
   }
 

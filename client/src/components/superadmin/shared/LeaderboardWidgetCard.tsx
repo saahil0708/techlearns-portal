@@ -48,7 +48,7 @@ interface LeaderboardWidgetCardProps {
 }
 
 export default function LeaderboardWidgetCard({
-  primaryBlue = '#2563eb',
+  primaryBlue = '#0B1F3A',
 }: LeaderboardWidgetCardProps) {
   const currentUser = useAppSelector((state) => state.auth.user);
   const [downloadAnchorEl, setDownloadAnchorEl] = useState<null | HTMLElement>(null);
@@ -107,7 +107,7 @@ export default function LeaderboardWidgetCard({
       <head><meta charset="utf-8"/></head>
       <body>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Rank</th>
             <th>Name</th>
             <th>Score</th>
@@ -197,8 +197,8 @@ export default function LeaderboardWidgetCard({
               width: 8,
               height: 8,
               borderRadius: '50%',
-              bgcolor: '#2563EB',
-              boxShadow: '0 0 8px #2563EB',
+              bgcolor: '#0B1F3A',
+              boxShadow: '0 0 8px #0B1F3A',
               animation: 'pulse 1.5s infinite',
               '@keyframes pulse': {
                 '0%': { opacity: 0.4, transform: 'scale(0.8)' },
@@ -223,9 +223,9 @@ export default function LeaderboardWidgetCard({
                 p: 0.7,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
-                  borderColor: '#BFDBFE',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
+                  borderColor: '#D8B4FE',
                   transform: 'scale(1.08)',
                 },
               }}
@@ -276,11 +276,11 @@ export default function LeaderboardWidgetCard({
                 py: 0.9,
                 px: 1.5,
                 transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: '#EFF6FF' },
+                '&:hover': { bgcolor: '#FAF5FF' },
               }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               </ListItemIcon>
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                 Download CSV (.csv)
@@ -301,9 +301,9 @@ export default function LeaderboardWidgetCard({
                 p: 0.7,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
-                  borderColor: '#BFDBFE',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
+                  borderColor: '#D8B4FE',
                   transform: 'scale(1.08)',
                 },
               }}
@@ -366,10 +366,10 @@ export default function LeaderboardWidgetCard({
                   trendUpColor: '#FED7AA',
                 }
               : {
-                  backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   border: '1px solid rgba(255, 255, 255, 0.22)',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.22)',
-                  hoverShadow: '0 8px 22px rgba(37, 99, 235, 0.32)',
+                  boxShadow: '0 4px 14px rgba(91, 45, 144, 0.22)',
+                  hoverShadow: '0 8px 22px rgba(91, 45, 144, 0.32)',
                   rankColor: '#FFFFFF',
                   trendUpColor: '#D4FF00',
                 };

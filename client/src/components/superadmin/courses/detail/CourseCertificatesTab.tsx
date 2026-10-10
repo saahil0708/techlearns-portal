@@ -32,14 +32,14 @@ export default function CourseCertificatesTab({
             width: 64,
             height: 64,
             borderRadius: '20px',
-            bgcolor: '#EFF6FF',
-            color: '#2563EB',
+            bgcolor: '#FAF5FF',
+            color: '#0B1F3A',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             mx: 'auto',
             mb: 2,
-            border: '1px solid #BFDBFE',
+            border: '1px solid #F3E8FF',
           }}
         >
           <WorkspacePremiumRoundedIcon sx={{ fontSize: 32 }} />
@@ -60,9 +60,9 @@ export default function CourseCertificatesTab({
             sx={{ bgcolor: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0', fontWeight: 700 }}
           />
           <Chip
-            icon={<ShieldRoundedIcon sx={{ fontSize: 16, color: '#2563EB !important' }} />}
+            icon={<ShieldRoundedIcon sx={{ fontSize: 16, color: '#0B1F3A !important' }} />}
             label="Industry Recognized"
-            sx={{ bgcolor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontWeight: 700 }}
+            sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', border: '1px solid #F3E8FF', fontWeight: 700 }}
           />
         </Box>
 
@@ -71,13 +71,13 @@ export default function CourseCertificatesTab({
             variant="contained"
             onClick={onViewCertificate}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               borderRadius: '9999px',
               textTransform: 'none',
               fontWeight: 800,
               px: 4,
               py: 1,
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Preview Certificate Template

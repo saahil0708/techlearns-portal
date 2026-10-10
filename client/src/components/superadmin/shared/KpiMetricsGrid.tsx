@@ -11,7 +11,7 @@ interface KpiMetricsGridProps {
   primaryBlue?: string;
 }
 
-export default function KpiMetricsGrid({ primaryBlue = '#2563eb' }: KpiMetricsGridProps) {
+export default function KpiMetricsGrid({ primaryBlue = '#0B1F3A' }: KpiMetricsGridProps) {
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' }, gap: 3 }}>
       {/* 1. Institutes */}

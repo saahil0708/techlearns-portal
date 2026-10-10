@@ -4,7 +4,7 @@ import { apiService } from '@/lib/api-service';
 import { isCollegeOrganization } from '@/utils/organization';
 
 export const metadata: Metadata = {
-  title: 'Institutions & University Tenants | CodePlatform Super Admin',
+  title: 'Institutions & University Tenants | TechLearns Super Admin',
   description: 'Multi-tenant academic organizations, cohort roster isolation & seat quotas management portal.',
 };
 
@@ -42,7 +42,7 @@ export default async function InstitutionsPage() {
           cohortsCount: item._count?.batches || 0,
           facultyCount: faculty,
           status: item.status === 'ACTIVE' ? 'Active' : 'Suspended',
-          logoColor: '#3B82F6',
+          logoColor: '#5B2D90',
         };
       });
     }

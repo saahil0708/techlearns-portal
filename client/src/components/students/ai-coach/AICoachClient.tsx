@@ -185,12 +185,12 @@ export default function AICoachClient() {
               width: 44,
               height: 44,
               borderRadius: '14px',
-              bgcolor: '#EFF6FF',
+              bgcolor: '#FAF5FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#2563EB',
-              border: '1px solid #DBEAFE',
+              color: '#0B1F3A',
+              border: '1px solid #FAF5FF',
             }}
           >
             <AutoAwesomeOutlinedIcon sx={{ fontSize: 24 }} />
@@ -235,7 +235,7 @@ export default function AICoachClient() {
                 }}
               >
                 {m.sender === 'ai' && (
-                  <Avatar sx={{ bgcolor: '#2563EB', width: 32, height: 32 }}>
+                  <Avatar sx={{ bgcolor: '#0B1F3A', width: 32, height: 32 }}>
                     <AutoAwesomeOutlinedIcon sx={{ fontSize: 16 }} />
                   </Avatar>
                 )}
@@ -243,17 +243,17 @@ export default function AICoachClient() {
                   sx={{
                     p: 2,
                     borderRadius: '18px',
-                    bgcolor: m.sender === 'user' ? '#2563EB' : '#F8FAFC',
+                    bgcolor: m.sender === 'user' ? '#0B1F3A' : '#F8FAFC',
                     color: m.sender === 'user' ? '#FFFFFF' : '#0F172A',
                     border: m.sender === 'user' ? 'none' : '1px solid #E2E8F0',
-                    boxShadow: m.sender === 'user' ? '0 4px 14px rgba(37, 99, 235, 0.25)' : 'none',
+                    boxShadow: m.sender === 'user' ? '0 4px 14px rgba(91, 45, 144, 0.25)' : 'none',
                   }}
                 >
                   <Typography sx={{ fontSize: '0.86rem', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
                     {m.text}
                   </Typography>
                   {m.codeSnippet && (
-                    <Box sx={{ mt: 1.5, p: 1.5, bgcolor: '#0F172A', color: '#38BDF8', borderRadius: '10px', fontFamily: 'monospace', fontSize: '0.78rem' }}>
+                    <Box sx={{ mt: 1.5, p: 1.5, bgcolor: '#0F172A', color: '#C084FC', borderRadius: '10px', fontFamily: 'monospace', fontSize: '0.78rem' }}>
                       <pre style={{ margin: 0, overflowX: 'auto' }}>{m.codeSnippet}</pre>
                     </Box>
                   )}
@@ -262,7 +262,7 @@ export default function AICoachClient() {
             ))}
             {isTyping && (
               <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
-                <Avatar sx={{ bgcolor: '#2563EB', width: 28, height: 28 }}>
+                <Avatar sx={{ bgcolor: '#0B1F3A', width: 28, height: 28 }}>
                   <AutoAwesomeOutlinedIcon sx={{ fontSize: 14 }} />
                 </Avatar>
                 <Typography sx={{ fontSize: '0.78rem', color: '#64748B', fontStyle: 'italic' }}>
@@ -281,7 +281,7 @@ export default function AICoachClient() {
                 label={p}
                 size="small"
                 onClick={() => handleSendMessage(p)}
-                sx={{ bgcolor: '#FFFFFF', border: '1px solid #CBD5E1', fontSize: '0.72rem', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { bgcolor: '#EFF6FF', borderColor: '#93C5FD' } }}
+                sx={{ bgcolor: '#FFFFFF', border: '1px solid #CBD5E1', fontSize: '0.72rem', cursor: 'pointer', whiteSpace: 'nowrap', '&:hover': { bgcolor: '#FAF5FF', borderColor: '#C084FC' } }}
               />
             ))}
           </Box>
@@ -307,7 +307,7 @@ export default function AICoachClient() {
               type="submit"
               variant="contained"
               disabled={!inputText.trim()}
-              sx={{ bgcolor: '#2563EB', borderRadius: '12px', px: 2.5, minWidth: 'auto', fontWeight: 700 }}
+              sx={{ bgcolor: '#0B1F3A', borderRadius: '12px', px: 2.5, minWidth: 'auto', fontWeight: 700 }}
             >
               <SendRoundedIcon sx={{ fontSize: 18 }} />
             </Button>

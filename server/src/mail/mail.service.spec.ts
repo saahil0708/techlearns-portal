@@ -20,7 +20,7 @@ describe('MailService', () => {
         port: 1025,
         secure: false,
         devMode: true,
-        from: '"CodePlatform" <no-reply@codeplatform.local>',
+        from: '"TechLearns" <no-reply@techlearns.com>',
       },
     });
     service = new MailService(configService);
@@ -87,7 +87,7 @@ describe('MailService', () => {
         devMode: false,
         user: 'user',
         pass: 'pass',
-        from: '"CodePlatform" <no-reply@codeplatform.com>',
+        from: '"TechLearns" <no-reply@techlearns.com>',
       },
     });
     const prodService = new MailService(prodConfig);
@@ -104,5 +104,41 @@ describe('MailService', () => {
     expect(result.success).toBe(true);
     // In production mode (devMode: false), recentEmails must NOT store tokens
     expect(prodService.getRecentEmails().length).toBe(0);
+  });
+
+  it('should dispatch assessment invitation using Azure Communication Services when configured', async () => {
+    const azureConfig = new ConfigService({
+      mail: { devMode: false },
+      azureEmail: {
+        connectionString: 'endpoint=https://mock.communication.azure.com/;accesskey=mockKey123',
+        senderAddress: 'DoNotReply@techlearns.com',
+      },
+    });
+    const azureService = new MailService(azureConfig);
+
+    // Mock Azure EmailClient beginSend
+    const mockPollUntilDone = vi.fn().mockResolvedValue({ id: 'azure-msg-123', status: 'Succeeded' });
+    const mockBeginSend = vi.fn().mockResolvedValue({ pollUntilDone: mockPollUntilDone });
+    (azureService as any).azureEmailClient = {
+      beginSend: mockBeginSend,
+    };
+
+    const result = await azureService.sendAssessmentInvitationEmail({
+      to: 'candidate@university.edu',
+      name: 'Candidate One',
+      assessmentTitle: 'Full-Stack Technical Assessment',
+      assessmentUrl: 'http://localhost:3000/assessments/test-123?token=tok-456',
+      institutionName: 'Stanford University',
+      cohortName: 'B.Tech CSE 2026',
+      durationMinutes: 90,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.messageId).toBe('azure-msg-123');
+    expect(mockBeginSend).toHaveBeenCalledTimes(1);
+    const emailPayload = mockBeginSend.mock.calls[0][0];
+    expect(emailPayload.senderAddress).toBe('DoNotReply@techlearns.com');
+    expect(emailPayload.recipients.to[0].address).toBe('candidate@university.edu');
+    expect(emailPayload.content.subject).toContain('SkillOS Assessment Invitation');
   });
 });

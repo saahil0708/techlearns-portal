@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { FluidArrowDownward, FluidArrowUpward } from '@/utils/fluid_arrow';
 import {
   Dialog,
   DialogTitle,
@@ -70,7 +71,10 @@ export default function SetPotdModal({
   onSuccess,
 }: SetPotdModalProps) {
   const toast = useToast();
-  const publishedProblems = problems.filter((p) => p.status === 'Published');
+  const publishedProblems = useMemo(
+    () => problems.filter((p) => p.status === 'Published'),
+    [problems]
+  );
 
   const [activeTab, setActiveTab] = useState<number>(0);
 
@@ -114,14 +118,14 @@ export default function SetPotdModal({
     if (open) {
       if (initialSelectedProblem) {
         setSelectedProblem(initialSelectedProblem);
-      } else if (!selectedProblem && publishedProblems.length > 0) {
-        setSelectedProblem(publishedProblems[0]);
+      } else {
+        setSelectedProblem((prev) => prev || publishedProblems[0] || null);
       }
       setTargetDate(new Date().toISOString().slice(0, 10));
       setQueueStartDate(new Date().toISOString().slice(0, 10));
       fetchSchedule();
     }
-  }, [open, initialSelectedProblem, publishedProblems, fetchSchedule]);
+  }, [open, initialSelectedProblem, fetchSchedule]);
 
   // Tab 1: Save / Update Single Day POTD
   const handleSingleSubmit = async (e: React.FormEvent) => {
@@ -445,8 +449,8 @@ export default function SetPotdModal({
                 sx={{
                   textTransform: 'none',
                   fontWeight: 700,
-                  bgcolor: '#2563EB',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  bgcolor: '#0B1F3A',
+                  '&:hover': { bgcolor: '#17366E' },
                   borderRadius: '8px',
                   px: 2.5,
                 }}
@@ -564,7 +568,7 @@ export default function SetPotdModal({
                     <TableBody>
                       {queuedProblems.map((prob, idx) => (
                         <TableRow key={`${prob.id}-${idx}`} hover>
-                          <TableCell sx={{ fontWeight: 700, color: '#2563EB', fontSize: '0.8rem' }}>
+                          <TableCell sx={{ fontWeight: 700, color: '#0B1F3A', fontSize: '0.8rem' }}>
                             #{idx + 1}
                           </TableCell>
                           <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#0F172A' }}>
@@ -604,7 +608,7 @@ export default function SetPotdModal({
                                 onClick={() => handleMoveQueueItem(idx, 'up')}
                                 sx={{ p: 0.5 }}
                               >
-                                <ArrowUpwardRoundedIcon sx={{ fontSize: 16 }} />
+                                <FluidArrowUpward sx={{ fontSize: 16 }} />
                               </IconButton>
                               <IconButton
                                 size="small"
@@ -612,7 +616,7 @@ export default function SetPotdModal({
                                 onClick={() => handleMoveQueueItem(idx, 'down')}
                                 sx={{ p: 0.5 }}
                               >
-                                <ArrowDownwardRoundedIcon sx={{ fontSize: 16 }} />
+                                <FluidArrowDownward sx={{ fontSize: 16 }} />
                               </IconButton>
                               <IconButton
                                 size="small"
@@ -639,8 +643,8 @@ export default function SetPotdModal({
                 sx={{
                   textTransform: 'none',
                   fontWeight: 700,
-                  bgcolor: '#2563EB',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  bgcolor: '#0B1F3A',
+                  '&:hover': { bgcolor: '#17366E' },
                   borderRadius: '8px',
                   px: 2.5,
                 }}
@@ -696,7 +700,7 @@ export default function SetPotdModal({
                         key={item.date}
                         hover
                         sx={{
-                          bgcolor: item.isToday ? 'rgba(37, 99, 235, 0.04)' : undefined,
+                          bgcolor: item.isToday ? 'rgba(91, 45, 144, 0.04)' : undefined,
                         }}
                       >
                         <TableCell sx={{ fontFamily: 'monospace', fontWeight: item.isToday ? 800 : 600, fontSize: '0.8rem' }}>
@@ -706,7 +710,7 @@ export default function SetPotdModal({
                           {item.isToday ? (
                             <Chip label="Today" size="small" sx={{ bgcolor: '#DCFCE7', color: '#15803D', fontWeight: 800, fontSize: '0.68rem', height: 20 }} />
                           ) : item.isFuture ? (
-                            <Chip label="Upcoming" size="small" sx={{ bgcolor: '#E0F2FE', color: '#0369A1', fontWeight: 700, fontSize: '0.68rem', height: 20 }} />
+                            <Chip label="Upcoming" size="small" sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700, fontSize: '0.68rem', height: 20 }} />
                           ) : (
                             <Chip label="Past" size="small" sx={{ bgcolor: '#F1F5F9', color: '#64748B', fontWeight: 700, fontSize: '0.68rem', height: 20 }} />
                           )}
@@ -757,7 +761,7 @@ export default function SetPotdModal({
                               <IconButton
                                 size="small"
                                 onClick={() => handleEditAssignment(item)}
-                                sx={{ p: 0.5, color: '#2563EB' }}
+                                sx={{ p: 0.5, color: '#0B1F3A' }}
                               >
                                 <EditOutlinedIcon sx={{ fontSize: 16 }} />
                               </IconButton>

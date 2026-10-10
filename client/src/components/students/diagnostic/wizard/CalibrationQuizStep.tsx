@@ -49,10 +49,10 @@ export function CalibrationQuizStep({
                     size="small"
                     sx={{
                       fontWeight: 800,
-                      bgcolor: '#EFF6FF',
-                      color: '#2563EB',
+                      bgcolor: '#FAF5FF',
+                      color: '#0B1F3A',
                       fontSize: '0.75rem',
-                      border: '1px solid #DBEAFE',
+                      border: '1px solid #FAF5FF',
                     }}
                   />
                   <Chip
@@ -109,19 +109,19 @@ export function CalibrationQuizStep({
                         p: 1.8,
                         borderRadius: '10px',
                         cursor: 'pointer',
-                        border: isChosen ? '2px solid #2563EB' : '1.5px solid #E2E8F0',
-                        bgcolor: isChosen ? '#EFF6FF' : '#FFFFFF',
+                        border: isChosen ? '2px solid #0B1F3A' : '1.5px solid #E2E8F0',
+                        bgcolor: isChosen ? '#FAF5FF' : '#FFFFFF',
                         display: 'flex',
                         alignItems: 'center',
                         gap: 1.5,
                         transition: 'all 0.15s ease',
                         outline: 'none',
                         '&:focus-visible': {
-                          boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.35)',
+                          boxShadow: '0 0 0 3px rgba(11, 31, 58, 0.35)',
                         },
                         '&:hover': {
-                          bgcolor: isChosen ? '#EFF6FF' : '#F8FAFC',
-                          borderColor: isChosen ? '#2563EB' : '#93C5FD',
+                          bgcolor: isChosen ? '#FAF5FF' : '#F8FAFC',
+                          borderColor: isChosen ? '#0B1F3A' : '#C084FC',
                         },
                       }}
                     >
@@ -135,7 +135,7 @@ export function CalibrationQuizStep({
                           justifyContent: 'center',
                           fontWeight: 800,
                           fontSize: '0.8rem',
-                          bgcolor: isChosen ? '#2563EB' : '#F1F5F9',
+                          bgcolor: isChosen ? '#0B1F3A' : '#F1F5F9',
                           color: isChosen ? '#FFFFFF' : '#475569',
                           border: isChosen ? 'none' : '1px solid #CBD5E1',
                         }}
@@ -145,7 +145,7 @@ export function CalibrationQuizStep({
                       <Typography
                         variant="body2"
                         sx={{
-                          color: isChosen ? '#1E3A8A' : '#334155',
+                          color: isChosen ? '#0B1F3A' : '#334155',
                           fontWeight: isChosen ? 700 : 500,
                           fontSize: '0.88rem',
                         }}

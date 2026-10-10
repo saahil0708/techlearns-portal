@@ -186,14 +186,14 @@ export default function PaginationToolbar({
                 fontSize: '0.78rem',
                 fontWeight: isActive ? 800 : 600,
                 color: isActive ? '#FFFFFF' : '#64748B',
-                bgcolor: isActive ? '#2563EB' : '#FFFFFF',
-                border: isActive ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                boxShadow: isActive ? '0 2px 8px rgba(37, 99, 235, 0.3)' : 'none',
+                bgcolor: isActive ? '#0B1F3A' : '#FFFFFF',
+                border: isActive ? '1px solid #0B1F3A' : '1px solid #E2E8F0',
+                boxShadow: isActive ? '0 2px 8px rgba(91, 45, 144, 0.3)' : 'none',
                 transition: 'all 0.15s ease',
                 '&:hover': {
-                  bgcolor: isActive ? '#1D4ED8' : '#F1F5F9',
+                  bgcolor: isActive ? '#17366E' : '#F1F5F9',
                   color: isActive ? '#FFFFFF' : '#0F172A',
-                  borderColor: isActive ? '#1D4ED8' : '#CBD5E1',
+                  borderColor: isActive ? '#17366E' : '#CBD5E1',
                 },
               }}
             >

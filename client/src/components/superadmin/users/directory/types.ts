@@ -27,9 +27,9 @@ export const getRoleBadgeStyle = (role: UserRole) => {
     case 'SUPER_ADMIN':
       return { bg: '#FAF5FF', text: '#7C3AED', border: '#E9D5FF' };
     case 'COLLEGE_ADMIN':
-      return { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' };
+      return { bg: '#FAF5FF', text: '#0B1F3A', border: '#D8B4FE' };
     case 'FACULTY':
-      return { bg: '#ECFEFF', text: '#0891B2', border: '#A5F3FC' };
+      return { bg: '#ECFEFF', text: '#5B2D90', border: '#A5F3FC' };
     case 'STUDENT':
       return { bg: '#FFFBEB', text: '#D97706', border: '#FDE68A' };
     default:

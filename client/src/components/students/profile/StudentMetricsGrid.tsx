@@ -23,7 +23,7 @@ export default function StudentMetricsGrid({ profile }: StudentMetricsGridProps)
           <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>
             Solved Challenges
           </Typography>
-          <Box sx={{ width: 36, height: 36, borderRadius: '10px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 36, height: 36, borderRadius: '10px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <CodeRoundedIcon sx={{ fontSize: 20 }} />
           </Box>
         </Box>
@@ -37,9 +37,9 @@ export default function StudentMetricsGrid({ profile }: StudentMetricsGridProps)
             sx={{
               fontWeight: 800,
               fontSize: '0.74rem',
-              bgcolor: '#EFF6FF',
-              color: '#1D4ED8',
-              border: '1px solid #BFDBFE',
+              bgcolor: '#FAF5FF',
+              color: '#17366E',
+              border: '1px solid #F3E8FF',
               borderRadius: '6px',
             }}
           />

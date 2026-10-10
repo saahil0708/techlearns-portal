@@ -234,14 +234,14 @@ export default function BulkImportStudentsModal({
               width: 40,
               height: 40,
               borderRadius: '9999px',
-              bgcolor: '#EFF6FF',
+              bgcolor: '#FAF5FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           >
-            <TableChartRoundedIcon sx={{ color: '#2563EB', fontSize: '1.3rem' }} />
+            <TableChartRoundedIcon sx={{ color: '#0B1F3A', fontSize: '1.3rem' }} />
           </Box>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>
@@ -284,7 +284,7 @@ export default function BulkImportStudentsModal({
                   gap: 1,
                 }}
               >
-                <SchoolRoundedIcon sx={{ color: '#2563EB', fontSize: 18 }} />
+                <SchoolRoundedIcon sx={{ color: '#0B1F3A', fontSize: 18 }} />
                 <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {institutionName}
                 </Typography>
@@ -351,7 +351,7 @@ export default function BulkImportStudentsModal({
           component="label"
           sx={{
             p: 4,
-            border: '2px dashed #BFDBFE',
+            border: '2px dashed #F3E8FF',
             borderRadius: '16px',
             bgcolor: '#F8FAFC',
             display: 'flex',
@@ -362,13 +362,13 @@ export default function BulkImportStudentsModal({
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             '&:hover': {
-              borderColor: '#2563EB',
-              bgcolor: '#EFF6FF',
+              borderColor: '#0B1F3A',
+              bgcolor: '#FAF5FF',
             },
           }}
         >
           <input type="file" accept=".csv" hidden onChange={handleSimulateFileSelect} />
-          <CloudUploadRoundedIcon sx={{ fontSize: '2.8rem', color: '#2563EB' }} />
+          <CloudUploadRoundedIcon sx={{ fontSize: '2.8rem', color: '#0B1F3A' }} />
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A' }}>
               {fileName ? fileName : 'Click to select or drag CSV file'}
@@ -397,7 +397,7 @@ export default function BulkImportStudentsModal({
             onClick={handleDownloadSample}
             startIcon={<FileDownloadRoundedIcon sx={{ fontSize: '1rem' }} />}
             sx={{
-              color: '#2563EB',
+              color: '#0B1F3A',
               textTransform: 'none',
               fontSize: '0.78rem',
               fontWeight: 700,
@@ -440,11 +440,11 @@ export default function BulkImportStudentsModal({
           variant="contained"
           sx={{
             borderRadius: '9999px',
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             px: 3.5,
             fontWeight: 700,
             textTransform: 'none',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            '&:hover': { bgcolor: '#17366E' },
             '&.Mui-disabled': { bgcolor: '#E2E8F0', color: '#94A3B8' },
           }}
         >

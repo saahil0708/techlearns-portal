@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { FluidArrowBack, FluidArrowForward } from '@/utils/fluid_arrow';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Box,
@@ -623,7 +624,7 @@ export default function CourseLearningWorkspace({ course }: CourseLearningWorksp
                 {courseProgressPct === 100 ? (
                   <EmojiEventsRoundedIcon sx={{ fontSize: 18, color: '#10B981' }} />
                 ) : (
-                  <BoltRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                  <BoltRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                 )}
                 <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#1E293B' }}>
                   {courseProgressPct}% Course Progress
@@ -636,7 +637,7 @@ export default function CourseLearningWorkspace({ course }: CourseLearningWorksp
                   sx={{
                     width: `${courseProgressPct}%`,
                     height: '100%',
-                    bgcolor: courseProgressPct === 100 ? '#10B981' : '#2563EB',
+                    bgcolor: courseProgressPct === 100 ? '#10B981' : '#0B1F3A',
                     borderRadius: '9999px',
                     transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
@@ -658,7 +659,7 @@ export default function CourseLearningWorkspace({ course }: CourseLearningWorksp
                     onClick={handlePrevStep}
                     sx={{ color: '#64748B', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', '&:hover': { color: '#0F172A', bgcolor: '#F1F5F9' } }}
                   >
-                    <ArrowBackRoundedIcon sx={{ fontSize: 16 }} />
+                    <FluidArrowBack sx={{ fontSize: 16 }} />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -674,7 +675,7 @@ export default function CourseLearningWorkspace({ course }: CourseLearningWorksp
                     {!isLessonUnlocked(activeLessonIdx + 1) && activeLessonIdx < lessons.length - 1 ? (
                       <LockRoundedIcon sx={{ fontSize: 14, color: '#94A3B8' }} />
                     ) : (
-                      <ArrowForwardRoundedIcon sx={{ fontSize: 16 }} />
+                      <FluidArrowForward sx={{ fontSize: 16 }} />
                     )}
                   </IconButton>
                 </span>
@@ -913,7 +914,7 @@ export default function CourseLearningWorkspace({ course }: CourseLearningWorksp
                     '& ul, & ol': { pl: 2.5, mb: 1.5 },
                     '& li': { mb: 0.5, color: '#334155', lineHeight: 1.6 },
                     '& strong': { color: '#0F172A', fontWeight: 700 },
-                    '& blockquote': { bgcolor: '#F8FAFC', p: 1.5, borderRadius: '8px', borderLeft: '4px solid #2563EB', my: 1.5, fontStyle: 'normal' },
+                    '& blockquote': { bgcolor: '#F8FAFC', p: 1.5, borderRadius: '8px', borderLeft: '4px solid #0B1F3A', my: 1.5, fontStyle: 'normal' },
                     '& pre': { bgcolor: '#0F172A', color: '#F8FAFC', p: 2, borderRadius: '10px', overflowX: 'auto', my: 2 },
                     '& code': { fontFamily: 'monospace' },
                   }}

@@ -70,7 +70,7 @@ export default function BlogsDirectoryClient({
     coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
     tags: 'SystemDesign, Architecture',
     authorName: 'Platform Administrator',
-    authorCollege: 'CodePlatform HQ',
+    authorCollege: 'TechLearns HQ',
     content: '',
   });
 
@@ -204,10 +204,10 @@ export default function BlogsDirectoryClient({
         coverImage: safeCoverImage,
         author: {
           name: newBlog.authorName || 'Super Administrator',
-          avatarBg: '#2563EB',
+          avatarBg: '#0B1F3A',
           role: 'Platform Operations',
-          institute: newBlog.authorCollege || 'CodePlatform Global',
-          college: newBlog.authorCollege || 'CodePlatform Global',
+          institute: newBlog.authorCollege || 'TechLearns Global',
+          college: newBlog.authorCollege || 'TechLearns Global',
           handle: '@admin',
           isVerified: true,
         },
@@ -227,7 +227,7 @@ export default function BlogsDirectoryClient({
         coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1000&q=80',
         tags: 'SystemDesign, Architecture',
         authorName: 'Platform Administrator',
-        authorCollege: 'CodePlatform HQ',
+        authorCollege: 'TechLearns HQ',
         content: '',
       });
       toast.success('Technical article published successfully!', 'Article Published');
@@ -247,7 +247,7 @@ export default function BlogsDirectoryClient({
       coverImage: b.coverImage || CURATED_BLOG_COVERS[0],
       tags: (b.tags || []).join(', '),
       authorName: b.author?.name || 'Platform Administrator',
-      authorCollege: b.author?.college || 'CodePlatform HQ',
+      authorCollege: b.author?.college || 'TechLearns HQ',
       content: b.content || '',
     });
     setEditModalOpen(true);
@@ -402,7 +402,7 @@ export default function BlogsDirectoryClient({
       <html><head><meta charset="utf-8"/></head><body>
       <h2>Platform Technical Blogs & Articles Directory</h2>
       <table border="1">
-        <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+        <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
           <th>ID</th><th>Title</th><th>Category</th><th>Author</th><th>College</th><th>Views</th><th>Claps</th><th>Read Time</th><th>Status</th>
         </tr>
         ${sortedBlogs.map((b) => `
@@ -444,9 +444,9 @@ export default function BlogsDirectoryClient({
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         py: { xs: 2, sm: 2.5, md: 3 },

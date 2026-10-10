@@ -37,13 +37,13 @@ export function AuthoringModalHeader({
             borderRadius: '12px',
             bgcolor:
               modality === 'reading'
-                ? '#EFF6FF'
+                ? '#FAF5FF'
                 : modality === 'quiz' || modality === 'msq'
                 ? '#FEF3C7'
                 : '#ECFDF5',
             color:
               modality === 'reading'
-                ? '#2563EB'
+                ? '#0B1F3A'
                 : modality === 'quiz' || modality === 'msq'
                 ? '#D97706'
                 : '#059669',
@@ -74,7 +74,7 @@ export function AuthoringModalHeader({
           onClick={onToggleBulkImport}
           startIcon={<FlashOnRoundedIcon sx={{ fontSize: 16 }} />}
           sx={{
-            bgcolor: isBulkImportOpen ? '#2563EB' : '#F1F5F9',
+            bgcolor: isBulkImportOpen ? '#0B1F3A' : '#F1F5F9',
             color: isBulkImportOpen ? '#FFFFFF' : '#334155',
             fontWeight: 700,
             fontSize: '0.78rem',
@@ -83,7 +83,7 @@ export function AuthoringModalHeader({
             px: 1.5,
             py: 0.6,
             '&:hover': {
-              bgcolor: isBulkImportOpen ? '#1D4ED8' : '#E2E8F0',
+              bgcolor: isBulkImportOpen ? '#17366E' : '#E2E8F0',
             },
           }}
         >

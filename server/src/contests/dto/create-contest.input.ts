@@ -102,6 +102,15 @@ export class CreateContestInput {
   @IsString()
   ipRestriction?: string;
 
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  institutionLogo?: string;
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  whitelistedEmails?: string[];
+
   @Field(() => ContestStatus, { defaultValue: ContestStatus.UPCOMING, nullable: true })
   @IsOptional()
   @IsEnum(ContestStatus)

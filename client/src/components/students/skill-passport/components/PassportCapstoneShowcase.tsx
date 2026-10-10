@@ -53,7 +53,7 @@ export default function PassportCapstoneShowcase({
             <Chip
               label="INTERACTIVE SHOWCASE"
               size="small"
-              sx={{ height: 20, fontSize: '0.64rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' }}
+              sx={{ height: 20, fontSize: '0.64rem', fontWeight: 800, bgcolor: '#FAF5FF', color: '#0B1F3A', border: '1px solid #F3E8FF' }}
             />
           </Box>
           <Typography sx={{ fontSize: '0.8rem', color: '#64748B', mt: 0.3 }}>
@@ -82,11 +82,11 @@ export default function PassportCapstoneShowcase({
                   fontWeight: 800,
                   cursor: 'pointer',
                   bgcolor: safeIdx === idx ? '#FFFFFF' : 'transparent',
-                  color: safeIdx === idx ? '#2563EB' : '#64748B',
+                  color: safeIdx === idx ? '#0B1F3A' : '#64748B',
                   boxShadow: safeIdx === idx ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                   transition: 'all 0.2s ease',
                   '&:hover': { color: '#0F172A' },
-                  '&:focus-visible': { outline: '2px solid #2563EB' },
+                  '&:focus-visible': { outline: '2px solid #0B1F3A' },
                 }}
               >
                 0{idx + 1}
@@ -111,7 +111,7 @@ export default function PassportCapstoneShowcase({
                 bgcolor: '#F8FAFC',
                 border: '1px solid #E2E8F0',
                 color: '#334155',
-                '&:hover': { bgcolor: '#EFF6FF', borderColor: '#BFDBFE', color: '#2563EB' },
+                '&:hover': { bgcolor: '#FAF5FF', borderColor: '#D8B4FE', color: '#0B1F3A' },
               }}
             >
               <ChevronLeftRoundedIcon sx={{ fontSize: 18 }} />
@@ -132,7 +132,7 @@ export default function PassportCapstoneShowcase({
                 bgcolor: '#F8FAFC',
                 border: '1px solid #E2E8F0',
                 color: '#334155',
-                '&:hover': { bgcolor: '#EFF6FF', borderColor: '#BFDBFE', color: '#2563EB' },
+                '&:hover': { bgcolor: '#FAF5FF', borderColor: '#D8B4FE', color: '#0B1F3A' },
               }}
             >
               <ChevronRightRoundedIcon sx={{ fontSize: 18 }} />
@@ -164,7 +164,7 @@ export default function PassportCapstoneShowcase({
                   Project 0{safeIdx + 1} of 0{capstoneProjects.length}
                 </Typography>
                 <Typography sx={{ color: '#CBD5E1' }}>•</Typography>
-                <Typography sx={{ fontSize: '0.75rem', fontWeight: 750, color: '#2563EB', bgcolor: '#EFF6FF', px: 1, py: 0.2, borderRadius: '6px' }}>
+                <Typography sx={{ fontSize: '0.75rem', fontWeight: 750, color: '#0B1F3A', bgcolor: '#FAF5FF', px: 1, py: 0.2, borderRadius: '6px' }}>
                   {proj.domain}
                 </Typography>
               </Box>
@@ -199,7 +199,7 @@ export default function PassportCapstoneShowcase({
                 border: '1px solid #E2E8F0',
               }}
             >
-              <BoltRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+              <BoltRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               <Typography sx={{ fontSize: '0.76rem', color: '#334155', fontWeight: 650 }}>
                 <span style={{ color: '#64748B', fontWeight: 700 }}>Benchmark:</span> {proj.metrics}
               </Typography>
@@ -262,11 +262,11 @@ export default function PassportCapstoneShowcase({
                     fontWeight: 750,
                     fontSize: '0.76rem',
                     borderRadius: '9px',
-                    bgcolor: '#2563EB',
+                    bgcolor: '#0B1F3A',
                     py: 0.5,
                     px: 1.5,
                     boxShadow: '0 4px 14px rgba(37, 99, 255, 0.25)',
-                    '&:hover': { bgcolor: '#1D4ED8' },
+                    '&:hover': { bgcolor: '#17366E' },
                   }}
                 >
                   Live System
@@ -299,7 +299,7 @@ export default function PassportCapstoneShowcase({
                     LIVE TOPOLOGY & TELEMETRY
                   </Typography>
                 </Box>
-                <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, color: '#38BDF8', bgcolor: 'rgba(56, 189, 248, 0.12)', px: 0.9, py: 0.2, borderRadius: '4px', border: '1px solid rgba(56, 189, 248, 0.25)' }}>
+                <Typography sx={{ fontSize: '0.66rem', fontWeight: 800, color: '#C084FC', bgcolor: 'rgba(192, 132, 252, 0.12)', px: 0.9, py: 0.2, borderRadius: '4px', border: '1px solid rgba(192, 132, 252, 0.25)' }}>
                   120,000 req/s Peak
                 </Typography>
               </Box>
@@ -308,30 +308,30 @@ export default function PassportCapstoneShowcase({
                 <svg width="100%" height="100%" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid meet">
                   <defs>
                     <linearGradient id="streamGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.9" />
+                      <stop offset="0%" stopColor="#C084FC" stopOpacity="0.9" />
                       <stop offset="100%" stopColor="#818CF8" stopOpacity="0.9" />
                     </linearGradient>
                   </defs>
                   <rect x="8" y="38" width="56" height="34" rx="6" fill="#1E293B" stroke="#475569" strokeWidth="1.2" />
                   <text x="36" y="52" fill="#94A3B8" fontSize="8" fontWeight="bold" textAnchor="middle">Ingress</text>
-                  <text x="36" y="64" fill="#38BDF8" fontSize="7" fontWeight="bold" textAnchor="middle">gRPC</text>
+                  <text x="36" y="64" fill="#C084FC" fontSize="7" fontWeight="bold" textAnchor="middle">gRPC</text>
 
                   <line x1="64" y1="55" x2="112" y2="55" stroke="url(#streamGrad1)" strokeWidth="2" strokeDasharray="4 2" />
 
-                  <circle cx="145" cy="55" r="28" fill="#0F172A" stroke="#38BDF8" strokeWidth="2" />
+                  <circle cx="145" cy="55" r="28" fill="#0F172A" stroke="#C084FC" strokeWidth="2" />
                   <circle cx="145" cy="55" r="22" fill="#1E293B" />
                   <text x="145" y="52" fill="#FFFFFF" fontSize="8.5" fontWeight="900" textAnchor="middle">Redis Lua</text>
                   <text x="145" y="63" fill="#4ADE80" fontSize="7" fontWeight="bold" textAnchor="middle">Cluster Sync</text>
 
                   <path d="M 173 55 L 208 25" stroke="#64748B" strokeWidth="1.5" strokeDasharray="3 2" />
-                  <path d="M 173 55 L 208 55" stroke="#38BDF8" strokeWidth="1.5" />
+                  <path d="M 173 55 L 208 55" stroke="#C084FC" strokeWidth="1.5" />
                   <path d="M 173 55 L 208 85" stroke="#64748B" strokeWidth="1.5" strokeDasharray="3 2" />
 
                   <rect x="208" y="10" width="102" height="26" rx="5" fill="#1E293B" stroke="#475569" strokeWidth="1" />
                   <text x="259" y="24" fill="#E2E8F0" fontSize="7.5" fontWeight="bold" textAnchor="middle">Go Node 01 · 0.38ms</text>
 
-                  <rect x="208" y="42" width="102" height="26" rx="5" fill="#1E293B" stroke="#38BDF8" strokeWidth="1.5" />
-                  <text x="259" y="56" fill="#38BDF8" fontSize="7.5" fontWeight="900" textAnchor="middle">Go Node 02 · Active</text>
+                  <rect x="208" y="42" width="102" height="26" rx="5" fill="#1E293B" stroke="#C084FC" strokeWidth="1.5" />
+                  <text x="259" y="56" fill="#C084FC" fontSize="7.5" fontWeight="900" textAnchor="middle">Go Node 02 · Active</text>
 
                   <rect x="208" y="74" width="102" height="26" rx="5" fill="#1E293B" stroke="#475569" strokeWidth="1" />
                   <text x="259" y="88" fill="#E2E8F0" fontSize="7.5" fontWeight="bold" textAnchor="middle">Go Node 03 · Standby</text>
@@ -341,7 +341,7 @@ export default function PassportCapstoneShowcase({
               <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
                 <Box sx={{ p: 0.9, borderRadius: '8px', bgcolor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.06)', textAlign: 'center' }}>
                   <Typography sx={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: 700 }}>P99 LATENCY</Typography>
-                  <Typography sx={{ fontSize: '0.8rem', color: '#38BDF8', fontWeight: 900 }}>&lt;0.38ms</Typography>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#C084FC', fontWeight: 900 }}>&lt;0.38ms</Typography>
                 </Box>
                 <Box sx={{ p: 0.9, borderRadius: '8px', bgcolor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.06)', textAlign: 'center' }}>
                   <Typography sx={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: 700 }}>FAILOVER</Typography>
@@ -386,7 +386,7 @@ export default function PassportCapstoneShowcase({
                   <text x="240" y="32" fill="#34D399" fontSize="8" fontWeight="bold" textAnchor="middle">Isolated Container Jail</text>
 
                   <rect x="178" y="42" width="124" height="14" rx="3" fill="#1E293B" />
-                  <rect x="178" y="42" width="75" height="14" rx="3" fill="#2563EB" />
+                  <rect x="178" y="42" width="75" height="14" rx="3" fill='#0B1F3A' />
                   <text x="240" y="52" fill="#FFFFFF" fontSize="6.5" fontWeight="bold" textAnchor="middle">RAM: 64MB (42MB used)</text>
 
                   <rect x="178" y="62" width="124" height="14" rx="3" fill="#1E293B" />
@@ -402,7 +402,7 @@ export default function PassportCapstoneShowcase({
                 </Box>
                 <Box sx={{ p: 0.9, borderRadius: '8px', bgcolor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.06)', textAlign: 'center' }}>
                   <Typography sx={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: 700 }}>CONTAINMENT</Typography>
-                  <Typography sx={{ fontSize: '0.8rem', color: '#38BDF8', fontWeight: 900 }}>100% Isolated</Typography>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#C084FC', fontWeight: 900 }}>100% Isolated</Typography>
                 </Box>
                 <Box sx={{ p: 0.9, borderRadius: '8px', bgcolor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.06)', textAlign: 'center' }}>
                   <Typography sx={{ fontSize: '0.6rem', color: '#94A3B8', fontWeight: 700 }}>SYSCALLS</Typography>
@@ -428,10 +428,10 @@ export default function PassportCapstoneShowcase({
 
               <Box sx={{ width: '100%', height: 140, position: 'relative', bgcolor: 'rgba(15, 23, 42, 0.7)', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', p: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="100%" height="100%" viewBox="0 0 320 110" preserveAspectRatio="xMidYMid meet">
-                  <circle cx="36" cy="55" r="18" fill="#1E293B" stroke="#6366F1" strokeWidth="1.5" />
+                  <circle cx="36" cy="55" r="18" fill="#1E293B" stroke='#5B2D90' strokeWidth="1.5" />
                   <text x="36" y="58" fill="#A5B4FC" fontSize="7.5" fontWeight="bold" textAnchor="middle">AST Tree</text>
 
-                  <line x1="54" y1="55" x2="105" y2="55" stroke="#6366F1" strokeWidth="1.5" strokeDasharray="3 2" />
+                  <line x1="54" y1="55" x2="105" y2="55" stroke='#5B2D90' strokeWidth="1.5" strokeDasharray="3 2" />
 
                   <rect x="105" y="30" width="85" height="50" rx="6" fill="#1E293B" stroke="#818CF8" strokeWidth="1.5" />
                   <text x="147" y="52" fill="#FFFFFF" fontSize="8" fontWeight="bold" textAnchor="middle">Graph Embedder</text>

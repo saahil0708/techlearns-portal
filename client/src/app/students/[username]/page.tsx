@@ -73,7 +73,7 @@ const SEED_STUDENTS: Record<string, Partial<StudentProfileData>> = {
     id: 'usr-001',
     name: 'Alexander Vance',
     handle: 'alex_vance',
-    email: 'alex.vance@codeplatform.io',
+    email: 'alex.vance@techlearns.com',
     role: 'SUPER_ADMIN',
     bio: 'Full-stack systems architect & platform administrator. Enthusiastic about algorithm complexity, graph flows, and distributed sandboxes.',
     institution: 'Platform Engineering & Architecture',
@@ -100,7 +100,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { username } = await params;
   const match = SEED_STUDENTS[username] || { name: `@${username}` };
   return {
-    title: `${match.name} (@${username}) | CodePlatform Student Profile`,
+    title: `${match.name} (@${username}) | TechLearns Student Profile`,
     description: `View ${match.name}'s competitive programming profile, contest standings, and solved problems.`,
   };
 }

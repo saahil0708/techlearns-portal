@@ -36,7 +36,7 @@ export default function LogoutPage() {
         gap: 2,
       }}
     >
-      <CircularProgress size={32} sx={{ color: '#2563EB' }} />
+      <CircularProgress size={32} sx={{ color: '#0B1F3A' }} />
       <Typography sx={{ color: '#94A3B8', fontSize: '0.95rem', fontWeight: 600 }}>
         Signing out & clearing active session...
       </Typography>

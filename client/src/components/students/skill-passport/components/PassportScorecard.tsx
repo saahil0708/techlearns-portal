@@ -38,7 +38,7 @@ export default function PassportScorecard() {
             <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Algorithmic Problems
             </Typography>
-            <Box sx={{ width: 34, height: 34, borderRadius: '10px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Box sx={{ width: 34, height: 34, borderRadius: '10px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <CodeRoundedIcon sx={{ fontSize: 20 }} />
             </Box>
           </Box>
@@ -55,7 +55,7 @@ export default function PassportScorecard() {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box sx={{ display: 'flex', width: '100%', height: 8, borderRadius: '9999px', overflow: 'hidden', bgcolor: '#F1F5F9', gap: '2px' }}>
             <Box sx={{ width: '33.8%', bgcolor: '#10B981', borderRadius: '4px 0 0 4px' }} title="Easy: 48 (33.8%)" />
-            <Box sx={{ width: '52.1%', bgcolor: '#2563EB' }} title="Medium: 74 (52.1%)" />
+            <Box sx={{ width: '52.1%', bgcolor: '#0B1F3A' }} title="Medium: 74 (52.1%)" />
             <Box sx={{ width: '14.1%', bgcolor: '#EF4444', borderRadius: '0 4px 4px 0' }} title="Hard: 20 (14.1%)" />
           </Box>
 
@@ -65,8 +65,8 @@ export default function PassportScorecard() {
               <Typography sx={{ fontSize: '0.7rem', fontWeight: 750, color: '#166534' }}>48 Easy</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
-              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#2563EB' }} />
-              <Typography sx={{ fontSize: '0.7rem', fontWeight: 750, color: '#1E40AF' }}>74 Med</Typography>
+              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#0B1F3A' }} />
+              <Typography sx={{ fontSize: '0.7rem', fontWeight: 750, color: '#0F264F' }}>74 Med</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
               <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: '#EF4444' }} />

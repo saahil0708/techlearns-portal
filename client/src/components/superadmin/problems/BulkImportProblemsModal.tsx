@@ -319,8 +319,8 @@ export default function BulkImportProblemsModal({
               width: 40,
               height: 40,
               borderRadius: '12px',
-              bgcolor: 'rgba(37, 99, 235, 0.1)',
-              color: '#2563EB',
+              bgcolor: 'rgba(91, 45, 144, 0.1)',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -356,7 +356,7 @@ export default function BulkImportProblemsModal({
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <InfoOutlinedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+            <InfoOutlinedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
             <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#0F172A' }}>
               CSV Column Specification & Guidelines
             </Typography>
@@ -374,15 +374,15 @@ export default function BulkImportProblemsModal({
           </Box>
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center' }}>
-            <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#2563EB' }}>
+            <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0B1F3A' }}>
               Optional Fields:
             </Typography>
-            <Chip size="small" label="Code (e.g. EVEN-ODD)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#DBEAFE', color: '#1E40AF' }} />
-            <Chip size="small" label="Category (e.g. Math & Number Theory)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#DBEAFE', color: '#1E40AF' }} />
-            <Chip size="small" label="Points (e.g. 20, 80, 120)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#DBEAFE', color: '#1E40AF' }} />
-            <Chip size="small" label="TimeLimitMs (default: 1000)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#DBEAFE', color: '#1E40AF' }} />
-            <Chip size="small" label="MemoryLimitMb (default: 256)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#DBEAFE', color: '#1E40AF' }} />
-            <Chip size="small" label="Tags (separated by semicolon)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#DBEAFE', color: '#1E40AF' }} />
+            <Chip size="small" label="Code (e.g. EVEN-ODD)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#E9D5FF', color: '#0F264F' }} />
+            <Chip size="small" label="Category (e.g. Math & Number Theory)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#E9D5FF', color: '#0F264F' }} />
+            <Chip size="small" label="Points (e.g. 20, 80, 120)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#E9D5FF', color: '#0F264F' }} />
+            <Chip size="small" label="TimeLimitMs (default: 1000)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#E9D5FF', color: '#0F264F' }} />
+            <Chip size="small" label="MemoryLimitMb (default: 256)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#E9D5FF', color: '#0F264F' }} />
+            <Chip size="small" label="Tags (separated by semicolon)" sx={{ fontSize: '0.72rem', fontWeight: 600, bgcolor: '#E9D5FF', color: '#0F264F' }} />
           </Box>
         </Box>
 
@@ -390,9 +390,9 @@ export default function BulkImportProblemsModal({
         <Box
           component="label"
           sx={{
-            border: '2px dashed #93C5FD',
+            border: '2px dashed #E9D5FF',
             borderRadius: '16px',
-            bgcolor: '#EFF6FF',
+            bgcolor: '#FAF5FF',
             p: 3.5,
             textAlign: 'center',
             cursor: 'pointer',
@@ -403,14 +403,14 @@ export default function BulkImportProblemsModal({
             justifyContent: 'center',
             gap: 1.25,
             '&:hover': {
-              bgcolor: '#DBEAFE',
-              borderColor: '#3B82F6',
+              bgcolor: '#E9D5FF',
+              borderColor: '#5B2D90',
             },
           }}
         >
           <input type="file" accept=".csv" onChange={handleFileSelect} hidden />
-          <CloudUploadRoundedIcon sx={{ fontSize: 44, color: '#2563EB' }} />
-          <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#1E40AF' }}>
+          <CloudUploadRoundedIcon sx={{ fontSize: 44, color: '#0B1F3A' }} />
+          <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#0F264F' }}>
             {fileName ? fileName : 'Click or Drag & Drop .CSV Problem Batch File'}
           </Typography>
           <Typography sx={{ fontSize: '0.78rem', color: '#64748B' }}>
@@ -469,7 +469,7 @@ export default function BulkImportProblemsModal({
                 <TableBody>
                   {parsedProblems.slice(0, 10).map((row, idx) => (
                     <TableRow key={idx} hover>
-                      <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.75rem', fontWeight: 700, color: '#2563EB' }}>
+                      <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.75rem', fontWeight: 700, color: '#0B1F3A' }}>
                         {row.code}
                       </TableCell>
                       <TableCell sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#0F172A' }}>
@@ -516,12 +516,12 @@ export default function BulkImportProblemsModal({
           onClick={handleExecuteImport}
           startIcon={isProcessing ? <CircularProgress size={16} color="inherit" /> : <CheckCircleRoundedIcon />}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             textTransform: 'none',
             fontWeight: 700,
             borderRadius: '10px',
             px: 2.5,
-            '&:hover': { bgcolor: '#1D4ED8' },
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           {isProcessing ? 'Importing Problems...' : `Import ${parsedProblems.length} Problems`}

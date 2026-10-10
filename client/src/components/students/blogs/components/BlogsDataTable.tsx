@@ -203,7 +203,7 @@ export default function BlogsDataTable({
                       size="small"
                       aria-label="Share article"
                       onClick={(e) => onShare(post, e)}
-                      sx={{ color: '#94A3B8', '&:hover': { color: '#2563EB' } }}
+                      sx={{ color: '#94A3B8', '&:hover': { color: '#0B1F3A' } }}
                     >
                       <ShareRoundedIcon sx={{ fontSize: 16 }} />
                     </IconButton>
@@ -212,7 +212,7 @@ export default function BlogsDataTable({
                       size="small"
                       aria-label="Bookmark article"
                       onClick={(e) => onToggleBookmark(post.id, e)}
-                      sx={{ color: post.isBookmarked ? '#2563EB' : '#94A3B8' }}
+                      sx={{ color: post.isBookmarked ? '#0B1F3A' : '#94A3B8' }}
                     >
                       {post.isBookmarked ? (
                         <BookmarkRoundedIcon sx={{ fontSize: 16 }} />

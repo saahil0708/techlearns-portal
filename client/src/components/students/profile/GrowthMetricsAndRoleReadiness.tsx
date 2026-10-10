@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { FluidArrowForward } from '@/utils/fluid_arrow';
 import Link from 'next/link';
 import {
   Box,
@@ -210,7 +211,7 @@ function CircularMetricGauge({
   percentage,
   size = 64,
   strokeWidth = 5.5,
-  color = '#2563EB',
+  color = '#0B1F3A',
   label,
 }: {
   percentage: number;
@@ -323,8 +324,8 @@ export default function GrowthMetricsAndRoleReadiness({
                   width: 34,
                   height: 34,
                   borderRadius: '10px',
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -368,7 +369,7 @@ export default function GrowthMetricsAndRoleReadiness({
                 onClick={() => setDiagnosticModalOpen(true)}
                 startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
                   fontWeight: 800,
                   textTransform: 'none',
@@ -376,8 +377,8 @@ export default function GrowthMetricsAndRoleReadiness({
                   fontSize: '0.8rem',
                   py: 0.7,
                   px: 1.8,
-                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 12px rgba(91, 45, 144, 0.2)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Run Diagnostic
@@ -430,7 +431,7 @@ export default function GrowthMetricsAndRoleReadiness({
                 High Tier • Rising
               </Typography>
             </Box>
-            <CircularMetricGauge percentage={growth.masteryIndex} color="#2563EB" />
+            <CircularMetricGauge percentage={growth.masteryIndex} color='#0B1F3A' />
           </Box>
 
           {/* Growth Card 2: Practice Consistency */}
@@ -549,8 +550,8 @@ export default function GrowthMetricsAndRoleReadiness({
                   width: 34,
                   height: 34,
                   borderRadius: '10px',
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -593,7 +594,7 @@ export default function GrowthMetricsAndRoleReadiness({
                 border: '1px solid #CBD5E1',
                 fontSize: '0.88rem',
                 fontWeight: 700,
-                '& .MuiSelect-icon': { color: '#2563EB' },
+                '& .MuiSelect-icon': { color: '#0B1F3A' },
                 '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
               }}
             >
@@ -630,12 +631,12 @@ export default function GrowthMetricsAndRoleReadiness({
                 label={currentRoleTarget.badge}
                 size="small"
                 sx={{
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   fontSize: '0.72rem',
                   fontWeight: 800,
                   height: 22,
-                  border: '1px solid #BFDBFE',
+                  border: '1px solid #F3E8FF',
                 }}
               />
             </Box>
@@ -713,7 +714,7 @@ export default function GrowthMetricsAndRoleReadiness({
                       size="small"
                       sx={{ bgcolor: '#FFFFFF', color: '#64748B', fontWeight: 600, fontSize: '0.7rem', height: 20, border: '1px solid #E2E8F0' }}
                     />
-                    <Typography sx={{ color: '#2563EB', fontSize: '0.74rem', fontWeight: 700 }}>
+                    <Typography sx={{ color: '#0B1F3A', fontSize: '0.74rem', fontWeight: 700 }}>
                       {comp.evidenceCount} Evidences
                     </Typography>
                   </Box>
@@ -749,15 +750,15 @@ export default function GrowthMetricsAndRoleReadiness({
                           size="small"
                           variant="outlined"
                           sx={{
-                            color: '#2563EB',
-                            borderColor: '#BFDBFE',
+                            color: '#0B1F3A',
+                            borderColor: '#D8B4FE',
                             fontSize: '0.72rem',
                             fontWeight: 700,
                             textTransform: 'none',
                             borderRadius: '8px',
                             py: 0.2,
                             px: 1,
-                            '&:hover': { bgcolor: '#EFF6FF', borderColor: '#2563EB' },
+                            '&:hover': { bgcolor: '#FAF5FF', borderColor: '#0B1F3A' },
                           }}
                         >
                           Bridge Gap
@@ -802,7 +803,7 @@ export default function GrowthMetricsAndRoleReadiness({
             <Button
               size="small"
               sx={{
-                color: '#2563EB',
+                color: '#0B1F3A',
                 fontWeight: 800,
                 fontSize: '0.82rem',
                 textTransform: 'none',
@@ -839,7 +840,7 @@ export default function GrowthMetricsAndRoleReadiness({
             onComplete={(report) => {
               if (typeof window !== 'undefined' && profile.id) {
                 try {
-                  localStorage.setItem(`codeplatform_diagnostic_goal_${profile.id}`, JSON.stringify(report));
+                  localStorage.setItem(`techlearns_diagnostic_goal_${profile.id}`, JSON.stringify(report));
                 } catch {}
               }
               setDiagnosticModalOpen(false);

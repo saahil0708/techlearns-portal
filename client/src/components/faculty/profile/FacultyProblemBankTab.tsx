@@ -234,12 +234,12 @@ export default function FacultyProblemBankTab({
               textTransform: 'none',
               fontWeight: 700,
               fontSize: '0.82rem',
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               px: 2,
               py: 0.75,
               boxShadow: 'none',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Author Lab Problem
@@ -307,8 +307,8 @@ export default function FacultyProblemBankTab({
                               width: 36,
                               height: 36,
                               borderRadius: '10px',
-                              bgcolor: '#EFF6FF',
-                              color: '#2563EB',
+                              bgcolor: '#FAF5FF',
+                              color: '#0B1F3A',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -318,7 +318,7 @@ export default function FacultyProblemBankTab({
                           </Box>
                           <Box>
                             <Link href={`/problems/${prob.slug || prob.id}`} style={{ textDecoration: 'none' }}>
-                              <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', '&:hover': { color: '#2563EB' } }}>
+                              <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A', '&:hover': { color: '#0B1F3A' } }}>
                                 {prob.title}
                               </Typography>
                             </Link>
@@ -464,7 +464,7 @@ export default function FacultyProblemBankTab({
         <DialogContent sx={{ p: 2.5, flex: 1, overflowY: 'auto' }}>
           {loadingTestCases ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-              <CircularProgress size={28} sx={{ color: '#2563EB' }} />
+              <CircularProgress size={28} sx={{ color: '#0B1F3A' }} />
             </Box>
           ) : testCaseError ? (
             <Box sx={{ textAlign: 'center', py: 6, color: '#DC2626' }}>
@@ -498,8 +498,8 @@ export default function FacultyProblemBankTab({
                         height: 20,
                         fontSize: '0.66rem',
                         fontWeight: 700,
-                        bgcolor: tc.isHidden ? '#FEF2F2' : '#EFF6FF',
-                        color: tc.isHidden ? '#DC2626' : '#2563EB',
+                        bgcolor: tc.isHidden ? '#FEF2F2' : '#FAF5FF',
+                        color: tc.isHidden ? '#DC2626' : '#0B1F3A',
                       }}
                     />
                   </Box>

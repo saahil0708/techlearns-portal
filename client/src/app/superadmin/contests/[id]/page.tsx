@@ -21,8 +21,8 @@ const SEED_CONTESTS: Record<string, ContestEntity> = {
     registeredParticipants: 4820,
     submissionsCount: 12840,
     problemsCount: 4,
-    organizer: 'CodePlatform Global League',
-    bannerColor: '#2563EB',
+    organizer: 'TechLearns Global League',
+    bannerColor: '#0B1F3A',
     tags: ['Algorithms', 'ICPC', 'Div 1'],
     rated: true,
   },
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${title} (${code}) | CodePlatform Contest Portal`,
+    title: `${title} (${code}) | TechLearns Contest Portal`,
     description: `Real-time leaderboard standings, problem set, and submissions for ${title}.`,
   };
 }
@@ -79,7 +79,7 @@ export default async function ContestDetailPage({ params }: PageProps) {
         submissionsCount: 1200,
         problemsCount: liveContest._count?.problems || liveContest.problems?.length || 4,
         organizer: 'Platform Academic League',
-        bannerColor: '#2563EB',
+        bannerColor: '#0B1F3A',
         tags: ['Algorithms', 'Contest'],
         rated: true,
       };
@@ -104,8 +104,8 @@ export default async function ContestDetailPage({ params }: PageProps) {
       registeredParticipants: 1850,
       submissionsCount: 4200,
       problemsCount: 4,
-      organizer: 'CodePlatform Competitive Board',
-      bannerColor: '#2563EB',
+      organizer: 'TechLearns Competitive Board',
+      bannerColor: '#0B1F3A',
       tags: ['Competitive', 'Grand Prix'],
       rated: true,
     };

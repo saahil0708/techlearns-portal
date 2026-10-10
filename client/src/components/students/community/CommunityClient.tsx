@@ -50,7 +50,7 @@ const INITIAL_POSTS: ForumPost[] = [
     id: 'post-1',
     title: 'How I passed Google SDE-2 Assessment: Key DP and Graph Patterns Breakdown',
     channel: 'Interview Experiences',
-    author: { name: 'Aarav Sharma', avatarBg: '#2563EB', handle: 'aarav_coder' },
+    author: { name: 'Aarav Sharma', avatarBg: '#0B1F3A', handle: 'aarav_coder' },
     upvotes: 142,
     repliesCount: 38,
     lastActivity: '12m ago',
@@ -107,7 +107,7 @@ export default function CommunityClient() {
               channel: it.channel,
               author: {
                 name: it.author?.name || 'Community Member',
-                avatarBg: '#2563EB',
+                avatarBg: '#0B1F3A',
                 handle: it.author?.email?.split('@')[0] || 'member',
               },
               upvotes: it.upvotes ?? 0,
@@ -167,7 +167,7 @@ export default function CommunityClient() {
         channel: created.channel,
         author: {
           name: created.author?.name || 'You (Student)',
-          avatarBg: '#2563EB',
+          avatarBg: '#0B1F3A',
           handle: 'student_coder',
         },
         upvotes: created.upvotes ?? 1,
@@ -208,12 +208,12 @@ export default function CommunityClient() {
                 width: 44,
                 height: 44,
                 borderRadius: '14px',
-                bgcolor: '#EFF6FF',
+                bgcolor: '#FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB',
-                border: '1px solid #DBEAFE',
+                color: '#0B1F3A',
+                border: '1px solid #FAF5FF',
               }}
             >
               <ArticleOutlinedIcon sx={{ fontSize: 24 }} />
@@ -233,15 +233,15 @@ export default function CommunityClient() {
             startIcon={<AddRoundedIcon />}
             onClick={() => setCreateModalOpen(true)}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               borderRadius: '12px',
               fontWeight: 700,
               textTransform: 'none',
               fontSize: '0.86rem',
               px: 2.5,
               py: 1,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Write Blog Post
@@ -260,10 +260,10 @@ export default function CommunityClient() {
                 fontWeight: 700,
                 fontSize: '0.78rem',
                 borderRadius: '8px',
-                bgcolor: selectedChannel === ch ? '#2563EB' : '#F1F5F9',
+                bgcolor: selectedChannel === ch ? '#0B1F3A' : '#F1F5F9',
                 color: selectedChannel === ch ? '#FFFFFF' : '#475569',
                 cursor: 'pointer',
-                '&:hover': { bgcolor: selectedChannel === ch ? '#1D4ED8' : '#E2E8F0' },
+                '&:hover': { bgcolor: selectedChannel === ch ? '#17366E' : '#E2E8F0' },
               }}
             />
           ))}
@@ -335,10 +335,10 @@ export default function CommunityClient() {
                           borderRadius: '8px',
                           p: 0.75,
                           flexDirection: 'column',
-                          '&:hover': { bgcolor: '#EFF6FF', borderColor: '#93C5FD' },
+                          '&:hover': { bgcolor: '#FAF5FF', borderColor: '#C084FC' },
                         }}
                       >
-                        <FluidArrowUp size={16} color="#2563EB" />
+                        <FluidArrowUp size={16} color='#0B1F3A' />
                         <Typography sx={{ fontSize: '0.7rem', fontWeight: 800, color: '#0F172A' }}>
                           {post.upvotes}
                         </Typography>
@@ -358,7 +358,7 @@ export default function CommunityClient() {
                   </TableCell>
 
                   <TableCell>
-                    <Chip label={post.channel} size="small" sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700, fontSize: '0.72rem' }} />
+                    <Chip label={post.channel} size="small" sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700, fontSize: '0.72rem' }} />
                   </TableCell>
 
                   <TableCell>
@@ -408,7 +408,7 @@ export default function CommunityClient() {
           <>
             <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <Box>
-                <Chip label={selectedPost.channel} size="small" sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 800, fontSize: '0.72rem', mb: 1 }} />
+                <Chip label={selectedPost.channel} size="small" sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 800, fontSize: '0.72rem', mb: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', lineHeight: 1.2 }}>
                   {selectedPost.title}
                 </Typography>
@@ -451,7 +451,7 @@ export default function CommunityClient() {
                   toast.success('Reply submitted to discussion thread!', 'Reply Added');
                   setSelectedPost(null);
                 }}
-                sx={{ bgcolor: '#2563EB', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}
+                sx={{ bgcolor: '#0B1F3A', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}
               >
                 Post Reply
               </Button>
@@ -512,7 +512,7 @@ export default function CommunityClient() {
             <Button onClick={() => setCreateModalOpen(false)} sx={{ textTransform: 'none', borderRadius: '10px' }}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" sx={{ bgcolor: '#2563EB', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}>
+            <Button type="submit" variant="contained" sx={{ bgcolor: '#0B1F3A', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}>
               Publish Thread
             </Button>
           </DialogActions>

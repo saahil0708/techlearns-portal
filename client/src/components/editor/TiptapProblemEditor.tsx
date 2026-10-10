@@ -116,8 +116,8 @@ export default function TiptapProblemEditor({
         overflow: 'hidden',
         transition: 'border-color 0.2s ease',
         '&:focus-within': {
-          borderColor: '#2563EB',
-          boxShadow: '0 0 0 2px rgba(37, 99, 235, 0.12)',
+          borderColor: '#0B1F3A',
+          boxShadow: '0 0 0 2px rgba(91, 45, 144, 0.12)',
         },
       }}
     >
@@ -422,7 +422,7 @@ export default function TiptapProblemEditor({
               },
             },
             '& blockquote': {
-              borderLeft: '4px solid #3B82F6',
+              borderLeft: '4px solid #5B2D90',
               pl: 2,
               my: 1.5,
               color: '#475569',

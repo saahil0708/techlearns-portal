@@ -165,13 +165,13 @@ export default function FacultyInviteMemberModal({
                 width: 44,
                 height: 44,
                 borderRadius: '12px',
-                bgcolor: '#EFF6FF',
+                bgcolor: '#FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <PersonAddAlt1RoundedIcon sx={{ color: '#2563EB', fontSize: 24 }} />
+              <PersonAddAlt1RoundedIcon sx={{ color: '#0B1F3A', fontSize: 24 }} />
             </Box>
             <Box>
               <Typography sx={{ fontWeight: 800, fontSize: '1.2rem', color: '#0F172A', lineHeight: 1.2 }}>
@@ -286,7 +286,7 @@ export default function FacultyInviteMemberModal({
               gap: 1.5,
             }}
           >
-            <MarkEmailReadRoundedIcon sx={{ color: '#2563EB', fontSize: 22, mt: 0.25 }} />
+            <MarkEmailReadRoundedIcon sx={{ color: '#0B1F3A', fontSize: 22, mt: 0.25 }} />
             <Box>
               <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#1E293B' }}>
                 Expiring Activation Token Flow
@@ -319,11 +319,11 @@ export default function FacultyInviteMemberModal({
             sx={{
               textTransform: 'none',
               fontWeight: 700,
-              bgcolor: '#2563EB',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              bgcolor: '#0B1F3A',
+              '&:hover': { bgcolor: '#17366E' },
               borderRadius: '10px',
               px: 3,
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+              boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
             }}
           >
             {submitting ? (

@@ -105,7 +105,7 @@ export default function SettingsClient({
   const [auditPage, setAuditPage] = useState(0);
   const [auditRowsPerPage] = useState(8);
 
-  const primaryBlue = '#2563EB';
+  const primaryBlue = '#0B1F3A';
   const borderColor = '#E2E8F0';
 
   const handleSaveSettings = () => {
@@ -136,9 +136,9 @@ export default function SettingsClient({
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -201,8 +201,8 @@ export default function SettingsClient({
                   fontSize: '0.86rem',
                   px: 2.5,
                   py: 0.9,
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Save All Changes
@@ -365,7 +365,7 @@ export default function SettingsClient({
                     Per-language execution time quotas, memory ceilings, and active BullMQ judge worker pods.
                   </Typography>
                 </Box>
-                <Button size="small" variant="outlined" startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />} sx={{ textTransform: 'none', fontWeight: 700, color: primaryBlue, borderColor: '#DBEAFE' }}>
+                <Button size="small" variant="outlined" startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />} sx={{ textTransform: 'none', fontWeight: 700, color: primaryBlue, borderColor: '#E9D5FF' }}>
                   Add Custom Runtime
                 </Button>
               </Box>
@@ -402,7 +402,7 @@ export default function SettingsClient({
                           <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>{c.defaultMemoryLimitMb} MB</Typography>
                         </TableCell>
                         <TableCell sx={{ py: 1.75 }}>
-                          <Chip size="small" label={`${c.activeWorkersCount} pods`} sx={{ height: 22, fontSize: '0.72rem', fontWeight: 600, bgcolor: '#EFF6FF', color: '#2563EB' }} />
+                          <Chip size="small" label={`${c.activeWorkersCount} pods`} sx={{ height: 22, fontSize: '0.72rem', fontWeight: 600, bgcolor: '#FAF5FF', color: '#0B1F3A' }} />
                         </TableCell>
                         <TableCell sx={{ py: 1.75 }}>
                           <Chip
@@ -427,9 +427,9 @@ export default function SettingsClient({
                               textTransform: 'none',
                               fontWeight: 700,
                               fontSize: '0.74rem',
-                              color: c.status === 'Enabled' ? '#DC2626' : '#2563EB',
-                              borderColor: c.status === 'Enabled' ? '#FECACA' : '#DBEAFE',
-                              bgcolor: c.status === 'Enabled' ? '#FEF2F2' : '#EFF6FF',
+                              color: c.status === 'Enabled' ? '#DC2626' : '#0B1F3A',
+                              borderColor: c.status === 'Enabled' ? '#FECACA' : '#E9D5FF',
+                              bgcolor: c.status === 'Enabled' ? '#FEF2F2' : '#FAF5FF',
                               borderRadius: '6px',
                               px: 1.25,
                               py: 0.3,
@@ -652,7 +652,7 @@ export default function SettingsClient({
                           <Typography sx={{ fontSize: '0.7rem', color: '#64748B', fontFamily: 'monospace' }}>{w.secretMasked}</Typography>
                         </TableCell>
                         <TableCell sx={{ py: 1.75 }}>
-                          <Typography sx={{ fontSize: '0.76rem', fontFamily: 'monospace', color: '#2563EB' }}>{w.targetUrl}</Typography>
+                          <Typography sx={{ fontSize: '0.76rem', fontFamily: 'monospace', color: '#0B1F3A' }}>{w.targetUrl}</Typography>
                         </TableCell>
                         <TableCell sx={{ py: 1.75 }}>
                           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
@@ -668,7 +668,7 @@ export default function SettingsClient({
                           <Typography sx={{ fontSize: '0.76rem', color: '#64748B' }}>{w.lastTriggered}</Typography>
                         </TableCell>
                         <TableCell align="right" sx={{ pr: 3, py: 1.75 }}>
-                          <Button size="small" variant="outlined" endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.74rem', color: primaryBlue, borderColor: '#DBEAFE', bgcolor: '#EFF6FF', borderRadius: '6px' }}>
+                          <Button size="small" variant="outlined" endIcon={<FluidArrowRight size={14} />} sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.74rem', color: primaryBlue, borderColor: '#E9D5FF', bgcolor: '#FAF5FF', borderRadius: '6px' }}>
                             Test Ping
                           </Button>
                         </TableCell>
@@ -727,7 +727,7 @@ export default function SettingsClient({
                     {paginatedAuditLogs.map((log) => {
                       const isSelected = selectedAuditIds.includes(log.id);
                       return (
-                        <TableRow key={log.id} hover selected={isSelected} sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, '&.Mui-selected': { bgcolor: '#EFF6FF !important' } }}>
+                        <TableRow key={log.id} hover selected={isSelected} sx={{ '& td': { borderBottom: '1px solid #F1F5F9' }, '&.Mui-selected': { bgcolor: '#FAF5FF !important' } }}>
                           <TableCell padding="checkbox" sx={{ pl: 2.5, py: 1.75 }}>
                             <Checkbox
                               size="small"

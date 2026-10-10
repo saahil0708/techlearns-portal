@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Box, Tooltip, Avatar, Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, IconButton, Chip } from '@mui/material';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -13,7 +14,7 @@ import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
 import CodeRoundedIcon from '@mui/icons-material/CodeRounded';
 import EmojiEventsRoundedIcon from '@mui/icons-material/EmojiEventsRounded';
-import AnalyticsRoundedIcon from '@mui/icons-material/AnalyticsRounded';
+import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
@@ -31,7 +32,7 @@ const NAV_ITEMS = [
   { label: 'Courses', icon: <MenuBookRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/courses' },
   { label: 'Problems', icon: <CodeRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/problems' },
   { label: 'Contests & Bootcamps', icon: <EmojiEventsRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/contests' },
-  { label: 'Analytics', icon: <AnalyticsRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/analytics' },
+  { label: 'SkillOS Tests', icon: <ShieldRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/skillos' },
   { label: 'Settings', icon: <SettingsRoundedIcon sx={{ fontSize: 20 }} />, path: '/superadmin/settings' },
 ];
 
@@ -39,6 +40,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { logoutUser } from '@/store/slices/authSlice';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store';
+import { BRAND_COLORS } from '@/theme/colors';
 import LogoutConfirmModal from '@/components/shared/LogoutConfirmModal';
 
 export default function CurvedSidebar() {
@@ -49,7 +51,7 @@ export default function CurvedSidebar() {
   const user = useSelector((state: RootState) => state.auth.user);
 
   const displayName = user?.name || 'Super Admin';
-  const displayEmail = user?.email || 'admin@codeplatform.internal';
+  const displayEmail = user?.email || 'admin@techlearns.internal';
   const displayRole = user?.globalRole ? user.globalRole.replace('_', ' ') : 'Super Admin';
   const initials = displayName
     .split(' ')
@@ -103,7 +105,7 @@ export default function CurvedSidebar() {
           flexShrink: 0,
         }}
       >
-        <Tooltip title="CodePlatform Platform" placement="right" arrow>
+        <Tooltip title="TechLearns Portal" placement="right" arrow>
           <Link href="/superadmin" prefetch style={{ textDecoration: 'none' }}>
             <Box
               sx={{
@@ -114,20 +116,28 @@ export default function CurvedSidebar() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                bgcolor: '#2563EB',
-                backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                bgcolor: BRAND_COLORS.primary,
+                backgroundImage: BRAND_COLORS.gradients.brand,
                 color: '#FFFFFF',
                 fontWeight: 900,
                 fontSize: '0.95rem',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                boxShadow: `0 4px 14px ${BRAND_COLORS.alpha.navy20}`,
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                p: '3px',
                 '&:hover': {
                   transform: 'scale(1.08)',
-                  boxShadow: '0 6px 20px rgba(37, 99, 235, 0.5)',
+                  boxShadow: `0 6px 20px ${BRAND_COLORS.alpha.purple20}`,
                 },
               }}
             >
-              <TerminalRoundedIcon sx={{ fontSize: 24, color: '#FFFFFF' }} />
+              <Image
+                src="/images/logo/techlearns-single.png"
+                alt="TechLearns"
+                width={20}
+                height={20}
+                style={{ objectFit: 'contain' }}
+                priority
+              />
             </Box>
           </Link>
         </Tooltip>
@@ -169,15 +179,15 @@ export default function CurvedSidebar() {
                     justifyContent: 'center',
                     cursor: 'pointer',
                     flexShrink: 0,
-                    bgcolor: isActive ? '#2563EB' : '#F8FAFC',
-                    backgroundImage: isActive ? 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)' : 'none',
+                    bgcolor: isActive ? BRAND_COLORS.primary : '#F8FAFC',
+                    backgroundImage: isActive ? BRAND_COLORS.gradients.brand : 'none',
                     color: isActive ? '#FFFFFF' : '#64748B',
                     border: isActive ? 'none' : '1px solid #F1F5F9',
-                    boxShadow: isActive ? '0 4px 16px rgba(37, 99, 235, 0.35)' : 'none',
+                    boxShadow: isActive ? `0 4px 16px ${BRAND_COLORS.alpha.purple20}` : 'none',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      bgcolor: isActive ? '#1D4ED8' : '#F1F5F9',
-                      color: isActive ? '#FFFFFF' : '#0F172A',
+                      bgcolor: isActive ? BRAND_COLORS.navy.hover : '#F1F5F9',
+                      color: isActive ? '#FFFFFF' : BRAND_COLORS.primary,
                       borderColor: '#E2E8F0',
                       transform: 'scale(1.06)',
                     },
@@ -251,7 +261,7 @@ export default function CurvedSidebar() {
                 transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
                   transform: 'scale(1.06)',
-                  boxShadow: '0 0 14px rgba(37, 99, 235, 0.3)',
+                  boxShadow: '0 0 14px rgba(91, 45, 144, 0.3)',
                 },
               }}
             >
@@ -259,7 +269,7 @@ export default function CurvedSidebar() {
                 sx={{
                   width: 44,
                   height: 44,
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
                   fontWeight: 800,
                   fontSize: '0.95rem',

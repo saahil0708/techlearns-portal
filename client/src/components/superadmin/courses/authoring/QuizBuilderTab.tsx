@@ -100,7 +100,7 @@ export function QuizBuilderTab({
                 bgcolor: '#F8FAFC',
                 '& fieldset': { borderColor: borderColor },
                 '&:hover fieldset': { borderColor: '#CBD5E1' },
-                '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
               },
             },
           }}
@@ -117,7 +117,7 @@ export function QuizBuilderTab({
             size="small"
             onClick={handleAddQuizOption}
             startIcon={<AddCircleOutlineRoundedIcon sx={{ fontSize: 16 }} />}
-            sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', color: '#2563EB' }}
+            sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', color: '#0B1F3A' }}
           >
             Add Option
           </Button>

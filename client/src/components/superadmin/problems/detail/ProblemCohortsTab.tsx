@@ -44,16 +44,16 @@ export default function ProblemCohortsTab({
           startIcon={<AddRoundedIcon />}
           onClick={onOpenAssignModal}
           sx={{
-            bgcolor: '#2563EB',
-            backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+            bgcolor: '#0B1F3A',
+            backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
             borderRadius: '9999px',
             px: 2.5,
             py: 0.75,
             fontWeight: 700,
             textTransform: 'none',
             fontSize: '0.85rem',
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           Assign to Cohort
@@ -76,8 +76,8 @@ export default function ProblemCohortsTab({
               width: 56,
               height: 56,
               borderRadius: '50%',
-              bgcolor: '#EFF6FF',
-              border: '1px solid #DBEAFE',
+              bgcolor: '#FAF5FF',
+              border: '1px solid #FAF5FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -85,7 +85,7 @@ export default function ProblemCohortsTab({
               mb: 2,
             }}
           >
-            <SchoolRoundedIcon sx={{ fontSize: 28, color: '#2563EB' }} />
+            <SchoolRoundedIcon sx={{ fontSize: 28, color: '#0B1F3A' }} />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.75, fontSize: '1.05rem' }}>
             No Cohorts Assigned Yet
@@ -99,13 +99,13 @@ export default function ProblemCohortsTab({
             startIcon={<AddRoundedIcon />}
             onClick={onOpenAssignModal}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               borderRadius: '9999px',
               textTransform: 'none',
               fontWeight: 700,
               px: 3,
               py: 0.75,
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Assign to Cohort
@@ -141,9 +141,9 @@ export default function ProblemCohortsTab({
                       label={coh.status}
                       size="small"
                       sx={{
-                        bgcolor: coh.status === 'Mandatory' ? '#EFF6FF' : '#F8FAFC',
-                        color: coh.status === 'Mandatory' ? '#2563EB' : '#64748B',
-                        border: `1px solid ${coh.status === 'Mandatory' ? '#DBEAFE' : '#E2E8F0'}`,
+                        bgcolor: coh.status === 'Mandatory' ? '#FAF5FF' : '#F8FAFC',
+                        color: coh.status === 'Mandatory' ? '#0B1F3A' : '#64748B',
+                        border: `1px solid ${coh.status === 'Mandatory' ? '#E9D5FF' : '#E2E8F0'}`,
                         fontWeight: 700,
                         fontSize: '0.74rem',
                         borderRadius: '6px',

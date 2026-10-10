@@ -93,12 +93,12 @@ export default function FacultyAuthGuard({ children }: FacultyAuthGuardProps) {
               endIcon={<FluidArrowRight size={18} />}
               onClick={() => router.push(user.globalRole === 'STUDENT' ? '/students' : '/')}
               sx={{
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 borderRadius: '12px',
                 py: 1.2,
                 fontWeight: 700,
                 textTransform: 'none',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               Go to Student Workspace

@@ -18,7 +18,7 @@ describe('AppController', () => {
     it('should return health status with ok', async () => {
       const result = await appController.getHealth();
       expect(result).toHaveProperty('status', 'ok');
-      expect(result).toHaveProperty('service', 'CodePlatform API');
+      expect(result).toHaveProperty('service', 'TechLearns API');
     });
   });
 });

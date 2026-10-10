@@ -101,12 +101,12 @@ export default function ProblemHeaderStats({
                 size="small"
                 className="ide-code-font"
                 sx={{
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   fontWeight: 800,
                   fontFamily: 'Menlo, Monaco, Consolas, "Liberation Mono", monospace !important',
                   fontSize: '0.82rem',
-                  border: '1px solid #DBEAFE',
+                  border: '1px solid #FAF5FF',
                   borderRadius: '8px',
                 }}
               />
@@ -172,7 +172,7 @@ export default function ProblemHeaderStats({
                         textTransform: 'none',
                         fontWeight: 700,
                         fontSize: '0.82rem',
-                        color: '#2563EB',
+                        color: '#0B1F3A',
                         p: 0,
                         minWidth: 'auto',
                         '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' },
@@ -194,7 +194,7 @@ export default function ProblemHeaderStats({
                       textTransform: 'none',
                       fontWeight: 700,
                       fontSize: '0.82rem',
-                      color: '#2563EB',
+                      color: '#0B1F3A',
                       p: 0,
                       minWidth: 'auto',
                       alignSelf: 'center',
@@ -222,7 +222,7 @@ export default function ProblemHeaderStats({
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CodeRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <CodeRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                 <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 700 }}>
                   {problem.points || (problem.difficulty === 'Easy' ? 100 : problem.difficulty === 'Hard' ? 350 : 200)} Points
                 </Typography>
@@ -238,16 +238,16 @@ export default function ProblemHeaderStats({
                 startIcon={<EditRoundedIcon sx={{ fontSize: 18 }} />}
                 onClick={onEditProblem}
                 sx={{
-                  bgcolor: '#2563EB',
-                  backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  bgcolor: '#0B1F3A',
+                  backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   borderRadius: '9999px',
                   px: 2.5,
                   py: 1,
                   fontWeight: 700,
                   textTransform: 'none',
                   fontSize: '0.88rem',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 14px rgba(91, 45, 144, 0.3)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Edit Problem
@@ -259,13 +259,13 @@ export default function ProblemHeaderStats({
               onClick={onAddTestCase}
               sx={{
                 borderRadius: '9999px',
-                borderColor: '#2563EB',
-                color: '#2563EB',
-                bgcolor: '#EFF6FF',
+                borderColor: '#0B1F3A',
+                color: '#0B1F3A',
+                bgcolor: '#FAF5FF',
                 fontWeight: 700,
                 textTransform: 'none',
                 fontSize: '0.88rem',
-                '&:hover': { bgcolor: '#DBEAFE', borderColor: '#1D4ED8' },
+                '&:hover': { bgcolor: '#E9D5FF', borderColor: '#17366E' },
               }}
             >
               Add Test Case

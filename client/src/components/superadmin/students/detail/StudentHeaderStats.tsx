@@ -138,7 +138,7 @@ export default function StudentHeaderStats({
           <Chip
             label={`@${student.handle}`}
             size="small"
-            sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, bgcolor: '#EFF6FF', color: '#2563EB', borderRadius: '5px' }}
+            sx={{ height: 22, fontSize: '0.72rem', fontWeight: 700, bgcolor: '#FAF5FF', color: '#0B1F3A', borderRadius: '5px' }}
           />
         </Box>
 
@@ -158,7 +158,7 @@ export default function StudentHeaderStats({
                 fontSize: '0.84rem',
                 px: 1.75,
                 py: 0.75,
-                '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+                '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A', borderColor: '#D8B4FE' },
               }}
             >
               Export Report
@@ -205,7 +205,7 @@ export default function StudentHeaderStats({
               sx={{ borderRadius: '8px', py: 1 }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               </ListItemIcon>
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                 Download CSV (.csv)
@@ -229,7 +229,7 @@ export default function StudentHeaderStats({
                 {student.solvedEasy}E
               </Typography>
               <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>•</Typography>
-              <Typography sx={{ fontSize: '0.72rem', color: '#60A5FA', fontWeight: 700 }}>
+              <Typography sx={{ fontSize: '0.72rem', color: '#A855F7', fontWeight: 700 }}>
                 {student.solvedMedium}M
               </Typography>
               <Typography sx={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)' }}>•</Typography>
@@ -289,8 +289,8 @@ export default function StudentHeaderStats({
                 width: 36,
                 height: 36,
                 borderRadius: '10px',
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -314,9 +314,9 @@ export default function StudentHeaderStats({
               height: 22,
               fontSize: '0.68rem',
               fontWeight: 700,
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
-              border: '1px solid #BFDBFE',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
+              border: '1px solid #F3E8FF',
               borderRadius: '6px',
             }}
           />
@@ -325,7 +325,7 @@ export default function StudentHeaderStats({
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
           <RadialDonutGauge
             percentage={accuracyPercentage}
-            color="#2563EB"
+            color='#0B1F3A'
             label="First-Pass Accuracy"
             sublabel={Number.isFinite(parsedAccuracy) ? 'Accepted on first run' : 'Sample: No submissions yet'}
             badge={accuracyBadge}
@@ -375,8 +375,8 @@ export default function StudentHeaderStats({
               label="648 Submissions in Past Year (Sample)"
               size="small"
               sx={{
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 fontWeight: 700,
                 fontSize: '0.72rem',
                 borderRadius: '9999px',
@@ -470,7 +470,7 @@ export default function StudentHeaderStats({
               Current Streak: <strong style={{ color: '#D97706' }}>🔥 {student.streakDays} Days</strong>
             </Typography>
             <Typography sx={{ fontSize: '0.75rem', color: '#64748B' }}>
-              Longest Streak: <strong style={{ color: '#2563EB' }}>⚡ 65 Days (Sample)</strong>
+              Longest Streak: <strong style={{ color: '#0B1F3A' }}>⚡ 65 Days (Sample)</strong>
             </Typography>
           </Box>
         </Box>

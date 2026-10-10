@@ -36,11 +36,11 @@ const BackgroundShape: React.FC<{ shape: StatsCardShape; variant: StatsCardVaria
   const uniqueId = useId().replace(/:/g, '_');
   const isBlue = variant === 'blue';
 
-  const strokePrimary = isBlue ? 'rgba(147, 197, 253, 0.35)' : 'rgba(255, 255, 255, 0.18)';
+  const strokePrimary = isBlue ? 'rgba(192, 132, 252, 0.35)' : 'rgba(255, 255, 255, 0.18)';
   const strokeSecondary = isBlue ? 'rgba(96, 165, 250, 0.2)' : 'rgba(255, 255, 255, 0.08)';
-  const fillGlow = isBlue ? 'rgba(59, 130, 246, 0.18)' : 'rgba(255, 255, 255, 0.06)';
+  const fillGlow = isBlue ? 'rgba(91, 45, 144, 0.18)' : 'rgba(255, 255, 255, 0.06)';
   const fillDeep = isBlue ? 'rgba(30, 58, 138, 0.35)' : 'rgba(255, 255, 255, 0.03)';
-  const accentDot = isBlue ? '#93C5FD' : '#FFFFFF';
+  const accentDot = isBlue ? '#C084FC' : '#FFFFFF';
 
   switch (shape) {
     case 'orbital':
@@ -279,7 +279,7 @@ export default function StatsCard({
   const isBlue = effectiveVariant === 'blue';
 
   const backgroundGradient = isBlue
-    ? 'linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 50%, #0F172A 100%)'
+    ? 'linear-gradient(135deg, #0B1F3A 0%, #17366E 50%, #5B2D90 100%)'
     : 'linear-gradient(135deg, #18181B 0%, #111827 60%, #030712 100%)';
 
   const borderColor = isBlue

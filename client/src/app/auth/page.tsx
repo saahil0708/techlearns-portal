@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import AuthPageClient from '@/components/auth/AuthPageClient';
 
 export const metadata: Metadata = {
-  title: 'Sign In / Register | CodePlatform',
+  title: 'Sign In / Register | TechLearns',
   description:
-    'Sign in or register for CodePlatform competitive programming, collegiate tournaments, and multi-tenant STEM coding labs.',
+    'Sign in or register for TechLearns competitive programming, collegiate tournaments, and multi-tenant STEM coding labs.',
 };
 
 /**

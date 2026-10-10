@@ -69,14 +69,14 @@ export default function VelocityCadenceGrid({
           justifyContent: 'space-between',
           cursor: 'pointer',
           transition: 'all 0.15s ease',
-          '&:hover': { borderColor: '#2563EB', boxShadow: '0 4px 12px rgba(37, 99, 235, 0.08)', transform: 'translateY(-1px)' },
+          '&:hover': { borderColor: '#0B1F3A', boxShadow: '0 4px 12px rgba(91, 45, 144, 0.08)', transform: 'translateY(-1px)' },
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Box sx={{ width: 28, height: 28, borderRadius: '6px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 28, height: 28, borderRadius: '6px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <SpeedRoundedIcon sx={{ fontSize: 16 }} />
           </Box>
-          <Chip label="Target" size="small" sx={{ bgcolor: '#EFF6FF', color: '#1D4ED8', fontSize: '0.62rem', fontWeight: 800, height: 18 }} />
+          <Chip label="Target" size="small" sx={{ bgcolor: '#FAF5FF', color: '#17366E', fontSize: '0.62rem', fontWeight: 800, height: 18 }} />
         </Box>
         <Typography sx={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 700 }}>Solve Time / Min</Typography>
         <Typography sx={{ color: '#0F172A', fontSize: '1.15rem', fontWeight: 900, lineHeight: 1.2, my: 0.3 }}>
@@ -115,7 +115,7 @@ export default function VelocityCadenceGrid({
         <Typography sx={{ color: '#0F172A', fontSize: '1.15rem', fontWeight: 900, lineHeight: 1.2, my: 0.3 }}>
           {goalData.dailyGoalMins ?? 60}m <span style={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 600 }}>/day</span>
         </Typography>
-        <Typography sx={{ color: '#2563EB', fontSize: '0.68rem', fontWeight: 700 }}>
+        <Typography sx={{ color: '#0B1F3A', fontSize: '0.68rem', fontWeight: 700 }}>
           Today: {goalData.dailyLoggedMins ?? 0}m ({dailyPercentage}%)
         </Typography>
       </Card>
@@ -135,14 +135,14 @@ export default function VelocityCadenceGrid({
           justifyContent: 'space-between',
           cursor: 'pointer',
           transition: 'all 0.15s ease',
-          '&:hover': { borderColor: '#0284C7', boxShadow: '0 4px 12px rgba(2, 132, 199, 0.08)', transform: 'translateY(-1px)' },
+          '&:hover': { borderColor: '#5B2D90', boxShadow: '0 4px 12px rgba(91, 45, 144, 0.08)', transform: 'translateY(-1px)' },
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-          <Box sx={{ width: 28, height: 28, borderRadius: '6px', bgcolor: '#F0F9FF', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 28, height: 28, borderRadius: '6px', bgcolor: '#FAF5FF', color: '#5B2D90', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <FlagRoundedIcon sx={{ fontSize: 16 }} />
           </Box>
-          <Chip label="Weekly" size="small" sx={{ bgcolor: '#F0F9FF', color: '#0369A1', fontSize: '0.62rem', fontWeight: 800, height: 18 }} />
+          <Chip label="Weekly" size="small" sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontSize: '0.62rem', fontWeight: 800, height: 18 }} />
         </Box>
         <Typography sx={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 700 }}>Weekly Problems</Typography>
         <Typography sx={{ color: '#0F172A', fontSize: '1.15rem', fontWeight: 900, lineHeight: 1.2, my: 0.3 }}>
@@ -168,7 +168,7 @@ export default function VelocityCadenceGrid({
           justifyContent: 'space-between',
           cursor: 'pointer',
           transition: 'all 0.15s ease',
-          '&:hover': { borderColor: '#6366F1', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.08)', transform: 'translateY(-1px)' },
+          '&:hover': { borderColor: '#5B2D90', boxShadow: '0 4px 12px rgba(99, 102, 241, 0.08)', transform: 'translateY(-1px)' },
         }}
       >
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>

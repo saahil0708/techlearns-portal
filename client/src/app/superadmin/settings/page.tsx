@@ -10,15 +10,15 @@ import type {
 } from '@/types/settings';
 
 export const metadata: Metadata = {
-  title: 'Platform Settings & Security Console | CodePlatform Admin',
+  title: 'Platform Settings & Security Console | TechLearns Admin',
   description: 'Manage compiler sandboxes, institutional SSO authentication, scoring engine parameters, and security audit logs.',
 };
 
 const INITIAL_GENERAL: GeneralSettings = {
-  platformName: 'CodePlatform Academic Cloud',
+  platformName: 'TechLearns Academic Cloud',
   institutionTagline: 'Institute Competitive Programming & Placement Learning System',
-  primaryDomain: 'https://codeplatform.edu',
-  supportEmail: 'admin-support@codeplatform.edu',
+  primaryDomain: 'https://techlearns.edu',
+  supportEmail: 'admin-support@techlearns.edu',
   academicYear: '2026 - 2027',
   defaultTimezone: 'Asia/Kolkata (IST +5:30)',
   allowPublicRegistrations: true,
@@ -95,7 +95,7 @@ const INITIAL_SECURITY: SecuritySettings = {
   allowGoogleSSO: true,
   allowGithubSSO: true,
   allowSamlSSO: true,
-  samlEntityId: 'https://codeplatform.edu/auth/saml/metadata',
+  samlEntityId: 'https://techlearns.edu/auth/saml/metadata',
   enforceInstituteDomainMatch: true,
 };
 
@@ -145,7 +145,7 @@ const INITIAL_AUDIT_LOGS: AuditLogEntity[] = [
     id: 'log-001',
     timestamp: '2026-09-07 12:45:10',
     adminName: 'Platform Administrator',
-    adminEmail: 'admin@codeplatform.edu',
+    adminEmail: 'admin@techlearns.edu',
     action: 'Updated MOSS Plagiarism Sensitivity to 75%',
     targetEntity: 'System Scoring Config',
     ipAddress: '192.168.1.9',
@@ -167,7 +167,7 @@ const INITIAL_AUDIT_LOGS: AuditLogEntity[] = [
     id: 'log-003',
     timestamp: '2026-09-07 09:14:32',
     adminName: 'System Security Engine',
-    adminEmail: 'security-bot@codeplatform.edu',
+    adminEmail: 'security-bot@techlearns.edu',
     action: 'Blocked Failed SSO Attempt',
     targetEntity: 'Auth Gateway',
     ipAddress: '198.51.100.42',
@@ -178,7 +178,7 @@ const INITIAL_AUDIT_LOGS: AuditLogEntity[] = [
     id: 'log-004',
     timestamp: '2026-09-06 18:30:19',
     adminName: 'David Chen (DevOps)',
-    adminEmail: 'd.chen@codeplatform.edu',
+    adminEmail: 'd.chen@techlearns.edu',
     action: 'Scaled C++20 Sandbox Workers to 16 Pods',
     targetEntity: 'BullMQ Queue Cluster',
     ipAddress: '10.0.4.18',
@@ -189,7 +189,7 @@ const INITIAL_AUDIT_LOGS: AuditLogEntity[] = [
     id: 'log-005',
     timestamp: '2026-09-06 14:05:00',
     adminName: 'Platform Administrator',
-    adminEmail: 'admin@codeplatform.edu',
+    adminEmail: 'admin@techlearns.edu',
     action: 'Rotated Webhook Signing Secret',
     targetEntity: 'MIT Canvas LMS Webhook',
     ipAddress: '192.168.1.9',

@@ -73,7 +73,7 @@ export default async function StudentDetailPage({ params }: Props) {
     accuracy: '0.0%',
     streakDays: 0,
     status: liveUser.status === 'ACTIVE' ? 'Active' : 'Inactive',
-    avatarColor: '#2563EB',
+    avatarColor: '#0B1F3A',
   };
 
   return (

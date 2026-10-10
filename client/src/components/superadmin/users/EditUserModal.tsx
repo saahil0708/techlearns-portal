@@ -205,12 +205,12 @@ export default function EditUserModal({
                 width: 44,
                 height: 44,
                 borderRadius: '12px',
-                bgcolor: '#EFF6FF',
+                bgcolor: '#FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB',
-                border: '1px solid #DBEAFE',
+                color: '#0B1F3A',
+                border: '1px solid #FAF5FF',
               }}
             >
               <EditRoundedIcon />
@@ -271,7 +271,7 @@ export default function EditUserModal({
                       fontSize: '0.88rem',
                       '& fieldset': { borderColor },
                       '&:hover fieldset': { borderColor: '#CBD5E1' },
-                      '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                      '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                     },
                   }}
                 />
@@ -304,7 +304,7 @@ export default function EditUserModal({
                       fontSize: '0.88rem',
                       '& fieldset': { borderColor },
                       '&:hover fieldset': { borderColor: '#CBD5E1' },
-                      '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                      '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                     },
                   }}
                 />
@@ -341,7 +341,7 @@ export default function EditUserModal({
                     fontSize: '0.88rem',
                     '& fieldset': { borderColor },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -372,7 +372,7 @@ export default function EditUserModal({
                     fontWeight: 600,
                     '& .MuiOutlinedInput-notchedOutline': { borderColor },
                     '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#2563EB' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#0B1F3A' },
                   }}
                 >
                   {allowedRoles.map((r) => (
@@ -401,7 +401,7 @@ export default function EditUserModal({
                     fontWeight: 600,
                     '& .MuiOutlinedInput-notchedOutline': { borderColor },
                     '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#2563EB' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#0B1F3A' },
                   }}
                 >
                   <MenuItem value="Active" sx={{ fontSize: '0.85rem' }}>
@@ -432,7 +432,7 @@ export default function EditUserModal({
                   startIcon={<AutorenewRoundedIcon sx={{ fontSize: '0.85rem' }} />}
                   sx={{
                     fontSize: '0.72rem',
-                    color: '#2563EB',
+                    color: '#0B1F3A',
                     textTransform: 'none',
                     fontWeight: 700,
                     p: 0,
@@ -474,7 +474,7 @@ export default function EditUserModal({
                     fontSize: '0.85rem',
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -521,13 +521,13 @@ export default function EditUserModal({
             startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <CheckCircleOutlineRoundedIcon />}
             sx={{
               borderRadius: '9999px',
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               textTransform: 'none',
               fontWeight: 700,
               fontSize: '0.85rem',
               px: 3,
-              boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             {loading ? 'Saving...' : 'Save Changes'}

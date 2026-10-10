@@ -59,7 +59,7 @@ export default function PassportVerificationSidebar({
             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
             transition: 'transform 0.2s ease',
             '&:hover': { transform: 'scale(1.03)' },
-            '&:focus-visible': { outline: '2px solid #38BDF8', outlineOffset: '2px' },
+            '&:focus-visible': { outline: '2px solid #C084FC', outlineOffset: '2px' },
           }}
           onClick={onOpenQrModal}
           title="Click to expand QR Code"
@@ -82,13 +82,13 @@ export default function PassportVerificationSidebar({
           onClick={onCopyLink}
           startIcon={<ContentCopyRoundedIcon sx={{ fontSize: 16 }} />}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             fontWeight: 800,
             fontSize: '0.8rem',
             textTransform: 'none',
             borderRadius: '10px',
             py: 0.9,
-            '&:hover': { bgcolor: '#1D4ED8' },
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           Copy Verification URL
@@ -109,7 +109,7 @@ export default function PassportVerificationSidebar({
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-          <ShieldRoundedIcon sx={{ fontSize: 20, color: '#2563EB' }} />
+          <ShieldRoundedIcon sx={{ fontSize: 20, color: '#0B1F3A' }} />
           <Typography sx={{ fontWeight: 850, fontSize: '0.88rem', color: '#0F172A' }}>
             Attestation & Verification Preview
           </Typography>
@@ -135,7 +135,7 @@ export default function PassportVerificationSidebar({
           <Chip
             label="PREVIEW DEMO"
             size="small"
-            sx={{ height: 18, fontSize: '0.62rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB' }}
+            sx={{ height: 18, fontSize: '0.62rem', fontWeight: 800, bgcolor: '#FAF5FF', color: '#0B1F3A' }}
           />
         </Box>
       </Card>

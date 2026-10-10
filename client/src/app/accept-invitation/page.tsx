@@ -60,7 +60,7 @@ function getPasswordStrength(pwd: string): {
 
   if (rawScore < 40) return { score: Math.min(rawScore, 30), label: 'Weak', color: '#EF4444', hasLength, hasUpper, hasNumber, hasSpecial };
   if (rawScore < 70) return { score: rawScore, label: 'Moderate', color: '#F59E0B', hasLength, hasUpper, hasNumber, hasSpecial };
-  if (rawScore < 90) return { score: rawScore, label: 'Strong', color: '#3B82F6', hasLength, hasUpper, hasNumber, hasSpecial };
+  if (rawScore < 90) return { score: rawScore, label: 'Strong', color: '#5B2D90', hasLength, hasUpper, hasNumber, hasSpecial };
   return { score: 100, label: 'Very Strong', color: '#10B981', hasLength, hasUpper, hasNumber, hasSpecial };
 }
 
@@ -114,7 +114,7 @@ function AcceptInvitationForm() {
       if (user) {
         if (typeof window !== 'undefined') {
           try {
-            localStorage.setItem('codeplatform_user', JSON.stringify(user));
+            localStorage.setItem('techlearns_user', JSON.stringify(user));
           } catch {}
         }
         dispatch(setUser(user));
@@ -123,7 +123,7 @@ function AcceptInvitationForm() {
       }
 
       toast.success(
-        `Welcome to CodePlatform, ${user?.name || 'Coder'}! Your account is activated.`,
+        `Welcome to TechLearns, ${user?.name || 'Coder'}! Your account is activated.`,
         'Account Activated'
       );
 
@@ -148,9 +148,9 @@ function AcceptInvitationForm() {
         width: '100%',
         bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(at 10% 10%, rgba(37, 99, 235, 0.07) 0px, transparent 45%),
+          radial-gradient(at 10% 10%, rgba(91, 45, 144, 0.07) 0px, transparent 45%),
           radial-gradient(at 90% 90%, rgba(99, 102, 241, 0.05) 0px, transparent 45%),
-          radial-gradient(at 50% 50%, rgba(14, 165, 233, 0.03) 0px, transparent 50%)
+          radial-gradient(at 50% 50%, rgba(91, 45, 144, 0.03) 0px, transparent 50%)
         `,
         display: 'flex',
         flexDirection: 'column',
@@ -178,21 +178,12 @@ function AcceptInvitationForm() {
       <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1, py: { xs: 2, sm: 4 } }}>
         {/* Brand Header */}
         <Box sx={{ textAlign: 'center', mb: 3.5, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Box
-            sx={{
-              width: 54,
-              height: 54,
-              borderRadius: '16px',
-              bgcolor: '#EFF6FF',
-              border: '1px solid #DBEAFE',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mb: 2,
-              boxShadow: '0 8px 20px -4px rgba(37, 99, 235, 0.18)',
-            }}
-          >
-            <CodeRoundedIcon sx={{ color: '#2563EB', fontSize: 28 }} />
+          <Box sx={{ mb: 2 }}>
+            <img
+              src="/images/logo/techlearns-logo.png"
+              alt="TechLearns"
+              style={{ height: 42, maxWidth: 200, objectFit: 'contain' }}
+            />
           </Box>
           <Typography
             variant="h4"
@@ -317,7 +308,7 @@ function AcceptInvitationForm() {
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
                     '&.Mui-focused': { bgcolor: '#FFFFFF' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB', borderWidth: '1.5px' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A', borderWidth: '1.5px' },
                     '& .MuiInputBase-input': {
                       color: '#0F172A !important',
                       WebkitTextFillColor: '#0F172A !important',
@@ -450,7 +441,7 @@ function AcceptInvitationForm() {
                     },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
                     '&.Mui-focused': { bgcolor: '#FFFFFF' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB', borderWidth: '1.5px' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A', borderWidth: '1.5px' },
                     '& .MuiInputBase-input': {
                       color: '#0F172A !important',
                       WebkitTextFillColor: '#0F172A !important',
@@ -471,16 +462,16 @@ function AcceptInvitationForm() {
                 mt: 1,
                 py: 1.5,
                 borderRadius: '12px',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 color: '#FFFFFF',
                 fontWeight: 700,
                 fontSize: '0.95rem',
                 textTransform: 'none',
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+                boxShadow: '0 4px 14px rgba(91, 45, 144, 0.3)',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: '#1D4ED8',
-                  boxShadow: '0 6px 20px rgba(37, 99, 235, 0.4)',
+                  bgcolor: '#17366E',
+                  boxShadow: '0 6px 20px rgba(91, 45, 144, 0.4)',
                   transform: 'translateY(-1px)',
                 },
                 '&.Mui-disabled': {
@@ -523,7 +514,7 @@ function AcceptInvitationForm() {
             <Link
               href="/login"
               style={{
-                color: '#2563EB',
+                color: '#0B1F3A',
                 fontSize: '0.8rem',
                 fontWeight: 700,
                 textDecoration: 'none',
@@ -543,7 +534,7 @@ export default function AcceptInvitationPage() {
     <Suspense
       fallback={
         <Box sx={{ minHeight: '100vh', bgcolor: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <CircularProgress sx={{ color: '#2563EB' }} />
+          <CircularProgress sx={{ color: '#0B1F3A' }} />
         </Box>
       }
     >

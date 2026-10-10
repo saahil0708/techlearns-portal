@@ -19,6 +19,10 @@ import {
   InputAdornment,
   MenuItem,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 
 // Material Rounded Icons
@@ -39,11 +43,15 @@ import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import ShareRoundedIcon from '@mui/icons-material/ShareRounded';
+import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
+import SendRoundedIcon from '@mui/icons-material/SendRounded';
+import OpenInNewRoundedIcon from '@mui/icons-material/OpenInNewRounded';
+import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
+import LockRoundedIcon from '@mui/icons-material/LockRounded';
 
-import CreateContestModal from '@/components/superadmin/contests/CreateContestModal';
 import { apiService } from '@/lib/api-service';
 import { useToast } from '@/context/ToastContext';
-import { NewContestData } from '@/types/contest';
 import Link from 'next/link';
 
 interface FacultySkillosTabProps {
@@ -59,9 +67,21 @@ export default function FacultySkillosTab({
 
   const [contests, setContests] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [isWizardOpen, setIsWizardOpen] = useState<boolean>(false);
+  const [shareModalContest, setShareModalContest] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+
+  const getCandidateAssessmentUrl = (c: any) => {
+    if (typeof window === 'undefined') return `/assessments/${c?.id || ''}`;
+    return `${window.location.origin}/assessments/${c?.id || ''}`;
+  };
+
+  const handleCopyDirectLink = (e: React.MouseEvent, c: any) => {
+    e.stopPropagation();
+    const url = getCandidateAssessmentUrl(c);
+    navigator.clipboard.writeText(url);
+    toast.success('Public candidate test link copied to clipboard!', 'Link Copied');
+  };
 
   const fetchContests = useCallback(async () => {
     setLoading(true);
@@ -83,44 +103,7 @@ export default function FacultySkillosTab({
     fetchContests();
   }, [fetchContests]);
 
-  const handleCreateContest = async (data: NewContestData) => {
-    try {
-      const end = new Date(new Date(data.startTime).getTime() + data.durationMinutes * 60000).toISOString();
-      const created = await apiService.createContest({
-        title: data.title,
-        description: data.description,
-        startTime: new Date(data.startTime),
-        endTime: new Date(end),
-        institutionId: data.institutionId || collegeId,
-        collegeId: data.institutionId || collegeId,
-        batchId: data.batchId,
-        problemIds: data.problemIds,
-        status: data.status,
-        code: data.code,
-        slug: data.slug,
-        durationMinutes: data.durationMinutes,
-        isProctored: data.isProctored,
-        enforceFullScreen: data.enforceFullScreen,
-        tabSwitchLimit: data.tabSwitchLimit,
-        disableCopyPaste: data.disableCopyPaste,
-        webcamProctoring: data.webcamProctoring,
-        audioProctoring: data.audioProctoring,
-        plagiarismCheck: data.plagiarismCheck,
-        scoringFormat: data.scoringFormat,
-        windowType: data.windowType,
-        shuffleQuestions: data.shuffleQuestions,
-      });
 
-      toast.success(
-        `Skillos proctored assessment "${data.title}" scheduled successfully. Cohort auto-enrolled!`,
-        'Proctored Assessment Scheduled'
-      );
-
-      fetchContests();
-    } catch (err: any) {
-      toast.error(err?.message || 'Failed to create proctored assessment.', 'Error');
-    }
-  };
 
   const filteredContests = useMemo(() => {
     return contests.filter((c) => {
@@ -171,7 +154,7 @@ export default function FacultySkillosTab({
                 width: 52,
                 height: 52,
                 borderRadius: '16px',
-                background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
+                background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -183,7 +166,7 @@ export default function FacultySkillosTab({
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <Typography variant="h5" sx={{ fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
-                  Skillos Proctored Assessment Studio
+                  SkillOS Proctored Assessment Studio
                 </Typography>
                 <Chip
                   size="small"
@@ -205,29 +188,22 @@ export default function FacultySkillosTab({
             </Box>
           </Box>
 
-          {/* Primary Action Button to Open Full-Screen Form */}
-          <Button
-            variant="contained"
-            startIcon={<AddRoundedIcon sx={{ fontSize: 20 }} />}
-            onClick={() => setIsWizardOpen(true)}
-            sx={{
-              background: 'linear-gradient(135deg, #4F46E5 0%, #2563EB 100%)',
-              color: '#FFFFFF',
-              borderRadius: '12px',
-              textTransform: 'none',
-              fontWeight: 800,
-              fontSize: '0.88rem',
-              px: 3,
-              py: 1.2,
-              boxShadow: '0 4px 14px rgba(79, 70, 229, 0.35)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #4338CA 0%, #1D4ED8 100%)',
-                boxShadow: '0 6px 20px rgba(79, 70, 229, 0.45)',
-              },
-            }}
-          >
-            Create Skillos Proctored Test
-          </Button>
+          {/* Super Admin Managed Indicator */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              icon={<LockRoundedIcon sx={{ fontSize: '13px !important', color: '#475569 !important' }} />}
+              label="TEST CREATION RESTRICTED TO SUPER ADMIN"
+              sx={{
+                bgcolor: '#F1F5F9',
+                color: '#475569',
+                fontWeight: 700,
+                fontSize: '0.72rem',
+                border: '1px solid #CBD5E1',
+                height: 32,
+                px: 1,
+              }}
+            />
+          </Box>
         </Box>
       </Card>
 
@@ -244,12 +220,12 @@ export default function FacultySkillosTab({
           }}
         >
           <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
-            Total Skillos Assessments
+            Total SkillOS Assessments
           </Typography>
           <Typography variant="h4" sx={{ fontWeight: 800, color: '#0F172A', mt: 0.5 }}>
             {contests.length}
           </Typography>
-          <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 600 }}>
+          <Typography variant="caption" sx={{ color: '#0B1F3A', fontWeight: 600 }}>
             {totalProctored} Proctored Enforced
           </Typography>
         </Card>
@@ -288,7 +264,7 @@ export default function FacultySkillosTab({
           <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
             Scheduled Upcoming
           </Typography>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: '#4F46E5', mt: 0.5 }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: '#5B2D90', mt: 0.5 }}>
             {upcomingTests}
           </Typography>
           <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>
@@ -377,7 +353,7 @@ export default function FacultySkillosTab({
                   sx={{
                     fontWeight: 700,
                     fontSize: '0.74rem',
-                    bgcolor: statusFilter === st ? '#4F46E5' : '#F1F5F9',
+                    bgcolor: statusFilter === st ? '#5B2D90' : '#F1F5F9',
                     color: statusFilter === st ? '#FFFFFF' : '#64748B',
                     border: '1px solid',
                     borderColor: statusFilter === st ? 'transparent' : '#E2E8F0',
@@ -387,7 +363,7 @@ export default function FacultySkillosTab({
             </Box>
           </Box>
 
-          <Tooltip title="Refresh Skillos Tests">
+          <Tooltip title="Refresh SkillOS Tests">
             <IconButton onClick={fetchContests} sx={{ color: '#64748B', border: `1px solid ${borderColor}` }}>
               <RefreshRoundedIcon fontSize="small" />
             </IconButton>
@@ -426,7 +402,7 @@ export default function FacultySkillosTab({
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
-                    <CircularProgress size={32} sx={{ color: '#4F46E5' }} />
+                    <CircularProgress size={32} sx={{ color: '#5B2D90' }} />
                   </TableCell>
                 </TableRow>
               ) : filteredContests.length === 0 ? (
@@ -434,10 +410,10 @@ export default function FacultySkillosTab({
                   <TableCell colSpan={7} align="center" sx={{ py: 6, color: '#94A3B8' }}>
                     <ShieldRoundedIcon sx={{ fontSize: 42, color: '#CBD5E1', mb: 1 }} />
                     <Typography sx={{ fontSize: '0.92rem', fontWeight: 600, color: '#64748B' }}>
-                      No Skillos proctored assessments found.
+                      No SkillOS proctored assessments found.
                     </Typography>
                     <Typography variant="caption" sx={{ color: '#94A3B8', display: 'block', mt: 0.5 }}>
-                      Click "Create Skillos Proctored Test" to launch your first exam.
+                      Click "Create SkillOS Proctored Test" to launch your first exam.
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -454,8 +430,8 @@ export default function FacultySkillosTab({
                               width: 36,
                               height: 36,
                               borderRadius: '10px',
-                              bgcolor: '#EEF2FF',
-                              color: '#4F46E5',
+                              bgcolor: '#FAF5FF',
+                              color: '#5B2D90',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -485,9 +461,9 @@ export default function FacultySkillosTab({
                             sx={{
                               fontWeight: 700,
                               fontSize: '0.74rem',
-                              bgcolor: '#EFF6FF',
-                              color: '#2563EB',
-                              border: '1px solid #BFDBFE',
+                              bgcolor: '#FAF5FF',
+                              color: '#0B1F3A',
+                              border: '1px solid #F3E8FF',
                             }}
                           />
                         ) : (
@@ -543,7 +519,7 @@ export default function FacultySkillosTab({
                                   size="small"
                                   icon={<AutoAwesomeRoundedIcon sx={{ fontSize: '12px !important' }} />}
                                   label="MOSS"
-                                  sx={{ bgcolor: '#F0F9FF', color: '#0284C7', fontSize: '0.65rem', fontWeight: 700, height: 20 }}
+                                  sx={{ bgcolor: '#FAF5FF', color: '#5B2D90', fontSize: '0.65rem', fontWeight: 700, height: 20 }}
                                 />
                               </Tooltip>
                             </>
@@ -567,13 +543,13 @@ export default function FacultySkillosTab({
                                 ? '#ECFDF5'
                                 : c.status === 'COMPLETED'
                                 ? '#F1F5F9'
-                                : '#EEF2FF',
+                                : '#FAF5FF',
                             color:
                               c.status === 'LIVE' || c.status === 'ACTIVE'
                                 ? '#059669'
                                 : c.status === 'COMPLETED'
                                 ? '#64748B'
-                                : '#4F46E5',
+                                : '#5B2D90',
                             border: '1px solid',
                             borderColor:
                               c.status === 'LIVE' || c.status === 'ACTIVE'
@@ -588,6 +564,43 @@ export default function FacultySkillosTab({
                       {/* 7. Actions */}
                       <TableCell align="right" sx={{ pr: 3, py: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                          <Tooltip title="Copy Public Candidate Test Link">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleCopyDirectLink(e, c)}
+                              sx={{
+                                color: '#5B2D90',
+                                bgcolor: '#FAF5FF',
+                                '&:hover': { bgcolor: '#E0E7FF' },
+                                borderRadius: '8px',
+                                p: 0.75,
+                              }}
+                            >
+                              <ContentCopyRoundedIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Tooltip>
+
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<ShareRoundedIcon sx={{ fontSize: 15 }} />}
+                            onClick={() => setShareModalContest(c)}
+                            sx={{
+                              textTransform: 'none',
+                              fontSize: '0.74rem',
+                              fontWeight: 700,
+                              color: '#0B1F3A',
+                              borderColor: '#D8B4FE',
+                              bgcolor: '#FAF5FF',
+                              borderRadius: '8px',
+                              py: 0.35,
+                              px: 1.25,
+                              '&:hover': { bgcolor: '#E9D5FF', borderColor: '#C084FC' },
+                            }}
+                          >
+                            Send Link
+                          </Button>
+
                           <Link href={`/contests/${c.id}`} style={{ textDecoration: 'none' }}>
                             <Button
                               size="small"
@@ -596,12 +609,12 @@ export default function FacultySkillosTab({
                                 textTransform: 'none',
                                 fontSize: '0.74rem',
                                 fontWeight: 700,
-                                color: '#4F46E5',
+                                color: '#5B2D90',
                                 borderColor: '#C7D2FE',
                                 borderRadius: '8px',
                                 py: 0.35,
                                 px: 1.25,
-                                '&:hover': { bgcolor: '#EEF2FF' },
+                                '&:hover': { bgcolor: '#FAF5FF' },
                               }}
                             >
                               Live Room
@@ -618,14 +631,151 @@ export default function FacultySkillosTab({
         </TableContainer>
       </Card>
 
-      {/* ── EXCLUSIVE FULL-SCREEN PROCTORED FORM ── */}
-      {isWizardOpen && (
-        <CreateContestModal
-          open={isWizardOpen}
-          onClose={() => setIsWizardOpen(false)}
-          defaultInstitutionId={collegeId}
-          onSubmit={handleCreateContest}
-        />
+
+
+      {/* ── INVITE EXTERNAL CANDIDATES MODAL ── */}
+      {shareModalContest && (
+        <Dialog
+          open={Boolean(shareModalContest)}
+          onClose={() => setShareModalContest(null)}
+          maxWidth="sm"
+          fullWidth
+          slotProps={{ paper: { sx: { borderRadius: '20px', p: 1 } } }}
+        >
+          <DialogTitle sx={{ fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1.5, pb: 1 }}>
+            <Box
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: '10px',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ShareRoundedIcon sx={{ fontSize: 20 }} />
+            </Box>
+            Share Test with External Candidates
+          </DialogTitle>
+
+          <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: 2 }}>
+            <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#0F172A' }}>
+                {shareModalContest.title}
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mt: 0.5 }}>
+                {shareModalContest.durationMinutes || 90} Minutes • {shareModalContest.isProctored !== false ? 'AI-Proctored with Full-Screen Lock' : 'Standard Assessment'}
+              </Typography>
+            </Box>
+
+            {/* Public Link Box */}
+            <Box>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#334155', textTransform: 'uppercase', display: 'block', mb: 0.8 }}>
+                Direct Candidate Test URL
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={getCandidateAssessmentUrl(shareModalContest)}
+                  slotProps={{ input: { readOnly: true } }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: '10px',
+                      bgcolor: '#F1F5F9',
+                      fontFamily: 'monospace',
+                      fontSize: '0.84rem',
+                    },
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  startIcon={<ContentCopyRoundedIcon sx={{ fontSize: 16 }} />}
+                  onClick={(e) => handleCopyDirectLink(e, shareModalContest)}
+                  sx={{
+                    bgcolor: '#0B1F3A',
+                    borderRadius: '10px',
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    px: 2.5,
+                    whiteSpace: 'nowrap',
+                    '&:hover': { bgcolor: '#17366E' },
+                  }}
+                >
+                  Copy Link
+                </Button>
+              </Box>
+              <Typography variant="caption" sx={{ color: '#64748B', display: 'block', mt: 0.8 }}>
+                Candidates opening this link only access the isolated assessment workspace with zero platform navigation.
+              </Typography>
+            </Box>
+
+            {/* Email / WhatsApp Message Preview */}
+            <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.8 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#334155', textTransform: 'uppercase' }}>
+                  Candidate Invitation Message Draft
+                </Typography>
+                <Button
+                  size="small"
+                  variant="text"
+                  startIcon={<ContentCopyRoundedIcon sx={{ fontSize: 14 }} />}
+                  onClick={() => {
+                    const msg = `Dear Candidate,\n\nYou are invited to take the online proctored technical evaluation: "${shareModalContest.title}".\n\nDirect Test Link: ${getCandidateAssessmentUrl(shareModalContest)}\nDuration: ${shareModalContest.durationMinutes || 90} Minutes\n\nPlease ensure you have a working camera and use a desktop/laptop browser. Do not switch tabs during the assessment.\n\nBest regards,\n${collegeName}`;
+                    navigator.clipboard.writeText(msg);
+                    toast.success('Invitation template copied to clipboard!', 'Draft Copied');
+                  }}
+                  sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.74rem', color: '#0B1F3A' }}
+                >
+                  Copy Message
+                </Button>
+              </Box>
+
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: '#F8FAFC',
+                  borderRadius: '12px',
+                  border: '1px solid #E2E8F0',
+                  fontSize: '0.8rem',
+                  fontFamily: 'monospace',
+                  color: '#334155',
+                  whiteSpace: 'pre-wrap',
+                  lineHeight: 1.5,
+                }}
+              >
+                {`Dear Candidate,\n\nYou are invited to take the online proctored technical evaluation: "${shareModalContest.title}".\n\nDirect Test Link: ${getCandidateAssessmentUrl(shareModalContest)}\nDuration: ${shareModalContest.durationMinutes || 90} Minutes\n\nPlease ensure you have a working camera and use a desktop/laptop browser. Do not switch tabs during the assessment.\n\nBest regards,\n${collegeName}`}
+              </Box>
+            </Box>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2.5, pt: 1 }}>
+            <Button
+              onClick={() => setShareModalContest(null)}
+              sx={{ textTransform: 'none', fontWeight: 700, color: '#64748B' }}
+            >
+              Close
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                window.open(getCandidateAssessmentUrl(shareModalContest), '_blank');
+              }}
+              endIcon={<OpenInNewRoundedIcon sx={{ fontSize: 16 }} />}
+              sx={{
+                bgcolor: '#5B2D90',
+                borderRadius: '10px',
+                textTransform: 'none',
+                fontWeight: 700,
+                '&:hover': { bgcolor: '#4338CA' },
+              }}
+            >
+              Test Candidate View
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
     </Box>
   );

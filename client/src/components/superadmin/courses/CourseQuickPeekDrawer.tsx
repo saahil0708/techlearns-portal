@@ -57,7 +57,7 @@ export default function CourseQuickPeekDrawer({
       case 'Beginner':
         return { bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' };
       case 'Intermediate':
-        return { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' };
+        return { bg: '#FAF5FF', text: '#0B1F3A', border: '#D8B4FE' };
       case 'Advanced':
         return { bg: '#FEF2F2', text: '#DC2626', border: '#FECACA' };
       default:
@@ -102,14 +102,14 @@ export default function CourseQuickPeekDrawer({
               width: 42,
               height: 42,
               borderRadius: '12px',
-              bgcolor: course.accentColor || '#2563EB',
+              bgcolor: course.accentColor || '#0B1F3A',
               color: '#FFFFFF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 800,
               fontSize: '1rem',
-              boxShadow: '0 4px 12px rgba(37,99,235,0.2)',
+              boxShadow: '0 4px 12px rgba(91, 45, 144, 0.2)',
             }}
           >
             <MenuBookRoundedIcon sx={{ fontSize: 22 }} />
@@ -172,12 +172,12 @@ export default function CourseQuickPeekDrawer({
               label={course.category}
               size="small"
               sx={{
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 fontWeight: 700,
                 fontSize: '0.72rem',
                 borderRadius: '9999px',
-                border: '1px solid #BFDBFE',
+                border: '1px solid #F3E8FF',
               }}
             />
             <Chip
@@ -218,7 +218,7 @@ export default function CourseQuickPeekDrawer({
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5 }}>
           <Box sx={{ p: 2, bgcolor: '#F8FAFC', borderRadius: '14px', border: `1px solid ${borderColor}` }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: '#64748B', mb: 0.5 }}>
-              <LayersRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+              <LayersRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748B' }}>
                 SYLLABUS
               </Typography>
@@ -288,7 +288,7 @@ export default function CourseQuickPeekDrawer({
               sx={{
                 width: 44,
                 height: 44,
-                bgcolor: course.accentColor || '#2563EB',
+                bgcolor: course.accentColor || '#0B1F3A',
                 fontWeight: 800,
                 fontSize: '0.95rem',
                 border: '2px solid #FFFFFF',
@@ -306,7 +306,7 @@ export default function CourseQuickPeekDrawer({
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
                 <SchoolRoundedIcon sx={{ fontSize: 14, color: '#94A3B8' }} />
-                <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 600, fontSize: '0.74rem' }}>
+                <Typography variant="caption" sx={{ color: '#0B1F3A', fontWeight: 600, fontSize: '0.74rem' }}>
                   {course.institutionName}
                 </Typography>
               </Box>
@@ -334,7 +334,7 @@ export default function CourseQuickPeekDrawer({
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                  <Typography sx={{ fontWeight: 800, color: '#2563EB', fontSize: '0.75rem', fontFamily: 'monospace' }}>
+                  <Typography sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '0.75rem', fontFamily: 'monospace' }}>
                     0{idx + 1}
                   </Typography>
                   <Typography sx={{ fontWeight: 600, color: '#0F172A', fontSize: '0.82rem' }}>
@@ -412,12 +412,12 @@ export default function CourseQuickPeekDrawer({
             sx={{
               height: 44,
               borderRadius: '9999px',
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               fontWeight: 700,
               fontSize: '0.86rem',
               textTransform: 'none',
-              boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Launch Course Workspace & Syllabus

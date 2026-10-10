@@ -74,14 +74,14 @@ export default function CompareStudentsModal({
               width: 40,
               height: 40,
               borderRadius: '9999px',
-              bgcolor: '#EFF6FF',
+              bgcolor: '#FAF5FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           >
-            <CompareArrowsRoundedIcon sx={{ color: '#2563EB', fontSize: '1.3rem' }} />
+            <CompareArrowsRoundedIcon sx={{ color: '#0B1F3A', fontSize: '1.3rem' }} />
           </Box>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.1rem' }}>
@@ -154,7 +154,7 @@ export default function CompareStudentsModal({
                   bgcolor: stu.avatarColor,
                   fontWeight: 800,
                   fontSize: '1.2rem',
-                  border: '3px solid #BFDBFE',
+                  border: '3px solid #F3E8FF',
                 }}
               >
                 {stu.name.charAt(0)}
@@ -163,7 +163,7 @@ export default function CompareStudentsModal({
               <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#0F172A' }}>
                 {stu.name}
               </Typography>
-              <Typography variant="body2" sx={{ color: '#2563EB', fontSize: '0.8rem', mb: 1, fontFamily: 'monospace', fontWeight: 600 }}>
+              <Typography variant="body2" sx={{ color: '#0B1F3A', fontSize: '0.8rem', mb: 1, fontFamily: 'monospace', fontWeight: 600 }}>
                 @{stu.handle}
               </Typography>
 
@@ -187,14 +187,14 @@ export default function CompareStudentsModal({
                     variant="outlined"
                     sx={{
                       borderRadius: '9999px',
-                      borderColor: '#BFDBFE',
-                      color: '#2563EB',
+                      borderColor: '#D8B4FE',
+                      color: '#0B1F3A',
                       fontSize: '0.74rem',
                       fontWeight: 700,
                       textTransform: 'none',
                       '&:hover': {
-                        borderColor: '#2563EB',
-                        bgcolor: '#EFF6FF',
+                        borderColor: '#0B1F3A',
+                        bgcolor: '#FAF5FF',
                       },
                     }}
                   >
@@ -220,7 +220,7 @@ export default function CompareStudentsModal({
           >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Typography sx={{ color: '#0F172A', fontWeight: 800, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CodeRoundedIcon sx={{ color: '#2563EB', fontSize: '1.1rem' }} />
+                <CodeRoundedIcon sx={{ color: '#0B1F3A', fontSize: '1.1rem' }} />
                 Problems Solved Breakdown (Easy / Medium / Hard)
               </Typography>
             </Box>
@@ -358,11 +358,11 @@ export default function CompareStudentsModal({
           variant="contained"
           sx={{
             borderRadius: '9999px',
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             px: 3,
             fontWeight: 700,
             textTransform: 'none',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           Close Comparison

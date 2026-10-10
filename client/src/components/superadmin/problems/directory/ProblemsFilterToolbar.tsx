@@ -85,7 +85,7 @@ export default function ProblemsFilterToolbar({
           sx={{
             minHeight: 48,
             '& .MuiTabs-indicator': {
-              backgroundColor: '#2563EB',
+              backgroundColor: '#0B1F3A',
               height: 3,
               borderRadius: '3px 3px 0 0',
             },
@@ -111,10 +111,10 @@ export default function ProblemsFilterToolbar({
                       fontSize: '0.68rem',
                       fontWeight: 700,
                       borderRadius: '9999px',
-                      bgcolor: selectedCategory === cat ? '#EFF6FF' : '#F1F5F9',
-                      color: selectedCategory === cat ? '#2563EB' : '#64748B',
+                      bgcolor: selectedCategory === cat ? '#FAF5FF' : '#F1F5F9',
+                      color: selectedCategory === cat ? '#0B1F3A' : '#64748B',
                       border: '1px solid',
-                      borderColor: selectedCategory === cat ? '#BFDBFE' : '#E2E8F0',
+                      borderColor: selectedCategory === cat ? '#D8B4FE' : '#E2E8F0',
                       pointerEvents: 'none',
                     }}
                   />
@@ -126,7 +126,7 @@ export default function ProblemsFilterToolbar({
                 py: 1,
                 px: 1.25,
                 textTransform: 'none',
-                color: selectedCategory === cat ? '#2563EB !important' : '#64748B',
+                color: selectedCategory === cat ? '#0B1F3A !important' : '#64748B',
                 '&:hover': { color: '#0F172A' },
               }}
             />
@@ -170,7 +170,7 @@ export default function ProblemsFilterToolbar({
               fontSize: '0.85rem',
               '& fieldset': { borderColor: '#E2E8F0' },
               '&:hover fieldset': { borderColor: '#CBD5E1' },
-              '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+              '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
             },
           }}
         />

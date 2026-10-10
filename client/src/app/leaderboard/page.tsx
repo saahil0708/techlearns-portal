@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import LeaderboardClient from '@/components/leaderboard/LeaderboardClient';
 
 export const metadata: Metadata = {
-  title: 'Global & Institute Leaderboard | CodePlatform',
+  title: 'Global & Institute Leaderboard | TechLearns',
   description: 'Live competitive ratings, institute standings, and global coder rank boards in standard list table format.',
 };
 

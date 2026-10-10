@@ -14,7 +14,7 @@ export default function StudentPracticeTab() {
           p: { xs: 2, sm: 2.5 },
           borderRadius: '20px',
           bgcolor: '#0F172A',
-          border: '1px solid rgba(59, 130, 246, 0.25)',
+          border: '1px solid rgba(91, 45, 144, 0.25)',
           boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
           display: 'flex',
           alignItems: 'center',
@@ -28,12 +28,12 @@ export default function StudentPracticeTab() {
               width: 40,
               height: 40,
               borderRadius: '12px',
-              bgcolor: 'rgba(37, 99, 235, 0.2)',
+              bgcolor: 'rgba(91, 45, 144, 0.2)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#38BDF8',
-              border: '1px solid rgba(59, 130, 246, 0.3)',
+              color: '#C084FC',
+              border: '1px solid rgba(91, 45, 144, 0.3)',
             }}
           >
             <TerminalRoundedIcon sx={{ fontSize: 24 }} />

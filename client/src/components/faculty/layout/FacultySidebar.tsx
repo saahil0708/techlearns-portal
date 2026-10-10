@@ -136,7 +136,7 @@ export default function FacultySidebar() {
       ? [{ label: 'Department Faculty & Mentors', icon: <AssignmentIndRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=faculty' }]
       : []),
     { label: 'Assigned Cohorts & Batches', icon: <SchoolRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=batches' },
-    { label: 'Skillos Proctored Tests', icon: <ShieldRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=skillos' },
+    { label: 'SkillOS Proctored Tests', icon: <ShieldRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=skillos' },
     { label: 'College Students Roster', icon: <GroupRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=students' },
     { label: 'Curriculum & Courses', icon: <MenuBookRoundedIcon sx={{ fontSize: 20 }} />, path: '/faculty/profile?tab=courses' },
     { label: 'Lab Challenges & Question Bank', icon: <CodeRoundedIcon sx={{ fontSize: 21 }} />, path: '/faculty/profile?tab=problems' },
@@ -227,7 +227,7 @@ export default function FacultySidebar() {
             transition: 'transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease',
             '&:hover': {
               transform: 'scale(1.05)',
-              boxShadow: '0 12px 28px rgba(37, 99, 235, 0.18)',
+              boxShadow: '0 12px 28px rgba(91, 45, 144, 0.18)',
             },
           }}
         >
@@ -246,12 +246,12 @@ export default function FacultySidebar() {
                   width: 44,
                   height: 44,
                   borderRadius: '9999px',
-                  bgcolor: '#2563EB',
-                  background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  bgcolor: '#0B1F3A',
+                  background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
+                  boxShadow: '0 4px 14px rgba(11, 31, 58, 0.35)',
                 }}
               >
                 <SchoolRoundedIcon sx={{ color: '#FFFFFF', fontSize: 24 }} />
@@ -300,16 +300,16 @@ export default function FacultySidebar() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      bgcolor: active ? '#2563EB' : 'transparent',
+                      bgcolor: active ? '#0B1F3A' : 'transparent',
                       background: active
-                        ? 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)'
+                        ? 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)'
                         : 'transparent',
                       color: active ? '#FFFFFF' : '#64748B',
-                      boxShadow: active ? '0 4px 14px rgba(37, 99, 235, 0.4)' : 'none',
+                      boxShadow: active ? '0 4px 14px rgba(91, 45, 144, 0.4)' : 'none',
                       transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        bgcolor: active ? '#1D4ED8' : 'rgba(37, 99, 235, 0.08)',
-                        color: active ? '#FFFFFF' : '#2563EB',
+                        bgcolor: active ? '#17366E' : 'rgba(91, 45, 144, 0.08)',
+                        color: active ? '#FFFFFF' : '#0B1F3A',
                         transform: 'scale(1.06)',
                       },
                       '&:active': {
@@ -356,7 +356,7 @@ export default function FacultySidebar() {
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 700, color: '#FFFFFF' }}>
                     {displayName}
                   </Typography>
-                  <Typography sx={{ fontSize: '0.72rem', color: '#93C5FD', fontWeight: 600 }}>
+                  <Typography sx={{ fontSize: '0.72rem', color: '#C084FC', fontWeight: 600 }}>
                     {displayRole} • {collegeCode}
                   </Typography>
                 </Box>
@@ -383,12 +383,12 @@ export default function FacultySidebar() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  bgcolor: pathname.startsWith('/faculty') ? 'rgba(37, 99, 235, 0.12)' : 'transparent',
-                  border: pathname.startsWith('/faculty') ? '2px solid #2563EB' : '2px solid transparent',
+                  bgcolor: pathname.startsWith('/faculty') ? 'rgba(91, 45, 144, 0.12)' : 'transparent',
+                  border: pathname.startsWith('/faculty') ? '2px solid #0B1F3A' : '2px solid transparent',
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
                     transform: 'scale(1.08)',
-                    borderColor: '#3B82F6',
+                    borderColor: '#5B2D90',
                   },
                 }}
               >
@@ -398,20 +398,20 @@ export default function FacultySidebar() {
                     width={36}
                     height={36}
                     animation="wave"
-                    sx={{ bgcolor: 'rgba(37, 99, 235, 0.15)' }}
+                    sx={{ bgcolor: 'rgba(11, 31, 58, 0.15)' }}
                   />
                 ) : (
                   <Avatar
                     sx={{
                       width: 36,
                       height: 36,
-                      bgcolor: '#2563EB',
+                      bgcolor: '#0B1F3A',
                       color: '#FFFFFF',
                       fontSize: '0.82rem',
                       fontWeight: 800,
                       cursor: 'pointer',
                       border: '1.5px solid #FFFFFF',
-                      boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
+                      boxShadow: '0 2px 8px rgba(91, 45, 144, 0.25)',
                     }}
                   >
                     {userInitials}

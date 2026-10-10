@@ -179,8 +179,8 @@ export default function InstitutionFacultyClient() {
         display: 'flex',
         bgcolor: '#F8FAFC',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(30, 64, 175, 0.05) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(14, 165, 233, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 15% 10%, rgba(11, 31, 58, 0.05) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
           radial-gradient(ellipse at 50% 90%, rgba(5, 150, 105, 0.03) 0%, transparent 50%)
         `,
         color: '#0F172A',
@@ -235,7 +235,7 @@ export default function InstitutionFacultyClient() {
                 <Chip
                   label={`${filteredFaculty.length} educators`}
                   size="small"
-                  sx={{ fontWeight: 700, bgcolor: 'rgba(30, 64, 175, 0.1)', color: '#1E40AF', borderRadius: '6px' }}
+                  sx={{ fontWeight: 700, bgcolor: 'rgba(11, 31, 58, 0.1)', color: '#0F264F', borderRadius: '6px' }}
                 />
               </Box>
               <Typography sx={{ fontSize: '0.82rem', color: '#64748B', mt: 0.5 }}>
@@ -266,13 +266,13 @@ export default function InstitutionFacultyClient() {
                 onClick={() => setInviteModalOpen(true)}
                 startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
                 sx={{
-                  bgcolor: '#1E40AF',
+                  bgcolor: '#0F264F',
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '0.82rem',
                   borderRadius: '10px',
                   px: 2,
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Invite Faculty Mentor
@@ -389,8 +389,8 @@ export default function InstitutionFacultyClient() {
                               width: 36,
                               height: 36,
                               borderRadius: '10px',
-                              bgcolor: 'rgba(30, 64, 175, 0.08)',
-                              color: '#1E40AF',
+                              bgcolor: 'rgba(11, 31, 58, 0.08)',
+                              color: '#0F264F',
                               fontWeight: 800,
                               fontSize: '0.82rem',
                               display: 'flex',
@@ -454,7 +454,7 @@ export default function InstitutionFacultyClient() {
                             <IconButton
                               size="small"
                               href={`mailto:${f.email}`}
-                              sx={{ color: '#64748B', '&:hover': { color: '#1E40AF', bgcolor: 'rgba(30,64,175,0.06)' } }}
+                              sx={{ color: '#64748B', '&:hover': { color: '#0F264F', bgcolor: 'rgba(11, 31, 58, 0.06)' } }}
                             >
                               <MailOutlineRoundedIcon sx={{ fontSize: 18 }} />
                             </IconButton>

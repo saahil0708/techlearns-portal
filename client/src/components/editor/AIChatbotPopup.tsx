@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { FluidArrowBack } from '@/utils/fluid_arrow';
 import {
   Box,
   Typography,
@@ -169,7 +170,7 @@ function DarkMessageRenderer({ content }: { content: string }) {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                  <CodeRoundedIcon sx={{ fontSize: 15, color: '#38BDF8' }} />
+                  <CodeRoundedIcon sx={{ fontSize: 15, color: '#C084FC' }} />
                   <Typography
                     sx={{
                       fontSize: '0.72rem',
@@ -666,7 +667,7 @@ export default function AIChatbotPopup({
             width: 28,
             height: 28,
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
+            background: 'linear-gradient(135deg, #8B5CF6 0%, #5B2D90 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -733,7 +734,7 @@ export default function AIChatbotPopup({
                 linear-gradient(180deg, #1D1A34 0%, #121422 100%)
               `
               : `
-                radial-gradient(circle at 50% -20%, rgba(59, 130, 246, 0.4) 0%, rgba(99, 102, 241, 0.25) 45%, transparent 75%),
+                radial-gradient(circle at 50% -20%, rgba(91, 45, 144, 0.4) 0%, rgba(99, 102, 241, 0.25) 45%, transparent 75%),
                 linear-gradient(180deg, #151A2E 0%, #121422 100%)
               `,
             borderBottom: '1px solid rgba(168, 85, 247, 0.2)',
@@ -748,7 +749,7 @@ export default function AIChatbotPopup({
                 <Button
                   size="small"
                   onClick={() => setActiveTool(null)}
-                  startIcon={<ArrowBackRoundedIcon sx={{ fontSize: 16 }} />}
+                  startIcon={<FluidArrowBack sx={{ fontSize: 16 }} />}
                   sx={{
                     color: '#D8B4FE',
                     bgcolor: 'rgba(255, 255, 255, 0.08)',
@@ -771,7 +772,7 @@ export default function AIChatbotPopup({
                       width: 28,
                       height: 28,
                       borderRadius: '8px',
-                      background: 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)',
+                      background: 'linear-gradient(135deg, #8B5CF6 0%, #5B2D90 100%)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -931,7 +932,7 @@ export default function AIChatbotPopup({
                         : activeTool === 'hints'
                           ? 'rgba(245, 158, 11, 0.2)'
                           : activeTool === 'complexity'
-                            ? 'rgba(56, 189, 248, 0.2)'
+                            ? 'rgba(192, 132, 252, 0.2)'
                             : 'rgba(244, 63, 94, 0.2)',
                     color:
                       activeTool === 'explain'
@@ -939,7 +940,7 @@ export default function AIChatbotPopup({
                         : activeTool === 'hints'
                           ? '#F59E0B'
                           : activeTool === 'complexity'
-                            ? '#38BDF8'
+                            ? '#C084FC'
                             : '#F43F5E',
                     display: 'flex',
                     alignItems: 'center',
@@ -1106,9 +1107,9 @@ export default function AIChatbotPopup({
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
                     '&:hover': {
                       bgcolor: '#212338',
-                      borderColor: 'rgba(56, 189, 248, 0.65)',
+                      borderColor: 'rgba(192, 132, 252, 0.65)',
                       transform: 'translateY(-2px)',
-                      boxShadow: '0 6px 20px rgba(56, 189, 248, 0.22)',
+                      boxShadow: '0 6px 20px rgba(192, 132, 252, 0.22)',
                     },
                   }}
                 >
@@ -1339,7 +1340,7 @@ export default function AIChatbotPopup({
                   size="small"
                   variant="outlined"
                   onClick={() => setActiveTool(null)}
-                  startIcon={<ArrowBackRoundedIcon sx={{ fontSize: 14 }} />}
+                  startIcon={<FluidArrowBack sx={{ fontSize: 14 }} />}
                   sx={{
                     borderColor: 'rgba(255, 255, 255, 0.15)',
                     color: '#D8B4FE',

@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return {
-    title: `${title} (${difficulty}) | CodePlatform Problem Workspace`,
+    title: `${title} (${difficulty}) | TechLearns Problem Workspace`,
     description: `Inspect problem statements, test cases, and student submissions for ${title}.`,
   };
 }

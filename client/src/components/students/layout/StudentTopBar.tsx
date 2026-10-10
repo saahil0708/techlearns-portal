@@ -177,8 +177,8 @@ export default function StudentTopBar({
                         width: 28,
                         height: 28,
                         borderRadius: '9999px',
-                        bgcolor: isSearchFocused ? '#EFF6FF' : '#F1F5F9',
-                        color: isSearchFocused ? '#2563EB' : '#94A3B8',
+                        bgcolor: isSearchFocused ? '#FAF5FF' : '#F1F5F9',
+                        color: isSearchFocused ? '#0B1F3A' : '#94A3B8',
                         transition: 'all 0.2s ease',
                       }}
                     >
@@ -243,9 +243,9 @@ export default function StudentTopBar({
                   boxShadow: '0 3px 10px rgba(0, 0, 0, 0.06)',
                 },
                 '&.Mui-focused': {
-                  borderColor: '#2563EB',
+                  borderColor: '#0B1F3A',
                   bgcolor: '#FFFFFF',
-                  boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.12), 0 3px 10px rgba(37, 99, 235, 0.08)',
+                  boxShadow: '0 0 0 3px rgba(91, 45, 144, 0.12), 0 3px 10px rgba(91, 45, 144, 0.08)',
                 },
               },
               '& input::placeholder': {
@@ -361,9 +361,9 @@ export default function StudentTopBar({
                 width: 36,
                 height: 36,
                 borderRadius: '9999px',
-                bgcolor: Boolean(notifAnchorEl) ? '#EFF6FF' : '#FFFFFF',
-                border: Boolean(notifAnchorEl) ? '1px solid #BFDBFE' : '1px solid #E2E8F0',
-                color: Boolean(notifAnchorEl) ? '#2563EB' : '#64748B',
+                bgcolor: Boolean(notifAnchorEl) ? '#FAF5FF' : '#FFFFFF',
+                border: Boolean(notifAnchorEl) ? '1px solid #F3E8FF' : '1px solid #E2E8F0',
+                color: Boolean(notifAnchorEl) ? '#0B1F3A' : '#64748B',
                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
                 position: 'relative',
                 transition: 'all 0.2s ease',
@@ -376,7 +376,7 @@ export default function StudentTopBar({
               }}
             >
               {unreadCount > 0 ? (
-                <NotificationsActiveRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <NotificationsActiveRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               ) : (
                 <NotificationsNoneRoundedIcon sx={{ fontSize: 18 }} />
               )}
@@ -389,9 +389,9 @@ export default function StudentTopBar({
                     width: 7,
                     height: 7,
                     borderRadius: '9999px',
-                    bgcolor: '#2563EB',
+                    bgcolor: '#0B1F3A',
                     border: '1.5px solid #FFFFFF',
-                    boxShadow: '0 0 8px rgba(37, 99, 235, 0.9)',
+                    boxShadow: '0 0 8px rgba(91, 45, 144, 0.9)',
                     animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     '@keyframes pulse': {
                       '0%, 100%': { opacity: 1 },
@@ -434,7 +434,7 @@ export default function StudentTopBar({
                   <Chip
                     label={`${unreadCount} new`}
                     size="small"
-                    sx={{ height: 20, borderRadius: '9999px', fontSize: '0.66rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE' }}
+                    sx={{ height: 20, borderRadius: '9999px', fontSize: '0.66rem', fontWeight: 800, bgcolor: '#FAF5FF', color: '#0B1F3A', border: '1px solid #F3E8FF' }}
                   />
                 )}
               </Box>
@@ -444,7 +444,7 @@ export default function StudentTopBar({
                   size="small"
                   startIcon={<DoneAllRoundedIcon sx={{ fontSize: 14 }} />}
                   onClick={markAllAsRead}
-                  sx={{ textTransform: 'none', borderRadius: '9999px', fontSize: '0.72rem', fontWeight: 600, color: '#64748B', px: 1.2, py: 0.4, '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' } }}
+                  sx={{ textTransform: 'none', borderRadius: '9999px', fontSize: '0.72rem', fontWeight: 600, color: '#64748B', px: 1.2, py: 0.4, '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' } }}
                 >
                   Mark all read
                 </Button>
@@ -475,20 +475,20 @@ export default function StudentTopBar({
                       p: 1.25,
                       borderRadius: '14px',
                       bgcolor: notif.unread ? '#F8FAFC' : '#FFFFFF',
-                      border: notif.unread ? '1px solid #DBEAFE' : '1px solid #F1F5F9',
+                      border: notif.unread ? '1px solid #FAF5FF' : '1px solid #F1F5F9',
                       cursor: 'pointer',
                       outline: 'none',
                       transition: 'all 0.15s ease',
                       '&:hover': { bgcolor: '#F1F5F9', borderColor: '#CBD5E1' },
                       '&:focus-visible': {
-                        boxShadow: '0 0 0 2px #2563EB',
+                        boxShadow: '0 0 0 2px #0B1F3A',
                       },
                     }}
                   >
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                         {notif.unread && (
-                          <Box sx={{ width: 6, height: 6, borderRadius: '9999px', bgcolor: '#2563EB', flexShrink: 0 }} />
+                          <Box sx={{ width: 6, height: 6, borderRadius: '9999px', bgcolor: '#0B1F3A', flexShrink: 0 }} />
                         )}
                         <Typography sx={{ fontWeight: notif.unread ? 800 : 600, color: '#0F172A', fontSize: '0.82rem' }}>
                           {notif.title}
@@ -519,10 +519,10 @@ export default function StudentTopBar({
                   fontSize: '0.76rem',
                   fontWeight: 700,
                   textTransform: 'none',
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                   borderRadius: '8px',
                   py: 0.6,
-                  '&:hover': { bgcolor: '#EFF6FF' },
+                  '&:hover': { bgcolor: '#FAF5FF' },
                 }}
               >
                 View all in Notification Center ↗
@@ -550,7 +550,7 @@ export default function StudentTopBar({
               pl: '3px',
               pr: { xs: '6px', md: '14px' },
               borderRadius: '9999px',
-              border: Boolean(anchorEl) ? '1px solid #BFDBFE' : '1px solid #E2E8F0',
+              border: Boolean(anchorEl) ? '1px solid #F3E8FF' : '1px solid #E2E8F0',
               boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
               transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
               fontFamily: 'inherit',
@@ -562,13 +562,13 @@ export default function StudentTopBar({
                 transform: 'translateY(-1px)',
                 '& .topbar-profile-chevron': {
                   transform: 'rotate(180deg)',
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                 },
               },
               '&:focus-visible': {
                 outline: 'none',
-                borderColor: '#2563EB',
-                boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.15)',
+                borderColor: '#0B1F3A',
+                boxShadow: '0 0 0 3px rgba(11, 31, 58, 0.15)',
               },
             }}
           >
@@ -580,11 +580,11 @@ export default function StudentTopBar({
                   width: 30,
                   height: 30,
                   borderRadius: '9999px',
-                  background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
+                  background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   fontSize: '0.78rem',
                   fontWeight: 800,
                   color: '#FFFFFF',
-                  boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
+                  boxShadow: '0 2px 6px rgba(91, 45, 144, 0.25)',
                 }}
               >
                 <span suppressHydrationWarning>{initials}</span>
@@ -626,7 +626,7 @@ export default function StudentTopBar({
               className="topbar-profile-chevron"
               sx={{
                 fontSize: 18,
-                color: Boolean(anchorEl) ? '#2563EB' : '#94A3B8',
+                color: Boolean(anchorEl) ? '#0B1F3A' : '#94A3B8',
                 transition: 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease',
                 transform: Boolean(anchorEl) ? 'rotate(180deg)' : 'rotate(0deg)',
               }}
@@ -671,7 +671,7 @@ export default function StudentTopBar({
                 width: 36,
                 height: 36,
                 borderRadius: '9999px',
-                background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 100%)',
+                background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                 fontSize: '0.85rem',
                 fontWeight: 800,
                 color: '#FFFFFF',
@@ -760,8 +760,8 @@ export default function StudentTopBar({
               width: 28,
               height: 28,
               borderRadius: '9999px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
             }}
           >
             <PersonOutlineRoundedIcon sx={{ fontSize: 17 }} />
@@ -856,8 +856,8 @@ export default function StudentTopBar({
               width: 28,
               height: 28,
               borderRadius: '9999px',
-              bgcolor: '#F0F9FF',
-              color: '#0284C7',
+              bgcolor: '#FAF5FF',
+              color: '#5B2D90',
             }}
           >
             <MenuBookOutlinedIcon sx={{ fontSize: 17 }} />
@@ -908,11 +908,11 @@ export default function StudentTopBar({
               fontSize: '0.84rem',
               py: 1,
               gap: 1.5,
-              color: '#2563EB',
-              bgcolor: '#EFF6FF',
+              color: '#0B1F3A',
+              bgcolor: '#FAF5FF',
               fontWeight: 700,
               mt: 0.5,
-              '&:hover': { bgcolor: '#DBEAFE' },
+              '&:hover': { bgcolor: '#E9D5FF' },
             }}
           >
             <Box
@@ -923,8 +923,8 @@ export default function StudentTopBar({
                 width: 28,
                 height: 28,
                 borderRadius: '9999px',
-                bgcolor: '#DBEAFE',
-                color: '#2563EB',
+                bgcolor: '#E9D5FF',
+                color: '#0B1F3A',
               }}
             >
               <CampaignRoundedIcon sx={{ fontSize: 17 }} />

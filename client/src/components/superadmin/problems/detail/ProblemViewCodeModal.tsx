@@ -103,9 +103,9 @@ export default function ProblemViewCodeModal({
                 fontSize: '0.7rem',
                 fontWeight: 700,
                 height: 20,
-                bgcolor: 'rgba(56, 189, 248, 0.15)',
-                color: '#38BDF8',
-                border: '1px solid rgba(56, 189, 248, 0.3)',
+                bgcolor: 'rgba(192, 132, 252, 0.15)',
+                color: '#C084FC',
+                border: '1px solid rgba(192, 132, 252, 0.3)',
               }}
             />
           </Box>

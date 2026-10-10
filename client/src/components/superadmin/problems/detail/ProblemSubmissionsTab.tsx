@@ -104,8 +104,8 @@ export default function ProblemSubmissionsTab({
               width: 56,
               height: 56,
               borderRadius: '50%',
-              bgcolor: '#EFF6FF',
-              border: '1px solid #DBEAFE',
+              bgcolor: '#FAF5FF',
+              border: '1px solid #FAF5FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -113,7 +113,7 @@ export default function ProblemSubmissionsTab({
               mb: 2,
             }}
           >
-            <HistoryRoundedIcon sx={{ fontSize: 28, color: '#2563EB' }} />
+            <HistoryRoundedIcon sx={{ fontSize: 28, color: '#0B1F3A' }} />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', mb: 0.75, fontSize: '1.05rem' }}>
             No Student Submissions Logged Yet
@@ -132,11 +132,11 @@ export default function ProblemSubmissionsTab({
               borderRadius: '9999px',
               textTransform: 'none',
               fontWeight: 700,
-              borderColor: '#2563EB',
-              color: '#2563EB',
+              borderColor: '#0B1F3A',
+              color: '#0B1F3A',
               px: 2.5,
               py: 0.75,
-              '&:hover': { bgcolor: '#EFF6FF', borderColor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#FAF5FF', borderColor: '#17366E' },
             }}
           >
             Open in Student IDE Workspace
@@ -168,7 +168,7 @@ export default function ProblemSubmissionsTab({
                   const isAcc = sub.verdict === 'Accepted';
                   return (
                     <TableRow key={sub.id} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                      <TableCell className="ide-code-font" sx={{ fontWeight: 800, color: '#2563EB', fontFamily: 'Menlo, Monaco, Consolas, "Liberation Mono", monospace !important' }}>
+                      <TableCell className="ide-code-font" sx={{ fontWeight: 800, color: '#0B1F3A', fontFamily: 'Menlo, Monaco, Consolas, "Liberation Mono", monospace !important' }}>
                         {sub.id}
                       </TableCell>
                       <TableCell>
@@ -208,7 +208,7 @@ export default function ProblemSubmissionsTab({
                           size="small"
                           startIcon={<VisibilityRoundedIcon sx={{ fontSize: 16 }} />}
                           onClick={() => onViewCode(sub)}
-                          sx={{ textTransform: 'none', fontWeight: 700, color: '#2563EB' }}
+                          sx={{ textTransform: 'none', fontWeight: 700, color: '#0B1F3A' }}
                         >
                           View Code
                         </Button>

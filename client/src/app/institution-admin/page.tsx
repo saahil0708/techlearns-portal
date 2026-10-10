@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import InstitutionAdminDashboardClient from '@/components/institution-admin/dashboard/InstitutionAdminDashboardClient';
 
 export const metadata: Metadata = {
-  title: 'Campus Overview | CodePlatform Institution Admin',
+  title: 'Campus Overview | TechLearns Institution Admin',
   description: 'Manage departmental faculty, student cohorts, lab challenges, and campus coding performance.',
 };
 

@@ -49,10 +49,10 @@ export default function GoalHeroSummary({
         elevation={0}
         sx={{
           borderRadius: '16px',
-          background: 'linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 50%, #0284C7 100%)',
-          border: '1px solid rgba(147, 197, 253, 0.35)',
+          background: 'linear-gradient(135deg, #0B1F3A 0%, #201335 50%, #5B2D90 100%)',
+          border: '1px solid rgba(192, 132, 252, 0.35)',
           p: { xs: 2.5, sm: 3 },
-          boxShadow: '0 8px 30px rgba(37, 99, 235, 0.16)',
+          boxShadow: '0 8px 30px rgba(91, 45, 144, 0.16)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
@@ -62,7 +62,7 @@ export default function GoalHeroSummary({
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Chip
-                icon={<RocketLaunchRoundedIcon sx={{ fontSize: 14, color: '#38BDF8 !important' }} />}
+                icon={<RocketLaunchRoundedIcon sx={{ fontSize: 14, color: '#C084FC !important' }} />}
                 label="Target Track"
                 size="small"
                 sx={{
@@ -94,7 +94,7 @@ export default function GoalHeroSummary({
                   startIcon={<TuneRoundedIcon sx={{ fontSize: 14 }} />}
                   sx={{
                     bgcolor: '#FFFFFF',
-                    color: '#1E3A8A',
+                    color: '#0B1F3A',
                     fontWeight: 800,
                     textTransform: 'none',
                     borderRadius: '8px',
@@ -103,8 +103,8 @@ export default function GoalHeroSummary({
                     py: 0.5,
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
                     '&:hover': {
-                      bgcolor: '#F0F9FF',
-                      color: '#1D4ED8',
+                      bgcolor: '#FAF5FF',
+                      color: '#17366E',
                     },
                   }}
                 >
@@ -159,7 +159,7 @@ export default function GoalHeroSummary({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <HeroScoreGauge percentage={goalData.roleFitScore} />
             <Box>
-              <Typography sx={{ color: '#BFDBFE', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>
+              <Typography sx={{ color: '#D8B4FE', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>
                 Role-Fit Readiness Index
               </Typography>
               <Typography sx={{ color: '#FFFFFF', fontSize: '0.9rem', fontWeight: 800 }}>
@@ -170,11 +170,11 @@ export default function GoalHeroSummary({
 
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Box>
-              <Typography sx={{ color: '#BFDBFE', fontSize: '0.68rem', fontWeight: 700 }}>SPRINT PACE</Typography>
+              <Typography sx={{ color: '#D8B4FE', fontSize: '0.68rem', fontWeight: 700 }}>SPRINT PACE</Typography>
               <Typography sx={{ color: '#FFFFFF', fontSize: '0.85rem', fontWeight: 800 }}>On Track</Typography>
             </Box>
             <Box>
-              <Typography sx={{ color: '#BFDBFE', fontSize: '0.68rem', fontWeight: 700 }}>CURRICULUM</Typography>
+              <Typography sx={{ color: '#D8B4FE', fontSize: '0.68rem', fontWeight: 700 }}>CURRICULUM</Typography>
               <Typography sx={{ color: '#FFFFFF', fontSize: '0.85rem', fontWeight: 800 }}>12 Modules</Typography>
             </Box>
           </Box>
@@ -203,8 +203,8 @@ export default function GoalHeroSummary({
                   width: 28,
                   height: 28,
                   borderRadius: '6px',
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -226,7 +226,7 @@ export default function GoalHeroSummary({
 
           {/* Daily Focus Goal Bar */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.8, bgcolor: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0', mb: 1.8 }}>
-            <CircularSkillGauge percentage={dailyPercentage} size={54} strokeWidth={5} color="#2563EB" />
+            <CircularSkillGauge percentage={dailyPercentage} size={54} strokeWidth={5} color='#0B1F3A' />
             <Box sx={{ flex: 1 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.4 }}>
                 <Typography sx={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 700 }}>
@@ -237,7 +237,7 @@ export default function GoalHeroSummary({
                 </Typography>
               </Box>
               <Box sx={{ height: 6, width: '100%', bgcolor: '#E2E8F0', borderRadius: 99, overflow: 'hidden' }}>
-                <Box sx={{ width: `${dailyPercentage}%`, height: '100%', bgcolor: '#2563EB', borderRadius: 99, transition: 'width 0.4s ease' }} />
+                <Box sx={{ width: `${dailyPercentage}%`, height: '100%', bgcolor: '#0B1F3A', borderRadius: 99, transition: 'width 0.4s ease' }} />
               </Box>
             </Box>
           </Box>
@@ -255,7 +255,7 @@ export default function GoalHeroSummary({
           <Box>
             <Typography sx={{ color: '#64748B', fontSize: '0.7rem', fontWeight: 600 }}>Weekly Quota</Typography>
             <Typography sx={{ color: '#0F172A', fontSize: '0.9rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <FlagRoundedIcon sx={{ fontSize: 16, color: '#2563EB' }} />
+              <FlagRoundedIcon sx={{ fontSize: 16, color: '#0B1F3A' }} />
               {goalData.weeklyProblemsSolved ?? 0} / {goalData.weeklyProblemQuota ?? 20} <span style={{ color: '#64748B', fontSize: '0.72rem', fontWeight: 500 }}>done</span>
             </Typography>
           </Box>

@@ -80,8 +80,8 @@ export function ReadingTheoryTab({
               fontSize: '0.78rem',
               textTransform: 'none',
               fontWeight: 700,
-              color: '#2563EB',
-              bgcolor: '#EFF6FF',
+              color: '#0B1F3A',
+              bgcolor: '#FAF5FF',
               borderRadius: '8px',
               px: 1.2,
             }}
@@ -134,7 +134,7 @@ export function ReadingTheoryTab({
                 bgcolor: '#F8FAFC',
                 '& fieldset': { borderColor: borderColor },
                 '&:hover fieldset': { borderColor: '#CBD5E1' },
-                '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
               },
             },
           }}
@@ -151,7 +151,7 @@ export function ReadingTheoryTab({
             size="small"
             onClick={handleAddTakeaway}
             startIcon={<AddCircleOutlineRoundedIcon sx={{ fontSize: 16 }} />}
-            sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', color: '#2563EB' }}
+            sx={{ textTransform: 'none', fontWeight: 700, fontSize: '0.78rem', color: '#0B1F3A' }}
           >
             Add Takeaway
           </Button>

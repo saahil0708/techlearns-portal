@@ -117,8 +117,8 @@ export default function BlogEditModal({
               width: 36,
               height: 36,
               borderRadius: '10px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -274,7 +274,7 @@ export default function BlogEditModal({
                     borderRadius: '8px',
                     overflow: 'hidden',
                     cursor: 'pointer',
-                    border: editBlogForm.coverImage === imgUrl ? '2px solid #2563EB' : '1px solid #CBD5E1',
+                    border: editBlogForm.coverImage === imgUrl ? '2px solid #0B1F3A' : '1px solid #CBD5E1',
                     p: 0,
                     background: 'none',
                   }}
@@ -350,12 +350,12 @@ export default function BlogEditModal({
           disabled={isSavingEdit || isUploadingEditCover}
           onClick={onSave}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             textTransform: 'none',
             fontWeight: 700,
             borderRadius: '8px',
             px: 3,
-            '&:hover': { bgcolor: '#1D4ED8' },
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           {isSavingEdit ? 'Saving Changes...' : isUploadingEditCover ? 'Uploading Cover...' : 'Save & Publish Updates'}

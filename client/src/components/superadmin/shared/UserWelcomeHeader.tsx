@@ -67,7 +67,7 @@ export default function UserWelcomeHeader({
           <Box
             component="span"
             sx={{
-              background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+              background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
             }}

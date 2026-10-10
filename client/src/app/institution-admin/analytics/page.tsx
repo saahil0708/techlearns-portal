@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import InstitutionAnalyticsClient from '@/components/institution-admin/analytics/InstitutionAnalyticsClient';
 
 export const metadata: Metadata = {
-  title: 'Institutional Analytics | CodePlatform Institution Admin',
+  title: 'Institutional Analytics | TechLearns Institution Admin',
   description: 'Campus-wide algorithmic performance analytics, problem solve rates, and cohort metrics.',
 };
 

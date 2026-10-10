@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { FluidArrowBack, FluidArrowForward } from '@/utils/fluid_arrow';
 import { Box, Button, CircularProgress } from '@mui/material';
 import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
@@ -38,7 +39,7 @@ export function WizardFooterToolbar({
       <Button
         disabled={currentStep === 1}
         onClick={onPrevious}
-        startIcon={<ArrowBackRoundedIcon />}
+        startIcon={<FluidArrowBack />}
         variant="outlined"
         sx={{
           color: '#475569',
@@ -68,17 +69,17 @@ export function WizardFooterToolbar({
                 onContinue();
               }
             }}
-            endIcon={<ArrowForwardRoundedIcon />}
+            endIcon={<FluidArrowForward />}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               fontWeight: 700,
               textTransform: 'none',
               borderRadius: '10px',
               px: 3.5,
               py: 1,
-              boxShadow: '0 2px 6px rgba(37,99,235,0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 2px 6px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             {currentStep === 3 ? 'Evaluate & Calibrate' : 'Continue'}

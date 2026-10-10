@@ -427,7 +427,7 @@ export default function FacultyProfileClient({
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.05) 0%, transparent 45%),
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.05) 0%, transparent 45%),
           radial-gradient(ellipse at 85% 20%, rgba(124, 58, 237, 0.04) 0%, transparent 45%),
           radial-gradient(ellipse at 50% 90%, rgba(5, 150, 105, 0.04) 0%, transparent 50%)
         `,
@@ -475,10 +475,10 @@ export default function FacultyProfileClient({
                   color: '#64748B',
                   minHeight: 48,
                   px: 2.5,
-                  '&.Mui-selected': { color: '#2563EB' },
+                  '&.Mui-selected': { color: '#0B1F3A' },
                 },
                 '& .MuiTabs-indicator': {
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   height: 3,
                   borderRadius: '3px 3px 0 0',
                 },
@@ -486,7 +486,7 @@ export default function FacultyProfileClient({
             >
               <Tab icon={<AccountCircleRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Academic Overview & Analytics" />
               <Tab icon={<SchoolRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Assigned Cohorts" />
-              <Tab icon={<ShieldRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Skillos Proctored Tests" />
+              <Tab icon={<ShieldRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="SkillOS Proctored Tests" />
               <Tab icon={<GroupRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="College Students Roster" />
               {isInstitutionAdmin && (
                 <Tab icon={<AssignmentIndRoundedIcon sx={{ fontSize: 18, mr: 0.5 }} />} iconPosition="start" label="Department Faculty" />
@@ -528,7 +528,7 @@ export default function FacultyProfileClient({
             />
           )}
 
-          {/* TAB 2: Skillos Proctored Assessments Suite */}
+          {/* TAB 2: SkillOS Proctored Assessments Suite */}
           {activeTab === 2 && (
             <FacultySkillosTab
               collegeId={activeCollegeId}

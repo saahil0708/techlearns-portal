@@ -132,7 +132,7 @@ export function formatArticleMarkdown(raw: string): string {
   formatted = formatted
     .replace(/^#### (.*$)/gim, '<h4 style="font-size: 1.0rem; font-weight: 700; margin: 12px 0 4px; color: #334155;">$1</h4>')
     .replace(/^### (.*$)/gim, '<h3 style="font-size: 1.15rem; font-weight: 800; margin: 14px 0 6px; color: #0F172A; letter-spacing: -0.01em;">$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2 style="font-size: 1.35rem; font-weight: 800; margin: 0 0 8px; color: #0F172A; letter-spacing: -0.02em; border-left: 3.5px solid #2563EB; padding-left: 10px;">$1</h2>')
+    .replace(/^## (.*$)/gim, '<h2 style="font-size: 1.35rem; font-weight: 800; margin: 0 0 8px; color: #0F172A; letter-spacing: -0.02em; border-left: 3.5px solid #0B1F3A; padding-left: 10px;">$1</h2>')
     .replace(/^# (.*$)/gim, '<h1 style="font-size: 1.65rem; font-weight: 900; margin: 0 0 10px; color: #0F172A; letter-spacing: -0.02em;">$1</h1>');
 
   // 4. Horizontal Dividers
@@ -149,7 +149,7 @@ export function formatArticleMarkdown(raw: string): string {
   formatted = formatted
     .replace(
       /^(&gt;|>)\s?\[!(NOTE|INFO)\]\s?(.*$)/gim,
-      '<div style="margin: 12px 0; padding: 12px 16px; background: rgba(37,99,235,0.06); border-left: 3.5px solid #2563EB; border-radius: 0 8px 8px 0; color: #1E40AF; font-size: 14px; line-height: 1.5;"><strong style="display:block; margin-bottom: 2px; font-weight: 800;">Note</strong>$3</div>',
+      '<div style="margin: 12px 0; padding: 12px 16px; background: rgba(91, 45, 144, 0.06); border-left: 3.5px solid #0B1F3A; border-radius: 0 8px 8px 0; color: #0F264F; font-size: 14px; line-height: 1.5;"><strong style="display:block; margin-bottom: 2px; font-weight: 800;">Note</strong>$3</div>',
     )
     .replace(
       /^(&gt;|>)\s?\[!(TIP|SUCCESS)\]\s?(.*$)/gim,
@@ -165,18 +165,18 @@ export function formatArticleMarkdown(raw: string): string {
     )
     .replace(
       /^(&gt;|>)\s?(.*$)/gim,
-      '<blockquote style="border-left: 3.5px solid #2563EB; padding: 10px 14px; margin: 12px 0; background: rgba(37,99,235,0.03); border-radius: 0 8px 8px 0; color: #334155; font-style: italic; line-height: 1.55;">$2</blockquote>',
+      '<blockquote style="border-left: 3.5px solid #0B1F3A; padding: 10px 14px; margin: 12px 0; background: rgba(91, 45, 144, 0.03); border-radius: 0 8px 8px 0; color: #334155; font-style: italic; line-height: 1.55;">$2</blockquote>',
     );
 
   // 7. Lists (Numbered with circle badge & Bullets)
   formatted = formatted
     .replace(
       /^\s*(\d+)\.\s+(.*$)/gim,
-      '<div style="display: flex; gap: 8px; margin: 4px 0; align-items: flex-start;"><span style="width: 18px; height: 18px; border-radius: 50%; background: #2563EB; color: #FFFFFF; font-size: 10px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">$1</span><div style="flex: 1; color: #334155; line-height: 1.55;">$2</div></div>',
+      '<div style="display: flex; gap: 8px; margin: 4px 0; align-items: flex-start;"><span style="width: 18px; height: 18px; border-radius: 50%; background: #0B1F3A; color: #FFFFFF; font-size: 10px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">$1</span><div style="flex: 1; color: #334155; line-height: 1.55;">$2</div></div>',
     )
     .replace(
       /^\s*[-*+]\s+(.*$)/gim,
-      '<div style="display: flex; gap: 8px; margin: 3px 0; align-items: flex-start;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #2563EB; flex-shrink: 0; margin-top: 7px;"></span><div style="flex: 1; color: #334155; line-height: 1.55;">$1</div></div>',
+      '<div style="display: flex; gap: 8px; margin: 3px 0; align-items: flex-start;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #0B1F3A; flex-shrink: 0; margin-top: 7px;"></span><div style="flex: 1; color: #334155; line-height: 1.55;">$1</div></div>',
     );
 
   // 8. Inline Formats (Links with safe URL validation, Code, Bold, Italic, Underline, Strikethrough)
@@ -184,7 +184,7 @@ export function formatArticleMarkdown(raw: string): string {
     .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, (_, text, url) => {
       const cleanUrl = url.trim();
       const safeUrl = isSafeUrl(cleanUrl) ? cleanUrl : '#';
-      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563EB; font-weight: 700; text-decoration: underline;">${text}</a>`;
+      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" style="color: #0B1F3A; font-weight: 700; text-decoration: underline;">${text}</a>`;
     })
     .replace(
       /`([^`]+)`/gim,

@@ -39,7 +39,7 @@ export default function PassportHeaderDossier({
         borderRadius: '24px',
         bgcolor: '#070D1E',
         backgroundImage:
-          'radial-gradient(circle at 100% 0%, rgba(37, 99, 235, 0.28) 0%, transparent 50%), radial-gradient(circle at 0% 100%, rgba(217, 119, 6, 0.18) 0%, transparent 45%), linear-gradient(135deg, #070D1E 0%, #0F172A 65%, #131F37 100%)',
+          'radial-gradient(circle at 100% 0%, rgba(91, 45, 144, 0.28) 0%, transparent 50%), radial-gradient(circle at 0% 100%, rgba(217, 119, 6, 0.18) 0%, transparent 45%), linear-gradient(135deg, #070D1E 0%, #0F172A 65%, #131F37 100%)',
         color: '#FFFFFF',
         p: { xs: 3, sm: 3.5, md: 4 },
         border: '1px solid rgba(255, 255, 255, 0.12)',
@@ -81,12 +81,12 @@ export default function PassportHeaderDossier({
               width: 28,
               height: 28,
               borderRadius: '8px',
-              bgcolor: 'rgba(59, 130, 246, 0.2)',
-              border: '1px solid rgba(59, 130, 246, 0.4)',
+              bgcolor: 'rgba(91, 45, 144, 0.2)',
+              border: '1px solid rgba(91, 45, 144, 0.4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#60A5FA',
+              color: '#A855F7',
             }}
           >
             <SecurityRoundedIcon sx={{ fontSize: 16 }} />
@@ -136,7 +136,7 @@ export default function PassportHeaderDossier({
               height: 80,
               borderRadius: '22px',
               p: '2px',
-              background: 'linear-gradient(135deg, #FBBF24 0%, #3B82F6 50%, #10B981 100%)',
+              background: 'linear-gradient(135deg, #FBBF24 0%, #5B2D90 50%, #10B981 100%)',
               boxShadow: '0 8px 28px rgba(0, 0, 0, 0.45)',
               flexShrink: 0,
             }}
@@ -179,7 +179,7 @@ export default function PassportHeaderDossier({
               />
             </Box>
 
-            <Typography sx={{ color: '#93C5FD', fontSize: '0.9rem', fontWeight: 600, mt: 0.4 }}>
+            <Typography sx={{ color: '#C084FC', fontSize: '0.9rem', fontWeight: 600, mt: 0.4 }}>
               @{studentHandle} · Roll: <span style={{ color: '#FFFFFF', fontFamily: 'monospace' }}>{studentRollNo}</span> · {studentDegree} ({studentGradYear})
             </Typography>
 
@@ -255,7 +255,7 @@ export default function PassportHeaderDossier({
             startIcon={<DownloadRoundedIcon sx={{ fontSize: 18 }} />}
             onClick={onExportPDF}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               fontWeight: 800,
               fontSize: '0.84rem',
@@ -263,8 +263,8 @@ export default function PassportHeaderDossier({
               borderRadius: '10px',
               px: 2.5,
               py: 0.9,
-              boxShadow: '0 6px 20px rgba(37, 99, 235, 0.4)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 6px 20px rgba(91, 45, 144, 0.4)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Export Official PDF

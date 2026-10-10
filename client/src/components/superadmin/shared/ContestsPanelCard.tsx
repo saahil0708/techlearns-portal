@@ -18,7 +18,7 @@ interface ContestsPanelCardProps {
 
 export default function ContestsPanelCard({
   contests,
-  primaryBlue = '#2563eb',
+  primaryBlue = '#0B1F3A',
 }: ContestsPanelCardProps) {
   return (
     <Card
@@ -67,12 +67,12 @@ export default function ContestsPanelCard({
               sx={{
                 p: 2,
                 borderRadius: '12px',
-                border: isLiveSoon ? '1px solid #93C5FD' : '1px solid #E2E8F0',
-                bgcolor: isLiveSoon ? '#EFF6FF' : '#F8FAFC',
-                boxShadow: isLiveSoon ? '0 4px 14px rgba(37, 99, 235, 0.08)' : 'none',
+                border: isLiveSoon ? '1px solid #E9D5FF' : '1px solid #E2E8F0',
+                bgcolor: isLiveSoon ? '#FAF5FF' : '#F8FAFC',
+                boxShadow: isLiveSoon ? '0 4px 14px rgba(91, 45, 144, 0.08)' : 'none',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  borderColor: isLiveSoon ? '#3B82F6' : '#CBD5E1',
+                  borderColor: isLiveSoon ? '#5B2D90' : '#CBD5E1',
                   transform: 'translateY(-1px)',
                 },
               }}
@@ -85,10 +85,10 @@ export default function ContestsPanelCard({
                     height: 20,
                     fontSize: '0.66rem',
                     fontWeight: 700,
-                    bgcolor: isLiveSoon ? '#2563EB' : '#E2E8F0',
+                    bgcolor: isLiveSoon ? '#0B1F3A' : '#E2E8F0',
                     color: isLiveSoon ? '#FFFFFF' : '#475569',
                     borderRadius: '4px',
-                    boxShadow: isLiveSoon ? '0 2px 6px rgba(37, 99, 235, 0.3)' : 'none',
+                    boxShadow: isLiveSoon ? '0 2px 6px rgba(91, 45, 144, 0.3)' : 'none',
                   }}
                 />
                 <Chip
@@ -98,9 +98,9 @@ export default function ContestsPanelCard({
                     height: 20,
                     fontSize: '0.7rem',
                     fontWeight: 600,
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
-                    border: '1px solid #DBEAFE',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
+                    border: '1px solid #FAF5FF',
                     borderRadius: '4px',
                   }}
                 />

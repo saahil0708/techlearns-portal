@@ -83,12 +83,12 @@ export default function AnalyticsDrilldownDrawer({
                 width: 38,
                 height: 38,
                 borderRadius: '10px',
-                bgcolor: '#EFF6FF',
-                border: '1px solid #DBEAFE',
+                bgcolor: '#FAF5FF',
+                border: '1px solid #FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB',
+                color: '#0B1F3A',
               }}
             >
               {row.rowType === 'institute' && <SchoolRoundedIcon sx={{ fontSize: 20 }} />}
@@ -118,7 +118,7 @@ export default function AnalyticsDrilldownDrawer({
                   color: copied ? '#16A34A' : '#64748B',
                   border: '1px solid #E2E8F0',
                   borderRadius: '8px',
-                  '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB' },
+                  '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A' },
                 }}
               >
                 {copied ? <CheckRoundedIcon fontSize="small" /> : <ContentCopyRoundedIcon fontSize="small" />}
@@ -145,7 +145,7 @@ export default function AnalyticsDrilldownDrawer({
             <>
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Chip label={row.tier} size="small" sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700, fontSize: '0.74rem' }} />
+                  <Chip label={row.tier} size="small" sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700, fontSize: '0.74rem' }} />
                   <Chip label={`Status: ${row.healthStatus}`} size="small" sx={{ bgcolor: '#ECFDF5', color: '#059669', fontWeight: 700, fontSize: '0.74rem' }} />
                   <Chip label={`+${row.weeklyGrowth}% this week`} size="small" sx={{ bgcolor: '#F8FAFC', border: '1px solid #E2E8F0', fontWeight: 600, fontSize: '0.72rem' }} />
                 </Box>
@@ -166,7 +166,7 @@ export default function AnalyticsDrilldownDrawer({
                 </Box>
                 <Box sx={{ p: 1.75, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                   <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748B' }}>Problems Solved</Typography>
-                  <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#2563EB' }}>{row.problemsSolved.toLocaleString()}</Typography>
+                  <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#0B1F3A' }}>{row.problemsSolved.toLocaleString()}</Typography>
                 </Box>
                 <Box sx={{ p: 1.75, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                   <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748B' }}>Avg Solves/Student</Typography>
@@ -174,12 +174,12 @@ export default function AnalyticsDrilldownDrawer({
                 </Box>
               </Box>
 
-              <Box sx={{ p: 2, borderRadius: '12px', bgcolor: '#EFF6FF', border: '1px solid #DBEAFE', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ p: 2, borderRadius: '12px', bgcolor: '#FAF5FF', border: '1px solid #FAF5FF', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
-                  <Typography sx={{ fontSize: '0.76rem', fontWeight: 700, color: '#1E40AF', textTransform: 'uppercase' }}>Campus Top Performer</Typography>
-                  <Typography sx={{ fontSize: '0.94rem', fontWeight: 800, color: '#1E3A8A' }}>{row.topCoderName}</Typography>
+                  <Typography sx={{ fontSize: '0.76rem', fontWeight: 700, color: '#0F264F', textTransform: 'uppercase' }}>Campus Top Performer</Typography>
+                  <Typography sx={{ fontSize: '0.94rem', fontWeight: 800, color: '#0B1F3A' }}>{row.topCoderName}</Typography>
                 </Box>
-                <Chip label={`Rating: ${row.avgContestRating}`} size="small" sx={{ bgcolor: '#FFFFFF', color: '#2563EB', fontWeight: 700 }} />
+                <Chip label={`Rating: ${row.avgContestRating}`} size="small" sx={{ bgcolor: '#FFFFFF', color: '#0B1F3A', fontWeight: 700 }} />
               </Box>
             </>
           )}
@@ -189,7 +189,7 @@ export default function AnalyticsDrilldownDrawer({
             <>
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Chip label={row.category} size="small" sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700, fontSize: '0.74rem' }} />
+                  <Chip label={row.category} size="small" sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700, fontSize: '0.74rem' }} />
                   <Chip
                     label={row.frictionLevel}
                     size="small"
@@ -222,7 +222,7 @@ export default function AnalyticsDrilldownDrawer({
                 </Box>
                 <Box sx={{ p: 1.75, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                   <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748B' }}>Avg Attempts/Solve</Typography>
-                  <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: row.avgAttemptsToSolve > 3 ? '#DC2626' : '#2563EB' }}>{row.avgAttemptsToSolve}</Typography>
+                  <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: row.avgAttemptsToSolve > 3 ? '#DC2626' : '#0B1F3A' }}>{row.avgAttemptsToSolve}</Typography>
                 </Box>
               </Box>
 
@@ -251,7 +251,7 @@ export default function AnalyticsDrilldownDrawer({
             <>
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Chip label={row.format} size="small" sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700, fontSize: '0.74rem' }} />
+                  <Chip label={row.format} size="small" sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700, fontSize: '0.74rem' }} />
                   <Chip label={row.status} size="small" sx={{ bgcolor: row.status === 'Live Arena' ? '#FEF2F2' : '#ECFDF5', color: row.status === 'Live Arena' ? '#DC2626' : '#059669', fontWeight: 700 }} />
                 </Box>
                 <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A' }}>
@@ -267,7 +267,7 @@ export default function AnalyticsDrilldownDrawer({
               <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
                 <Box sx={{ p: 1.75, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                   <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748B' }}>Turnout Rate</Typography>
-                  <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#2563EB' }}>{row.turnoutPercent}%</Typography>
+                  <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#0B1F3A' }}>{row.turnoutPercent}%</Typography>
                 </Box>
                 <Box sx={{ p: 1.75, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                   <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748B' }}>Avg Score</Typography>
@@ -294,7 +294,7 @@ export default function AnalyticsDrilldownDrawer({
             <>
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Chip label={row.version} size="small" sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700, fontSize: '0.74rem' }} />
+                  <Chip label={row.version} size="small" sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700, fontSize: '0.74rem' }} />
                   <Chip label={`${row.sharePercent}% of All Submissions`} size="small" sx={{ bgcolor: '#FAF5FF', color: '#9333EA', fontWeight: 700 }} />
                 </Box>
                 <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A' }}>
@@ -314,7 +314,7 @@ export default function AnalyticsDrilldownDrawer({
                 </Box>
                 <Box sx={{ p: 1.75, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                   <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748B' }}>Total Submissions</Typography>
-                  <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#2563EB' }}>{row.submissionsCount.toLocaleString()}</Typography>
+                  <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#0B1F3A' }}>{row.submissionsCount.toLocaleString()}</Typography>
                 </Box>
                 <Box sx={{ p: 1.75, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
                   <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#64748B' }}>Avg Exec Time</Typography>
@@ -375,11 +375,11 @@ export default function AnalyticsDrilldownDrawer({
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.86rem',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 px: 2.5,
                 py: 0.8,
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               Open Campus Portal
@@ -397,11 +397,11 @@ export default function AnalyticsDrilldownDrawer({
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.86rem',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 px: 2.5,
                 py: 0.8,
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               View Contest Arena
@@ -419,11 +419,11 @@ export default function AnalyticsDrilldownDrawer({
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.86rem',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 px: 2.5,
                 py: 0.8,
-                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               Open Problem Bank

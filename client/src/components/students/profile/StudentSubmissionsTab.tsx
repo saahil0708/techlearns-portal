@@ -56,7 +56,7 @@ function CircularMetricGauge({
   percentage,
   size = 46,
   strokeWidth = 4,
-  color = '#2563EB',
+  color = '#0B1F3A',
   label,
 }: {
   percentage: number;
@@ -249,13 +249,13 @@ export default function StudentSubmissionsTab({
           <Box>
             <Typography sx={{ color: '#64748B', fontSize: '0.74rem', fontWeight: 700 }}>Points Earned</Typography>
             <Typography sx={{ color: '#0F172A', fontSize: '1.45rem', fontWeight: 900, mt: 0.3 }}>
-              {pointsEarned.toLocaleString()} <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#2563EB' }}>pts</span>
+              {pointsEarned.toLocaleString()} <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0B1F3A' }}>pts</span>
             </Typography>
-            <Typography sx={{ color: '#2563EB', fontSize: '0.7rem', fontWeight: 700 }}>
+            <Typography sx={{ color: '#0B1F3A', fontSize: '0.7rem', fontWeight: 700 }}>
               {totalSubmissions} runs • {acceptedCount} solved
             </Typography>
           </Box>
-          <CircularMetricGauge percentage={100} size={48} strokeWidth={4.5} color="#2563EB" label={`${pointsEarned}`} />
+          <CircularMetricGauge percentage={100} size={48} strokeWidth={4.5} color='#0B1F3A' label={`${pointsEarned}`} />
         </Card>
 
         {/* Card 2: Acceptance Rate */}
@@ -303,11 +303,11 @@ export default function StudentSubmissionsTab({
             <Typography sx={{ color: '#0F172A', fontSize: '1.45rem', fontWeight: 900, mt: 0.3 }}>
               {avgRuntime} <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748B' }}>ms</span>
             </Typography>
-            <Typography sx={{ color: '#0284C7', fontSize: '0.7rem', fontWeight: 700 }}>
+            <Typography sx={{ color: '#5B2D90', fontSize: '0.7rem', fontWeight: 700 }}>
               Optimized execution
             </Typography>
           </Box>
-          <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: '#F0F9FF', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: '#FAF5FF', color: '#5B2D90', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <SpeedRoundedIcon sx={{ fontSize: 24 }} />
           </Box>
         </Card>
@@ -425,13 +425,13 @@ export default function StudentSubmissionsTab({
                   borderRadius: '8px',
                   textTransform: 'none',
                   fontWeight: 800,
-                  color: '#2563EB',
-                  borderColor: '#BFDBFE',
-                  bgcolor: '#EFF6FF',
+                  color: '#0B1F3A',
+                  borderColor: '#D8B4FE',
+                  bgcolor: '#FAF5FF',
                   fontSize: '0.78rem',
                   px: 1.5,
                   py: 0.6,
-                  '&:hover': { bgcolor: '#DBEAFE', borderColor: '#2563EB' },
+                  '&:hover': { bgcolor: '#E9D5FF', borderColor: '#0B1F3A' },
                 }}
               >
                 Export CSV
@@ -464,13 +464,13 @@ export default function StudentSubmissionsTab({
                     cursor: 'pointer',
                     fontWeight: isSelected ? 800 : 600,
                     fontSize: '0.72rem',
-                    bgcolor: isSelected ? '#2563EB' : '#F1F5F9',
+                    bgcolor: isSelected ? '#0B1F3A' : '#F1F5F9',
                     color: isSelected ? '#FFFFFF' : '#475569',
                     border: '1px solid',
-                    borderColor: isSelected ? '#2563EB' : '#E2E8F0',
+                    borderColor: isSelected ? '#0B1F3A' : '#E2E8F0',
                     transition: 'all 0.15s ease',
                     '&:hover': {
-                      bgcolor: isSelected ? '#1D4ED8' : '#E2E8F0',
+                      bgcolor: isSelected ? '#17366E' : '#E2E8F0',
                     },
                   }}
                 />
@@ -542,7 +542,7 @@ export default function StudentSubmissionsTab({
                         <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.86rem' }}>
                           {sub.problemTitle}
                         </Typography>
-                        <Typography sx={{ fontSize: '0.72rem', color: '#2563EB', fontFamily: 'monospace', fontWeight: 700 }}>
+                        <Typography sx={{ fontSize: '0.72rem', color: '#0B1F3A', fontFamily: 'monospace', fontWeight: 700 }}>
                           {sub.problemCode}
                         </Typography>
                       </TableCell>
@@ -615,14 +615,14 @@ export default function StudentSubmissionsTab({
                           sx={{
                             textTransform: 'none',
                             fontWeight: 800,
-                            color: '#2563EB',
-                            borderColor: '#BFDBFE',
-                            bgcolor: '#EFF6FF',
+                            color: '#0B1F3A',
+                            borderColor: '#D8B4FE',
+                            bgcolor: '#FAF5FF',
                             borderRadius: '6px',
                             fontSize: '0.74rem',
                             px: 1.2,
                             py: 0.3,
-                            '&:hover': { bgcolor: '#DBEAFE', borderColor: '#2563EB' },
+                            '&:hover': { bgcolor: '#E9D5FF', borderColor: '#0B1F3A' },
                           }}
                         >
                           View Code

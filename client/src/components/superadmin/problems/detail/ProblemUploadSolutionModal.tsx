@@ -63,7 +63,7 @@ export default function ProblemUploadSolutionModal({
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
         <Box>
           <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: 1 }}>
-            <CloudUploadRoundedIcon sx={{ color: '#2563EB' }} />
+            <CloudUploadRoundedIcon sx={{ color: '#0B1F3A' }} />
             Author & Save Reference Solution Draft
           </Typography>
           <Typography variant="caption" sx={{ color: '#64748B' }}>
@@ -95,11 +95,11 @@ export default function ProblemUploadSolutionModal({
                 onClick={() => onUploadLangChange(l.id)}
                 sx={{
                   fontWeight: 700,
-                  bgcolor: uploadLang === l.id ? '#2563EB' : '#F1F5F9',
+                  bgcolor: uploadLang === l.id ? '#0B1F3A' : '#F1F5F9',
                   color: uploadLang === l.id ? '#FFFFFF' : '#475569',
                   border: '1px solid',
-                  borderColor: uploadLang === l.id ? '#2563EB' : '#CBD5E1',
-                  '&:hover': { bgcolor: uploadLang === l.id ? '#1D4ED8' : '#E2E8F0' },
+                  borderColor: uploadLang === l.id ? '#0B1F3A' : '#CBD5E1',
+                  '&:hover': { bgcolor: uploadLang === l.id ? '#17366E' : '#E2E8F0' },
                 }}
               />
             ))}
@@ -148,8 +148,8 @@ export default function ProblemUploadSolutionModal({
           sx={{
             p: 2.5,
             border: '2px dashed',
-            borderColor: isDragOver ? '#2563EB' : '#CBD5E1',
-            bgcolor: isDragOver ? '#EFF6FF' : '#F8FAFC',
+            borderColor: isDragOver ? '#0B1F3A' : '#CBD5E1',
+            bgcolor: isDragOver ? '#FAF5FF' : '#F8FAFC',
             borderRadius: '12px',
             textAlign: 'center',
             cursor: 'pointer',
@@ -166,7 +166,7 @@ export default function ProblemUploadSolutionModal({
             input.click();
           }}
         >
-          <CloudUploadRoundedIcon sx={{ fontSize: 32, color: isDragOver ? '#2563EB' : '#94A3B8', mb: 0.5 }} />
+          <CloudUploadRoundedIcon sx={{ fontSize: 32, color: isDragOver ? '#0B1F3A' : '#94A3B8', mb: 0.5 }} />
           <Typography sx={{ fontSize: '0.86rem', fontWeight: 700, color: '#334155' }}>
             Click to Browse or Drag & Drop Solution File
           </Typography>
@@ -195,7 +195,7 @@ export default function ProblemUploadSolutionModal({
                 color: '#F8FAFC',
                 '& fieldset': { borderColor: '#1E293B' },
                 '&:hover fieldset': { borderColor: '#334155' },
-                '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
               },
             }}
           />
@@ -231,12 +231,12 @@ export default function ProblemUploadSolutionModal({
           variant="contained"
           onClick={onSaveSolution}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             fontWeight: 800,
             textTransform: 'none',
             px: 3,
             borderRadius: '8px',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           Save Solution Draft

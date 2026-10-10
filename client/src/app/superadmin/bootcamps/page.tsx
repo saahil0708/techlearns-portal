@@ -3,7 +3,7 @@ import BootcampsDirectoryClient from '@/components/superadmin/bootcamps/Bootcamp
 import { apiService } from '@/lib/api-service';
 
 export const metadata: Metadata = {
-  title: 'Bootcamp & Cohort Management | CodePlatform Admin',
+  title: 'Bootcamp & Cohort Management | TechLearns Admin',
   description: 'Manage live industry sprint bootcamps, masterclasses, and capstones.',
 };
 

@@ -24,7 +24,7 @@ export default function LoadingScreen({
   mode = 'screen',
   size = 3.5,
   minHeight = mode === 'fullscreen' || mode === 'screen' ? '100vh' : mode === 'tab' ? '35vh' : '120px',
-  color = '#2563EB',
+  color = '#0B1F3A',
   message,
 }: LoadingScreenProps) {
   const isFullScreen = mode === 'fullscreen' || mode === 'screen';
@@ -55,7 +55,7 @@ export default function LoadingScreen({
             aria-label="Loading..."
             sx={{
               height: barHeight,
-              bgcolor: 'rgba(37, 99, 235, 0.08)',
+              bgcolor: 'rgba(91, 45, 144, 0.08)',
               '& .MuiLinearProgress-bar': {
                 bgcolor: color,
               },
@@ -98,7 +98,7 @@ export default function LoadingScreen({
           aria-label="Loading..."
           sx={{
             height: barHeight,
-            bgcolor: 'rgba(37, 99, 235, 0.08)',
+            bgcolor: 'rgba(91, 45, 144, 0.08)',
             '& .MuiLinearProgress-bar': {
               bgcolor: color,
             },

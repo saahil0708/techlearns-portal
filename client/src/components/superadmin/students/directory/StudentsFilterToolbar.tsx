@@ -65,7 +65,7 @@ export default function StudentsFilterToolbar({
           sx={{
             minHeight: 48,
             '& .MuiTabs-indicator': {
-              backgroundColor: '#2563EB',
+              backgroundColor: '#0B1F3A',
               height: 3,
               borderRadius: '3px 3px 0 0',
             },
@@ -95,10 +95,10 @@ export default function StudentsFilterToolbar({
                       fontSize: '0.68rem',
                       fontWeight: 700,
                       borderRadius: '9999px',
-                      bgcolor: selectedType === tab.id ? '#EFF6FF' : '#F1F5F9',
-                      color: selectedType === tab.id ? '#2563EB' : '#64748B',
+                      bgcolor: selectedType === tab.id ? '#FAF5FF' : '#F1F5F9',
+                      color: selectedType === tab.id ? '#0B1F3A' : '#64748B',
                       border: '1px solid',
-                      borderColor: selectedType === tab.id ? '#BFDBFE' : '#E2E8F0',
+                      borderColor: selectedType === tab.id ? '#D8B4FE' : '#E2E8F0',
                       pointerEvents: 'none',
                     }}
                   />
@@ -110,7 +110,7 @@ export default function StudentsFilterToolbar({
                 py: 1,
                 px: 1.25,
                 textTransform: 'none',
-                color: selectedType === tab.id ? '#2563EB !important' : '#64748B',
+                color: selectedType === tab.id ? '#0B1F3A !important' : '#64748B',
                 '&:hover': {
                   color: '#0F172A',
                 },
@@ -156,7 +156,7 @@ export default function StudentsFilterToolbar({
               fontSize: '0.85rem',
               '& fieldset': { borderColor: '#E2E8F0' },
               '&:hover fieldset': { borderColor: '#CBD5E1' },
-              '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+              '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
             },
           }}
         />

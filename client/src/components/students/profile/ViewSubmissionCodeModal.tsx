@@ -51,7 +51,7 @@ export default function ViewSubmissionCodeModal({
           sx={{
             p: 2.5,
             bgcolor: '#0B0F19',
-            color: '#38BDF8',
+            color: '#C084FC',
             borderRadius: '12px',
             fontFamily: 'monospace',
             fontSize: '0.86rem',

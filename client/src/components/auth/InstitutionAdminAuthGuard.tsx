@@ -125,12 +125,12 @@ export default function InstitutionAdminAuthGuard({ children }: InstitutionAdmin
               sx={{
                 py: 1.2,
                 borderRadius: '12px',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 color: '#FFFFFF',
                 textTransform: 'none',
                 fontWeight: 700,
                 '&:hover': {
-                  bgcolor: '#1D4ED8',
+                  bgcolor: '#17366E',
                 },
               }}
             >

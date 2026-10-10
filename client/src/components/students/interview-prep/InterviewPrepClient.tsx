@@ -302,18 +302,18 @@ export default function InterviewPrepClient() {
         elevation={0}
         sx={{
           borderRadius: '24px',
-          background: 'linear-gradient(135deg, #0F172A 0%, #1E3A8A 60%, #2563EB 100%)',
+          background: 'linear-gradient(135deg, #0F172A 0%, #0B1F3A 60%, #0B1F3A 100%)',
           color: '#FFFFFF',
           p: { xs: 3, md: 4.5 },
           position: 'relative',
           overflow: 'hidden',
-          boxShadow: '0 12px 36px rgba(37, 99, 235, 0.16)',
+          boxShadow: '0 12px 36px rgba(91, 45, 144, 0.16)',
         }}
       >
         <Box sx={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, gap: 4, alignItems: { lg: 'center' }, justifyContent: 'space-between' }}>
           <Box sx={{ maxWidth: 700 }}>
             <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.5, borderRadius: '9999px', bgcolor: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(8px)', mb: 2 }}>
-              <AutoAwesomeRoundedIcon sx={{ fontSize: 15, color: '#60A5FA' }} />
+              <AutoAwesomeRoundedIcon sx={{ fontSize: 15, color: '#A855F7' }} />
               <Typography sx={{ fontSize: '0.78rem', fontWeight: 800, color: '#E0E7FF', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                 FAANG & Tier-1 Company Tracks
               </Typography>
@@ -331,7 +331,7 @@ export default function InterviewPrepClient() {
           {/* KPI Stat Cards Grid */}
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' }, gap: 2, minWidth: { lg: 480 } }}>
             <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '16px', p: 2, textAlign: 'center' }}>
-              <Typography sx={{ color: '#93C5FD', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>Target Company</Typography>
+              <Typography sx={{ color: '#C084FC', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>Target Company</Typography>
               <Typography sx={{ color: '#FFFFFF', fontSize: '1.4rem', fontWeight: 900, mt: 0.5 }}>
                 {readiness ? (readiness.targetCompany ?? '—') : '—'}
               </Typography>
@@ -367,7 +367,7 @@ export default function InterviewPrepClient() {
           value={activeTab}
           onChange={(_, val) => setActiveTab(val)}
           sx={{
-            '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px' },
+            '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px' },
             '& .MuiTab-root': {
               textTransform: 'none',
               fontWeight: 800,
@@ -375,7 +375,7 @@ export default function InterviewPrepClient() {
               color: '#64748B',
               minHeight: 44,
               px: 2,
-              '&.Mui-selected': { color: '#2563EB' },
+              '&.Mui-selected': { color: '#0B1F3A' },
             },
           }}
         >
@@ -440,9 +440,9 @@ export default function InterviewPrepClient() {
                 fontSize: '0.78rem',
                 cursor: 'pointer',
                 borderRadius: '8px',
-                bgcolor: selectedTier === tier ? '#2563EB' : '#F1F5F9',
+                bgcolor: selectedTier === tier ? '#0B1F3A' : '#F1F5F9',
                 color: selectedTier === tier ? '#FFFFFF' : '#475569',
-                '&:hover': { bgcolor: selectedTier === tier ? '#1D4ED8' : '#E2E8F0' },
+                '&:hover': { bgcolor: selectedTier === tier ? '#17366E' : '#E2E8F0' },
               }}
             />
           ))}
@@ -525,7 +525,7 @@ export default function InterviewPrepClient() {
                 bgcolor: '#F8FAFC',
                 fontSize: '0.86rem',
                 '&:hover': { borderColor: '#CBD5E1' },
-                '&.Mui-focused': { borderColor: '#2563EB', bgcolor: '#FFFFFF' },
+                '&.Mui-focused': { borderColor: '#0B1F3A', bgcolor: '#FFFFFF' },
               },
             }}
           />
@@ -554,7 +554,7 @@ export default function InterviewPrepClient() {
                         ? '#D97706'
                         : diff === 'HARD'
                         ? '#DC2626'
-                        : '#2563EB'
+                        : '#0B1F3A'
                       : 'transparent',
                   color: selectedDifficulty === diff ? '#FFFFFF' : '#64748B',
                   borderColor: '#E2E8F0',
@@ -633,11 +633,11 @@ export default function InterviewPrepClient() {
                             sx={{
                               fontWeight: 800,
                               fontSize: '0.74rem',
-                              bgcolor: '#EFF6FF',
-                              color: '#2563EB',
+                              bgcolor: '#FAF5FF',
+                              color: '#0B1F3A',
                               cursor: 'pointer',
                               borderRadius: '6px',
-                              '&:hover': { bgcolor: '#DBEAFE' },
+                              '&:hover': { bgcolor: '#E9D5FF' },
                             }}
                           />
                         </TableCell>
@@ -653,7 +653,7 @@ export default function InterviewPrepClient() {
                                 fontWeight: 700,
                                 fontSize: '0.9rem',
                                 color: '#0F172A',
-                                '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                                '&:hover': { color: '#0B1F3A', textDecoration: 'underline' },
                               }}
                             >
                               {q.title}
@@ -715,7 +715,7 @@ export default function InterviewPrepClient() {
                         <TableCell sx={{ py: 2 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Box sx={{ width: 44, bgcolor: '#E2E8F0', borderRadius: '4px', height: 6, overflow: 'hidden' }}>
-                              <Box sx={{ width: `${q.frequency}%`, bgcolor: q.frequency > 90 ? '#2563EB' : '#059669', height: '100%' }} />
+                              <Box sx={{ width: `${q.frequency}%`, bgcolor: q.frequency > 90 ? '#0B1F3A' : '#059669', height: '100%' }} />
                             </Box>
                             <Typography sx={{ fontSize: '0.78rem', fontWeight: 800, color: '#334155' }}>
                               {q.frequency}%
@@ -763,9 +763,9 @@ export default function InterviewPrepClient() {
                                   fontSize: '0.76rem',
                                   px: 1.5,
                                   py: 0.5,
-                                  bgcolor: '#2563EB',
+                                  bgcolor: '#0B1F3A',
                                   boxShadow: 'none',
-                                  '&:hover': { bgcolor: '#1D4ED8', boxShadow: 'none' },
+                                  '&:hover': { bgcolor: '#17366E', boxShadow: 'none' },
                                 }}
                               >
                                 Solve
@@ -838,16 +838,16 @@ export default function InterviewPrepClient() {
                       <Chip
                         label={assess.companyName}
                         size="small"
-                        sx={{ fontWeight: 800, fontSize: '0.75rem', bgcolor: '#EFF6FF', color: '#2563EB' }}
+                        sx={{ fontWeight: 800, fontSize: '0.75rem', bgcolor: '#FAF5FF', color: '#0B1F3A' }}
                       />
                     </TableCell>
 
                     <TableCell sx={{ py: 2.5 }}>
                       <Chip
-                        icon={<TimerOutlinedIcon sx={{ fontSize: '14px !important', color: '#0284C7 !important' }} />}
+                        icon={<TimerOutlinedIcon sx={{ fontSize: '14px !important', color: '#5B2D90 !important' }} />}
                         label={`${assess.durationMinutes} Mins`}
                         size="small"
-                        sx={{ bgcolor: '#F0F9FF', color: '#0284C7', fontWeight: 700, fontSize: '0.75rem' }}
+                        sx={{ bgcolor: '#FAF5FF', color: '#5B2D90', fontWeight: 700, fontSize: '0.75rem' }}
                       />
                     </TableCell>
 
@@ -890,9 +890,9 @@ export default function InterviewPrepClient() {
                           fontSize: '0.82rem',
                           px: 2,
                           py: 0.75,
-                          bgcolor: '#2563EB',
+                          bgcolor: '#0B1F3A',
                           boxShadow: 'none',
-                          '&:hover': { bgcolor: '#1D4ED8' },
+                          '&:hover': { bgcolor: '#17366E' },
                         }}
                       >
                         Start OA
@@ -936,7 +936,7 @@ export default function InterviewPrepClient() {
                   <Chip
                     label={g.category.replace('_', ' ')}
                     size="small"
-                    sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 800, fontSize: '0.72rem' }}
+                    sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 800, fontSize: '0.72rem' }}
                   />
                   <Typography sx={{ color: '#94A3B8', fontSize: '0.76rem', fontWeight: 700 }}>
                     {g.readingTimeMinutes} min read
@@ -963,7 +963,7 @@ export default function InterviewPrepClient() {
                   onClick={() => {
                     toast.info(`Opened "${g.title}" strategy playbook.`, 'Playbook');
                   }}
-                  sx={{ textTransform: 'none', fontWeight: 800, color: '#2563EB' }}
+                  sx={{ textTransform: 'none', fontWeight: 800, color: '#0B1F3A' }}
                 >
                   Read Playbook →
                 </Button>
@@ -992,7 +992,7 @@ export default function InterviewPrepClient() {
         <DialogContent dividers>
           {hintsModalQuestion && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography sx={{ fontWeight: 800, color: '#2563EB', fontSize: '0.95rem' }}>
+              <Typography sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '0.95rem' }}>
                 {hintsModalQuestion.title}
               </Typography>
               <Typography sx={{ color: '#64748B', fontSize: '0.84rem' }}>
@@ -1014,7 +1014,7 @@ export default function InterviewPrepClient() {
         <DialogActions sx={{ p: 2 }}>
           {hintsModalQuestion && (
             <Link href={`/problems/${hintsModalQuestion.slug}`} style={{ textDecoration: 'none' }}>
-              <Button variant="contained" sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 800, bgcolor: '#2563EB' }}>
+              <Button variant="contained" sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 800, bgcolor: '#0B1F3A' }}>
                 Open Coding Workspace
               </Button>
             </Link>
@@ -1038,7 +1038,7 @@ export default function InterviewPrepClient() {
                 <Chip
                   label={activeCompanyDrawer.tier}
                   size="small"
-                  sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 800 }}
+                  sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 800 }}
                 />
                 <IconButton size="small" onClick={() => setActiveCompanyDrawer(null)}>
                   <CloseRoundedIcon sx={{ fontSize: 20 }} />
@@ -1090,7 +1090,7 @@ export default function InterviewPrepClient() {
                 setActiveCompanyDrawer(null);
                 setActiveTab('questions');
               }}
-              sx={{ borderRadius: '12px', py: 1.25, mt: 3, bgcolor: '#2563EB', fontWeight: 800, textTransform: 'none' }}
+              sx={{ borderRadius: '12px', py: 1.25, mt: 3, bgcolor: '#0B1F3A', fontWeight: 800, textTransform: 'none' }}
             >
               Filter {activeCompanyDrawer.name} Questions
             </Button>
@@ -1123,12 +1123,12 @@ export default function InterviewPrepClient() {
         <DialogContent dividers>
           {activeAssessmentModal && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Box sx={{ p: 2, bgcolor: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ p: 2, bgcolor: '#FAF5FF', border: '1px solid #F3E8FF', borderRadius: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box>
-                  <Typography sx={{ fontWeight: 800, color: '#1E3A8A', fontSize: '0.94rem' }}>
+                  <Typography sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '0.94rem' }}>
                     Simulating {activeAssessmentModal.companyName} OA
                   </Typography>
-                  <Typography sx={{ color: '#3B82F6', fontSize: '0.82rem' }}>
+                  <Typography sx={{ color: '#5B2D90', fontSize: '0.82rem' }}>
                     Passing Bar: {activeAssessmentModal.passingScore}% • Duration: {activeAssessmentModal.durationMinutes} Minutes
                   </Typography>
                 </Box>
@@ -1200,7 +1200,7 @@ export default function InterviewPrepClient() {
                 setActiveAssessmentModal(null);
                 setAssessmentResult(null);
               }}
-              sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 800, bgcolor: '#2563EB' }}
+              sx={{ borderRadius: '10px', textTransform: 'none', fontWeight: 800, bgcolor: '#0B1F3A' }}
             >
               Close Results
             </Button>

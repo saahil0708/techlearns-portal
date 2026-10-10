@@ -20,7 +20,7 @@ export const ALL_COURSES: CourseDirectoryEntity[] = [
     status: 'Published',
     tags: ['Data Structures', 'Algorithms', 'Trees', 'Graphs', 'Dynamic Programming'],
     description: 'Master foundational and advanced data structures, graph traversals, amortized complexity, and dynamic programming with hands-on coding tests.',
-    accentColor: '#2563EB',
+    accentColor: '#0B1F3A',
     moduleHighlights: [
       { title: 'Array, Linked Lists & Hashing Internals', lessons: 8 },
       { title: 'Binary Trees, AVL & Segment Trees', lessons: 14 },
@@ -224,7 +224,7 @@ export const ALL_COURSES: CourseDirectoryEntity[] = [
     status: 'Published',
     tags: ['Python', 'Problem Solving', 'Recursion', 'Variables', 'OOP'],
     description: 'An entry-level gateway to computational thinking, algorithmic logic, recursion, object-oriented design, and clean code standards in Python 3.',
-    accentColor: '#2563EB',
+    accentColor: '#0B1F3A',
     moduleHighlights: [
       { title: 'Computational Logic & Control Structures', lessons: 6 },
       { title: 'Functions, Scope & Recursion Fundamentals', lessons: 8 },
@@ -658,7 +658,7 @@ export const ALL_COURSES: CourseDirectoryEntity[] = [
     status: 'Published',
     tags: ['Python 3', 'Beginners', 'DSA', 'OOP', 'Problem Solving'],
     description: 'Master Python 3 fundamentals from variables, conditionals, loops, and data structures to OOP, file I/O, and coding interview challenges.',
-    accentColor: '#3B82F6',
+    accentColor: '#5B2D90',
     moduleHighlights: [
       { title: 'Python Basics, Syntax & Expressions', lessons: 2 },
       { title: 'Control Flow, Conditionals & Loops', lessons: 2 },
@@ -774,7 +774,7 @@ export const ALL_COURSES: CourseDirectoryEntity[] = [
     status: 'Published',
     tags: ['Next.js 15', 'NestJS', 'PostgreSQL', 'Redis', 'Docker'],
     description: 'Master enterprise full-stack development with Next.js 15, SSR, NestJS APIs, PostgreSQL, Redis BullMQ queues, and Docker container security.',
-    accentColor: '#2563EB',
+    accentColor: '#0B1F3A',
     moduleHighlights: [
       { title: 'Foundations of SSR & Next.js App Router', lessons: 2 },
       { title: 'Production API Design with NestJS & TypeScript', lessons: 2 },
@@ -926,7 +926,7 @@ export async function resolveCourseData(slugParam: string): Promise<CourseDirect
       status: liveCourse.status === 'PUBLISHED' ? 'Published' : 'Draft',
       tags: Array.isArray(liveCourse.tags) ? liveCourse.tags : ['Curriculum', 'Programming'],
       description: liveCourse.description || 'Comprehensive programming curriculum.',
-      accentColor: '#2563EB',
+      accentColor: '#0B1F3A',
       thumbnailUrl: liveCourse.thumbnailUrl || undefined,
       modules: rawModules,
       moduleHighlights: rawModules.map((m: any) => ({

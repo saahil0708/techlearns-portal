@@ -134,7 +134,7 @@ export default function SubmissionActivityHeatmap({
       sx={{
         borderRadius: '20px',
         bgcolor: '#0F172A',
-        border: '1px solid rgba(59, 130, 246, 0.25)',
+        border: '1px solid rgba(91, 45, 144, 0.25)',
         p: { xs: 2.5, sm: 3.5 },
         boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
         display: 'flex',
@@ -214,7 +214,7 @@ export default function SubmissionActivityHeatmap({
                         <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#FFFFFF' }}>
                           {day.count === 0 ? 'No submissions' : `${day.count} submissions`}
                         </Typography>
-                        <Typography sx={{ fontSize: '0.7rem', color: '#93C5FD' }}>
+                        <Typography sx={{ fontSize: '0.7rem', color: '#C084FC' }}>
                           {parseLocalDate(day.date).toLocaleDateString('en-US', {
                             weekday: 'short',
                             month: 'short',
@@ -231,7 +231,7 @@ export default function SubmissionActivityHeatmap({
                         sx: {
                           '& .MuiTooltip-tooltip': {
                             bgcolor: '#0B1120',
-                            border: '1px solid rgba(59, 130, 246, 0.35)',
+                            border: '1px solid rgba(91, 45, 144, 0.35)',
                             boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)',
                           },
                         },

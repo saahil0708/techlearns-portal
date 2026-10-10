@@ -68,7 +68,7 @@ export interface AuthState {
 const getInitialUser = (): UserProfile | null => {
   if (typeof window !== 'undefined') {
     try {
-      const item = localStorage.getItem('codeplatform_user');
+      const item = localStorage.getItem('techlearns_user');
       if (item) return JSON.parse(item);
     } catch {}
   }
@@ -209,7 +209,7 @@ export const checkCurrentUser = createAsyncThunk(
       const user = responseData.data || responseData;
       if (typeof window !== 'undefined' && user) {
         try {
-          localStorage.setItem('codeplatform_user', JSON.stringify(user));
+          localStorage.setItem('techlearns_user', JSON.stringify(user));
         } catch {
           // Ignore quota/storage errors
         }
@@ -247,9 +247,9 @@ export const authSlice = createSlice({
       if (typeof window !== 'undefined') {
         try {
           if (action.payload) {
-            localStorage.setItem('codeplatform_user', JSON.stringify(action.payload));
+            localStorage.setItem('techlearns_user', JSON.stringify(action.payload));
           } else {
-            localStorage.removeItem('codeplatform_user');
+            localStorage.removeItem('techlearns_user');
           }
         } catch {}
       }
@@ -292,7 +292,7 @@ export const authSlice = createSlice({
           }
           if (typeof window !== 'undefined' && state.user) {
             try {
-              localStorage.setItem('codeplatform_user', JSON.stringify(state.user));
+              localStorage.setItem('techlearns_user', JSON.stringify(state.user));
             } catch {}
           }
         }
@@ -319,7 +319,7 @@ export const authSlice = createSlice({
         }
         if (typeof window !== 'undefined' && state.user) {
           try {
-            localStorage.setItem('codeplatform_user', JSON.stringify(state.user));
+            localStorage.setItem('techlearns_user', JSON.stringify(state.user));
           } catch {}
         }
       })
@@ -348,7 +348,7 @@ export const authSlice = createSlice({
         }
         if (typeof window !== 'undefined' && state.user) {
           try {
-            localStorage.setItem('codeplatform_user', JSON.stringify(state.user));
+            localStorage.setItem('techlearns_user', JSON.stringify(state.user));
           } catch {}
         }
       })
@@ -377,7 +377,7 @@ export const authSlice = createSlice({
         }
         if (typeof window !== 'undefined' && state.user) {
           try {
-            localStorage.setItem('codeplatform_user', JSON.stringify(state.user));
+            localStorage.setItem('techlearns_user', JSON.stringify(state.user));
           } catch {}
         }
       })
@@ -398,7 +398,7 @@ export const authSlice = createSlice({
         state.isAuthenticated = true;
         if (typeof window !== 'undefined' && action.payload) {
           try {
-            localStorage.setItem('codeplatform_user', JSON.stringify(action.payload));
+            localStorage.setItem('techlearns_user', JSON.stringify(action.payload));
           } catch {}
         }
       })
@@ -407,7 +407,7 @@ export const authSlice = createSlice({
         // Keep stored user if exists in localStorage
         if (typeof window !== 'undefined') {
           try {
-            const stored = localStorage.getItem('codeplatform_user');
+            const stored = localStorage.getItem('techlearns_user');
             if (stored) {
               state.user = JSON.parse(stored);
               state.isAuthenticated = true;
@@ -427,7 +427,7 @@ export const authSlice = createSlice({
       setClientAuthCookie();
       if (typeof window !== 'undefined') {
         try {
-          localStorage.removeItem('codeplatform_user');
+          localStorage.removeItem('techlearns_user');
         } catch {}
       }
     });

@@ -110,7 +110,7 @@ function TrendChartTooltip({ active, payload, label }: CustomTooltipProps) {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography sx={{ fontSize: '0.74rem', color: '#64748B' }}>Problems Solved:</Typography>
-            <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#2563EB' }}>
+            <Typography sx={{ fontSize: '0.78rem', fontWeight: 700, color: '#0B1F3A' }}>
               {data?.problemsSolved?.toLocaleString()}
             </Typography>
           </Box>
@@ -301,7 +301,7 @@ export default function AnalyticsChartsSection() {
             });
           });
 
-          const colors = ['#10B981', '#3B82F6', '#6366F1', '#F59E0B', '#F97316', '#EF4444'];
+          const colors = ['#10B981', '#5B2D90', '#5B2D90', '#F59E0B', '#F97316', '#EF4444'];
           const computedTopics: DSATopicItem[] = [];
           let colorIdx = 0;
           tagMap.forEach((val, tag) => {
@@ -452,12 +452,12 @@ export default function AnalyticsChartsSection() {
                 width: 40,
                 height: 40,
                 borderRadius: '10px',
-                bgcolor: '#EFF6FF',
-                border: '1px solid #DBEAFE',
+                bgcolor: '#FAF5FF',
+                border: '1px solid #FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB',
+                color: '#0B1F3A',
               }}
             >
               <TrendingUpRoundedIcon sx={{ fontSize: 22 }} />
@@ -481,7 +481,7 @@ export default function AnalyticsChartsSection() {
                 sx={{
                   borderRadius: '6px',
                   bgcolor: chartType === 'area' ? '#FFFFFF' : 'transparent',
-                  color: chartType === 'area' ? '#2563EB' : '#64748B',
+                  color: chartType === 'area' ? '#0B1F3A' : '#64748B',
                   boxShadow: chartType === 'area' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                   p: '5px',
                 }}
@@ -494,7 +494,7 @@ export default function AnalyticsChartsSection() {
                 sx={{
                   borderRadius: '6px',
                   bgcolor: chartType === 'bar' ? '#FFFFFF' : 'transparent',
-                  color: chartType === 'bar' ? '#2563EB' : '#64748B',
+                  color: chartType === 'bar' ? '#0B1F3A' : '#64748B',
                   boxShadow: chartType === 'bar' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                   p: '5px',
                 }}
@@ -519,7 +519,7 @@ export default function AnalyticsChartsSection() {
                       fontWeight: 700,
                       textTransform: 'none',
                       borderRadius: '6px',
-                      color: isActive ? '#2563EB' : '#64748B',
+                      color: isActive ? '#0B1F3A' : '#64748B',
                       bgcolor: isActive ? '#FFFFFF' : 'transparent',
                       boxShadow: isActive ? '0 1px 4px rgba(0,0,0,0.06)' : 'none',
                       '&:hover': { bgcolor: isActive ? '#FFFFFF' : '#E2E8F0' },
@@ -540,8 +540,8 @@ export default function AnalyticsChartsSection() {
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="solvesGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#2563EB" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor='#0B1F3A' stopOpacity={0.25} />
+                    <stop offset="95%" stopColor='#0B1F3A' stopOpacity={0.0} />
                   </linearGradient>
                   <linearGradient id="codersGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
@@ -552,7 +552,7 @@ export default function AnalyticsChartsSection() {
                 <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} />
                 <RechartsTooltip content={<TrendChartTooltip />} />
-                <Area type="monotone" dataKey="problemsSolved" name="Problems Solved" stroke="#2563EB" strokeWidth={2.5} fillOpacity={1} fill="url(#solvesGrad)" />
+                <Area type="monotone" dataKey="problemsSolved" name="Problems Solved" stroke='#0B1F3A' strokeWidth={2.5} fillOpacity={1} fill="url(#solvesGrad)" />
                 <Area type="monotone" dataKey="activeCoders" name="Active Coders" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#codersGrad)" />
               </AreaChart>
             ) : (
@@ -561,7 +561,7 @@ export default function AnalyticsChartsSection() {
                 <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => (v >= 1000 ? `${v / 1000}k` : v)} />
                 <RechartsTooltip content={<TrendChartTooltip />} />
-                <Bar dataKey="problemsSolved" fill="#2563EB" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                <Bar dataKey="problemsSolved" fill='#0B1F3A' radius={[4, 4, 0, 0]} maxBarSize={32} />
                 <Bar dataKey="activeCoders" fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={32} />
               </BarChart>
             )}
@@ -571,7 +571,7 @@ export default function AnalyticsChartsSection() {
         {/* Legend */}
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 3, pt: 1, borderTop: '1px solid #F1F5F9' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Box sx={{ width: 10, height: 10, borderRadius: '3px', bgcolor: '#2563EB' }} />
+            <Box sx={{ width: 10, height: 10, borderRadius: '3px', bgcolor: '#0B1F3A' }} />
             <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600 }}>Total Problems Solved</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -602,8 +602,8 @@ export default function AnalyticsChartsSection() {
                 width: 36,
                 height: 36,
                 borderRadius: '10px',
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -642,9 +642,9 @@ export default function AnalyticsChartsSection() {
                 height: 22,
                 fontSize: '0.68rem',
                 fontWeight: 700,
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
-                border: '1px solid #BFDBFE',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
+                border: '1px solid #F3E8FF',
                 borderRadius: '6px',
               }}
             />
@@ -965,8 +965,8 @@ export default function AnalyticsChartsSection() {
                 width: 36,
                 height: 36,
                 borderRadius: '10px',
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -990,9 +990,9 @@ export default function AnalyticsChartsSection() {
               height: 22,
               fontSize: '0.68rem',
               fontWeight: 700,
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
-              border: '1px solid #BFDBFE',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
+              border: '1px solid #F3E8FF',
               borderRadius: '6px',
             }}
           />
@@ -1010,7 +1010,7 @@ export default function AnalyticsChartsSection() {
                   'Placement Readiness Rate',
                 ]}
               />
-              <Bar dataKey="placementReady" fill="#2563EB" radius={[6, 6, 0, 0]} maxBarSize={44} />
+              <Bar dataKey="placementReady" fill='#0B1F3A' radius={[6, 6, 0, 0]} maxBarSize={44} />
             </BarChart>
           </ResponsiveContainer>
         </Box>

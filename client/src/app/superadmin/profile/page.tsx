@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import ProfileClient from '@/components/superadmin/profile/ProfileClient';
 
 export const metadata: Metadata = {
-  title: 'Admin Profile | CodePlatform',
+  title: 'Admin Profile | TechLearns',
   description: 'Super administrator identity, security credentials and account settings.',
 };
 

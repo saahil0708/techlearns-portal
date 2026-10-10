@@ -56,12 +56,12 @@ export default function TopicMasteryRadialGrid({
               width: 34,
               height: 34,
               borderRadius: '10px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #DBEAFE',
+              border: '1px solid #FAF5FF',
             }}
           >
             <FaGraduationCap size={16} />
@@ -172,7 +172,7 @@ export default function TopicMasteryRadialGrid({
                       cx={size / 2}
                       cy={size / 2}
                       r={radius}
-                      stroke={skill.color || '#2563EB'}
+                      stroke={skill.color || '#0B1F3A'}
                       strokeWidth={strokeWidth}
                       strokeDasharray={circumference}
                       strokeDashoffset={strokeDashoffset}
@@ -180,7 +180,7 @@ export default function TopicMasteryRadialGrid({
                       fill="transparent"
                       style={{
                         transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-                        filter: 'drop-shadow(0 2px 4px rgba(37, 99, 235, 0.25))',
+                        filter: 'drop-shadow(0 2px 4px rgba(91, 45, 144, 0.25))',
                       }}
                     />
                   </svg>

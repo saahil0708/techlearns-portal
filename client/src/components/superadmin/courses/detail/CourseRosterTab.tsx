@@ -208,7 +208,7 @@ export default function CourseRosterTab({
                 <TableRow key={s.id} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <Avatar sx={{ width: 32, height: 32, fontSize: '0.8rem', bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 700 }}>
+                      <Avatar sx={{ width: 32, height: 32, fontSize: '0.8rem', bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 700 }}>
                         {s.name[0]}
                       </Avatar>
                       <Box>
@@ -238,7 +238,7 @@ export default function CourseRosterTab({
                           borderRadius: 3,
                           bgcolor: '#E2E8F0',
                           '& .MuiLinearProgress-bar': {
-                            bgcolor: s.progressPct === 100 ? '#10B981' : '#2563EB',
+                            bgcolor: s.progressPct === 100 ? '#10B981' : '#0B1F3A',
                             borderRadius: 3,
                           },
                         }}
@@ -259,9 +259,9 @@ export default function CourseRosterTab({
                       label={s.status}
                       size="small"
                       sx={{
-                        bgcolor: s.status === 'Completed' ? '#ECFDF5' : s.status === 'In Progress' ? '#EFF6FF' : '#F1F5F9',
-                        color: s.status === 'Completed' ? '#059669' : s.status === 'In Progress' ? '#2563EB' : '#64748B',
-                        border: `1px solid ${s.status === 'Completed' ? '#A7F3D0' : s.status === 'In Progress' ? '#DBEAFE' : '#E2E8F0'}`,
+                        bgcolor: s.status === 'Completed' ? '#ECFDF5' : s.status === 'In Progress' ? '#FAF5FF' : '#F1F5F9',
+                        color: s.status === 'Completed' ? '#059669' : s.status === 'In Progress' ? '#0B1F3A' : '#64748B',
+                        border: `1px solid ${s.status === 'Completed' ? '#A7F3D0' : s.status === 'In Progress' ? '#E9D5FF' : '#E2E8F0'}`,
                         fontWeight: 700,
                         fontSize: '0.72rem',
                         borderRadius: '6px',

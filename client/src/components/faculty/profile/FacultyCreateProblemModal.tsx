@@ -303,12 +303,12 @@ export default function FacultyCreateProblemModal({
               width: 40,
               height: 40,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           >
             <CodeRoundedIcon sx={{ fontSize: 22 }} />
@@ -495,7 +495,7 @@ export default function FacultyCreateProblemModal({
                       <Chip
                         size="small"
                         label={hiddenCases.filter((tc) => tc.input.trim() || tc.expectedOutput.trim()).length}
-                        sx={{ height: 18, fontSize: '0.7rem', fontWeight: 800, bgcolor: '#EFF6FF', color: '#2563EB' }}
+                        sx={{ height: 18, fontSize: '0.7rem', fontWeight: 800, bgcolor: '#FAF5FF', color: '#0B1F3A' }}
                       />
                     </Box>
                   }
@@ -529,11 +529,11 @@ export default function FacultyCreateProblemModal({
                     textTransform: 'none',
                     fontWeight: 700,
                     fontSize: '0.8rem',
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
                     borderRadius: '8px',
                     px: 1.5,
-                    '&:hover': { bgcolor: '#DBEAFE' },
+                    '&:hover': { bgcolor: '#E9D5FF' },
                   }}
                 >
                   Add Hidden Case
@@ -733,7 +733,7 @@ export default function FacultyCreateProblemModal({
             variant="contained"
             disabled={creating || !title.trim() || !statement.trim()}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               textTransform: 'none',
               fontWeight: 700,
               fontSize: '0.85rem',
@@ -741,7 +741,7 @@ export default function FacultyCreateProblemModal({
               px: 3,
               py: 0.9,
               boxShadow: 'none',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             {creating ? 'Publishing Challenge...' : 'Publish Lab Challenge'}

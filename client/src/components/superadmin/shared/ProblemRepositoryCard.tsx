@@ -66,7 +66,7 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 }
 
 export default function ProblemRepositoryCard({
-  primaryBlue = '#2563eb',
+  primaryBlue = '#0B1F3A',
   onManageClick,
 }: ProblemRepositoryCardProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -127,8 +127,8 @@ export default function ProblemRepositoryCard({
       name: 'Medium',
       value: mediumCount,
       pct: totalCount > 0 ? Math.round((mediumCount / total) * 100) : 0,
-      color: '#0284C7',
-      glowColor: 'rgba(2, 132, 199, 0.4)',
+      color: '#5B2D90',
+      glowColor: 'rgba(91, 45, 144, 0.4)',
     },
     {
       name: 'Hard',
@@ -154,7 +154,7 @@ export default function ProblemRepositoryCard({
       <body>
         <h3>Difficulty Breakdown</h3>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Difficulty Tier</th>
             <th>Problem Count</th>
             <th>Percentage</th>
@@ -171,7 +171,7 @@ export default function ProblemRepositoryCard({
         <br/>
         <h3>Topic Tags & Categories</h3>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Topic / Domain</th>
             <th>Total Problems</th>
           </tr>
@@ -243,12 +243,12 @@ export default function ProblemRepositoryCard({
               width: 38,
               height: 38,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
-              border: '1px solid #DBEAFE',
+              bgcolor: '#FAF5FF',
+              border: '1px solid #FAF5FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#2563EB',
+              color: '#0B1F3A',
               flexShrink: 0,
             }}
           >
@@ -278,9 +278,9 @@ export default function ProblemRepositoryCard({
                 p: 0.7,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
-                  borderColor: '#BFDBFE',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
+                  borderColor: '#D8B4FE',
                   transform: 'scale(1.08)',
                 },
               }}
@@ -331,11 +331,11 @@ export default function ProblemRepositoryCard({
                 py: 0.9,
                 px: 1.5,
                 transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: '#EFF6FF' },
+                '&:hover': { bgcolor: '#FAF5FF' },
               }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               </ListItemIcon>
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                 Download CSV (.csv)
@@ -351,14 +351,14 @@ export default function ProblemRepositoryCard({
               textTransform: 'none',
               fontWeight: 700,
               fontSize: '0.78rem',
-              color: '#2563EB',
+              color: '#0B1F3A',
               borderRadius: '9999px',
               px: 1.4,
               py: 0.35,
-              bgcolor: '#EFF6FF',
-              border: '1px solid #DBEAFE',
+              bgcolor: '#FAF5FF',
+              border: '1px solid #FAF5FF',
               '&:hover': {
-                bgcolor: '#DBEAFE',
+                bgcolor: '#E9D5FF',
               },
             }}
           >
@@ -510,9 +510,9 @@ export default function ProblemRepositoryCard({
                   borderRadius: '8px',
                   height: 26,
                   '&:hover': {
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
-                    borderColor: '#BFDBFE',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
+                    borderColor: '#D8B4FE',
                   },
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',

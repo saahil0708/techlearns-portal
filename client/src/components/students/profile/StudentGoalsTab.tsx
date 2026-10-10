@@ -55,7 +55,7 @@ export default function StudentGoalsTab({
       // 2. Local storage fallback
       if (typeof window !== 'undefined') {
         try {
-          const storageKey = profile?.id ? `codeplatform_diagnostic_goal_${profile.id}` : 'codeplatform_diagnostic_goal';
+          const storageKey = profile?.id ? `techlearns_diagnostic_goal_${profile.id}` : 'techlearns_diagnostic_goal';
           const stored = localStorage.getItem(storageKey);
           if (stored && isMounted) {
             const parsed = JSON.parse(stored);
@@ -107,7 +107,7 @@ export default function StudentGoalsTab({
     setGoalData(updated);
     if (typeof window !== 'undefined') {
       try {
-        const storageKey = profile?.id ? `codeplatform_diagnostic_goal_${profile.id}` : 'codeplatform_diagnostic_goal';
+        const storageKey = profile?.id ? `techlearns_diagnostic_goal_${profile.id}` : 'techlearns_diagnostic_goal';
         localStorage.setItem(storageKey, JSON.stringify(updated));
       } catch {}
     }
@@ -144,7 +144,7 @@ export default function StudentGoalsTab({
     setFormData((prev) => ({ ...prev, ...updated }));
     if (typeof window !== 'undefined') {
       try {
-        const storageKey = profile?.id ? `codeplatform_diagnostic_goal_${profile.id}` : 'codeplatform_diagnostic_goal';
+        const storageKey = profile?.id ? `techlearns_diagnostic_goal_${profile.id}` : 'techlearns_diagnostic_goal';
         localStorage.setItem(storageKey, JSON.stringify(updated));
       } catch {}
     }

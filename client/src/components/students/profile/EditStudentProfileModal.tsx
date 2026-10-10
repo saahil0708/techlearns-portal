@@ -370,12 +370,12 @@ export default function EditStudentProfileModal({
               width: 44,
               height: 44,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           >
             <PersonRoundedIcon sx={{ fontSize: 24 }} />
@@ -440,10 +440,10 @@ export default function EditStudentProfileModal({
             sx={{
               width: 76,
               height: 76,
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               fontSize: '1.5rem',
               fontWeight: 900,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
               border: '3px solid #FFFFFF',
             }}
           >
@@ -526,7 +526,7 @@ export default function EditStudentProfileModal({
                       width: 26,
                       height: 26,
                       cursor: 'pointer',
-                      border: avatarUrl === preset ? '2px solid #2563EB' : '1px solid #E2E8F0',
+                      border: avatarUrl === preset ? '2px solid #0B1F3A' : '1px solid #E2E8F0',
                       transition: 'transform 0.15s ease',
                       '&:hover': { transform: 'scale(1.15)' },
                     }}
@@ -540,7 +540,7 @@ export default function EditStudentProfileModal({
         {/* Section 1: Basic Identity & Contact Information */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#0B1F3A', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               01 • Personal & Contact Information
             </Typography>
             <Divider sx={{ flex: 1, borderColor: '#F1F5F9' }} />
@@ -590,7 +590,7 @@ export default function EditStudentProfileModal({
                   <MenuItem key={c.code} value={c.code} sx={{ display: 'flex', alignItems: 'center', gap: 1.2, py: 1 }}>
                     <span style={{ fontSize: '1.15rem' }}>{c.flag}</span>
                     <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: '#0F172A', flex: 1 }}>{c.name}</Typography>
-                    <Chip label={c.dialCode} size="small" sx={{ height: 20, fontSize: '0.68rem', fontWeight: 750, bgcolor: '#EFF6FF', color: '#2563EB' }} />
+                    <Chip label={c.dialCode} size="small" sx={{ height: 20, fontSize: '0.68rem', fontWeight: 750, bgcolor: '#FAF5FF', color: '#0B1F3A' }} />
                   </MenuItem>
                 ))}
               </Select>
@@ -687,7 +687,7 @@ export default function EditStudentProfileModal({
         {/* Section 2: Academic & Institutional Affiliation */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#0B1F3A', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               02 • Academic & University Affiliation
             </Typography>
             <Divider sx={{ flex: 1, borderColor: '#F1F5F9' }} />
@@ -756,7 +756,7 @@ export default function EditStudentProfileModal({
         {/* Section 3: Technical Skills & Core Languages */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#0B1F3A', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               03 • Preferred Tech Stack & Languages
             </Typography>
             <Divider sx={{ flex: 1, borderColor: '#F1F5F9' }} />
@@ -764,7 +764,7 @@ export default function EditStudentProfileModal({
 
           <Box sx={{ p: 2, borderRadius: '12px', bgcolor: '#F8FAFC', border: '1px solid #E2E8F0' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.2 }}>
-              <CodeRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+              <CodeRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               <Typography sx={{ fontSize: '0.78rem', fontWeight: 750, color: '#334155' }}>
                 Select Your Primary Coding Languages & Technologies
               </Typography>
@@ -784,12 +784,12 @@ export default function EditStudentProfileModal({
                       cursor: 'pointer',
                       borderRadius: '8px',
                       transition: 'all 0.15s ease',
-                      bgcolor: isSelected ? '#2563EB' : '#FFFFFF',
+                      bgcolor: isSelected ? '#0B1F3A' : '#FFFFFF',
                       color: isSelected ? '#FFFFFF' : '#475569',
-                      border: isSelected ? '1px solid #1D4ED8' : '1px solid #CBD5E1',
-                      boxShadow: isSelected ? '0 2px 8px rgba(37, 99, 235, 0.25)' : 'none',
+                      border: isSelected ? '1px solid #17366E' : '1px solid #CBD5E1',
+                      boxShadow: isSelected ? '0 2px 8px rgba(91, 45, 144, 0.25)' : 'none',
                       '&:hover': {
-                        bgcolor: isSelected ? '#1D4ED8' : '#F1F5F9',
+                        bgcolor: isSelected ? '#17366E' : '#F1F5F9',
                       },
                     }}
                   />
@@ -802,7 +802,7 @@ export default function EditStudentProfileModal({
         {/* Section 4: Professional Bio & Resume Document */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#0B1F3A', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               04 • Professional Bio & Resume Link
             </Typography>
             <Divider sx={{ flex: 1, borderColor: '#F1F5F9' }} />
@@ -855,7 +855,7 @@ export default function EditStudentProfileModal({
         {/* Section 5: Developer & Competitive Profiles */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#2563EB', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#0B1F3A', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               05 • Developer & Competitive Profiles
             </Typography>
             <Divider sx={{ flex: 1, borderColor: '#F1F5F9' }} />
@@ -930,7 +930,7 @@ export default function EditStudentProfileModal({
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <EmojiEventsRoundedIcon sx={{ fontSize: 18, color: '#3B82F6' }} />
+                      <EmojiEventsRoundedIcon sx={{ fontSize: 18, color: '#5B2D90' }} />
                     </InputAdornment>
                   ),
                 },
@@ -992,15 +992,15 @@ export default function EditStudentProfileModal({
           disabled={saving || uploadingAvatar || !name.trim()}
           startIcon={<CheckCircleRoundedIcon sx={{ fontSize: 18 }} />}
           sx={{
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             fontWeight: 800,
             fontSize: '0.84rem',
             textTransform: 'none',
             px: 3.2,
             py: 1,
             borderRadius: '10px',
-            boxShadow: '0 4px 14px rgba(37, 99, 235, 0.28)',
-            '&:hover': { bgcolor: '#1D4ED8' },
+            boxShadow: '0 4px 14px rgba(91, 45, 144, 0.28)',
+            '&:hover': { bgcolor: '#17366E' },
           }}
         >
           {saving ? 'Saving Details...' : uploadingAvatar ? 'Uploading Photo...' : 'Save Profile Details'}

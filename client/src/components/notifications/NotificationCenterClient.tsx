@@ -75,9 +75,9 @@ const CATEGORY_MAP: Record<
   },
   courses: {
     label: 'Course / Module',
-    color: '#0284C7',
-    bg: '#F0F9FF',
-    border: '#BAE6FD',
+    color: '#5B2D90',
+    bg: '#FAF5FF',
+    border: '#E9D5FF',
     icon: <MenuBookRoundedIcon sx={{ fontSize: 14 }} />,
   },
   cel: {
@@ -89,9 +89,9 @@ const CATEGORY_MAP: Record<
   },
   system: {
     label: 'System Alert',
-    color: '#2563EB',
-    bg: '#EFF6FF',
-    border: '#BFDBFE',
+    color: '#0B1F3A',
+    bg: '#FAF5FF',
+    border: '#D8B4FE',
     icon: <InfoRoundedIcon sx={{ fontSize: 14 }} />,
   },
 };
@@ -343,7 +343,7 @@ export default function NotificationCenterClient() {
               width: 200,
               height: 200,
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, transparent 70%)',
+              background: 'radial-gradient(circle, rgba(91, 45, 144, 0.2) 0%, transparent 70%)',
               pointerEvents: 'none',
             },
           }}
@@ -357,8 +357,8 @@ export default function NotificationCenterClient() {
                 width: 56,
                 height: 56,
                 borderRadius: '18px',
-                background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
-                boxShadow: '0 8px 24px rgba(37, 99, 235, 0.45)',
+                background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
+                boxShadow: '0 8px 24px rgba(91, 45, 144, 0.45)',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
                 flexShrink: 0,
               }}
@@ -483,7 +483,7 @@ export default function NotificationCenterClient() {
                 startIcon={<CampaignRoundedIcon sx={{ fontSize: 18 }} />}
                 onClick={() => setSendModalOpen(true)}
                 sx={{
-                  background: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                  background: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   color: '#FFFFFF',
                   textTransform: 'none',
                   fontWeight: 800,
@@ -491,12 +491,12 @@ export default function NotificationCenterClient() {
                   borderRadius: '12px',
                   px: 2.25,
                   py: 0.85,
-                  boxShadow: '0 6px 20px rgba(37, 99, 235, 0.45)',
+                  boxShadow: '0 6px 20px rgba(91, 45, 144, 0.45)',
                   border: '1px solid rgba(255, 255, 255, 0.15)',
                   transition: 'all 0.2s ease',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
-                    boxShadow: '0 8px 25px rgba(37, 99, 235, 0.55)',
+                    background: 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)',
+                    boxShadow: '0 8px 25px rgba(91, 45, 144, 0.55)',
                     transform: 'translateY(-1px)',
                   },
                 }}
@@ -518,9 +518,9 @@ export default function NotificationCenterClient() {
               p: 2,
               px: 2.5,
               borderRadius: '16px',
-              background: 'linear-gradient(135deg, #EFF6FF 0%, #F0F9FF 100%)',
-              border: '1px solid #BFDBFE',
-              boxShadow: '0 4px 16px rgba(37, 99, 235, 0.05)',
+              background: 'linear-gradient(135deg, #FAF5FF 0%, #FAF5FF 100%)',
+              border: '1px solid #F3E8FF',
+              boxShadow: '0 4px 16px rgba(91, 45, 144, 0.05)',
               flexWrap: 'wrap',
             }}
           >
@@ -530,22 +530,22 @@ export default function NotificationCenterClient() {
                   width: 36,
                   height: 36,
                   borderRadius: '10px',
-                  bgcolor: '#DBEAFE',
-                  color: '#2563EB',
+                  bgcolor: '#E9D5FF',
+                  color: '#0B1F3A',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 2px 6px rgba(37, 99, 235, 0.15)',
+                  boxShadow: '0 2px 6px rgba(11, 31, 58, 0.15)',
                 }}
               >
                 <NotificationsActiveRoundedIcon sx={{ fontSize: 20 }} />
               </Box>
               <Box>
-                <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#1E40AF' }}>
+                <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F264F' }}>
                   Stay updated with instant contest alerts and code verdicts
                 </Typography>
-                <Typography sx={{ fontSize: '0.76rem', color: '#3B82F6', fontWeight: 500 }}>
-                  Enable desktop push alerts to receive live notifications even when CodePlatform is in the background.
+                <Typography sx={{ fontSize: '0.76rem', color: '#5B2D90', fontWeight: 500 }}>
+                  Enable desktop push alerts to receive live notifications even when TechLearns is in the background.
                 </Typography>
               </Box>
             </Box>
@@ -569,15 +569,15 @@ export default function NotificationCenterClient() {
                 variant="contained"
                 onClick={requestPushPermission}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   textTransform: 'none',
                   fontWeight: 800,
                   fontSize: '0.8rem',
                   borderRadius: '10px',
                   px: 2.25,
                   py: 0.8,
-                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 12px rgba(91, 45, 144, 0.3)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Enable Push Alerts
@@ -601,10 +601,10 @@ export default function NotificationCenterClient() {
               color: '#0F172A',
               bg: '#FFFFFF',
               border: '#E2E8F0',
-              borderTop: '#3B82F6',
+              borderTop: '#5B2D90',
               labelColor: '#64748B',
-              bgIcon: '#EFF6FF',
-              iconColor: '#2563EB',
+              bgIcon: '#FAF5FF',
+              iconColor: '#0B1F3A',
               icon: <NotificationsActiveRoundedIcon sx={{ fontSize: 20 }} />,
             },
             {
@@ -768,9 +768,9 @@ export default function NotificationCenterClient() {
                     bgcolor: '#FFFFFF',
                   },
                   '&.Mui-focused': {
-                    borderColor: '#2563EB',
+                    borderColor: '#0B1F3A',
                     bgcolor: '#FFFFFF',
-                    boxShadow: '0 0 0 3px rgba(37, 99, 235, 0.12)',
+                    boxShadow: '0 0 0 3px rgba(91, 45, 144, 0.12)',
                   },
                 },
               }}
@@ -790,16 +790,16 @@ export default function NotificationCenterClient() {
                   fontWeight: 700,
                   fontSize: '0.8rem',
                   borderRadius: '10px',
-                  bgcolor: unreadOnly ? '#2563EB' : '#FFFFFF',
+                  bgcolor: unreadOnly ? '#0B1F3A' : '#FFFFFF',
                   color: unreadOnly ? '#FFFFFF' : '#475569',
-                  borderColor: unreadOnly ? '#2563EB' : '#CBD5E1',
+                  borderColor: unreadOnly ? '#0B1F3A' : '#CBD5E1',
                   px: 1.75,
                   py: 0.75,
-                  boxShadow: unreadOnly ? '0 4px 12px rgba(37, 99, 235, 0.25)' : 'none',
+                  boxShadow: unreadOnly ? '0 4px 12px rgba(91, 45, 144, 0.25)' : 'none',
                   transition: 'all 0.2s ease',
                   '&:hover': {
-                    bgcolor: unreadOnly ? '#1D4ED8' : '#F1F5F9',
-                    borderColor: unreadOnly ? '#1D4ED8' : '#94A3B8',
+                    bgcolor: unreadOnly ? '#17366E' : '#F1F5F9',
+                    borderColor: unreadOnly ? '#17366E' : '#94A3B8',
                   },
                 }}
               >
@@ -930,17 +930,17 @@ export default function NotificationCenterClient() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              bgcolor: '#EFF6FF',
-              border: '1px solid #BFDBFE',
+              bgcolor: '#FAF5FF',
+              border: '1px solid #F3E8FF',
               borderRadius: '14px',
               p: 1.5,
               px: 2.5,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.08)',
+              boxShadow: '0 4px 14px rgba(91, 45, 144, 0.08)',
               animation: 'fadeIn 0.2s ease',
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#1E40AF' }}>
+              <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: '#0F264F' }}>
                 {selectedIds.length} notification(s) selected
               </Typography>
             </Box>
@@ -950,13 +950,13 @@ export default function NotificationCenterClient() {
                 variant="contained"
                 onClick={handleBulkMarkRead}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   fontWeight: 700,
                   fontSize: '0.78rem',
                   textTransform: 'none',
                   borderRadius: '8px',
                   boxShadow: 'none',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Mark Selected Read
@@ -1045,9 +1045,9 @@ export default function NotificationCenterClient() {
                         sx={{
                           bgcolor: notif.unread ? 'rgba(239, 246, 255, 0.4)' : '#FFFFFF',
                           transition: 'background-color 0.15s ease',
-                          borderLeft: notif.unread ? '3px solid #2563EB' : '3px solid transparent',
+                          borderLeft: notif.unread ? '3px solid #0B1F3A' : '3px solid transparent',
                           '&:hover': {
-                            bgcolor: notif.unread ? '#EFF6FF' : '#F8FAFC',
+                            bgcolor: notif.unread ? '#FAF5FF' : '#F8FAFC',
                           },
                         }}
                       >
@@ -1070,9 +1070,9 @@ export default function NotificationCenterClient() {
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: 0.6,
-                                    bgcolor: '#DBEAFE',
-                                    color: '#1D4ED8',
-                                    border: '1px solid #93C5FD',
+                                    bgcolor: '#E9D5FF',
+                                    color: '#17366E',
+                                    border: '1px solid #E9D5FF',
                                     borderRadius: '6px',
                                     px: 0.9,
                                     py: 0.25,
@@ -1083,7 +1083,7 @@ export default function NotificationCenterClient() {
                                       width: 6,
                                       height: 6,
                                       borderRadius: '50%',
-                                      bgcolor: '#2563EB',
+                                      bgcolor: '#0B1F3A',
                                     }}
                                   />
                                   <Typography sx={{ fontSize: '0.68rem', fontWeight: 800 }}>
@@ -1192,13 +1192,13 @@ export default function NotificationCenterClient() {
                                     router.push(notif.actionUrl!);
                                   }}
                                   sx={{
-                                    bgcolor: '#EFF6FF',
-                                    color: '#2563EB',
-                                    border: '1px solid #DBEAFE',
+                                    bgcolor: '#FAF5FF',
+                                    color: '#0B1F3A',
+                                    border: '1px solid #FAF5FF',
                                     borderRadius: '8px',
                                     p: 0.75,
                                     transition: 'all 0.15s ease',
-                                    '&:hover': { bgcolor: '#DBEAFE', transform: 'scale(1.05)' },
+                                    '&:hover': { bgcolor: '#E9D5FF', transform: 'scale(1.05)' },
                                   }}
                                 >
                                   <OpenInNewRoundedIcon sx={{ fontSize: 16 }} />

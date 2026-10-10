@@ -29,7 +29,7 @@ import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
-import { FluidArrowRight } from '@/utils/fluid_arrow';
+import { FluidArrowRight, FluidArrowUpward, FluidArrowDownward } from '@/utils/fluid_arrow';
 import { ProblemEntity } from '@/types/problem';
 
 export type SortField = 'code' | 'title' | 'difficulty' | 'acceptanceRate' | 'totalSubmissions' | 'points';
@@ -109,7 +109,7 @@ export default function ProblemsDataTable({
                   onChange={(e) => onSelectAll(e.target.checked)}
                   sx={{
                     color: '#CBD5E1',
-                    '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#2563EB' },
+                    '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#0B1F3A' },
                   }}
                 />
               </TableCell>
@@ -136,9 +136,9 @@ export default function ProblemsDataTable({
                   PROBLEM TITLE
                   {sortField === 'title' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -160,9 +160,9 @@ export default function ProblemsDataTable({
                   DIFFICULTY
                   {sortField === 'difficulty' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -184,9 +184,9 @@ export default function ProblemsDataTable({
                   ACCEPTANCE
                   {sortField === 'acceptanceRate' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -207,9 +207,9 @@ export default function ProblemsDataTable({
                   SUBMISSIONS
                   {sortField === 'totalSubmissions' &&
                     (sortDirection === 'asc' ? (
-                      <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ) : (
-                      <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                      <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                     ))}
                 </Box>
               </TableCell>
@@ -231,7 +231,7 @@ export default function ProblemsDataTable({
               <TableRow>
                 <TableCell colSpan={7} sx={{ py: 8, textAlign: 'center' }}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
-                    <Box sx={{ p: 2, borderRadius: '50%', bgcolor: '#EFF6FF', color: '#2563EB' }}>
+                    <Box sx={{ p: 2, borderRadius: '50%', bgcolor: '#FAF5FF', color: '#0B1F3A' }}>
                       <SearchIcon sx={{ fontSize: 32 }} />
                     </Box>
                     <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '1rem' }}>
@@ -255,8 +255,8 @@ export default function ProblemsDataTable({
                     selected={isSelected}
                     sx={{
                       '& td': { borderBottom: '1px solid #F1F5F9' },
-                      bgcolor: isSelected ? '#EFF6FF !important' : 'inherit',
-                      '&:hover': { bgcolor: isSelected ? '#DBEAFE !important' : '#F8FAFC !important' },
+                      bgcolor: isSelected ? '#FAF5FF !important' : 'inherit',
+                      '&:hover': { bgcolor: isSelected ? '#FAF5FF !important' : '#F8FAFC !important' },
                     }}
                   >
                     {/* Checkbox */}
@@ -266,7 +266,7 @@ export default function ProblemsDataTable({
                         onChange={() => onToggleSelectRow(prob.id)}
                         sx={{
                           color: '#CBD5E1',
-                          '&.Mui-checked': { color: '#2563EB' },
+                          '&.Mui-checked': { color: '#0B1F3A' },
                         }}
                       />
                     </TableCell>
@@ -317,7 +317,7 @@ export default function ProblemsDataTable({
                                 fontWeight: 700,
                                 color: '#0F172A',
                                 textDecoration: 'none',
-                                '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                                '&:hover': { color: '#0B1F3A', textDecoration: 'underline' },
                               }}
                             >
                               {prob.code}. {prob.title}
@@ -391,7 +391,7 @@ export default function ProblemsDataTable({
                             borderRadius: 3,
                             bgcolor: '#E2E8F0',
                             '& .MuiLinearProgress-bar': {
-                              bgcolor: prob.acceptanceRate > 60 ? '#16A34A' : prob.acceptanceRate > 40 ? '#2563EB' : '#D97706',
+                              bgcolor: prob.acceptanceRate > 60 ? '#16A34A' : prob.acceptanceRate > 40 ? '#0B1F3A' : '#D97706',
                               borderRadius: 3,
                             },
                           }}
@@ -437,8 +437,8 @@ export default function ProblemsDataTable({
                                 height: 20,
                                 fontSize: '0.68rem',
                                 fontWeight: 700,
-                                bgcolor: '#EFF6FF',
-                                color: '#2563EB',
+                                bgcolor: '#FAF5FF',
+                                color: '#0B1F3A',
                                 borderRadius: '6px',
                               }}
                             />
@@ -460,7 +460,7 @@ export default function ProblemsDataTable({
                               height: 32,
                               borderRadius: '8px',
                               border: '1px solid #E2E8F0',
-                              '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF', borderColor: '#BFDBFE' },
+                              '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF', borderColor: '#D8B4FE' },
                             }}
                           >
                             <VisibilityRoundedIcon sx={{ fontSize: 18 }} />
@@ -521,16 +521,16 @@ export default function ProblemsDataTable({
                             textTransform: 'none',
                             fontWeight: 700,
                             fontSize: '0.76rem',
-                            color: '#2563EB',
-                            borderColor: '#DBEAFE',
-                            bgcolor: '#EFF6FF',
+                            color: '#0B1F3A',
+                            borderColor: '#E9D5FF',
+                            bgcolor: '#FAF5FF',
                             borderRadius: '8px',
                             px: 1.5,
                             py: 0.4,
                             whiteSpace: 'nowrap',
                             '&:hover': {
-                              bgcolor: '#DBEAFE',
-                              borderColor: '#93C5FD',
+                              bgcolor: '#E9D5FF',
+                              borderColor: '#C084FC',
                             },
                           }}
                         >
@@ -677,12 +677,12 @@ export default function ProblemsDataTable({
                       borderRadius: '9999px',
                       fontSize: '0.78rem',
                       fontWeight: isCurrent ? 800 : 600,
-                      bgcolor: isCurrent ? '#2563EB' : '#FFFFFF',
+                      bgcolor: isCurrent ? '#0B1F3A' : '#FFFFFF',
                       color: isCurrent ? '#FFFFFF' : '#475569',
                       border: isCurrent ? 'none' : '1px solid #E2E8F0',
-                      boxShadow: isCurrent ? '0 2px 8px rgba(37, 99, 235, 0.3)' : 'none',
+                      boxShadow: isCurrent ? '0 2px 8px rgba(91, 45, 144, 0.3)' : 'none',
                       '&:hover': {
-                        bgcolor: isCurrent ? '#1D4ED8' : '#F1F5F9',
+                        bgcolor: isCurrent ? '#17366E' : '#F1F5F9',
                         color: isCurrent ? '#FFFFFF' : '#0F172A',
                       },
                     }}

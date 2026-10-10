@@ -21,7 +21,7 @@ export default function ProfileTabSkeleton() {
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
               <Skeleton variant="text" width="50%" height={20} sx={{ bgcolor: '#F1F5F9' }} />
-              <Skeleton variant="rounded" width={32} height={32} sx={{ bgcolor: '#EFF6FF', borderRadius: '10px' }} />
+              <Skeleton variant="rounded" width={32} height={32} sx={{ bgcolor: '#FAF5FF', borderRadius: '10px' }} />
             </Box>
             <Skeleton variant="text" width="40%" height={38} sx={{ bgcolor: '#E2E8F0', mb: 0.5 }} />
             <Skeleton variant="text" width="65%" height={18} sx={{ bgcolor: '#F1F5F9' }} />
@@ -44,7 +44,7 @@ export default function ProfileTabSkeleton() {
             <Skeleton variant="text" width="60%" height={26} sx={{ bgcolor: '#E2E8F0', mb: 0.5 }} />
             <Skeleton variant="text" width="85%" height={18} sx={{ bgcolor: '#F1F5F9' }} />
           </Box>
-          <Skeleton variant="rounded" width={140} height={36} sx={{ bgcolor: '#EFF6FF', borderRadius: '10px' }} />
+          <Skeleton variant="rounded" width={140} height={36} sx={{ bgcolor: '#FAF5FF', borderRadius: '10px' }} />
         </Box>
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -67,7 +67,7 @@ export default function ProfileTabSkeleton() {
                 <Skeleton variant="text" width="45%" height={16} sx={{ bgcolor: '#F1F5F9' }} />
               </Box>
               <Skeleton variant="rounded" width="45%" height={8} sx={{ bgcolor: '#E2E8F0', borderRadius: '4px' }} />
-              <Skeleton variant="rounded" width={80} height={28} sx={{ bgcolor: '#EFF6FF', borderRadius: '8px' }} />
+              <Skeleton variant="rounded" width={80} height={28} sx={{ bgcolor: '#FAF5FF', borderRadius: '8px' }} />
             </Box>
           ))}
         </Box>

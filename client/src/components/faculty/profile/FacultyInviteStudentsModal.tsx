@@ -237,14 +237,14 @@ export default function FacultyInviteStudentsModal({
               width: 42,
               height: 42,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
+              bgcolor: '#FAF5FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '1px solid #BFDBFE',
+              border: '1px solid #F3E8FF',
             }}
           >
-            <GroupAddRoundedIcon sx={{ color: '#2563EB', fontSize: '1.4rem' }} />
+            <GroupAddRoundedIcon sx={{ color: '#0B1F3A', fontSize: '1.4rem' }} />
           </Box>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1.15rem' }}>
@@ -380,7 +380,7 @@ export default function FacultyInviteStudentsModal({
               component="label"
               sx={{
                 p: 3.5,
-                border: '2px dashed #BFDBFE',
+                border: '2px dashed #F3E8FF',
                 borderRadius: '16px',
                 bgcolor: '#F8FAFC',
                 display: 'flex',
@@ -391,13 +391,13 @@ export default function FacultyInviteStudentsModal({
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  borderColor: '#2563EB',
-                  bgcolor: '#EFF6FF',
+                  borderColor: '#0B1F3A',
+                  bgcolor: '#FAF5FF',
                 },
               }}
             >
               <input type="file" accept=".csv" hidden onChange={handleSimulateFileSelect} />
-              <CloudUploadRoundedIcon sx={{ fontSize: '2.5rem', color: '#2563EB' }} />
+              <CloudUploadRoundedIcon sx={{ fontSize: '2.5rem', color: '#0B1F3A' }} />
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A' }}>
                   {fileName ? fileName : 'Click to upload or drag & drop CSV roster'}
@@ -408,15 +408,15 @@ export default function FacultyInviteStudentsModal({
               </Box>
               {isParsing ? (
                 <Chip
-                  icon={<CircularProgress size={14} color="inherit" sx={{ color: '#2563EB !important' }} />}
+                  icon={<CircularProgress size={14} color="inherit" sx={{ color: '#0B1F3A !important' }} />}
                   label="Parsing CSV roster..."
                   size="small"
                   sx={{
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
                     fontWeight: 700,
                     borderRadius: '9999px',
-                    border: '1px solid #BFDBFE',
+                    border: '1px solid #F3E8FF',
                   }}
                 />
               ) : fileName && (
@@ -445,7 +445,7 @@ export default function FacultyInviteStudentsModal({
                 onClick={handleDownloadSample}
                 startIcon={<FileDownloadRoundedIcon sx={{ fontSize: '1rem' }} />}
                 sx={{
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                   textTransform: 'none',
                   fontSize: '0.78rem',
                   fontWeight: 700,
@@ -487,11 +487,11 @@ export default function FacultyInviteStudentsModal({
             variant="contained"
             sx={{
               borderRadius: '9999px',
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               px: 3.5,
               fontWeight: 700,
               textTransform: 'none',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              '&:hover': { bgcolor: '#17366E' },
               '&.Mui-disabled': { bgcolor: '#E2E8F0', color: '#94A3B8' },
             }}
           >

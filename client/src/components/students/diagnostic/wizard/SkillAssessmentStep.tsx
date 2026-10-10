@@ -125,10 +125,10 @@ export function SkillAssessmentStep({
                   sx={{
                     fontWeight: 700,
                     fontSize: '0.75rem',
-                    bgcolor: val >= 4 ? '#ECFDF5' : val === 3 ? '#EFF6FF' : '#FFFBEB',
-                    color: val >= 4 ? '#059669' : val === 3 ? '#2563EB' : '#D97706',
+                    bgcolor: val >= 4 ? '#ECFDF5' : val === 3 ? '#FAF5FF' : '#FFFBEB',
+                    color: val >= 4 ? '#059669' : val === 3 ? '#0B1F3A' : '#D97706',
                     border: '1px solid',
-                    borderColor: val >= 4 ? '#A7F3D0' : val === 3 ? '#BFDBFE' : '#FDE68A',
+                    borderColor: val >= 4 ? '#A7F3D0' : val === 3 ? '#D8B4FE' : '#FDE68A',
                   }}
                 />
               </Box>
@@ -147,19 +147,19 @@ export function SkillAssessmentStep({
                 ]}
                 onChange={(_, newVal) => onSkillRatingChange(skill.key, newVal as number)}
                 sx={{
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                   height: 6,
                   mt: 1,
                   '& .MuiSlider-thumb': {
                     bgcolor: '#FFFFFF',
-                    border: '3px solid #2563EB',
-                    boxShadow: '0 2px 6px rgba(37,99,235,0.3)',
+                    border: '3px solid #0B1F3A',
+                    boxShadow: '0 2px 6px rgba(91, 45, 144, 0.3)',
                     '&:hover, &.Mui-focusVisible': {
-                      boxShadow: '0 0 0 8px rgba(37,99,235,0.16)',
+                      boxShadow: '0 0 0 8px rgba(91, 45, 144, 0.16)',
                     },
                   },
                   '& .MuiSlider-track': {
-                    bgcolor: '#2563EB',
+                    bgcolor: '#0B1F3A',
                   },
                   '& .MuiSlider-rail': {
                     bgcolor: '#E2E8F0',

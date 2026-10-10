@@ -70,7 +70,7 @@ export default function CourseDetailHeader({
               fontWeight: 600,
               textDecoration: 'none',
               transition: 'color 0.15s ease',
-              '&:hover': { color: '#2563EB' },
+              '&:hover': { color: '#0B1F3A' },
             }}
           >
             Courses
@@ -99,15 +99,15 @@ export default function CourseDetailHeader({
               startIcon={<EditRoundedIcon sx={{ fontSize: 17 }} />}
               sx={{
                 bgcolor: '#FFFFFF',
-                color: '#2563EB',
-                borderColor: '#BFDBFE',
+                color: '#0B1F3A',
+                borderColor: '#D8B4FE',
                 borderRadius: '10px',
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.84rem',
                 px: 2,
                 py: 0.7,
-                '&:hover': { bgcolor: '#EFF6FF', borderColor: '#93C5FD' },
+                '&:hover': { bgcolor: '#FAF5FF', borderColor: '#C084FC' },
               }}
             >
               Edit Course Details
@@ -147,7 +147,7 @@ export default function CourseDetailHeader({
             sx={{
               background: isEnrolled
                 ? 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)'
-                : 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+                : 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
               color: '#FFFFFF',
               borderRadius: '10px',
               textTransform: 'none',
@@ -157,14 +157,14 @@ export default function CourseDetailHeader({
               py: 0.7,
               boxShadow: isEnrolled
                 ? '0 4px 14px rgba(22, 163, 74, 0.25)'
-                : '0 4px 14px rgba(37, 99, 235, 0.25)',
+                : '0 4px 14px rgba(91, 45, 144, 0.25)',
               '&:hover': {
                 background: isEnrolled
                   ? 'linear-gradient(135deg, #15803D 0%, #166534 100%)'
-                  : 'linear-gradient(135deg, #1D4ED8 0%, #1E40AF 100%)',
+                  : 'linear-gradient(135deg, #5B2D90 0%, #0B1F3A 100%)',
                 boxShadow: isEnrolled
                   ? '0 6px 20px rgba(22, 163, 74, 0.35)'
-                  : '0 6px 20px rgba(37, 99, 235, 0.35)',
+                  : '0 6px 20px rgba(11, 31, 58, 0.35)',
               },
             }}
           >
@@ -185,7 +185,7 @@ export default function CourseDetailHeader({
           overflow: 'hidden',
           bgcolor: '#07152E',
           backgroundImage: `
-            radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 100% 0%, rgba(91, 45, 144, 0.3) 0%, transparent 50%),
             radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.25) 0%, transparent 50%),
             linear-gradient(135deg, #071329 0%, #0C234F 60%, #153272 100%)
           `,
@@ -203,7 +203,7 @@ export default function CourseDetailHeader({
           warpRadius={200}
           warpStrength={50}
           lineColor="rgba(147, 197, 253, 0.22)"
-          glowColor="rgba(59, 130, 246, 0.42)"
+          glowColor="rgba(91, 45, 144, 0.42)"
         />
 
         <Box
@@ -331,7 +331,7 @@ export default function CourseDetailHeader({
                 color: '#FFFFFF',
               }}
             >
-              <TerminalRoundedIcon sx={{ fontSize: 15, color: '#60A5FA' }} />
+              <TerminalRoundedIcon sx={{ fontSize: 15, color: '#A855F7' }} />
               <Typography sx={{ fontSize: '0.75rem', fontWeight: 700 }}>
                 Interactive Code Sandbox
               </Typography>
@@ -355,7 +355,7 @@ export default function CourseDetailHeader({
             p: 2.5,
           }}
         >
-          <Typography sx={{ color: '#93C5FD', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <Typography sx={{ color: '#C084FC', fontWeight: 700, fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Course Overview
           </Typography>
 

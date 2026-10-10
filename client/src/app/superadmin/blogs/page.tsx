@@ -4,7 +4,7 @@ import { INITIAL_BLOG_POSTS, BlogPost } from '@/types/blog';
 import { apiService } from '@/lib/api-service';
 
 export const metadata: Metadata = {
-  title: 'Developer Blogs & Engineering Editorial | CodePlatform Admin',
+  title: 'Developer Blogs & Engineering Editorial | TechLearns Admin',
   description: 'Manage technical articles, architecture deep-dives, contest editorials, and collegiate publications.',
 };
 

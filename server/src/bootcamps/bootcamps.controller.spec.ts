@@ -20,7 +20,7 @@ describe('BootcampsController', () => {
 
   const mockUser = {
     id: 'user-1',
-    email: 'admin@codeplatform.io',
+    email: 'admin@techlearns.com',
     name: 'Admin User',
     globalRole: Role.SUPER_ADMIN,
     memberships: [],

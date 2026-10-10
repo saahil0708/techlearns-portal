@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { FluidArrowForward } from '@/utils/fluid_arrow';
 import Link from 'next/link';
 import {
   Box,
@@ -38,7 +39,7 @@ function CircularProgressGauge({
   percentage,
   size = 42,
   strokeWidth = 4,
-  color = '#2563EB',
+  color = '#0B1F3A',
 }: {
   percentage: number;
   size?: number;
@@ -131,11 +132,11 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
             <Typography sx={{ color: '#0F172A', fontSize: '1.45rem', fontWeight: 900, mt: 0.3 }}>
               {totalCourses}
             </Typography>
-            <Typography sx={{ color: '#2563EB', fontSize: '0.7rem', fontWeight: 700 }}>
+            <Typography sx={{ color: '#0B1F3A', fontSize: '0.7rem', fontWeight: 700 }}>
               Curriculum catalog
             </Typography>
           </Box>
-          <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <SchoolRoundedIcon sx={{ fontSize: 24 }} />
           </Box>
         </Card>
@@ -215,11 +216,11 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
             <Typography sx={{ color: '#0F172A', fontSize: '1.45rem', fontWeight: 900, mt: 0.3 }}>
               {totalModulesCompleted}
             </Typography>
-            <Typography sx={{ color: '#0284C7', fontSize: '0.7rem', fontWeight: 700 }}>
+            <Typography sx={{ color: '#5B2D90', fontSize: '0.7rem', fontWeight: 700 }}>
               Hands-on lessons finished
             </Typography>
           </Box>
-          <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: '#F0F9FF', color: '#0284C7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ width: 44, height: 44, borderRadius: '12px', bgcolor: '#FAF5FF', color: '#5B2D90', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <MenuBookRoundedIcon sx={{ fontSize: 24 }} />
           </Box>
         </Card>
@@ -285,10 +286,10 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                     cursor: 'pointer',
                     fontWeight: selectedStatus === st ? 800 : 600,
                     fontSize: '0.72rem',
-                    bgcolor: selectedStatus === st ? '#2563EB' : '#F1F5F9',
+                    bgcolor: selectedStatus === st ? '#0B1F3A' : '#F1F5F9',
                     color: selectedStatus === st ? '#FFFFFF' : '#475569',
                     border: '1px solid',
-                    borderColor: selectedStatus === st ? '#2563EB' : '#E2E8F0',
+                    borderColor: selectedStatus === st ? '#0B1F3A' : '#E2E8F0',
                   }}
                 />
               ))}
@@ -337,7 +338,7 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                     >
                       <TableCell sx={{ borderColor: '#F1F5F9', py: 1.5 }}>
                         <Link href={`/courses/${crs.slug || crs.id}`} style={{ textDecoration: 'none' }}>
-                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', '&:hover': { color: '#2563EB' }, transition: 'color 0.15s ease' }}>
+                          <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem', '&:hover': { color: '#0B1F3A' }, transition: 'color 0.15s ease' }}>
                             {crs.title}
                           </Typography>
                         </Link>
@@ -364,7 +365,7 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                             percentage={clampedProgress}
                             size={38}
                             strokeWidth={4}
-                            color={isDone ? '#10B981' : '#2563EB'}
+                            color={isDone ? '#10B981' : '#0B1F3A'}
                           />
                           <Box sx={{ flex: 1, minWidth: 80 }}>
                             <Box sx={{ height: 6, width: '100%', bgcolor: '#E2E8F0', borderRadius: 99, overflow: 'hidden' }}>
@@ -372,7 +373,7 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                                 sx={{
                                   width: `${clampedProgress}%`,
                                   height: '100%',
-                                  bgcolor: isDone ? '#10B981' : '#2563EB',
+                                  bgcolor: isDone ? '#10B981' : '#0B1F3A',
                                   borderRadius: 99,
                                   transition: 'width 0.4s ease',
                                 }}
@@ -387,9 +388,9 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                           label={isDone ? 'Completed' : 'In Progress'}
                           size="small"
                           sx={{
-                            bgcolor: isDone ? '#ECFDF5' : '#EFF6FF',
-                            color: isDone ? '#059669' : '#1D4ED8',
-                            border: `1px solid ${isDone ? '#A7F3D0' : '#BFDBFE'}`,
+                            bgcolor: isDone ? '#ECFDF5' : '#FAF5FF',
+                            color: isDone ? '#059669' : '#17366E',
+                            border: `1px solid ${isDone ? '#A7F3D0' : '#D8B4FE'}`,
                             fontWeight: 800,
                             fontSize: '0.72rem',
                             height: 22,
@@ -402,7 +403,7 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                           <Button
                             variant={isDone ? 'outlined' : 'contained'}
                             size="small"
-                            endIcon={<ArrowForwardRoundedIcon sx={{ fontSize: 13 }} />}
+                            endIcon={<FluidArrowForward sx={{ fontSize: 13 }} />}
                             sx={{
                               textTransform: 'none',
                               fontWeight: 800,
@@ -410,11 +411,11 @@ export default function StudentCoursesTab({ courses }: StudentCoursesTabProps) {
                               fontSize: '0.74rem',
                               px: 1.5,
                               py: 0.4,
-                              bgcolor: isDone ? '#FFFFFF' : '#2563EB',
-                              color: isDone ? '#2563EB' : '#FFFFFF',
-                              borderColor: '#BFDBFE',
+                              bgcolor: isDone ? '#FFFFFF' : '#0B1F3A',
+                              color: isDone ? '#0B1F3A' : '#FFFFFF',
+                              borderColor: '#D8B4FE',
                               '&:hover': {
-                                bgcolor: isDone ? '#EFF6FF' : '#1D4ED8',
+                                bgcolor: isDone ? '#FAF5FF' : '#17366E',
                               },
                             }}
                           >

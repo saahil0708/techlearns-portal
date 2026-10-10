@@ -40,9 +40,9 @@ export const getRatingTierColor = (tier: StudentDirectoryEntity['ratingTier']) =
     case 'Candidate Master':
       return { bg: '#FAF5FF', text: '#7C3AED', border: '#E9D5FF' };
     case 'Expert':
-      return { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' };
+      return { bg: '#FAF5FF', text: '#0B1F3A', border: '#D8B4FE' };
     case 'Specialist':
-      return { bg: '#ECFEFF', text: '#0891B2', border: '#A5F3FC' };
+      return { bg: '#ECFEFF', text: '#5B2D90', border: '#A5F3FC' };
     case 'Pupil':
       return { bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' };
     case 'Newbie':

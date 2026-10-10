@@ -42,7 +42,7 @@ export class DockerSandboxProvider implements ISandboxProvider {
       };
     }
 
-    const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'codeplatform-judge-'));
+    const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'techlearns-judge-'));
     const sourcePath = path.join(workDir, `solution.${extensions[language]}`);
     const isCompiled = language === ProgrammingLanguage.JAVA || language === ProgrammingLanguage.CPP || language === ProgrammingLanguage.C;
     // Bounded allowance for Docker container creation, image loading, and language compilation (configurable via JUDGE_SETUP_TIMEOUT_MS / JUDGE_COMPILED_SETUP_TIMEOUT_MS)
@@ -54,7 +54,7 @@ export class DockerSandboxProvider implements ISandboxProvider {
       ? (validCompiledTimeout ?? validSetupTimeout ?? 10000)
       : (validSetupTimeout ?? 5000);
     const cpuLimitSeconds = Math.max(5, Math.ceil((limits.timeLimitMs + setupTimeoutMs) / 1000) + 2);
-    const containerName = `codeplatform-judge-${randomUUID()}`;
+    const containerName = `techlearns-judge-${randomUUID()}`;
     const args = [
       'run', '-i', '--rm', '--name', containerName, '--network', 'none', '--read-only',
       '--tmpfs', '/tmp:rw,size=32m',
@@ -179,7 +179,7 @@ if __name__ == '__main__':
           terminateContainer('setup_timeout');
         }, setupTimeoutMs + limits.timeLimitMs);
 
-        const EXEC_START_SIGNAL = '__CODEPLATFORM_EXEC_START__';
+        const EXEC_START_SIGNAL = '__TECHLEARNS_EXEC_START__';
 
         const processStreamChunk = (
           chunk: string | Buffer,

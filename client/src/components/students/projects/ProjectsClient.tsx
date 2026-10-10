@@ -116,8 +116,8 @@ const INITIAL_PROJECTS: StudentProject[] = [
     progressPct: 60,
     techStack: ['Next.js 15', 'NestJS', 'WebSockets', 'CRDT / Yjs', 'PostgreSQL'],
     iconType: 'ide',
-    accentColor: '#2563EB',
-    bgColor: '#EFF6FF',
+    accentColor: '#0B1F3A',
+    bgColor: '#FAF5FF',
     repoUrl: 'https://github.com/student/collab-ide',
     liveUrl: 'https://collab-ide.sandbox.techlearns.io',
     milestonesCompleted: 3,
@@ -223,8 +223,8 @@ const INITIAL_PROJECTS: StudentProject[] = [
     progressPct: 0,
     techStack: ['Kubernetes CRD', 'Go Operator SDK', 'Prometheus', 'Helm'],
     iconType: 'k8s',
-    accentColor: '#0284C7',
-    bgColor: '#E0F2FE',
+    accentColor: '#5B2D90',
+    bgColor: '#FAF5FF',
     repoUrl: 'https://github.com/student/k8s-autoscaler-operator',
     liveUrl: 'https://k8s-operator.sandbox.techlearns.io',
     milestonesCompleted: 0,
@@ -399,10 +399,10 @@ export default function ProjectsClient() {
               Cloud Sandbox & Project Studio
             </Typography>
             <Chip
-              icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 12, color: '#2563EB !important' }} />}
+              icon={<AutoAwesomeRoundedIcon sx={{ fontSize: 12, color: '#0B1F3A !important' }} />}
               label="Kubernetes Sandbox Online"
               size="small"
-              sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 800, fontSize: '0.72rem', height: 22 }}
+              sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 800, fontSize: '0.72rem', height: 22 }}
             />
           </Box>
           <Typography sx={{ fontSize: '0.82rem', color: '#64748B', mt: 0.3 }}>
@@ -518,7 +518,7 @@ export default function ProjectsClient() {
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', pr: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ color: '#2563EB', display: 'flex', alignItems: 'center' }}>
+                        <Box sx={{ color: '#0B1F3A', display: 'flex', alignItems: 'center' }}>
                           {cat.icon}
                         </Box>
                         <Typography sx={{ fontWeight: 800, fontSize: '0.82rem', color: '#0F172A' }}>
@@ -556,18 +556,18 @@ export default function ProjectsClient() {
                             p: 1.4,
                             borderRadius: '10px',
                             cursor: 'pointer',
-                            bgcolor: isSelected ? '#EFF6FF' : '#F8FAFC',
-                            border: isSelected ? '1px solid #2563EB' : '1px solid transparent',
+                            bgcolor: isSelected ? '#FAF5FF' : '#F8FAFC',
+                            border: isSelected ? '1px solid #0B1F3A' : '1px solid transparent',
                             transition: 'all 0.15s ease',
                             display: 'flex',
                             flexDirection: 'column',
                             gap: 0.6,
                             outline: 'none',
                             '&:hover': {
-                              bgcolor: isSelected ? '#EFF6FF' : '#F1F5F9',
+                              bgcolor: isSelected ? '#FAF5FF' : '#F1F5F9',
                             },
                             '&:focus-visible': {
-                              outline: '2px solid #2563EB',
+                              outline: '2px solid #0B1F3A',
                               outlineOffset: '2px',
                             },
                           }}
@@ -577,7 +577,7 @@ export default function ProjectsClient() {
                               sx={{
                                 fontWeight: isSelected ? 800 : 700,
                                 fontSize: '0.78rem',
-                                color: isSelected ? '#1E40AF' : '#0F172A',
+                                color: isSelected ? '#0F264F' : '#0F172A',
                                 lineHeight: 1.3,
                               }}
                             >
@@ -586,7 +586,7 @@ export default function ProjectsClient() {
                             {isDone ? (
                               <CheckCircleRoundedIcon sx={{ fontSize: 15, color: '#059669', flexShrink: 0, mt: 0.2 }} />
                             ) : (
-                              <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: '#2563EB', flexShrink: 0, mt: 0.2 }}>
+                              <Typography sx={{ fontSize: '0.68rem', fontWeight: 800, color: '#0B1F3A', flexShrink: 0, mt: 0.2 }}>
                                 {project.progressPct}%
                               </Typography>
                             )}
@@ -656,8 +656,8 @@ export default function ProjectsClient() {
                       fontWeight: 800,
                       fontSize: '0.7rem',
                       height: 22,
-                      bgcolor: activeProject.status === 'Completed' ? '#ECFDF5' : '#EFF6FF',
-                      color: activeProject.status === 'Completed' ? '#059669' : '#2563EB',
+                      bgcolor: activeProject.status === 'Completed' ? '#ECFDF5' : '#FAF5FF',
+                      color: activeProject.status === 'Completed' ? '#059669' : '#0B1F3A',
                     }}
                   />
                 </Box>
@@ -734,7 +734,7 @@ export default function ProjectsClient() {
                   key={tech}
                   label={tech}
                   size="small"
-                  sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontSize: '0.7rem', height: 22, fontWeight: 800 }}
+                  sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontSize: '0.7rem', height: 22, fontWeight: 800 }}
                 />
               ))}
             </Box>
@@ -778,7 +778,7 @@ export default function ProjectsClient() {
                 <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#0F172A' }}>
                   Deliverables Checklist ({activeProject.milestonesCompleted}/{activeProject.totalMilestones} Completed)
                 </Typography>
-                <Typography sx={{ fontSize: '0.78rem', color: '#2563EB', fontWeight: 800 }}>
+                <Typography sx={{ fontSize: '0.78rem', color: '#0B1F3A', fontWeight: 800 }}>
                   {activeProject.progressPct}% Overall Progress
                 </Typography>
               </Box>
@@ -810,10 +810,10 @@ export default function ProjectsClient() {
                       transition: 'all 0.15s ease',
                       outline: 'none',
                       '&:hover': {
-                        borderColor: '#2563EB',
+                        borderColor: '#0B1F3A',
                       },
                       '&:focus-visible': {
-                        outline: '2px solid #2563EB',
+                        outline: '2px solid #0B1F3A',
                         outlineOffset: '2px',
                       },
                     }}
@@ -847,7 +847,7 @@ export default function ProjectsClient() {
                 bgcolor: '#0B1120',
                 borderRadius: '14px',
                 p: 2.5,
-                color: '#38BDF8',
+                color: '#C084FC',
                 fontFamily: 'monospace',
                 fontSize: '0.78rem',
                 lineHeight: 1.8,
@@ -900,7 +900,7 @@ export default function ProjectsClient() {
                     <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>
                       Runtime: {srv.runtime}
                     </Typography>
-                    <Typography sx={{ fontSize: '0.72rem', color: '#2563EB', fontWeight: 700 }}>
+                    <Typography sx={{ fontSize: '0.72rem', color: '#0B1F3A', fontWeight: 700 }}>
                       Binding: {srv.port}
                     </Typography>
                   </Box>

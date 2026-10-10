@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import FacultyProfileClient from '@/components/faculty/profile/FacultyProfileClient';
 
 export const metadata: Metadata = {
-  title: 'Faculty Portal & Academic Workspace | CodePlatform',
+  title: 'Faculty Portal & Academic Workspace | TechLearns',
   description: 'Manage assigned student cohorts, curriculum, challenge assignments, and track class progress.',
 };
 

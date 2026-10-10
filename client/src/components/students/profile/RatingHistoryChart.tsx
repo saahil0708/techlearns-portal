@@ -81,7 +81,7 @@ export default function RatingHistoryChart({
       sx={{
         borderRadius: '20px',
         bgcolor: '#0F172A',
-        border: '1px solid rgba(59, 130, 246, 0.25)',
+        border: '1px solid rgba(91, 45, 144, 0.25)',
         p: { xs: 2.5, sm: 3.5 },
         boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
         display: 'flex',
@@ -93,7 +93,7 @@ export default function RatingHistoryChart({
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-            <TrendingUpRoundedIcon sx={{ color: '#38BDF8', fontSize: 22 }} />
+            <TrendingUpRoundedIcon sx={{ color: '#C084FC', fontSize: 22 }} />
             <Typography sx={{ fontSize: '1.15rem', fontWeight: 800, color: '#FFFFFF', letterSpacing: '-0.02em' }}>
               Contest Rating Progression
             </Typography>
@@ -110,7 +110,7 @@ export default function RatingHistoryChart({
           onChange={(_, val) => val && setFilterRange(val)}
           sx={{
             bgcolor: 'rgba(30, 41, 59, 0.8)',
-            border: '1px solid rgba(59, 130, 246, 0.25)',
+            border: '1px solid rgba(91, 45, 144, 0.25)',
             borderRadius: '10px',
             p: '2px',
             '& .MuiToggleButton-root': {
@@ -123,10 +123,10 @@ export default function RatingHistoryChart({
               py: 0.4,
               color: '#94A3B8',
               '&.Mui-selected': {
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 color: '#FFFFFF',
-                boxShadow: '0 2px 10px rgba(37, 99, 235, 0.4)',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                boxShadow: '0 2px 10px rgba(91, 45, 144, 0.4)',
+                '&:hover': { bgcolor: '#17366E' },
               },
             },
           }}
@@ -139,7 +139,7 @@ export default function RatingHistoryChart({
 
       {/* Metrics Row */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' }, gap: 2 }}>
-        <Box sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+        <Box sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(91, 45, 144, 0.2)' }}>
           <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>
             Current Rating
           </Typography>
@@ -155,7 +155,7 @@ export default function RatingHistoryChart({
           </Box>
         </Box>
 
-        <Box sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+        <Box sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(91, 45, 144, 0.2)' }}>
           <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>
             Highest Rating
           </Typography>
@@ -166,21 +166,21 @@ export default function RatingHistoryChart({
             <Chip
               label={highestTier.division}
               size="small"
-              sx={{ bgcolor: 'rgba(37, 99, 235, 0.2)', color: '#60A5FA', border: '1px solid rgba(59, 130, 246, 0.3)', fontWeight: 800, fontSize: '0.7rem', height: 22 }}
+              sx={{ bgcolor: 'rgba(91, 45, 144, 0.2)', color: '#A855F7', border: '1px solid rgba(91, 45, 144, 0.3)', fontWeight: 800, fontSize: '0.7rem', height: 22 }}
             />
           </Box>
         </Box>
 
-        <Box sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+        <Box sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(91, 45, 144, 0.2)' }}>
           <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>
             Global Standing
           </Typography>
-          <Typography sx={{ fontSize: '1.4rem', fontWeight: 900, color: '#38BDF8', mt: 0.5 }}>
+          <Typography sx={{ fontSize: '1.4rem', fontWeight: 900, color: '#C084FC', mt: 0.5 }}>
             {globalRank ? `#${globalRank}` : '—'}
           </Typography>
         </Box>
 
-        <Box sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+        <Box sx={{ p: 2, borderRadius: '14px', bgcolor: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(91, 45, 144, 0.2)' }}>
           <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>
             Contests Attended
           </Typography>
@@ -199,7 +199,7 @@ export default function RatingHistoryChart({
 
               {/* Division Threshold Reference Lines */}
               <ReferenceLine y={1400} stroke="#16A34A" strokeDasharray="3 3" label={{ value: 'Div 3 (1400)', position: 'insideTopRight', fill: '#4ADE80', fontSize: 10, fontWeight: 700 }} />
-              <ReferenceLine y={1600} stroke="#2563EB" strokeDasharray="3 3" label={{ value: 'Div 2 (1600)', position: 'insideTopRight', fill: '#60A5FA', fontSize: 10, fontWeight: 700 }} />
+              <ReferenceLine y={1600} stroke='#0B1F3A' strokeDasharray="3 3" label={{ value: 'Div 2 (1600)', position: 'insideTopRight', fill: '#A855F7', fontSize: 10, fontWeight: 700 }} />
               <ReferenceLine y={2000} stroke="#D97706" strokeDasharray="3 3" label={{ value: 'Div 1 (2000)', position: 'insideTopRight', fill: '#FCD34D', fontSize: 10, fontWeight: 700 }} />
 
               <XAxis
@@ -208,7 +208,7 @@ export default function RatingHistoryChart({
                 fontSize={11}
                 fontWeight={600}
                 tickLine={false}
-                axisLine={{ stroke: 'rgba(59, 130, 246, 0.2)' }}
+                axisLine={{ stroke: 'rgba(91, 45, 144, 0.2)' }}
               />
               <YAxis
                 domain={['dataMin - 100', 'dataMax + 100']}
@@ -216,16 +216,16 @@ export default function RatingHistoryChart({
                 fontSize={11}
                 fontWeight={600}
                 tickLine={false}
-                axisLine={{ stroke: 'rgba(59, 130, 246, 0.2)' }}
+                axisLine={{ stroke: 'rgba(91, 45, 144, 0.2)' }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Line
                 type="monotone"
                 dataKey="rating"
-                stroke="#38BDF8"
+                stroke="#C084FC"
                 strokeWidth={3}
-                dot={{ fill: '#38BDF8', stroke: '#0F172A', strokeWidth: 2, r: 5 }}
-                activeDot={{ fill: '#60A5FA', stroke: '#FFFFFF', strokeWidth: 3, r: 8 }}
+                dot={{ fill: '#C084FC', stroke: '#0F172A', strokeWidth: 2, r: 5 }}
+                activeDot={{ fill: '#A855F7', stroke: '#FFFFFF', strokeWidth: 3, r: 8 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -240,7 +240,7 @@ export default function RatingHistoryChart({
               justifyContent: 'center',
               bgcolor: 'rgba(30, 41, 59, 0.4)',
               borderRadius: '14px',
-              border: '1px dashed rgba(59, 130, 246, 0.25)',
+              border: '1px dashed rgba(91, 45, 144, 0.25)',
               p: 3,
               textAlign: 'center',
             }}
@@ -276,7 +276,7 @@ function CustomTooltip({ active, payload }: any) {
         minWidth: 200,
       }}
     >
-      <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#93C5FD', mb: 0.5 }}>
+      <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#C084FC', mb: 0.5 }}>
         {data.contestName}
       </Typography>
       <Typography sx={{ fontSize: '0.72rem', color: '#94A3B8', mb: 1 }}>

@@ -114,9 +114,9 @@ export class UsersService {
     if (configuredKeys.length === 0 && process.env.NODE_ENV !== 'test') {
       throw new Error('Encryption key is required for TOTP; set auth.totp.encryptionKey or JWT secret');
     }
-    const rawKeys = configuredKeys.length > 0 ? configuredKeys : ['codeplatform-dev-encryption-key-fallback'];
+    const rawKeys = configuredKeys.length > 0 ? configuredKeys : ['techlearns-dev-encryption-key-fallback'];
     this.encryptionKeys = rawKeys.map((key) =>
-      Buffer.from(createHmac('sha256', key).update('codeplatform:invitation:v1').digest()),
+      Buffer.from(createHmac('sha256', key).update('techlearns:invitation:v1').digest()),
     );
   }
 
@@ -385,7 +385,7 @@ export class UsersService {
         id: enr.course.id,
         title: enr.course.title,
         slug: enr.course.id,
-        instructor: 'CodePlatform Faculty',
+        instructor: 'TechLearns Faculty',
         modulesCompleted,
         totalModules: enr.course.modules.length,
         progressPct,

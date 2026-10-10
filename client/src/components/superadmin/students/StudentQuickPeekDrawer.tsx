@@ -126,8 +126,8 @@ export default function StudentQuickPeekDrawer({
               bgcolor: student.avatarColor,
               fontWeight: 800,
               fontSize: '1.3rem',
-              border: '3px solid #BFDBFE',
-              boxShadow: '0 4px 14px rgba(37,99,235,0.15)',
+              border: '3px solid #F3E8FF',
+              boxShadow: '0 4px 14px rgba(11, 31, 58, 0.15)',
             }}
           >
             {student.name.charAt(0)}
@@ -136,7 +136,7 @@ export default function StudentQuickPeekDrawer({
             <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', lineHeight: 1.2 }}>
               {student.name}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#2563EB', fontFamily: 'monospace', fontSize: '0.82rem', mb: 0.5, fontWeight: 600 }}>
+            <Typography variant="body2" sx={{ color: '#0B1F3A', fontFamily: 'monospace', fontSize: '0.82rem', mb: 0.5, fontWeight: 600 }}>
               @{student.handle}
             </Typography>
             <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
@@ -160,24 +160,24 @@ export default function StudentQuickPeekDrawer({
           <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A', mt: 0.5 }}>
             {student.institutionName}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#2563EB', fontSize: '0.8rem', mt: 0.3, fontWeight: 500 }}>
+          <Typography variant="body2" sx={{ color: '#0B1F3A', fontSize: '0.8rem', mt: 0.3, fontWeight: 500 }}>
             {student.cohort}
           </Typography>
         </Box>
 
         {/* Core Stats Grid */}
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5 }}>
-          <Box sx={{ p: '14px', borderRadius: '14px', bgcolor: '#EFF6FF', border: '1px solid #BFDBFE' }}>
-            <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 600 }}>
+          <Box sx={{ p: '14px', borderRadius: '14px', bgcolor: '#FAF5FF', border: '1px solid #F3E8FF' }}>
+            <Typography variant="caption" sx={{ color: '#0B1F3A', fontWeight: 600 }}>
               Contest Rating
             </Typography>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#2563EB', fontFamily: 'monospace', my: 0.3 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0B1F3A', fontFamily: 'monospace', my: 0.3 }}>
               {student.contestRating}
             </Typography>
             <Chip
               label={student.ratingTier}
               size="small"
-              sx={{ fontSize: '0.68rem', fontWeight: 800, bgcolor: '#FFFFFF', color: '#2563EB', borderRadius: '9999px', border: '1px solid #BFDBFE' }}
+              sx={{ fontSize: '0.68rem', fontWeight: 800, bgcolor: '#FFFFFF', color: '#0B1F3A', borderRadius: '9999px', border: '1px solid #F3E8FF' }}
             />
           </Box>
 
@@ -206,7 +206,7 @@ export default function StudentQuickPeekDrawer({
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CodeRoundedIcon sx={{ color: '#2563EB', fontSize: '1.1rem' }} />
+              <CodeRoundedIcon sx={{ color: '#0B1F3A', fontSize: '1.1rem' }} />
               Problems Solved: {student.problemsSolved}
             </Typography>
           </Box>
@@ -241,7 +241,7 @@ export default function StudentQuickPeekDrawer({
         >
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CodeRoundedIcon sx={{ color: '#2563EB', fontSize: '1.1rem' }} />
+              <CodeRoundedIcon sx={{ color: '#0B1F3A', fontSize: '1.1rem' }} />
               Verified Domain Mastery
             </Typography>
             <Chip
@@ -260,9 +260,9 @@ export default function StudentQuickPeekDrawer({
             }}
           >
             {[
-              { label: 'Algorithms', val: Math.min(98, Math.max(65, Math.round(student.contestRating / 22))), color: '#2563EB' },
-              { label: 'Object Prog.', val: Math.min(95, Math.max(70, Math.round(student.contestRating / 24))), color: '#4F46E5' },
-              { label: 'Database', val: Math.min(92, Math.max(60, Math.round(student.contestRating / 26))), color: '#0891B2' },
+              { label: 'Algorithms', val: Math.min(98, Math.max(65, Math.round(student.contestRating / 22))), color: '#0B1F3A' },
+              { label: 'Object Prog.', val: Math.min(95, Math.max(70, Math.round(student.contestRating / 24))), color: '#5B2D90' },
+              { label: 'Database', val: Math.min(92, Math.max(60, Math.round(student.contestRating / 26))), color: '#5B2D90' },
               { label: 'Web Dev.', val: Math.min(99, Math.max(75, Math.round(student.contestRating / 21))), color: '#059669' },
               { label: 'Mobile App.', val: Math.min(96, Math.max(68, Math.round(student.contestRating / 23))), color: '#7C3AED' },
               { label: 'Machine Lrn.', val: Math.min(94, Math.max(62, Math.round(student.contestRating / 25))), color: '#D97706' },
@@ -331,9 +331,9 @@ export default function StudentQuickPeekDrawer({
                 fontSize: '0.82rem',
                 py: 1,
                 '&:hover': {
-                  borderColor: '#2563EB',
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  borderColor: '#0B1F3A',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                 },
               }}
             >
@@ -348,12 +348,12 @@ export default function StudentQuickPeekDrawer({
               endIcon={<FluidArrowRight size={18} />}
               sx={{
                 borderRadius: '9999px',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 py: 1.2,
                 fontWeight: 700,
                 textTransform: 'none',
-                boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               Open Full Student Profile

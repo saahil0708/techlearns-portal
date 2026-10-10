@@ -5,7 +5,7 @@ import { DirectoryEntry } from '@/components/superadmin/shared/PlatformDirectory
 import { apiService } from '@/lib/api-service';
 
 export const metadata: Metadata = {
-  title: 'Platform Control Center | CodePlatform Super Admin',
+  title: 'Platform Control Center | TechLearns Super Admin',
   description: 'Enterprise online learning and competitive programming platform management portal.',
 };
 

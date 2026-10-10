@@ -46,7 +46,7 @@ import FileDownloadRoundedIcon from '@mui/icons-material/FileDownloadRounded';
 import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
 import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
-import { FluidArrowRight } from '@/utils/fluid_arrow';
+import { FluidArrowRight, FluidArrowUpward, FluidArrowDownward } from '@/utils/fluid_arrow';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded';
@@ -116,7 +116,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
           status: c.status === 'PUBLISHED' ? 'Published' : 'Draft',
           tags: Array.isArray(c.tags) && c.tags.length > 0 ? c.tags : ['Computer Science', 'Programming'],
           description: c.description || 'Comprehensive programming curriculum with hands-on coding challenges.',
-          accentColor: ['#2563EB', '#7C3AED', '#DC2626', '#059669', '#D97706'][idx % 5],
+          accentColor: ['#0B1F3A', '#7C3AED', '#DC2626', '#059669', '#D97706'][idx % 5],
           thumbnailUrl: c.thumbnailUrl || undefined,
           modules: c.modules || [],
           moduleHighlights: Array.isArray(c.modules) && c.modules.length > 0
@@ -356,7 +356,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
         tags: Array.isArray(created?.tags) && created.tags.length > 0 ? created.tags : newData.tags,
         learningOutcomes: created?.learningOutcomes || newData.learningOutcomes || newData.learningItems || (newData as any).whatYouWillLearn || [],
         description: created?.description || newData.description,
-        accentColor: '#2563EB',
+        accentColor: '#0B1F3A',
         thumbnailUrl: created?.thumbnailUrl || newData.thumbnailUrl || undefined,
         modules: created?.modules || [],
         moduleHighlights: Array.isArray(created?.modules) && created.modules.length > 0
@@ -447,7 +447,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
       case 'Beginner':
         return { bg: '#F0FDF4', text: '#16A34A', border: '#BBF7D0' };
       case 'Intermediate':
-        return { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' };
+        return { bg: '#FAF5FF', text: '#0B1F3A', border: '#D8B4FE' };
       case 'Advanced':
         return { bg: '#FEF2F2', text: '#DC2626', border: '#FECACA' };
       default:
@@ -463,8 +463,8 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
         bgcolor: '#F8FAFC',
         backgroundImage: `
           radial-gradient(ellipse at 15% 10%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -486,7 +486,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
             <Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <Typography variant="caption" sx={{ color: '#0B1F3A', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   CURRICULUM & LEARNING LABS
                 </Typography>
                 <Chip
@@ -496,10 +496,10 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                     height: 20,
                     fontSize: '0.68rem',
                     fontWeight: 700,
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
                     borderRadius: '9999px',
-                    border: '1px solid #DBEAFE',
+                    border: '1px solid #FAF5FF',
                   }}
                 />
               </Box>
@@ -559,7 +559,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                 </MenuItem>
                 <MenuItem onClick={handleExportCSV} sx={{ borderRadius: '8px', py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 32 }}>
-                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                   </ListItemIcon>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                     Download CSV (.csv)
@@ -594,7 +594,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                 onClick={() => setIsCreateModalOpen(true)}
                 startIcon={<AddCircleRoundedIcon sx={{ fontSize: 18 }} />}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
                   borderRadius: '7px',
                   textTransform: 'none',
@@ -602,8 +602,8 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                   fontSize: '0.84rem',
                   px: 2.25,
                   py: 0.75,
-                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Create New Course
@@ -676,7 +676,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                 sx={{
                   minHeight: 48,
                   '& .MuiTabs-indicator': {
-                    backgroundColor: '#2563EB',
+                    backgroundColor: '#0B1F3A',
                     height: 3,
                     borderRadius: '3px 3px 0 0',
                   },
@@ -709,10 +709,10 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                             fontSize: '0.68rem',
                             fontWeight: 700,
                             borderRadius: '9999px',
-                            bgcolor: selectedCategoryTab === tab.id ? '#EFF6FF' : '#F1F5F9',
-                            color: selectedCategoryTab === tab.id ? '#2563EB' : '#64748B',
+                            bgcolor: selectedCategoryTab === tab.id ? '#FAF5FF' : '#F1F5F9',
+                            color: selectedCategoryTab === tab.id ? '#0B1F3A' : '#64748B',
                             border: '1px solid',
-                            borderColor: selectedCategoryTab === tab.id ? '#BFDBFE' : '#E2E8F0',
+                            borderColor: selectedCategoryTab === tab.id ? '#D8B4FE' : '#E2E8F0',
                             pointerEvents: 'none',
                           }}
                         />
@@ -724,7 +724,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                       py: 1,
                       px: 1.25,
                       textTransform: 'none',
-                      color: selectedCategoryTab === tab.id ? '#2563EB !important' : '#64748B',
+                      color: selectedCategoryTab === tab.id ? '#0B1F3A !important' : '#64748B',
                       '&:hover': {
                         color: '#0F172A',
                       },
@@ -773,7 +773,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                     fontSize: '0.85rem',
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -890,7 +890,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                         onChange={(e) => handleSelectAll(e.target.checked)}
                         sx={{
                           color: '#CBD5E1',
-                          '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#2563EB' },
+                          '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#0B1F3A' },
                         }}
                       />
                     </TableCell>
@@ -913,9 +913,9 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                         Course & Code
                         {sortField === 'title' &&
                           (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ))}
                       </Box>
                     </TableCell>
@@ -938,9 +938,9 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                         Level & Domain
                         {sortField === 'level' &&
                           (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ))}
                       </Box>
                     </TableCell>
@@ -991,9 +991,9 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                         Enrollments
                         {sortField === 'enrolledStudents' &&
                           (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ))}
                       </Box>
                     </TableCell>
@@ -1016,9 +1016,9 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                         Completion %
                         {sortField === 'completionRate' &&
                           (sortDirection === 'asc' ? (
-                            <ArrowUpwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowUpward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ) : (
-                            <ArrowDownwardRoundedIcon sx={{ fontSize: '0.85rem', color: '#2563EB' }} />
+                            <FluidArrowDownward sx={{ fontSize: '0.85rem', color: '#0B1F3A' }} />
                           ))}
                       </Box>
                     </TableCell>
@@ -1065,7 +1065,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                         <Button
                           size="small"
                           onClick={handleResetFilters}
-                          sx={{ mt: 1.5, color: '#2563EB', borderRadius: '9999px', textTransform: 'none' }}
+                          sx={{ mt: 1.5, color: '#0B1F3A', borderRadius: '9999px', textTransform: 'none' }}
                         >
                           Reset All Filters
                         </Button>
@@ -1083,9 +1083,9 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                           sx={{
                             transition: 'all 0.15s ease',
                             borderColor: '#E2E8F0',
-                            bgcolor: isSelected ? '#EFF6FF' : '#FFFFFF',
+                            bgcolor: isSelected ? '#FAF5FF' : '#FFFFFF',
                             '&:hover': {
-                              bgcolor: isSelected ? '#DBEAFE' : '#F8FAFC',
+                              bgcolor: isSelected ? '#E9D5FF' : '#F8FAFC',
                             },
                           }}
                         >
@@ -1096,7 +1096,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                               onChange={() => handleToggleSelectRow(course.id)}
                               sx={{
                                 color: '#CBD5E1',
-                                '&.Mui-checked': { color: '#2563EB' },
+                                '&.Mui-checked': { color: '#0B1F3A' },
                               }}
                             />
                           </TableCell>
@@ -1128,14 +1128,14 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                                       color: '#0F172A',
                                       fontSize: '0.88rem',
                                       cursor: 'pointer',
-                                      '&:hover': { color: '#2563EB', textDecoration: 'underline' },
+                                      '&:hover': { color: '#0B1F3A', textDecoration: 'underline' },
                                     }}
                                   >
                                     {course.title}
                                   </Typography>
                                   <Typography
                                     sx={{
-                                      color: '#2563EB',
+                                      color: '#0B1F3A',
                                       fontSize: '0.74rem',
                                       fontFamily: 'monospace',
                                       fontWeight: 700,
@@ -1202,7 +1202,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                           {/* Enrollments */}
                           <TableCell sx={{ borderColor: '#E2E8F0' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                              <PeopleAltRoundedIcon sx={{ fontSize: 16, color: '#2563EB' }} />
+                              <PeopleAltRoundedIcon sx={{ fontSize: 16, color: '#0B1F3A' }} />
                               <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.84rem' }}>
                                 {course.enrolledStudents.toLocaleString()}
                               </Typography>
@@ -1221,7 +1221,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                                   borderRadius: '9999px',
                                   bgcolor: '#F1F5F9',
                                   '& .MuiLinearProgress-bar': {
-                                    bgcolor: course.completionRate > 75 ? '#16A34A' : course.completionRate > 50 ? '#2563EB' : '#D97706',
+                                    bgcolor: course.completionRate > 75 ? '#16A34A' : course.completionRate > 50 ? '#0B1F3A' : '#D97706',
                                     borderRadius: '9999px',
                                   },
                                 }}
@@ -1268,7 +1268,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                                   sx={{
                                     color: '#64748B',
                                     borderRadius: '9999px',
-                                    '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' },
+                                    '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' },
                                   }}
                                 >
                                   <EditRoundedIcon fontSize="small" />
@@ -1283,7 +1283,7 @@ export default function CoursesDirectoryClient({ initialCourses }: CoursesDirect
                                   sx={{
                                     color: '#64748B',
                                     borderRadius: '9999px',
-                                    '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' },
+                                    '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' },
                                   }}
                                 >
                                   <VisibilityRoundedIcon fontSize="small" />

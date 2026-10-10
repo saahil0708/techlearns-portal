@@ -170,14 +170,14 @@ export default function FacultyBatchesTab({
               textTransform: 'none',
               fontWeight: 700,
               fontSize: '0.82rem',
-              borderColor: '#2563EB',
-              color: '#2563EB',
-              bgcolor: '#EFF6FF',
+              borderColor: '#0B1F3A',
+              color: '#0B1F3A',
+              bgcolor: '#FAF5FF',
               px: 2,
               py: 0.75,
               '&:hover': {
-                bgcolor: '#DBEAFE',
-                borderColor: '#1D4ED8',
+                bgcolor: '#E9D5FF',
+                borderColor: '#17366E',
               },
             }}
           >
@@ -194,14 +194,14 @@ export default function FacultyBatchesTab({
               textTransform: 'none',
               fontWeight: 700,
               fontSize: '0.82rem',
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               px: 2,
               py: 0.75,
               boxShadow: 'none',
               '&:hover': {
-                bgcolor: '#1D4ED8',
-                boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                bgcolor: '#17366E',
+                boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
               },
             }}
           >
@@ -295,8 +295,8 @@ export default function FacultyBatchesTab({
                               width: 36,
                               height: 36,
                               borderRadius: '10px',
-                              bgcolor: '#EFF6FF',
-                              color: '#2563EB',
+                              bgcolor: '#FAF5FF',
+                              color: '#0B1F3A',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -330,7 +330,7 @@ export default function FacultyBatchesTab({
                               {studentCount}{hasCapacity ? ` / ${maxCap}` : ''}
                             </Typography>
                             {hasCapacity && (
-                              <Typography sx={{ fontSize: '0.74rem', color: '#2563EB', fontWeight: 700 }}>
+                              <Typography sx={{ fontSize: '0.74rem', color: '#0B1F3A', fontWeight: 700 }}>
                                 {capacityPercent}%
                               </Typography>
                             )}
@@ -343,7 +343,7 @@ export default function FacultyBatchesTab({
                                 height: 6,
                                 borderRadius: 3,
                                 bgcolor: '#E2E8F0',
-                                '& .MuiLinearProgress-bar': { bgcolor: capacityPercent > 90 ? '#EF4444' : '#2563EB', borderRadius: 3 },
+                                '& .MuiLinearProgress-bar': { bgcolor: capacityPercent > 90 ? '#EF4444' : '#0B1F3A', borderRadius: 3 },
                               }}
                             />
                           )}
@@ -410,12 +410,12 @@ export default function FacultyBatchesTab({
                               fontSize: '0.74rem',
                               fontWeight: 700,
                               color: '#FFFFFF',
-                              bgcolor: '#2563EB',
+                              bgcolor: '#0B1F3A',
                               borderRadius: '8px',
                               py: 0.35,
                               px: 1.25,
                               boxShadow: 'none',
-                              '&:hover': { bgcolor: '#1D4ED8' },
+                              '&:hover': { bgcolor: '#17366E' },
                             }}
                           >
                             Invite

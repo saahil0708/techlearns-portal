@@ -56,7 +56,7 @@ const INITIAL_TICKETS: SprintTicket[] = [
     priority: 'P0 - Blocker',
     storyPoints: 5,
     status: 'In Review',
-    assignee: { name: 'You (Software Engineer)', avatarBg: '#2563EB' },
+    assignee: { name: 'You (Software Engineer)', avatarBg: '#0B1F3A' },
     prNumber: '#142',
     techLeadFeedback: 'Solid implementation of Redis distributed setnx key locks. Ensure retry-after header is formatted in seconds.',
     description: 'Avoid double billing by ensuring incoming webhooks check deduplication keys before dispatching balance top-up jobs.',
@@ -70,7 +70,7 @@ const INITIAL_TICKETS: SprintTicket[] = [
     priority: 'P1 - High',
     storyPoints: 3,
     status: 'In Progress',
-    assignee: { name: 'You (Software Engineer)', avatarBg: '#2563EB' },
+    assignee: { name: 'You (Software Engineer)', avatarBg: '#0B1F3A' },
     description: 'Optimize auth token lookup performance across cluster nodes with TTL expiry event listeners.',
     isDemo: true,
   },
@@ -82,7 +82,7 @@ const INITIAL_TICKETS: SprintTicket[] = [
     priority: 'P1 - High',
     storyPoints: 8,
     status: 'Merged',
-    assignee: { name: 'You (Software Engineer)', avatarBg: '#2563EB' },
+    assignee: { name: 'You (Software Engineer)', avatarBg: '#0B1F3A' },
     prNumber: '#138',
     techLeadFeedback: 'LGTM! Benchmarks show 42ms p99 latency drop under 10k RPS load tests. Merging.',
     description: 'Add edge n-gram analyzer to problem indexing pipeline to reduce memory footprint by 35%.',
@@ -128,7 +128,7 @@ export default function SimulationsClient() {
               status: it.status,
               assignee: {
                 name: it.assignee?.name || 'Assigned Engineer',
-                avatarBg: '#2563EB',
+                avatarBg: '#0B1F3A',
               },
               prNumber: it.prNumber,
               techLeadFeedback: it.techLeadFeedback,
@@ -222,12 +222,12 @@ export default function SimulationsClient() {
                 width: 44,
                 height: 44,
                 borderRadius: '14px',
-                bgcolor: '#EFF6FF',
+                bgcolor: '#FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB',
-                border: '1px solid #DBEAFE',
+                color: '#0B1F3A',
+                border: '1px solid #FAF5FF',
               }}
             >
               <DomainOutlinedIcon sx={{ fontSize: 24 }} />
@@ -263,7 +263,7 @@ export default function SimulationsClient() {
             <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#0F172A' }}>
               Sprint Velocity & Story Points
             </Typography>
-            <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#2563EB' }}>
+            <Typography sx={{ fontSize: '0.82rem', fontWeight: 800, color: '#0B1F3A' }}>
               {completedPoints} of {totalPoints} Points ({sprintPct}%)
             </Typography>
           </Box>
@@ -274,7 +274,7 @@ export default function SimulationsClient() {
               height: 8,
               borderRadius: '9999px',
               bgcolor: '#F1F5F9',
-              '& .MuiLinearProgress-bar': { bgcolor: '#2563EB', borderRadius: '9999px' },
+              '& .MuiLinearProgress-bar': { bgcolor: '#0B1F3A', borderRadius: '9999px' },
             }}
           />
         </Box>
@@ -313,7 +313,7 @@ export default function SimulationsClient() {
                 >
                   <TableCell sx={{ py: 2.25 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                      <Typography sx={{ fontWeight: 800, color: '#2563EB', fontSize: '0.84rem', fontFamily: 'monospace' }}>
+                      <Typography sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '0.84rem', fontFamily: 'monospace' }}>
                         {t.key}
                       </Typography>
                       <Chip label={t.domain} size="small" sx={{ bgcolor: '#F1F5F9', color: '#475569', fontSize: '0.68rem', height: 20, width: 'fit-content' }} />
@@ -354,8 +354,8 @@ export default function SimulationsClient() {
                         fontWeight: 800,
                         fontSize: '0.72rem',
                         borderRadius: '6px',
-                        bgcolor: t.status === 'Merged' ? '#ECFDF5' : t.status === 'In Review' ? '#FEF3C7' : t.status === 'In Progress' ? '#EFF6FF' : '#F1F5F9',
-                        color: t.status === 'Merged' ? '#059669' : t.status === 'In Review' ? '#D97706' : t.status === 'In Progress' ? '#2563EB' : '#64748B',
+                        bgcolor: t.status === 'Merged' ? '#ECFDF5' : t.status === 'In Review' ? '#FEF3C7' : t.status === 'In Progress' ? '#FAF5FF' : '#F1F5F9',
+                        color: t.status === 'Merged' ? '#059669' : t.status === 'In Review' ? '#D97706' : t.status === 'In Progress' ? '#0B1F3A' : '#64748B',
                       }}
                     />
                   </TableCell>
@@ -367,7 +367,7 @@ export default function SimulationsClient() {
                           size="small"
                           variant="contained"
                           onClick={() => handleOpenPR(t)}
-                          sx={{ bgcolor: '#2563EB', textTransform: 'none', borderRadius: '8px', fontSize: '0.76rem', fontWeight: 700 }}
+                          sx={{ bgcolor: '#0B1F3A', textTransform: 'none', borderRadius: '8px', fontSize: '0.76rem', fontWeight: 700 }}
                         >
                           Submit PR
                         </Button>
@@ -376,7 +376,7 @@ export default function SimulationsClient() {
                         <Chip
                           label={t.prNumber}
                           size="small"
-                          sx={{ bgcolor: '#EFF6FF', color: '#2563EB', fontWeight: 800, fontSize: '0.74rem' }}
+                          sx={{ bgcolor: '#FAF5FF', color: '#0B1F3A', fontWeight: 800, fontSize: '0.74rem' }}
                         />
                       )}
                     </Box>
@@ -400,7 +400,7 @@ export default function SimulationsClient() {
           <>
             <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <Box>
-                <Typography sx={{ fontWeight: 800, color: '#2563EB', fontSize: '0.88rem', fontFamily: 'monospace' }}>
+                <Typography sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '0.88rem', fontFamily: 'monospace' }}>
                   {selectedTicket.key}
                 </Typography>
                 <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', lineHeight: 1.2, mt: 0.25 }}>
@@ -440,7 +440,7 @@ export default function SimulationsClient() {
                 <Button
                   variant="contained"
                   onClick={() => handleOpenPR(selectedTicket)}
-                  sx={{ bgcolor: '#2563EB', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}
+                  sx={{ bgcolor: '#0B1F3A', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}
                 >
                   Create Pull Request
                 </Button>
@@ -486,7 +486,7 @@ export default function SimulationsClient() {
             <Button onClick={() => setPrModalOpen(false)} sx={{ textTransform: 'none', borderRadius: '10px' }}>
               Cancel
             </Button>
-            <Button type="submit" variant="contained" startIcon={<SendRoundedIcon />} sx={{ bgcolor: '#2563EB', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}>
+            <Button type="submit" variant="contained" startIcon={<SendRoundedIcon />} sx={{ bgcolor: '#0B1F3A', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}>
               Submit for Review
             </Button>
           </DialogActions>

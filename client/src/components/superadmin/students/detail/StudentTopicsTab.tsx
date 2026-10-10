@@ -137,7 +137,7 @@ export default function StudentTopicsTab({ topics }: StudentTopicsTabProps) {
                     <TableRow key={top.id} hover sx={{ '& td': { borderBottom: '1px solid #F1F5F9' } }}>
                       <TableCell sx={{ pl: 3, py: 1.75 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                          <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#EFF6FF', color: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Box sx={{ width: 34, height: 34, borderRadius: '8px', bgcolor: '#FAF5FF', color: '#0B1F3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <CategoryRoundedIcon sx={{ fontSize: 18 }} />
                           </Box>
                           <Typography sx={{ fontSize: '0.88rem', fontWeight: 700, color: '#0F172A' }}>
@@ -163,7 +163,7 @@ export default function StudentTopicsTab({ topics }: StudentTopicsTabProps) {
                           <LinearProgress
                             variant="determinate"
                             value={pct}
-                            sx={{ height: 5, borderRadius: 3, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { bgcolor: '#2563EB', borderRadius: 3 } }}
+                            sx={{ height: 5, borderRadius: 3, bgcolor: '#E2E8F0', '& .MuiLinearProgress-bar': { bgcolor: '#0B1F3A', borderRadius: 3 } }}
                           />
                         </Box>
                       </TableCell>
@@ -182,8 +182,8 @@ export default function StudentTopicsTab({ topics }: StudentTopicsTabProps) {
                             height: 22,
                             fontSize: '0.7rem',
                             fontWeight: 700,
-                            bgcolor: top.levelMastery === 'Master' ? '#FEF2F2' : top.levelMastery === 'Proficient' ? '#EFF6FF' : '#F1F5F9',
-                            color: top.levelMastery === 'Master' ? '#DC2626' : top.levelMastery === 'Proficient' ? '#2563EB' : '#475569',
+                            bgcolor: top.levelMastery === 'Master' ? '#FEF2F2' : top.levelMastery === 'Proficient' ? '#FAF5FF' : '#F1F5F9',
+                            color: top.levelMastery === 'Master' ? '#DC2626' : top.levelMastery === 'Proficient' ? '#0B1F3A' : '#475569',
                             borderRadius: '5px',
                           }}
                         />

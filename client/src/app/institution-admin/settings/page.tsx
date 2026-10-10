@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import InstitutionSettingsClient from '@/components/institution-admin/settings/InstitutionSettingsClient';
 
 export const metadata: Metadata = {
-  title: 'Campus Settings | CodePlatform Institution Admin',
+  title: 'Campus Settings | TechLearns Institution Admin',
   description: 'Manage institutional policies, domain whitelists, and campus details.',
 };
 

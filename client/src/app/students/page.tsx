@@ -4,7 +4,7 @@ import StudentProfileClient from '@/components/students/profile/StudentProfileCl
 import LoadingScreen from '@/components/ui/LoadingScreen';
 
 export const metadata: Metadata = {
-  title: 'Student Profile & Competitive Record | CodePlatform',
+  title: 'Student Profile & Competitive Record | TechLearns',
   description: 'Manage personal student profile, contest ratings, enrolled courses, and submissions.',
 };
 

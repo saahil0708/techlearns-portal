@@ -36,7 +36,7 @@ export default function StudentViewCodeModal({
       }}
     >
       <DialogTitle sx={{ fontWeight: 800, fontSize: '1.15rem', color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1 }}>
-        <TerminalRoundedIcon sx={{ color: '#2563EB', fontSize: 22 }} />
+        <TerminalRoundedIcon sx={{ color: '#0B1F3A', fontSize: 22 }} />
         <span>{submission.problemTitle}</span>
         <Chip label={submission.language} size="small" sx={{ ml: 'auto', fontWeight: 700 }} />
       </DialogTitle>
@@ -54,7 +54,7 @@ export default function StudentViewCodeModal({
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2, pt: 0 }}>
-        <Button onClick={onClose} sx={{ textTransform: 'none', color: '#2563EB', fontWeight: 700 }}>
+        <Button onClick={onClose} sx={{ textTransform: 'none', color: '#0B1F3A', fontWeight: 700 }}>
           Close
         </Button>
       </DialogActions>

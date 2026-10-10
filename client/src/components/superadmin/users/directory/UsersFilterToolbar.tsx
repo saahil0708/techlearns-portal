@@ -67,7 +67,7 @@ export default function UsersFilterToolbar({
           sx={{
             minHeight: 48,
             '& .MuiTabs-indicator': {
-              backgroundColor: '#2563EB',
+              backgroundColor: '#0B1F3A',
               height: 3,
               borderRadius: '3px 3px 0 0',
             },
@@ -99,10 +99,10 @@ export default function UsersFilterToolbar({
                       fontSize: '0.68rem',
                       fontWeight: 700,
                       borderRadius: '9999px',
-                      bgcolor: selectedRoleFilter === tab.id ? '#EFF6FF' : '#F1F5F9',
-                      color: selectedRoleFilter === tab.id ? '#2563EB' : '#64748B',
+                      bgcolor: selectedRoleFilter === tab.id ? '#FAF5FF' : '#F1F5F9',
+                      color: selectedRoleFilter === tab.id ? '#0B1F3A' : '#64748B',
                       border: '1px solid',
-                      borderColor: selectedRoleFilter === tab.id ? '#BFDBFE' : '#E2E8F0',
+                      borderColor: selectedRoleFilter === tab.id ? '#D8B4FE' : '#E2E8F0',
                       pointerEvents: 'none',
                     }}
                   />
@@ -114,7 +114,7 @@ export default function UsersFilterToolbar({
                 py: 1,
                 px: 1.25,
                 textTransform: 'none',
-                color: selectedRoleFilter === tab.id ? '#2563EB !important' : '#64748B',
+                color: selectedRoleFilter === tab.id ? '#0B1F3A !important' : '#64748B',
                 '&:hover': {
                   color: '#0F172A',
                 },
@@ -160,7 +160,7 @@ export default function UsersFilterToolbar({
               fontSize: '0.85rem',
               '& fieldset': { borderColor: '#E2E8F0' },
               '&:hover fieldset': { borderColor: '#CBD5E1' },
-              '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+              '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
             },
           }}
         />

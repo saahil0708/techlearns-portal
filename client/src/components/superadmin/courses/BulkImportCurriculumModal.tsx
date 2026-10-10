@@ -358,11 +358,11 @@ export default function BulkImportCurriculumModal({
                 width: 34,
                 height: 34,
                 borderRadius: '10px',
-                bgcolor: '#EFF6FF',
+                bgcolor: '#FAF5FF',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#2563EB',
+                color: '#0B1F3A',
               }}
             >
               <CloudUploadRoundedIcon sx={{ fontSize: 20 }} />
@@ -377,9 +377,9 @@ export default function BulkImportCurriculumModal({
                 height: 22,
                 fontSize: '0.72rem',
                 fontWeight: 700,
-                bgcolor: '#EFF6FF',
-                color: '#2563EB',
-                border: '1px solid #DBEAFE',
+                bgcolor: '#FAF5FF',
+                color: '#0B1F3A',
+                border: '1px solid #FAF5FF',
               }}
             />
           </Box>
@@ -505,15 +505,15 @@ export default function BulkImportCurriculumModal({
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
             sx={{
-              border: `2px dashed ${isDragOver ? '#2563EB' : '#CBD5E1'}`,
+              border: `2px dashed ${isDragOver ? '#0B1F3A' : '#CBD5E1'}`,
               borderRadius: '16px',
               p: { xs: 3, sm: 4 },
               textAlign: 'center',
-              bgcolor: isDragOver ? '#EFF6FF' : '#FAFAFA',
+              bgcolor: isDragOver ? '#FAF5FF' : '#FAFAFA',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               '&:hover': {
-                borderColor: '#2563EB',
+                borderColor: '#0B1F3A',
                 bgcolor: '#F8FAFC',
               },
             }}
@@ -525,7 +525,7 @@ export default function BulkImportCurriculumModal({
               accept=".csv,.json,.md,.txt,.markdown"
               style={{ display: 'none' }}
             />
-            <CloudUploadRoundedIcon sx={{ fontSize: 44, color: '#3B82F6', mb: 1 }} />
+            <CloudUploadRoundedIcon sx={{ fontSize: 44, color: '#5B2D90', mb: 1 }} />
             <Typography sx={{ fontWeight: 700, fontSize: '0.96rem', color: '#0F172A' }}>
               Choose a file or drag & drop it here
             </Typography>
@@ -538,7 +538,7 @@ export default function BulkImportCurriculumModal({
               sx={{
                 mt: 2,
                 borderRadius: '8px',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.82rem',
@@ -582,7 +582,7 @@ export default function BulkImportCurriculumModal({
                 disabled={!pasteText.trim()}
                 startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 16 }} />}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   textTransform: 'none',
                   fontWeight: 700,
                   fontSize: '0.82rem',
@@ -611,7 +611,7 @@ export default function BulkImportCurriculumModal({
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <InsertDriveFileRoundedIcon sx={{ fontSize: 28, color: '#2563EB' }} />
+              <InsertDriveFileRoundedIcon sx={{ fontSize: 28, color: '#0B1F3A' }} />
               <Box>
                 <Typography sx={{ fontWeight: 700, fontSize: '0.88rem', color: '#0F172A' }}>
                   {selectedFile.name}
@@ -630,7 +630,7 @@ export default function BulkImportCurriculumModal({
         {/* Parsing Loading Indicator */}
         {isParsing && (
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5, py: 3 }}>
-            <CircularProgress size={22} sx={{ color: '#2563EB' }} />
+            <CircularProgress size={22} sx={{ color: '#0B1F3A' }} />
             <Typography sx={{ fontSize: '0.88rem', fontWeight: 600, color: '#475569' }}>
               Parsing curriculum structure and validating data...
             </Typography>
@@ -719,7 +719,7 @@ export default function BulkImportCurriculumModal({
                 >
                   <FormControlLabel
                     value="append"
-                    control={<Radio size="small" sx={{ color: '#2563EB', '&.Mui-checked': { color: '#2563EB' } }} />}
+                    control={<Radio size="small" sx={{ color: '#0B1F3A', '&.Mui-checked': { color: '#0B1F3A' } }} />}
                     label={
                       <Box>
                         <Typography sx={{ fontSize: '0.84rem', fontWeight: 600, color: '#0F172A' }}>
@@ -752,11 +752,11 @@ export default function BulkImportCurriculumModal({
 
             {/* Parsing Stats Card */}
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-              <Paper elevation={0} sx={{ p: 1.5, borderRadius: '12px', bgcolor: '#EFF6FF', border: '1px solid #BFDBFE' }}>
-                <Typography sx={{ fontSize: '0.72rem', color: '#1D4ED8', fontWeight: 700, textTransform: 'uppercase' }}>
+              <Paper elevation={0} sx={{ p: 1.5, borderRadius: '12px', bgcolor: '#FAF5FF', border: '1px solid #F3E8FF' }}>
+                <Typography sx={{ fontSize: '0.72rem', color: '#17366E', fontWeight: 700, textTransform: 'uppercase' }}>
                   Modules
                 </Typography>
-                <Typography sx={{ fontSize: '1.4rem', fontWeight: 900, color: '#1E40AF', mt: 0.25 }}>
+                <Typography sx={{ fontSize: '1.4rem', fontWeight: 900, color: '#0F264F', mt: 0.25 }}>
                   {parseResult.stats.totalModules}
                 </Typography>
               </Paper>
@@ -821,7 +821,7 @@ export default function BulkImportCurriculumModal({
                         }}
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                          <LayersRoundedIcon sx={{ fontSize: 20, color: '#2563EB' }} />
+                          <LayersRoundedIcon sx={{ fontSize: 20, color: '#0B1F3A' }} />
                           <Typography sx={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A' }}>
                             {mod.title}
                           </Typography>
@@ -937,7 +937,7 @@ export default function BulkImportCurriculumModal({
               )
             }
             sx={{
-              bgcolor: isCreatingNewCourse ? '#2563EB' : importMode === 'replace' ? '#DC2626' : '#2563EB',
+              bgcolor: isCreatingNewCourse ? '#0B1F3A' : importMode === 'replace' ? '#DC2626' : '#0B1F3A',
               borderRadius: '10px',
               textTransform: 'none',
               fontWeight: 700,
@@ -945,7 +945,7 @@ export default function BulkImportCurriculumModal({
               px: 3,
               py: 0.85,
               '&:hover': {
-                bgcolor: isCreatingNewCourse ? '#1D4ED8' : importMode === 'replace' ? '#B91C1C' : '#1D4ED8',
+                bgcolor: isCreatingNewCourse ? '#17366E' : importMode === 'replace' ? '#B91C1C' : '#17366E',
               },
             }}
           >

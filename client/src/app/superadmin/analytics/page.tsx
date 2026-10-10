@@ -10,7 +10,7 @@ import type {
 import { apiService } from '@/lib/api-service';
 
 export const metadata: Metadata = {
-  title: 'Academic & Competitive Intelligence | CodePlatform Admin',
+  title: 'Academic & Competitive Intelligence | TechLearns Admin',
   description: 'Student problem-solving mastery, DSA topic weakness heatmaps, institute placement benchmarks, and tournament analytics.',
 };
 

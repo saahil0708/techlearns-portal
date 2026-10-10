@@ -58,7 +58,7 @@ export default function PlatformDirectoryTable({
   allEntries,
   currentTab,
   onTabChange,
-  primaryBlue = '#2563eb',
+  primaryBlue = '#0B1F3A',
 }: PlatformDirectoryTableProps) {
   const router = useRouter();
   const [page, setPage] = useState<number>(0);
@@ -97,7 +97,7 @@ export default function PlatformDirectoryTable({
       <head><meta charset="utf-8"/></head>
       <body>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Name / Entity</th>
             <th>Category</th>
             <th>Code / Handle</th>
@@ -175,7 +175,7 @@ export default function PlatformDirectoryTable({
       <Box sx={{ p: 3, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2, borderBottom: `1px solid ${borderColor}` }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-            <DomainRoundedIcon sx={{ color: '#2563EB', fontSize: 24 }} />
+            <DomainRoundedIcon sx={{ color: '#0B1F3A', fontSize: 24 }} />
             <Typography sx={{ fontSize: '1.15rem', fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>
               Platform Directory
             </Typography>
@@ -214,7 +214,7 @@ export default function PlatformDirectoryTable({
                 transition: 'all 0.2s ease',
                 '&.Mui-selected': {
                   bgcolor: '#FFFFFF',
-                  color: '#2563EB',
+                  color: '#0B1F3A',
                   fontWeight: 700,
                   boxShadow: '0 2px 6px rgba(0, 0, 0, 0.06)',
                 },
@@ -237,9 +237,9 @@ export default function PlatformDirectoryTable({
                 p: 0.75,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
-                  borderColor: '#BFDBFE',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
+                  borderColor: '#D8B4FE',
                   transform: 'scale(1.08)',
                 },
               }}
@@ -290,11 +290,11 @@ export default function PlatformDirectoryTable({
                 py: 0.9,
                 px: 1.5,
                 transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: '#EFF6FF' },
+                '&:hover': { bgcolor: '#FAF5FF' },
               }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               </ListItemIcon>
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                 Download CSV (.csv)
@@ -363,15 +363,15 @@ export default function PlatformDirectoryTable({
                         borderRadius: '6px',
                         bgcolor:
                           item.type === 'College' || item.type === 'Institute' || item.type === 'Institution'
-                            ? '#EFF6FF'
+                            ? '#FAF5FF'
                             : '#FFFBEB',
                         border:
                           item.type === 'College' || item.type === 'Institute' || item.type === 'Institution'
-                            ? '1px solid #BFDBFE'
+                            ? '1px solid #F3E8FF'
                             : '1px solid #FDE68A',
                         color:
                           item.type === 'College' || item.type === 'Institute' || item.type === 'Institution'
-                            ? '#2563EB'
+                            ? '#0B1F3A'
                             : '#D97706',
                       }}
                     />
@@ -546,12 +546,12 @@ export default function PlatformDirectoryTable({
                     fontSize: '0.76rem',
                     fontWeight: isActive ? 700 : 500,
                     color: isActive ? '#FFFFFF' : '#64748B',
-                    bgcolor: isActive ? '#2563EB' : '#FFFFFF',
-                    border: isActive ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                    boxShadow: isActive ? '0 2px 8px rgba(37, 99, 235, 0.25)' : 'none',
+                    bgcolor: isActive ? '#0B1F3A' : '#FFFFFF',
+                    border: isActive ? '1px solid #0B1F3A' : '1px solid #E2E8F0',
+                    boxShadow: isActive ? '0 2px 8px rgba(91, 45, 144, 0.25)' : 'none',
                     transition: 'all 0.15s ease',
                     '&:hover': {
-                      bgcolor: isActive ? '#1D4ED8' : '#F1F5F9',
+                      bgcolor: isActive ? '#17366E' : '#F1F5F9',
                       color: isActive ? '#FFFFFF' : '#0F172A',
                     },
                   }}

@@ -161,7 +161,7 @@ function CustomChartTooltip({ active, payload, label }: CustomChartTooltipProps)
                       width: 8,
                       height: 8,
                       borderRadius: '50%',
-                      bgcolor: isAccepted ? '#10B981' : '#2563EB',
+                      bgcolor: isAccepted ? '#10B981' : '#0B1F3A',
                     }}
                   />
                   <Typography sx={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 500 }}>
@@ -223,7 +223,7 @@ export default function SubmissionsAnalyticsChart() {
       <head><meta charset="utf-8"/></head>
       <body>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Time Period</th>
             <th>Full Date / Range</th>
             <th>Total Submissions</th>
@@ -304,12 +304,12 @@ export default function SubmissionsAnalyticsChart() {
               width: 38,
               height: 38,
               borderRadius: '12px',
-              bgcolor: '#EFF6FF',
-              border: '1px solid #DBEAFE',
+              bgcolor: '#FAF5FF',
+              border: '1px solid #FAF5FF',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#2563EB',
+              color: '#0B1F3A',
             }}
           >
             <TrendingUpRoundedIcon sx={{ fontSize: 22 }} />
@@ -334,7 +334,7 @@ export default function SubmissionsAnalyticsChart() {
                 fontSize: '0.74rem',
                 fontWeight: 700,
                 textTransform: 'none',
-                color: chartType === 'area' ? '#2563EB' : '#64748B',
+                color: chartType === 'area' ? '#0B1F3A' : '#64748B',
                 bgcolor: chartType === 'area' ? '#FFFFFF' : 'transparent',
                 borderRadius: '9999px !important',
                 border: 'none !important',
@@ -352,7 +352,7 @@ export default function SubmissionsAnalyticsChart() {
                 fontSize: '0.74rem',
                 fontWeight: 700,
                 textTransform: 'none',
-                color: chartType === 'bar' ? '#2563EB' : '#64748B',
+                color: chartType === 'bar' ? '#0B1F3A' : '#64748B',
                 bgcolor: chartType === 'bar' ? '#FFFFFF' : 'transparent',
                 borderRadius: '9999px !important',
                 border: 'none !important',
@@ -377,14 +377,14 @@ export default function SubmissionsAnalyticsChart() {
                   fontWeight: 800,
                   textTransform: 'none',
                   color: timeRange === range ? '#FFFFFF' : '#64748B',
-                  bgcolor: timeRange === range ? '#2563EB' : 'transparent',
+                  bgcolor: timeRange === range ? '#0B1F3A' : 'transparent',
                   borderRadius: '9999px !important',
                   border: 'none !important',
-                  boxShadow: timeRange === range ? '0 2px 6px rgba(37, 99, 235, 0.25)' : 'none',
+                  boxShadow: timeRange === range ? '0 2px 6px rgba(91, 45, 144, 0.25)' : 'none',
                   px: 1.75,
                   py: 0.4,
                   '&:hover': {
-                    bgcolor: timeRange === range ? '#1D4ED8' : '#E2E8F0',
+                    bgcolor: timeRange === range ? '#17366E' : '#E2E8F0',
                   },
                 }}
               >
@@ -406,9 +406,9 @@ export default function SubmissionsAnalyticsChart() {
                 p: 0.75,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
-                  borderColor: '#BFDBFE',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
+                  borderColor: '#D8B4FE',
                   transform: 'scale(1.08)',
                 },
               }}
@@ -459,11 +459,11 @@ export default function SubmissionsAnalyticsChart() {
                 py: 0.9,
                 px: 1.5,
                 transition: 'all 0.15s ease',
-                '&:hover': { bgcolor: '#EFF6FF' },
+                '&:hover': { bgcolor: '#FAF5FF' },
               }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
               </ListItemIcon>
               <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                 Download CSV (.csv)
@@ -529,7 +529,7 @@ export default function SubmissionsAnalyticsChart() {
             Platform Pass Rate
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mt: 0.25 }}>
-            <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color: '#2563EB', letterSpacing: '-0.02em' }}>
+            <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color: '#0B1F3A', letterSpacing: '-0.02em' }}>
               {acceptanceRate}%
             </Typography>
             <Typography sx={{ fontSize: '0.72rem', color: '#64748B', fontWeight: 500 }}>
@@ -546,8 +546,8 @@ export default function SubmissionsAnalyticsChart() {
             <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="totalGradLight" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2563EB" stopOpacity={0.18} />
-                  <stop offset="95%" stopColor="#2563EB" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor='#0B1F3A' stopOpacity={0.18} />
+                  <stop offset="95%" stopColor='#0B1F3A' stopOpacity={0.0} />
                 </linearGradient>
                 <linearGradient id="acceptedGradLight" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10B981" stopOpacity={0.22} />
@@ -568,11 +568,11 @@ export default function SubmissionsAnalyticsChart() {
                 type="monotone"
                 dataKey="total"
                 name="Total Submissions"
-                stroke="#2563EB"
+                stroke='#0B1F3A'
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#totalGradLight)"
-                activeDot={{ r: 6, stroke: '#FFFFFF', strokeWidth: 2.5, fill: '#2563EB' }}
+                activeDot={{ r: 6, stroke: '#FFFFFF', strokeWidth: 2.5, fill: '#0B1F3A' }}
               />
               <Area
                 type="monotone"
@@ -597,7 +597,7 @@ export default function SubmissionsAnalyticsChart() {
                 tickFormatter={(val) => (val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val)}
               />
               <RechartsTooltip content={<CustomChartTooltip />} />
-              <Bar dataKey="total" name="Total Submissions" fill="#2563EB" radius={[5, 5, 0, 0]} />
+              <Bar dataKey="total" name="Total Submissions" fill='#0B1F3A' radius={[5, 5, 0, 0]} />
               <Bar dataKey="accepted" name="Accepted Solutions" fill="#10B981" radius={[5, 5, 0, 0]} />
             </BarChart>
           )}
@@ -618,7 +618,7 @@ export default function SubmissionsAnalyticsChart() {
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#2563EB' }} />
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#0B1F3A' }} />
             <Typography sx={{ fontSize: '0.74rem', color: '#64748B', fontWeight: 600 }}>Total Submissions</Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>

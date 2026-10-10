@@ -59,7 +59,7 @@ export default function FacultyHeaderCard({
           left: 0,
           right: 0,
           height: 6,
-          background: 'linear-gradient(90deg, #2563EB 0%, #7C3AED 50%, #059669 100%)',
+          background: 'linear-gradient(90deg, #0B1F3A 0%, #7C3AED 50%, #059669 100%)',
         }}
       />
 
@@ -68,12 +68,12 @@ export default function FacultyHeaderCard({
           sx={{
             width: 80,
             height: 80,
-            bgcolor: '#2563EB',
+            bgcolor: '#0B1F3A',
             fontWeight: 900,
             fontSize: '1.75rem',
             color: '#FFFFFF',
             borderRadius: '22px',
-            boxShadow: '0 8px 24px rgba(37, 99, 235, 0.3)',
+            boxShadow: '0 8px 24px rgba(91, 45, 144, 0.3)',
           }}
         >
           {(name || email || 'F').slice(0, 2).toUpperCase()}
@@ -108,7 +108,7 @@ export default function FacultyHeaderCard({
             />
           </Box>
 
-          <Typography sx={{ color: '#2563EB', fontWeight: 700, fontSize: '0.92rem', mt: 0.25 }}>
+          <Typography sx={{ color: '#0B1F3A', fontWeight: 700, fontSize: '0.92rem', mt: 0.25 }}>
             {roleTitle} • {department}
           </Typography>
 
@@ -119,7 +119,7 @@ export default function FacultyHeaderCard({
             </Typography>
             <Typography sx={{ color: '#94A3B8', fontSize: '0.8rem' }}>•</Typography>
             <Typography sx={{ color: '#64748B', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <EmailRoundedIcon sx={{ fontSize: 16, color: '#2563EB' }} />
+              <EmailRoundedIcon sx={{ fontSize: 16, color: '#0B1F3A' }} />
               {email}
             </Typography>
             {location && (

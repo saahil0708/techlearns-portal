@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import ProblemArchiveClient from '@/components/problems/ProblemArchiveClient';
 
 export const metadata: Metadata = {
-  title: 'Problem Archive & Solves | CodePlatform',
+  title: 'Problem Archive & Solves | TechLearns',
   description: 'Explore and solve algorithmic challenges across Dynamic Programming, Graph Theory, Trees, and Data Structures in standard list table format.',
 };
 

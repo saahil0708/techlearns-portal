@@ -39,19 +39,19 @@ const MODAL_THEMES: Record<
   }
 > = {
   'C++': {
-    badgeGradient: 'linear-gradient(145deg, #0F2A66 0%, #1D4ED8 50%, #3B82F6 100%)',
-    glowColor: 'rgba(37, 99, 235, 0.35)',
+    badgeGradient: 'linear-gradient(145deg, #0F2A66 0%, #17366E 50%, #5B2D90 100%)',
+    glowColor: 'rgba(11, 31, 58, 0.35)',
     starColor: '#FBBF24',
-    subTitleColor: '#DBEAFE',
-    accent: '#2563EB',
-    borderHighlight: 'rgba(59, 130, 246, 0.3)',
+    subTitleColor: '#E9D5FF',
+    accent: '#0B1F3A',
+    borderHighlight: 'rgba(91, 45, 144, 0.3)',
   },
   'Python': {
-    badgeGradient: 'linear-gradient(145deg, #075985 0%, #0284C7 45%, #EAB308 100%)',
+    badgeGradient: 'linear-gradient(145deg, #0B1F3A 0%, #5B2D90 45%, #EAB308 100%)',
     glowColor: 'rgba(234, 179, 8, 0.35)',
     starColor: '#F59E0B',
     subTitleColor: '#FEF08A',
-    accent: '#0284C7',
+    accent: '#5B2D90',
     borderHighlight: 'rgba(234, 179, 8, 0.3)',
   },
   'DSA': {
@@ -63,12 +63,12 @@ const MODAL_THEMES: Record<
     borderHighlight: 'rgba(124, 58, 237, 0.3)',
   },
   'React': {
-    badgeGradient: 'linear-gradient(145deg, #083344 0%, #0891B2 50%, #06B6D4 100%)',
-    glowColor: 'rgba(6, 182, 212, 0.35)',
+    badgeGradient: 'linear-gradient(145deg, #083344 0%, #5B2D90 50%, #C084FC 100%)',
+    glowColor: 'rgba(91, 45, 144, 0.35)',
     starColor: '#FBBF24',
     subTitleColor: '#CFFAFE',
-    accent: '#0891B2',
-    borderHighlight: 'rgba(6, 182, 212, 0.3)',
+    accent: '#5B2D90',
+    borderHighlight: 'rgba(91, 45, 144, 0.3)',
   },
   'Cloud': {
     badgeGradient: 'linear-gradient(145deg, #78350F 0%, #D97706 50%, #F59E0B 100%)',
@@ -79,12 +79,12 @@ const MODAL_THEMES: Record<
     borderHighlight: 'rgba(245, 158, 11, 0.3)',
   },
   'SQL': {
-    badgeGradient: 'linear-gradient(145deg, #1E1B4B 0%, #4338CA 50%, #6366F1 100%)',
+    badgeGradient: 'linear-gradient(145deg, #1E1B4B 0%, #4338CA 50%, #5B2D90 100%)',
     glowColor: 'rgba(99, 102, 241, 0.35)',
     starColor: '#FBBF24',
     subTitleColor: '#E0E7FF',
     accent: '#4338CA',
-    borderHighlight: 'rgba(99, 102, 241, 0.3)',
+    borderHighlight: 'rgba(91, 45, 144, 0.3)',
   },
 };
 
@@ -93,7 +93,7 @@ const DEFAULT_MODAL_THEME = {
   glowColor: 'rgba(51, 65, 85, 0.25)',
   starColor: '#FBBF24',
   subTitleColor: '#CBD5E1',
-  accent: '#2563EB',
+  accent: '#0B1F3A',
   borderHighlight: 'rgba(148, 163, 184, 0.2)',
 };
 
@@ -272,9 +272,9 @@ export default function ViewCertificateModal({
               label={cert.difficulty || 'Advanced Tier'}
               size="small"
               sx={{
-                bgcolor: 'rgba(59, 130, 246, 0.15)',
+                bgcolor: 'rgba(91, 45, 144, 0.15)',
                 border: '1px solid rgba(96, 165, 250, 0.3)',
-                color: '#60A5FA',
+                color: '#A855F7',
                 fontWeight: 800,
                 fontSize: '0.72rem',
                 height: 24,
@@ -402,9 +402,9 @@ export default function ViewCertificateModal({
                 <Chip
                   label={`Grade: ${cert.grade}`}
                   sx={{
-                    bgcolor: 'rgba(59, 130, 246, 0.15)',
+                    bgcolor: 'rgba(91, 45, 144, 0.15)',
                     border: '1px solid rgba(96, 165, 250, 0.3)',
-                    color: '#60A5FA',
+                    color: '#A855F7',
                     fontWeight: 800,
                     fontSize: '0.8rem',
                   }}
@@ -432,11 +432,11 @@ export default function ViewCertificateModal({
                 Credential ID
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                <Typography sx={{ fontSize: '0.88rem', fontWeight: 800, fontFamily: 'monospace', color: '#60A5FA' }}>
+                <Typography sx={{ fontSize: '0.88rem', fontWeight: 800, fontFamily: 'monospace', color: '#A855F7' }}>
                   {cert.credentialId}
                 </Typography>
                 <Tooltip title="Copy Credential ID" arrow>
-                  <IconButton size="small" onClick={handleCopyId} sx={{ p: 0.25, color: '#94A3B8', '&:hover': { color: '#60A5FA' } }}>
+                  <IconButton size="small" onClick={handleCopyId} sx={{ p: 0.25, color: '#94A3B8', '&:hover': { color: '#A855F7' } }}>
                     <ContentCopyRoundedIcon sx={{ fontSize: 15 }} />
                   </IconButton>
                 </Tooltip>
@@ -584,14 +584,14 @@ export default function ViewCertificateModal({
             onClick={handleDownload}
             startIcon={<DownloadRoundedIcon />}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               borderRadius: '12px',
               fontWeight: 800,
               textTransform: 'none',
               fontSize: '0.86rem',
               px: 2.5,
-              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 4px 14px rgba(11, 31, 58, 0.35)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Download PDF

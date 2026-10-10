@@ -83,7 +83,7 @@ export default function StudentDetailClient({
         <br/>
         <h3>Submissions History</h3>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Problem Title</th>
             <th>Problem Code</th>
             <th>Difficulty</th>
@@ -158,9 +158,9 @@ export default function StudentDetailClient({
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -201,10 +201,10 @@ export default function StudentDetailClient({
                   color: '#64748B',
                   minHeight: 48,
                   px: 2.5,
-                  '&.Mui-selected': { color: '#2563EB' },
+                  '&.Mui-selected': { color: '#0B1F3A' },
                 },
                 '& .MuiTabs-indicator': {
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   height: 3,
                   borderRadius: '3px 3px 0 0',
                 },

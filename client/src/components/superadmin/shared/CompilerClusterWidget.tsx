@@ -46,7 +46,7 @@ export default function CompilerClusterWidget({
           width: 140,
           height: 140,
           borderRadius: '50%',
-          bgcolor: 'rgba(37, 99, 235, 0.15)',
+          bgcolor: 'rgba(11, 31, 58, 0.15)',
           filter: 'blur(40px)',
           pointerEvents: 'none',
         }}
@@ -128,7 +128,7 @@ export default function CompilerClusterWidget({
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <ShieldRoundedIcon sx={{ fontSize: 18, color: '#38BDF8' }} />
+          <ShieldRoundedIcon sx={{ fontSize: 18, color: '#C084FC' }} />
           <Box>
             <Typography sx={{ fontSize: '0.66rem', color: '#64748B', fontWeight: 600 }}>Memory Cap</Typography>
             <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#F1F5F9' }}>256 MB</Typography>

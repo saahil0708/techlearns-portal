@@ -262,8 +262,8 @@ export default function FacultyRosterTab({
             height: 22,
             fontSize: '0.72rem',
             fontWeight: 700,
-            bgcolor: '#EFF6FF',
-            color: '#2563EB',
+            bgcolor: '#FAF5FF',
+            color: '#0B1F3A',
           }}
         />
       );
@@ -319,7 +319,7 @@ export default function FacultyRosterTab({
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
         <Box>
           <Typography sx={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1 }}>
-            <SchoolRoundedIcon sx={{ color: '#2563EB', fontSize: 26 }} />
+            <SchoolRoundedIcon sx={{ color: '#0B1F3A', fontSize: 26 }} />
             Department Faculty & Mentors
           </Typography>
           <Typography sx={{ fontSize: '0.84rem', color: '#64748B', fontWeight: 500, mt: 0.25 }}>
@@ -372,11 +372,11 @@ export default function FacultyRosterTab({
             sx={{
               textTransform: 'none',
               fontWeight: 700,
-              bgcolor: '#2563EB',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              bgcolor: '#0B1F3A',
+              '&:hover': { bgcolor: '#17366E' },
               borderRadius: '10px',
               px: 2.5,
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+              boxShadow: '0 4px 12px rgba(91, 45, 144, 0.25)',
             }}
           >
             Invite Faculty
@@ -440,7 +440,7 @@ export default function FacultyRosterTab({
 
           <Chip
             label={`${filteredMembers.length} Total Instructors`}
-            sx={{ fontWeight: 700, bgcolor: '#EFF6FF', color: '#2563EB', height: 32 }}
+            sx={{ fontWeight: 700, bgcolor: '#FAF5FF', color: '#0B1F3A', height: 32 }}
           />
         </Box>
 
@@ -474,7 +474,7 @@ export default function FacultyRosterTab({
               {loading ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                    <CircularProgress size={32} sx={{ color: '#2563EB', mb: 1.5 }} />
+                    <CircularProgress size={32} sx={{ color: '#0B1F3A', mb: 1.5 }} />
                     <Typography sx={{ fontSize: '0.88rem', color: '#64748B', fontWeight: 500 }}>
                       Loading institutional faculty directory...
                     </Typography>
@@ -502,7 +502,7 @@ export default function FacultyRosterTab({
                           mt: 2.5,
                           textTransform: 'none',
                           fontWeight: 700,
-                          bgcolor: '#2563EB',
+                          bgcolor: '#0B1F3A',
                           borderRadius: '10px',
                         }}
                       >
@@ -541,8 +541,8 @@ export default function FacultyRosterTab({
                               sx={{
                                 width: 38,
                                 height: 38,
-                                bgcolor: isDeptHead ? '#1E3A8A' : '#EFF6FF',
-                                color: isDeptHead ? '#FFFFFF' : '#2563EB',
+                                bgcolor: isDeptHead ? '#0B1F3A' : '#FAF5FF',
+                                color: isDeptHead ? '#FFFFFF' : '#0B1F3A',
                                 fontSize: '0.88rem',
                                 fontWeight: 800,
                               }}
@@ -571,8 +571,8 @@ export default function FacultyRosterTab({
                                 height: 22,
                                 fontSize: '0.72rem',
                                 fontWeight: 700,
-                                bgcolor: isDeptHead ? '#EFF6FF' : '#F1F5F9',
-                                color: isDeptHead ? '#2563EB' : '#475569',
+                                bgcolor: isDeptHead ? '#FAF5FF' : '#F1F5F9',
+                                color: isDeptHead ? '#0B1F3A' : '#475569',
                               }}
                             />
                             <Typography sx={{ fontSize: '0.8rem', color: '#475569', fontWeight: 500 }}>
@@ -620,7 +620,7 @@ export default function FacultyRosterTab({
                               <IconButton
                                 size="small"
                                 onClick={() => handleCopyEmail(faculty.email)}
-                                sx={{ color: '#94A3B8', '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' } }}
+                                sx={{ color: '#94A3B8', '&:hover': { color: '#0B1F3A', bgcolor: '#FAF5FF' } }}
                               >
                                 <ContentCopyRoundedIcon sx={{ fontSize: 17 }} />
                               </IconButton>

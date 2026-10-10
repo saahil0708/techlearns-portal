@@ -196,7 +196,7 @@ export default function FacultySecurityTab({ twoFactorEnabled }: FacultySecurity
         }}
       >
         <Typography sx={{ fontWeight: 800, fontSize: '1.15rem', color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <LockResetRoundedIcon sx={{ color: '#2563EB', fontSize: 24 }} />
+          <LockResetRoundedIcon sx={{ color: '#0B1F3A', fontSize: 24 }} />
           Change Account Password
         </Typography>
         <Typography sx={{ fontSize: '0.84rem', color: '#64748B', mt: 0.5, mb: 2.5 }}>
@@ -241,13 +241,13 @@ export default function FacultySecurityTab({ twoFactorEnabled }: FacultySecurity
               variant="contained"
               disabled={isChangingPass}
               sx={{
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 textTransform: 'none',
                 fontWeight: 700,
                 borderRadius: '8px',
                 px: 3,
                 py: 1,
-                '&:hover': { bgcolor: '#1D4ED8' },
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               {isChangingPass ? 'Updating Password...' : 'Save New Password'}
@@ -325,7 +325,7 @@ export default function FacultySecurityTab({ twoFactorEnabled }: FacultySecurity
               </>
             ) : (
               <>
-                <QrCode2RoundedIcon sx={{ color: '#2563EB' }} />
+                <QrCode2RoundedIcon sx={{ color: '#0B1F3A' }} />
                 Set Up Two-Factor Authentication
               </>
             )}
@@ -374,7 +374,7 @@ export default function FacultySecurityTab({ twoFactorEnabled }: FacultySecurity
                     <Typography sx={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', mb: 0.5 }}>
                       Manual Secret Key
                     </Typography>
-                    <Typography sx={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.92rem', color: '#2563EB', wordBreak: 'break-all', bgcolor: '#FFFFFF', p: 1, borderRadius: '6px', border: `1px solid ${borderColor}`, letterSpacing: '0.04em' }}>
+                    <Typography sx={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '0.92rem', color: '#0B1F3A', wordBreak: 'break-all', bgcolor: '#FFFFFF', p: 1, borderRadius: '6px', border: `1px solid ${borderColor}`, letterSpacing: '0.04em' }}>
                       {secretData.secret}
                     </Typography>
                   </Box>
@@ -403,12 +403,12 @@ export default function FacultySecurityTab({ twoFactorEnabled }: FacultySecurity
                 variant="contained"
                 disabled={isEnabling2FA || verificationCode.length < 6}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   textTransform: 'none',
                   fontWeight: 700,
                   borderRadius: '8px',
                   px: 3,
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 {isEnabling2FA ? <CircularProgress size={20} sx={{ color: '#FFFFFF' }} /> : 'Verify & Continue'}

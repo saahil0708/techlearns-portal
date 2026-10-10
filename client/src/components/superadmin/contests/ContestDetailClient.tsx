@@ -335,7 +335,7 @@ export default function ContestDetailClient({
   };
 
   const statusColors = {
-    UPCOMING: { bg: '#EFF6FF', color: '#2563EB', border: '#DBEAFE', label: 'Upcoming' },
+    UPCOMING: { bg: '#FAF5FF', color: '#0B1F3A', border: '#E9D5FF', label: 'Upcoming' },
     LIVE: { bg: '#FEF2F2', color: '#DC2626', border: '#FECACA', label: '● LIVE NOW' },
     PAST: { bg: '#F8FAFC', color: '#64748B', border: '#E2E8F0', label: 'Completed' },
     DRAFT: { bg: '#F8FAFC', color: '#64748B', border: '#E2E8F0', label: 'Draft' },
@@ -422,12 +422,12 @@ export default function ContestDetailClient({
                   label={contest.code}
                   size="small"
                   sx={{
-                    bgcolor: '#EFF6FF',
-                    color: '#2563EB',
+                    bgcolor: '#FAF5FF',
+                    color: '#0B1F3A',
                     fontWeight: 800,
                     fontFamily: 'monospace',
                     fontSize: '0.82rem',
-                    border: '1px solid #DBEAFE',
+                    border: '1px solid #FAF5FF',
                     borderRadius: '8px',
                   }}
                 />
@@ -492,7 +492,7 @@ export default function ContestDetailClient({
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CodeRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                  <CodeRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                   <Typography sx={{ fontSize: '0.85rem', color: '#0F172A', fontWeight: 700 }}>
                     {problems.length} Problem Challenges
                   </Typography>
@@ -507,16 +507,16 @@ export default function ContestDetailClient({
                 startIcon={<AddRoundedIcon />}
                 onClick={() => setAddProblemOpen(true)}
                 sx={{
-                  bgcolor: '#2563EB',
-                  backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  bgcolor: '#0B1F3A',
+                  backgroundImage: 'linear-gradient(135deg, #0B1F3A 0%, #5B2D90 100%)',
                   borderRadius: '9999px',
                   px: 2.5,
                   py: 1,
                   fontWeight: 700,
                   textTransform: 'none',
                   fontSize: '0.88rem',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  boxShadow: '0 4px 14px rgba(91, 45, 144, 0.3)',
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Map Problem
@@ -547,14 +547,14 @@ export default function ContestDetailClient({
             value={currentTab}
             onChange={handleTabChange}
             sx={{
-              '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+              '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
               '& .MuiTab-root': {
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.92rem',
                 color: '#64748B',
                 minWidth: 120,
-                '&.Mui-selected': { color: '#2563EB' },
+                '&.Mui-selected': { color: '#0B1F3A' },
               },
             }}
           >
@@ -685,7 +685,7 @@ export default function ContestDetailClient({
                                 {entry.institution} • {entry.email}
                               </Typography>
                             </TableCell>
-                            <TableCell sx={{ fontWeight: 800, color: '#2563EB', fontSize: '0.95rem' }}>
+                            <TableCell sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '0.95rem' }}>
                               {entry.score} pts
                             </TableCell>
                             <TableCell sx={{ fontFamily: 'monospace', color: '#64748B', fontSize: '0.84rem' }}>
@@ -739,8 +739,8 @@ export default function ContestDetailClient({
                       borderRadius: '9999px',
                       textTransform: 'none',
                       fontWeight: 700,
-                      bgcolor: '#2563EB',
-                      '&:hover': { bgcolor: '#1D4ED8' },
+                      bgcolor: '#0B1F3A',
+                      '&:hover': { bgcolor: '#17366E' },
                     }}
                   >
                     Add Problem
@@ -762,7 +762,7 @@ export default function ContestDetailClient({
                     <TableBody>
                       {problems.map((prob) => (
                         <TableRow key={prob.id} hover sx={{ '&:last-child td': { borderBottom: 0 } }}>
-                          <TableCell sx={{ fontWeight: 800, color: '#2563EB', fontSize: '1rem' }}>
+                          <TableCell sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '1rem' }}>
                             {prob.order}
                           </TableCell>
                           <TableCell>
@@ -799,7 +799,7 @@ export default function ContestDetailClient({
                               href={`/superadmin/problems/${prob.slug}`}
                               variant="text"
                               size="small"
-                              sx={{ textTransform: 'none', fontWeight: 700, color: '#2563EB' }}
+                              sx={{ textTransform: 'none', fontWeight: 700, color: '#0B1F3A' }}
                             >
                               Inspect Problem
                             </Button>
@@ -872,9 +872,9 @@ export default function ContestDetailClient({
                                 label={p.status}
                                 size="small"
                                 sx={{
-                                  bgcolor: p.status === 'Checked In' ? '#F0FDF4' : '#EFF6FF',
-                                  color: p.status === 'Checked In' ? '#16A34A' : '#2563EB',
-                                  border: `1px solid ${p.status === 'Checked In' ? '#BBF7D0' : '#DBEAFE'}`,
+                                  bgcolor: p.status === 'Checked In' ? '#F0FDF4' : '#FAF5FF',
+                                  color: p.status === 'Checked In' ? '#16A34A' : '#0B1F3A',
+                                  border: `1px solid ${p.status === 'Checked In' ? '#BBF7D0' : '#E9D5FF'}`,
                                   fontWeight: 700,
                                   fontSize: '0.74rem',
                                   borderRadius: '6px',
@@ -969,7 +969,7 @@ export default function ContestDetailClient({
             <Button
               variant="contained"
               onClick={handleAddProblemToContest}
-              sx={{ bgcolor: '#2563EB', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
+              sx={{ bgcolor: '#0B1F3A', fontWeight: 800, textTransform: 'none', px: 3, borderRadius: '8px' }}
             >
               Add Problem
             </Button>

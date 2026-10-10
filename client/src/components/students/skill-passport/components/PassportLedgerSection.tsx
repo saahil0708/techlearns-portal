@@ -93,7 +93,7 @@ export default function PassportLedgerSection({
               fontWeight: 800,
               textTransform: 'none',
               color: '#64748B',
-              '&.Mui-selected': { color: '#2563EB' },
+              '&.Mui-selected': { color: '#0B1F3A' },
             },
           }}
         >
@@ -118,10 +118,10 @@ export default function PassportLedgerSection({
                   sx={{
                     fontWeight: 750,
                     fontSize: '0.74rem',
-                    bgcolor: difficultyFilter === diff ? '#2563EB' : '#F1F5F9',
+                    bgcolor: difficultyFilter === diff ? '#0B1F3A' : '#F1F5F9',
                     color: difficultyFilter === diff ? '#FFFFFF' : '#475569',
                     cursor: 'pointer',
-                    '&:hover': { bgcolor: difficultyFilter === diff ? '#1D4ED8' : '#E2E8F0' },
+                    '&:hover': { bgcolor: difficultyFilter === diff ? '#17366E' : '#E2E8F0' },
                   }}
                 />
               ))}
@@ -172,8 +172,8 @@ export default function PassportLedgerSection({
                           height: 22,
                           fontSize: '0.68rem',
                           fontWeight: 800,
-                          bgcolor: p.difficulty === 'Easy' ? '#F0FDF4' : p.difficulty === 'Medium' ? '#EFF6FF' : '#FEF2F2',
-                          color: p.difficulty === 'Easy' ? '#16A34A' : p.difficulty === 'Medium' ? '#2563EB' : '#DC2626',
+                          bgcolor: p.difficulty === 'Easy' ? '#F0FDF4' : p.difficulty === 'Medium' ? '#FAF5FF' : '#FEF2F2',
+                          color: p.difficulty === 'Easy' ? '#16A34A' : p.difficulty === 'Medium' ? '#0B1F3A' : '#DC2626',
                         }}
                       />
                     </TableCell>
@@ -230,7 +230,7 @@ export default function PassportLedgerSection({
                         size="small"
                         variant="outlined"
                         onClick={() => onInspectCertificate(c)}
-                        sx={{ textTransform: 'none', fontWeight: 800, fontSize: '0.75rem', borderRadius: '8px', color: '#2563EB', borderColor: '#BFDBFE' }}
+                        sx={{ textTransform: 'none', fontWeight: 800, fontSize: '0.75rem', borderRadius: '8px', color: '#0B1F3A', borderColor: '#D8B4FE' }}
                       >
                         Inspect Certificate
                       </Button>

@@ -286,7 +286,7 @@ export default function AssignInstitutionModal({
                   <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.95rem' }}>
                     {user.name}
                   </Typography>
-                  <Typography sx={{ color: '#2563EB', fontSize: '0.78rem', fontFamily: 'monospace', fontWeight: 600 }}>
+                  <Typography sx={{ color: '#0B1F3A', fontSize: '0.78rem', fontFamily: 'monospace', fontWeight: 600 }}>
                     @{user.handle}
                   </Typography>
                 </Box>
@@ -304,8 +304,8 @@ export default function AssignInstitutionModal({
                       height: 20,
                       fontSize: '0.68rem',
                       fontWeight: 700,
-                      bgcolor: user.institutionName && user.institutionName !== 'Independent' ? '#EFF6FF' : '#F1F5F9',
-                      color: user.institutionName && user.institutionName !== 'Independent' ? '#2563EB' : '#64748B',
+                      bgcolor: user.institutionName && user.institutionName !== 'Independent' ? '#FAF5FF' : '#F1F5F9',
+                      color: user.institutionName && user.institutionName !== 'Independent' ? '#0B1F3A' : '#64748B',
                     }}
                   />
                 </Box>
@@ -317,15 +317,15 @@ export default function AssignInstitutionModal({
               sx={{
                 p: 1.5,
                 borderRadius: '12px',
-                bgcolor: '#EFF6FF',
-                border: '1px solid #BFDBFE',
+                bgcolor: '#FAF5FF',
+                border: '1px solid #F3E8FF',
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: 1.2,
               }}
             >
-              <InfoOutlinedIcon sx={{ color: '#2563EB', fontSize: 20, mt: 0.2 }} />
-              <Typography variant="caption" sx={{ color: '#1E40AF', lineHeight: 1.5 }}>
+              <InfoOutlinedIcon sx={{ color: '#0B1F3A', fontSize: 20, mt: 0.2 }} />
+              <Typography variant="caption" sx={{ color: '#0F264F', lineHeight: 1.5 }}>
                 Assigning this user will link their account to the selected institution workspace, granting them tenant course access, roster inclusion, and institutional badges.
               </Typography>
             </Box>
@@ -338,7 +338,7 @@ export default function AssignInstitutionModal({
 
               {loadingInstitutions ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 2 }}>
-                  <CircularProgress size={20} sx={{ color: '#2563EB' }} />
+                  <CircularProgress size={20} sx={{ color: '#0B1F3A' }} />
                   <Typography variant="body2" sx={{ color: '#64748B' }}>
                     Loading active institutes...
                   </Typography>
@@ -393,7 +393,7 @@ export default function AssignInstitutionModal({
                       fontWeight: 600,
                       '& .MuiOutlinedInput-notchedOutline': { borderColor },
                       '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#2563EB' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#0B1F3A' },
                     }}
                   >
                     {filteredInstitutions.length === 0 ? (
@@ -415,8 +415,8 @@ export default function AssignInstitutionModal({
                                   height: 18,
                                   fontSize: '0.65rem',
                                   fontWeight: 700,
-                                  bgcolor: '#EFF6FF',
-                                  color: '#2563EB',
+                                  bgcolor: '#FAF5FF',
+                                  color: '#0B1F3A',
                                 }}
                               />
                             )}
@@ -452,7 +452,7 @@ export default function AssignInstitutionModal({
                   fontWeight: 600,
                   '& .MuiOutlinedInput-notchedOutline': { borderColor },
                   '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#2563EB' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#0B1F3A' },
                 }}
               >
                 <MenuItem value="FACULTY" sx={{ fontSize: '0.85rem' }}>

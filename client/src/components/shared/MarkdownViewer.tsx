@@ -137,7 +137,7 @@ export function renderInlineContent(text: string): React.ReactNode {
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            color: '#2563EB',
+            color: '#0B1F3A',
             fontWeight: 700,
             textDecoration: 'underline',
             wordBreak: 'break-word',
@@ -331,7 +331,7 @@ function CodeBlock({
  */
 export default function MarkdownViewer({
   content,
-  accentColor = '#2563EB',
+  accentColor = '#0B1F3A',
   className,
   sx,
 }: MarkdownViewerProps) {
@@ -381,12 +381,12 @@ export default function MarkdownViewer({
           '& li': { my: 0.6, color: '#334155', display: 'list-item' },
           '& blockquote': {
             borderLeft: `4px solid ${accentColor}`,
-            bgcolor: 'rgba(37, 99, 235, 0.05)',
+            bgcolor: 'rgba(91, 45, 144, 0.05)',
             p: 2.5,
             borderRadius: '0 10px 10px 0',
             my: 2.5,
             fontStyle: 'italic',
-            color: '#1E3A8A',
+            color: '#0B1F3A',
           },
           '& code': {
             bgcolor: '#F1F5F9',
@@ -448,7 +448,7 @@ export default function MarkdownViewer({
             my: 3.5,
           },
           '& a': {
-            color: '#2563EB',
+            color: '#0B1F3A',
             textDecoration: 'underline',
             fontWeight: 700,
           },
@@ -716,11 +716,11 @@ export default function MarkdownViewer({
 
       const calloutConfig = {
         note: {
-          bg: 'rgba(37, 99, 235, 0.05)',
-          border: '#2563EB',
-          icon: <InfoOutlinedIcon sx={{ color: '#2563EB', fontSize: 22 }} />,
+          bg: 'rgba(91, 45, 144, 0.05)',
+          border: '#0B1F3A',
+          icon: <InfoOutlinedIcon sx={{ color: '#0B1F3A', fontSize: 22 }} />,
           title: 'Note',
-          color: '#1E40AF',
+          color: '#0F264F',
         },
         tip: {
           bg: 'rgba(16, 185, 129, 0.06)',
@@ -744,11 +744,11 @@ export default function MarkdownViewer({
           color: '#991B1B',
         },
         quote: {
-          bg: 'rgba(37, 99, 235, 0.04)',
+          bg: 'rgba(91, 45, 144, 0.04)',
           border: accentColor,
           icon: <FormatQuoteRoundedIcon sx={{ color: accentColor, fontSize: 24, opacity: 0.6 }} />,
           title: null,
-          color: '#1E3A8A',
+          color: '#0B1F3A',
         },
       }[calloutType];
 
@@ -811,7 +811,7 @@ export default function MarkdownViewer({
               justifyContent: 'center',
               flexShrink: 0,
               mt: '3px',
-              boxShadow: `0 2px 6px rgba(37,99,235,0.25)`,
+              boxShadow: `0 2px 6px rgba(91, 45, 144, 0.25)`,
             }}
           >
             {itemNumber}

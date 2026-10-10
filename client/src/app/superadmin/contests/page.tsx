@@ -4,7 +4,7 @@ import { ContestEntity } from '@/types/contest';
 import { apiService } from '@/lib/api-service';
 
 export const metadata: Metadata = {
-  title: 'Competitive Contests & Hackathons | CodePlatform Super Admin',
+  title: 'Competitive Contests & Hackathons | TechLearns Super Admin',
   description: 'Manage inter-collegiate coding competitions, timed assessments, live leaderboards, and auto-judged tournaments.',
 };
 
@@ -35,8 +35,8 @@ export default async function ContestsPage() {
         problemsCount: item._count?.problems || 0,
         registeredParticipants: item._count?.registrations || 0,
         submissionsCount: item._count?.submissions || 0,
-        organizer: 'CodePlatform Global',
-        bannerColor: '#2563EB',
+        organizer: 'TechLearns Global',
+        bannerColor: '#0B1F3A',
         tags: ['Competitive', 'Algorithms'],
         rated: true,
       }));

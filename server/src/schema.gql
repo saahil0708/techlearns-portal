@@ -201,13 +201,30 @@ input CreateBatchInput {
 }
 
 input CreateContestInput {
+  batchId: String
+  code: String
   collegeId: String
   description: String
+  disableCopyPaste: Boolean
+  durationMinutes: Float
   endTime: DateTime!
+  enforceFullScreen: Boolean
   institutionId: String
+  institutionLogo: String
+  ipRestriction: String
+  isProctored: Boolean
+  plagiarismCheck: Boolean
+  problemIds: [String!]
+  scoringFormat: String
+  shuffleQuestions: Boolean
+  slug: String
   startTime: DateTime!
   status: ContestStatus = UPCOMING
+  tabSwitchLimit: Float
   title: String!
+  webcamProctoring: Boolean
+  whitelistedEmails: [String!]
+  windowType: String
 }
 
 input CreateCourseInput {

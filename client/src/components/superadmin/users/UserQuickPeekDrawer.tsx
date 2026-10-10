@@ -63,9 +63,9 @@ export default function UserQuickPeekDrawer({
         return { bg: '#FAF5FF', text: '#7C3AED', border: '#E9D5FF' };
       case 'COLLEGE_ADMIN':
       case 'INSTITUTION_ADMIN':
-        return { bg: '#EFF6FF', text: '#2563EB', border: '#BFDBFE' };
+        return { bg: '#FAF5FF', text: '#0B1F3A', border: '#D8B4FE' };
       case 'FACULTY':
-        return { bg: '#ECFEFF', text: '#0891B2', border: '#A5F3FC' };
+        return { bg: '#ECFEFF', text: '#5B2D90', border: '#A5F3FC' };
       case 'STUDENT':
         return { bg: '#FFFBEB', text: '#D97706', border: '#FDE68A' };
       default:
@@ -154,8 +154,8 @@ export default function UserQuickPeekDrawer({
               bgcolor: user.avatarColor,
               fontWeight: 800,
               fontSize: '1.3rem',
-              border: '3px solid #BFDBFE',
-              boxShadow: '0 4px 14px rgba(37,99,235,0.15)',
+              border: '3px solid #F3E8FF',
+              boxShadow: '0 4px 14px rgba(11, 31, 58, 0.15)',
             }}
           >
             {user.name.charAt(0)}
@@ -164,7 +164,7 @@ export default function UserQuickPeekDrawer({
             <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F172A', lineHeight: 1.2 }}>
               {user.name}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#2563EB', fontFamily: 'monospace', fontSize: '0.82rem', mb: 0.5, fontWeight: 600 }}>
+            <Typography variant="body2" sx={{ color: '#0B1F3A', fontFamily: 'monospace', fontSize: '0.82rem', mb: 0.5, fontWeight: 600 }}>
               @{user.handle}
             </Typography>
             <Typography variant="caption" sx={{ color: '#64748B', display: 'block' }}>
@@ -188,15 +188,15 @@ export default function UserQuickPeekDrawer({
           <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0F172A', mt: 0.5 }}>
             {user.institutionName}
           </Typography>
-          <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 600 }}>
+          <Typography variant="caption" sx={{ color: '#0B1F3A', fontWeight: 600 }}>
             {user.institutionType} Affiliate
           </Typography>
         </Box>
 
         {/* Security & Access Overview */}
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1.5 }}>
-          <Box sx={{ p: '14px', borderRadius: '14px', bgcolor: '#EFF6FF', border: '1px solid #BFDBFE' }}>
-            <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 600 }}>
+          <Box sx={{ p: '14px', borderRadius: '14px', bgcolor: '#FAF5FF', border: '1px solid #F3E8FF' }}>
+            <Typography variant="caption" sx={{ color: '#0B1F3A', fontWeight: 600 }}>
               Two-Factor Auth (2FA)
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, my: 0.3 }}>
@@ -244,9 +244,9 @@ export default function UserQuickPeekDrawer({
                 fontSize: '0.82rem',
                 py: 1,
                 '&:hover': {
-                  borderColor: '#2563EB',
-                  bgcolor: '#EFF6FF',
-                  color: '#2563EB',
+                  borderColor: '#0B1F3A',
+                  bgcolor: '#FAF5FF',
+                  color: '#0B1F3A',
                 },
               }}
             >
@@ -266,16 +266,16 @@ export default function UserQuickPeekDrawer({
               startIcon={<EditRoundedIcon sx={{ fontSize: '1rem' }} />}
               sx={{
                 borderRadius: '9999px',
-                borderColor: '#BFDBFE',
-                color: '#2563EB',
-                bgcolor: '#EFF6FF',
+                borderColor: '#D8B4FE',
+                color: '#0B1F3A',
+                bgcolor: '#FAF5FF',
                 textTransform: 'none',
                 fontWeight: 700,
                 fontSize: '0.82rem',
                 py: 1,
                 '&:hover': {
-                  borderColor: '#2563EB',
-                  bgcolor: '#DBEAFE',
+                  borderColor: '#0B1F3A',
+                  bgcolor: '#E9D5FF',
                 },
               }}
             >
@@ -373,12 +373,12 @@ export default function UserQuickPeekDrawer({
               endIcon={<FluidArrowRight size={18} />}
               sx={{
                 borderRadius: '9999px',
-                bgcolor: '#2563EB',
+                bgcolor: '#0B1F3A',
                 py: 1.2,
                 fontWeight: 700,
                 textTransform: 'none',
-                boxShadow: '0 4px 14px rgba(37,99,235,0.25)',
-                '&:hover': { bgcolor: '#1D4ED8' },
+                boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
+                '&:hover': { bgcolor: '#17366E' },
               }}
             >
               Open Full User Profile & Security Logs

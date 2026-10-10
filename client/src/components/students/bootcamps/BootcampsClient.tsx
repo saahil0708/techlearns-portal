@@ -362,15 +362,15 @@ export default function BootcampsClient() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 0.6,
-                bgcolor: 'rgba(37, 99, 235, 0.08)',
-                border: '1px solid rgba(37, 99, 235, 0.18)',
+                bgcolor: 'rgba(91, 45, 144, 0.08)',
+                border: '1px solid rgba(91, 45, 144, 0.18)',
                 px: 1.2,
                 py: 0.35,
                 borderRadius: '9999px',
               }}
             >
               <BoltRoundedIcon sx={{ fontSize: 14, color: '#10B981', filter: 'drop-shadow(0 0 3px rgba(16, 185, 129, 0.6))' }} />
-              <Typography sx={{ color: '#2563EB', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.02em' }}>
+              <Typography sx={{ color: '#0B1F3A', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '0.02em' }}>
                 LIVE SPRINTS
               </Typography>
             </Box>
@@ -453,9 +453,9 @@ export default function BootcampsClient() {
                 fontWeight: 700,
                 textTransform: 'none',
                 color: '#64748B',
-                '&.Mui-selected': { color: '#2563EB' },
+                '&.Mui-selected': { color: '#0B1F3A' },
               },
-              '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3, borderRadius: '3px 3px 0 0' },
+              '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3, borderRadius: '3px 3px 0 0' },
             }}
           >
             <Tab label="All Cohorts" value="ALL" />
@@ -539,7 +539,7 @@ export default function BootcampsClient() {
                   transition: 'all 0.18s ease',
                   '&.Mui-selected': {
                     bgcolor: '#FFFFFF',
-                    color: '#2563EB',
+                    color: '#0B1F3A',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                     fontWeight: 800,
                   },
@@ -582,7 +582,7 @@ export default function BootcampsClient() {
                     size="small"
                     onClick={fetchLiveBootcamps}
                     disabled={loading}
-                    sx={{ textTransform: 'none', fontWeight: 700, color: '#2563EB', borderColor: '#2563EB' }}
+                    sx={{ textTransform: 'none', fontWeight: 700, color: '#0B1F3A', borderColor: '#0B1F3A' }}
                   >
                     {loading ? 'Retrying...' : 'Retry Connection'}
                   </Button>
@@ -593,7 +593,7 @@ export default function BootcampsClient() {
                       variant="outlined"
                       size="small"
                       onClick={() => setIsDemoMode(true)}
-                      sx={{ textTransform: 'none', fontWeight: 700, color: '#2563EB', borderColor: '#2563EB' }}
+                      sx={{ textTransform: 'none', fontWeight: 700, color: '#0B1F3A', borderColor: '#0B1F3A' }}
                     >
                       Load Sample Demo Cohorts
                     </Button>
@@ -687,8 +687,8 @@ export default function BootcampsClient() {
                                 label={bc.track}
                                 size="small"
                                 sx={{
-                                  bgcolor: 'rgba(37, 99, 235, 0.08)',
-                                  color: '#2563EB',
+                                  bgcolor: 'rgba(91, 45, 144, 0.08)',
+                                  color: '#0B1F3A',
                                   fontWeight: 800,
                                   fontSize: '0.7rem',
                                   height: 20,
@@ -742,7 +742,7 @@ export default function BootcampsClient() {
                                 <Typography sx={{ fontSize: '0.72rem', color: '#64748B' }}>
                                   {bc.sessionsCompleted}/{bc.totalSessions} Sessions
                                 </Typography>
-                                <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#2563EB' }}>
+                                <Typography sx={{ fontSize: '0.74rem', fontWeight: 800, color: '#0B1F3A' }}>
                                   {bc.progressPct}%
                                 </Typography>
                               </Box>
@@ -754,7 +754,7 @@ export default function BootcampsClient() {
                                   borderRadius: 3,
                                   bgcolor: '#F1F5F9',
                                   '& .MuiLinearProgress-bar': {
-                                    background: 'linear-gradient(90deg, #3B82F6 0%, #1D4ED8 100%)',
+                                    background: 'linear-gradient(90deg, #5B2D90 0%, #17366E 100%)',
                                     borderRadius: 3,
                                   },
                                 }}
@@ -802,10 +802,10 @@ export default function BootcampsClient() {
                               px: 1.8,
                               py: 0.5,
                               bgcolor: bc.status === 'Enrolled' ? '#0F172A' : 'transparent',
-                              borderColor: '#2563EB',
-                              color: bc.status === 'Enrolled' ? '#FFFFFF' : '#2563EB',
+                              borderColor: '#0B1F3A',
+                              color: bc.status === 'Enrolled' ? '#FFFFFF' : '#0B1F3A',
                               '&:hover': {
-                                bgcolor: bc.status === 'Enrolled' ? '#1E293B' : 'rgba(37, 99, 235, 0.08)',
+                                bgcolor: bc.status === 'Enrolled' ? '#1E293B' : 'rgba(91, 45, 144, 0.08)',
                               },
                             }}
                           >
@@ -860,7 +860,7 @@ export default function BootcampsClient() {
                 <Chip
                   label={selectedBootcamp.track}
                   size="small"
-                  sx={{ bgcolor: 'rgba(37, 99, 235, 0.08)', color: '#2563EB', fontWeight: 800, fontSize: '0.72rem' }}
+                  sx={{ bgcolor: 'rgba(91, 45, 144, 0.08)', color: '#0B1F3A', fontWeight: 800, fontSize: '0.72rem' }}
                 />
                 <Typography sx={{ fontSize: '0.76rem', color: '#64748B', fontWeight: 600 }}>
                   {selectedBootcamp.duration} • {selectedBootcamp.enrolledStudents} Enrolled
@@ -928,7 +928,7 @@ export default function BootcampsClient() {
                         width: 28,
                         height: 28,
                         borderRadius: '50%',
-                        bgcolor: '#2563EB',
+                        bgcolor: '#0B1F3A',
                         color: '#FFFFFF',
                         display: 'flex',
                         alignItems: 'center',
@@ -979,13 +979,13 @@ export default function BootcampsClient() {
                 variant="contained"
                 onClick={() => handleEnroll(selectedBootcamp)}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   textTransform: 'none',
                   borderRadius: '8px',
                   fontWeight: 700,
                   px: 2.5,
                   py: 0.8,
-                  '&:hover': { bgcolor: '#1D4ED8' },
+                  '&:hover': { bgcolor: '#17366E' },
                 }}
               >
                 Enroll in Cohort

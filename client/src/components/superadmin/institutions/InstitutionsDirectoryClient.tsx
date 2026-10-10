@@ -132,7 +132,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
               cohortsCount: item._count?.batches || 0,
               facultyCount: faculty,
               status: item.status === 'ACTIVE' ? 'Active' : 'Suspended',
-              logoColor: '#3B82F6',
+              logoColor: '#5B2D90',
             };
           });
           setInstitutions(mapped);
@@ -322,7 +322,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
       cohortsCount: 0,
       facultyCount: 0,
       status: 'Active',
-      logoColor: '#3B82F6',
+      logoColor: '#5B2D90',
     };
     setInstitutions((prev) => [newEntry, ...prev]);
 
@@ -387,7 +387,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
       <body>
         <h2>Institutions & Academic Organizations Directory</h2>
         <table border="1">
-          <tr style="background-color: #2563EB; color: #FFFFFF; font-weight: bold;">
+          <tr style="background-color: #0B1F3A; color: #FFFFFF; font-weight: bold;">
             <th>Code</th>
             <th>Institution Name</th>
             <th>Domain</th>
@@ -467,9 +467,9 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
         display: 'flex',
         bgcolor: '#F4F5F7',
         backgroundImage: `
-          radial-gradient(ellipse at 15% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 45%),
-          radial-gradient(ellipse at 85% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
-          radial-gradient(ellipse at 50% 90%, rgba(14, 165, 233, 0.04) 0%, transparent 50%)
+          radial-gradient(ellipse at 15% 10%, rgba(91, 45, 144, 0.06) 0%, transparent 45%),
+          radial-gradient(ellipse at 85% 20%, rgba(91, 45, 144, 0.04) 0%, transparent 45%),
+          radial-gradient(ellipse at 50% 90%, rgba(91, 45, 144, 0.04) 0%, transparent 50%)
         `,
         color: '#0F172A',
         p: { xs: 1.5, sm: 2, md: 2.5 },
@@ -496,12 +496,12 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                     width: 36,
                     height: 36,
                     borderRadius: '10px',
-                    bgcolor: '#EFF6FF',
-                    border: '1px solid #DBEAFE',
+                    bgcolor: '#FAF5FF',
+                    border: '1px solid #FAF5FF',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#2563EB',
+                    color: '#0B1F3A',
                   }}
                 >
                   <AccountBalanceRoundedIcon sx={{ fontSize: 20 }} />
@@ -530,7 +530,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                     fontSize: '0.85rem',
                     px: 2,
                     py: 1,
-                    '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB', borderColor: '#BFDBFE' },
+                    '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A', borderColor: '#D8B4FE' },
                   }}
                 >
                   Export Directory
@@ -565,7 +565,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                 </MenuItem>
                 <MenuItem onClick={downloadInstitutionsCSV} sx={{ borderRadius: '8px', py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 32 }}>
-                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+                    <DescriptionRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
                   </ListItemIcon>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A' }}>
                     Download CSV (.csv)
@@ -578,7 +578,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                 startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
                 onClick={() => setIsModalOpen(true)}
                 sx={{
-                  bgcolor: '#2563EB',
+                  bgcolor: '#0B1F3A',
                   color: '#FFFFFF',
                   textTransform: 'none',
                   fontWeight: 600,
@@ -586,9 +586,9 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                   borderRadius: '8px',
                   px: 2.5,
                   py: 1,
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.25)',
+                  boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)',
                   '&:hover': {
-                    bgcolor: '#1D4ED8',
+                    bgcolor: '#17366E',
                   },
                 }}
               >
@@ -662,7 +662,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                 sx={{
                   minHeight: 48,
                   '& .MuiTabs-indicator': {
-                    backgroundColor: '#2563EB',
+                    backgroundColor: '#0B1F3A',
                     height: 3,
                     borderRadius: '3px 3px 0 0',
                   },
@@ -693,10 +693,10 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                             fontSize: '0.68rem',
                             fontWeight: 700,
                             borderRadius: '9999px',
-                            bgcolor: selectedStatus === tab.id ? '#EFF6FF' : '#F1F5F9',
-                            color: selectedStatus === tab.id ? '#2563EB' : '#64748B',
+                            bgcolor: selectedStatus === tab.id ? '#FAF5FF' : '#F1F5F9',
+                            color: selectedStatus === tab.id ? '#0B1F3A' : '#64748B',
                             border: '1px solid',
-                            borderColor: selectedStatus === tab.id ? '#BFDBFE' : '#E2E8F0',
+                            borderColor: selectedStatus === tab.id ? '#D8B4FE' : '#E2E8F0',
                             pointerEvents: 'none',
                           }}
                         />
@@ -708,7 +708,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                       py: 1,
                       px: 1.25,
                       textTransform: 'none',
-                      color: selectedStatus === tab.id ? '#2563EB !important' : '#64748B',
+                      color: selectedStatus === tab.id ? '#0B1F3A !important' : '#64748B',
                       '&:hover': {
                         color: '#0F172A',
                       },
@@ -757,7 +757,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                     fontSize: '0.85rem',
                     '& fieldset': { borderColor: '#E2E8F0' },
                     '&:hover fieldset': { borderColor: '#CBD5E1' },
-                    '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                    '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                   },
                 }}
               />
@@ -829,7 +829,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                         onChange={(e) => handleSelectAll(e.target.checked)}
                         sx={{
                           color: '#CBD5E1',
-                          '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#2563EB' },
+                          '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: '#0B1F3A' },
                         }}
                       />
                     </TableCell>
@@ -865,8 +865,8 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                         selected={isSelected}
                         sx={{
                           '& td': { borderBottom: '1px solid #F1F5F9' },
-                          bgcolor: isSelected ? '#EFF6FF !important' : 'inherit',
-                          '&:hover': { bgcolor: isSelected ? '#DBEAFE !important' : '#F8FAFC !important' },
+                          bgcolor: isSelected ? '#FAF5FF !important' : 'inherit',
+                          '&:hover': { bgcolor: isSelected ? '#FAF5FF !important' : '#F8FAFC !important' },
                         }}
                       >
                         <TableCell padding="checkbox" sx={{ pl: 2.5 }}>
@@ -875,7 +875,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                             onChange={() => handleToggleSelectRow(institution.id)}
                             sx={{
                               color: '#CBD5E1',
-                              '&.Mui-checked': { color: '#2563EB' },
+                              '&.Mui-checked': { color: '#0B1F3A' },
                             }}
                           />
                         </TableCell>
@@ -889,7 +889,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                               gap: 1.5,
                               textDecoration: 'none',
                               color: 'inherit',
-                              '&:hover .institution-name': { color: '#2563EB' },
+                              '&:hover .institution-name': { color: '#0B1F3A' },
                             }}
                           >
                             <Avatar
@@ -948,7 +948,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                               <Typography noWrap sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#0F172A' }}>
                                 {institution.studentsCount.toLocaleString()} / {institution.maxQuota.toLocaleString()}
                               </Typography>
-                              <Typography sx={{ fontSize: '0.72rem', color: quotaPercent > 90 ? '#DC2626' : '#2563EB', fontWeight: 700, ml: 1 }}>
+                              <Typography sx={{ fontSize: '0.72rem', color: quotaPercent > 90 ? '#DC2626' : '#0B1F3A', fontWeight: 700, ml: 1 }}>
                                 {quotaPercent}%
                               </Typography>
                             </Box>
@@ -960,7 +960,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                                 borderRadius: 3,
                                 bgcolor: '#E2E8F0',
                                 '& .MuiLinearProgress-bar': {
-                                  bgcolor: quotaPercent > 90 ? '#EF4444' : '#2563EB',
+                                  bgcolor: quotaPercent > 90 ? '#EF4444' : '#0B1F3A',
                                   borderRadius: 3,
                                 },
                               }}
@@ -998,13 +998,13 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                                 size="small"
                                 onClick={() => setEditingInstitution(institution)}
                                 sx={{
-                                  color: '#2563EB',
+                                  color: '#0B1F3A',
                                   width: 30,
                                   height: 30,
                                   borderRadius: '6px',
-                                  border: '1px solid #DBEAFE',
-                                  bgcolor: '#EFF6FF',
-                                  '&:hover': { color: '#1D4ED8', bgcolor: '#DBEAFE', borderColor: '#93C5FD' },
+                                  border: '1px solid #FAF5FF',
+                                  bgcolor: '#FAF5FF',
+                                  '&:hover': { color: '#17366E', bgcolor: '#E9D5FF', borderColor: '#C084FC' },
                                 }}
                               >
                                 <EditRoundedIcon sx={{ fontSize: 17 }} />
@@ -1195,14 +1195,14 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                         fontSize: '0.78rem',
                         fontWeight: isActive ? 800 : 600,
                         color: isActive ? '#FFFFFF' : '#64748B',
-                        bgcolor: isActive ? '#2563EB' : '#FFFFFF',
-                        border: isActive ? '1px solid #2563EB' : '1px solid #E2E8F0',
-                        boxShadow: isActive ? '0 2px 8px rgba(37, 99, 235, 0.3)' : 'none',
+                        bgcolor: isActive ? '#0B1F3A' : '#FFFFFF',
+                        border: isActive ? '1px solid #0B1F3A' : '1px solid #E2E8F0',
+                        boxShadow: isActive ? '0 2px 8px rgba(91, 45, 144, 0.3)' : 'none',
                         transition: 'all 0.15s ease',
                         '&:hover': {
-                          bgcolor: isActive ? '#1D4ED8' : '#F1F5F9',
+                          bgcolor: isActive ? '#17366E' : '#F1F5F9',
                           color: isActive ? '#FFFFFF' : '#0F172A',
-                          borderColor: isActive ? '#1D4ED8' : '#CBD5E1',
+                          borderColor: isActive ? '#17366E' : '#CBD5E1',
                         },
                       }}
                     >
@@ -1272,7 +1272,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
                 fontSize: '0.82rem',
                 py: 1,
                 color: '#334155',
-                '&:hover': { bgcolor: '#EFF6FF', color: '#2563EB' },
+                '&:hover': { bgcolor: '#FAF5FF', color: '#0B1F3A' },
               },
             },
           },
@@ -1283,10 +1283,10 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
             if (menuAnchor) router.push(`/superadmin/institutions/${menuAnchor.institution.id}`);
             setMenuAnchor(null);
           }}
-          sx={{ borderRadius: '8px', py: 1, '&:hover': { bgcolor: '#EFF6FF' } }}
+          sx={{ borderRadius: '8px', py: 1, '&:hover': { bgcolor: '#FAF5FF' } }}
         >
           <ListItemIcon sx={{ minWidth: 28 }}>
-            <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#2563EB' }} />
+            <AccountBalanceRoundedIcon sx={{ fontSize: 18, color: '#0B1F3A' }} />
           </ListItemIcon>
           <Typography sx={{ fontSize: '0.84rem', fontWeight: 700, color: '#0F172A' }}>
             Open Institution Portal
@@ -1321,7 +1321,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
               : statusOption === 'Trial'
               ? '#F59E0B'
               : statusOption === 'Provisioning'
-              ? '#0284C7'
+              ? '#5B2D90'
               : '#EF4444';
 
           const statusBg =
@@ -1330,7 +1330,7 @@ export default function InstitutionsDirectoryClient({ initialInstitutions }: Ins
               : statusOption === 'Trial'
               ? '#FFFBEB'
               : statusOption === 'Provisioning'
-              ? '#F0F9FF'
+              ? '#FAF5FF'
               : '#FEF2F2';
 
           return (

@@ -4,7 +4,7 @@ import type { CourseDirectoryEntity } from '@/types/course';
 import { apiService } from '@/lib/api-service';
 
 export const metadata: Metadata = {
-  title: 'Courses & Interactive Syllabi | CodePlatform',
+  title: 'Courses & Interactive Syllabi | TechLearns',
   description: 'Curriculum modules, interactive coding sandboxes, accredited computer science lessons, and progress tracking.',
 };
 
@@ -40,7 +40,7 @@ export default async function CoursesPage() {
         status: c.status === 'PUBLISHED' ? 'Published' : 'Draft',
         tags: Array.isArray(c.tags) && c.tags.length > 0 ? c.tags : ['Computer Science', 'Programming'],
         description: c.description || 'Comprehensive programming curriculum with hands-on coding challenges.',
-        accentColor: ['#2563EB', '#7C3AED', '#DC2626', '#059669', '#D97706'][idx % 5],
+        accentColor: ['#0B1F3A', '#7C3AED', '#DC2626', '#059669', '#D97706'][idx % 5],
         modules: c.modules || [],
         moduleHighlights: Array.isArray(c.modules) && c.modules.length > 0
           ? c.modules.map((m: any) => ({

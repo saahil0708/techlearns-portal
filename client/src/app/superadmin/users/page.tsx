@@ -3,7 +3,7 @@ import UsersDirectoryClient, { UserDirectoryEntity } from '@/components/superadm
 import { apiService } from '@/lib/api-service';
 
 export const metadata: Metadata = {
-  title: 'Users & Identity Management | CodePlatform',
+  title: 'Users & Identity Management | TechLearns',
   description: 'Role-based access control (RBAC), multi-tenant administration, security audits & authentication directory.',
 };
 

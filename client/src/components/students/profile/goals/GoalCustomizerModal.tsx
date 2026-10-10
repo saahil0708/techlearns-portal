@@ -87,8 +87,8 @@ export function GoalCustomizerModal({
               width: 40,
               height: 40,
               borderRadius: '10px',
-              bgcolor: '#EFF6FF',
-              color: '#2563EB',
+              bgcolor: '#FAF5FF',
+              color: '#0B1F3A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -125,9 +125,9 @@ export function GoalCustomizerModal({
               minHeight: 44,
               py: 1,
               color: '#64748B',
-              '&.Mui-selected': { color: '#2563EB' },
+              '&.Mui-selected': { color: '#0B1F3A' },
             },
-            '& .MuiTabs-indicator': { bgcolor: '#2563EB', height: 3 },
+            '& .MuiTabs-indicator': { bgcolor: '#0B1F3A', height: 3 },
           }}
         >
           <Tab label="1. Career Track & Horizon" />
@@ -162,14 +162,14 @@ export function GoalCustomizerModal({
                         p: 1.8,
                         borderRadius: '12px',
                         border: '2px solid',
-                        borderColor: isSelected ? '#2563EB' : '#E2E8F0',
-                        bgcolor: isSelected ? '#EFF6FF' : '#FFFFFF',
+                        borderColor: isSelected ? '#0B1F3A' : '#E2E8F0',
+                        bgcolor: isSelected ? '#FAF5FF' : '#FFFFFF',
                         cursor: 'pointer',
                         transition: 'all 0.15s ease',
-                        '&:hover': { borderColor: '#93C5FD' },
+                        '&:hover': { borderColor: '#C084FC' },
                       }}
                     >
-                      <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: isSelected ? '#1D4ED8' : '#0F172A', mb: 0.3 }}>
+                      <Typography sx={{ fontWeight: 800, fontSize: '0.86rem', color: isSelected ? '#17366E' : '#0F172A', mb: 0.3 }}>
                         {track.title}
                       </Typography>
                       <Typography sx={{ color: '#64748B', fontSize: '0.74rem' }}>
@@ -207,7 +207,7 @@ export function GoalCustomizerModal({
                   <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem' }}>
                     Weekly Commitment
                   </Typography>
-                  <Typography sx={{ fontWeight: 800, color: '#2563EB', fontSize: '0.88rem' }}>
+                  <Typography sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '0.88rem' }}>
                     {formData.weeklyHours} hrs/week
                   </Typography>
                 </Box>
@@ -218,7 +218,7 @@ export function GoalCustomizerModal({
                   max={35}
                   step={1}
                   valueLabelDisplay="auto"
-                  sx={{ color: '#2563EB' }}
+                  sx={{ color: '#0B1F3A' }}
                 />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography sx={{ color: '#94A3B8', fontSize: '0.7rem' }}>4 hrs (Part-time)</Typography>
@@ -238,7 +238,7 @@ export function GoalCustomizerModal({
                 <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '0.86rem' }}>
                   Target Solve Time / Problem
                 </Typography>
-                <Typography sx={{ fontWeight: 800, color: '#2563EB', fontSize: '0.86rem' }}>
+                <Typography sx={{ fontWeight: 800, color: '#0B1F3A', fontSize: '0.86rem' }}>
                   {formData.targetSolveTimeMins} minutes / problem
                 </Typography>
               </Box>
@@ -249,7 +249,7 @@ export function GoalCustomizerModal({
                 max={45}
                 step={1}
                 valueLabelDisplay="auto"
-                sx={{ color: '#2563EB' }}
+                sx={{ color: '#0B1F3A' }}
               />
               <Typography sx={{ color: '#64748B', fontSize: '0.74rem' }}>
                 Industry Benchmark for Medium problems is ~20 mins. Competitive benchmark is ~15 mins.
@@ -396,8 +396,8 @@ export function GoalCustomizerModal({
                         sx={{
                           fontWeight: 800,
                           fontSize: '0.66rem',
-                          bgcolor: skill.level >= 80 ? '#ECFDF5' : skill.level >= 65 ? '#EFF6FF' : '#FFFBEB',
-                          color: skill.level >= 80 ? '#059669' : skill.level >= 65 ? '#1D4ED8' : '#D97706',
+                          bgcolor: skill.level >= 80 ? '#ECFDF5' : skill.level >= 65 ? '#FAF5FF' : '#FFFBEB',
+                          color: skill.level >= 80 ? '#059669' : skill.level >= 65 ? '#17366E' : '#D97706',
                         }}
                       />
                     </Box>
@@ -421,7 +421,7 @@ export function GoalCustomizerModal({
                       max={100}
                       step={1}
                       sx={{
-                        color: skill.level >= 80 ? '#10B981' : skill.level >= 65 ? '#2563EB' : '#F59E0B',
+                        color: skill.level >= 80 ? '#10B981' : skill.level >= 65 ? '#0B1F3A' : '#F59E0B',
                       }}
                     />
                   </Box>
@@ -466,13 +466,13 @@ export function GoalCustomizerModal({
             }}
             startIcon={<AutoAwesomeRoundedIcon sx={{ fontSize: 15 }} />}
             sx={{
-              color: '#2563EB',
-              borderColor: '#BFDBFE',
+              color: '#0B1F3A',
+              borderColor: '#D8B4FE',
               fontWeight: 800,
               textTransform: 'none',
               fontSize: '0.78rem',
               borderRadius: '8px',
-              '&:hover': { bgcolor: '#EFF6FF', borderColor: '#2563EB' },
+              '&:hover': { bgcolor: '#FAF5FF', borderColor: '#0B1F3A' },
             }}
           >
             Diagnostic Quiz
@@ -484,7 +484,7 @@ export function GoalCustomizerModal({
             onClick={onSave}
             startIcon={<SaveRoundedIcon sx={{ fontSize: 16 }} />}
             sx={{
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               fontWeight: 800,
               textTransform: 'none',
@@ -492,8 +492,8 @@ export function GoalCustomizerModal({
               borderRadius: '8px',
               px: 2.2,
               py: 0.8,
-              boxShadow: '0 2px 8px rgba(37, 99, 235, 0.25)',
-              '&:hover': { bgcolor: '#1D4ED8' },
+              boxShadow: '0 2px 8px rgba(91, 45, 144, 0.25)',
+              '&:hover': { bgcolor: '#17366E' },
             }}
           >
             Save & Apply Goals

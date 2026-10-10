@@ -392,7 +392,7 @@ export default function LessonAuthoringModal({
                       bgcolor: '#F8FAFC',
                       '& fieldset': { borderColor: borderColor },
                       '&:hover fieldset': { borderColor: '#CBD5E1' },
-                      '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                      '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                     },
                   },
                 }}
@@ -419,7 +419,7 @@ export default function LessonAuthoringModal({
                       bgcolor: '#F8FAFC',
                       '& fieldset': { borderColor: borderColor },
                       '&:hover fieldset': { borderColor: '#CBD5E1' },
-                      '&.Mui-focused fieldset': { borderColor: '#2563EB' },
+                      '&.Mui-focused fieldset': { borderColor: '#0B1F3A' },
                     },
                   },
                 }}
@@ -456,7 +456,7 @@ export default function LessonAuthoringModal({
                 value="reading"
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <MenuBookRoundedIcon sx={{ fontSize: 17, color: modality === 'reading' ? '#2563EB' : '#94A3B8' }} />
+                    <MenuBookRoundedIcon sx={{ fontSize: 17, color: modality === 'reading' ? '#0B1F3A' : '#94A3B8' }} />
                     <span>Notes / Theory</span>
                   </Box>
                 }
@@ -579,7 +579,7 @@ export default function LessonAuthoringModal({
             startIcon={isSubmitting ? <CircularProgress size={16} sx={{ color: '#FFFFFF' }} /> : null}
             sx={{
               borderRadius: '10px',
-              bgcolor: '#2563EB',
+              bgcolor: '#0B1F3A',
               color: '#FFFFFF',
               textTransform: 'none',
               fontWeight: 700,
@@ -587,7 +587,7 @@ export default function LessonAuthoringModal({
               px: 3,
               py: 0.8,
               boxShadow: 'none',
-              '&:hover': { bgcolor: '#1D4ED8', boxShadow: '0 4px 14px rgba(37,99,235,0.25)' },
+              '&:hover': { bgcolor: '#17366E', boxShadow: '0 4px 14px rgba(91, 45, 144, 0.25)' },
             }}
           >
             {isSubmitting ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Submodule'}
